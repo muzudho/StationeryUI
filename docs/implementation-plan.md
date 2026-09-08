@@ -52,5 +52,5 @@
 
 - KifuwarabeGo2026: `b9ad2355a286c08a8aa8d979fa1222dc90159917`
 - CircleSpaceCoordinator: `90502fb0bbbd979f30da3d45b32f0f82799ca7f6`
-- 元計画: [20260908_StationeryUI独立リポジトリー化計画](https://github.com/muzudho/KifuwarabeGo2026/blob/main/Docs/Dev/開発_作業計画/20260908_StationeryUI独立リポジトリー化計画.md)
+- 元計画: KifuwarabeGo2026内の `Docs/Dev/開発_作業計画/20260908_StationeryUI独立リポジトリー化計画.md`。現在の進捗の正本は本書。
 - ファイル単位の移行元: [extraction-inventory.md](extraction-inventory.md)
