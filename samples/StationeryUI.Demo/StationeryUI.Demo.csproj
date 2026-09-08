@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework><IsPackable>false</IsPackable><EnableWindowsTargeting>true</EnableWindowsTargeting></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj" />
+    <ProjectReference Include="../../src/StationeryUI.Windows/StationeryUI.Windows.csproj" />
+  </ItemGroup>
+</Project>

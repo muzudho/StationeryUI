@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="tests/StationeryUI.Windows.Tests/StationeryUI.Windows.Tests.csproj" />
+  <Project Path="tests/StationeryUI.Tests/StationeryUI.Tests.csproj" />
+  <Project Path="samples/StationeryUI.Demo/StationeryUI.Demo.csproj" />
+  <Project Path="src/StationeryUI/StationeryUI.csproj" />
+  <Project Path="src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj" />
+  <Project Path="src/StationeryUI.Windows/StationeryUI.Windows.csproj" />
+</Solution>
