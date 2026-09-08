@@ -130,3 +130,7 @@ dotnet pack StationeryUI.slnx -c Release -o artifacts/packages
 [設計](docs/architecture.md) / [抽出元一覧](docs/extraction-inventory.md) / [検証記録](docs/validation.md) / [引き継ぎ計画](docs/implementation-plan.md) / [貢献方法](CONTRIBUTING.md)
 
 きふわらべの碁2026とサークルスペースコーディネーターの実装から抽出・整理しています。元のライセンス表示と依存物については [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) を参照してください。
+
+## コードを読む
+
+[コントロールのプログラム解説](docs/control-guide.md) に、描画境界と部品別の説明をまとめています。

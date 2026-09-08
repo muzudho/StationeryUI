@@ -48,3 +48,27 @@ Additional extraction during implementation:
 | `CircleSpaceCoordinator.Desktop.Windows/Text/DynamicTextRenderer.cs` | `src/StationeryUI.MonoGame/RasterTextRenderer.cs`; premultiplied alpha and bounded cache with deferred disposal |
 
 Application-specific sticky-note routing, board/result icons, diagnostic dialogs and background remain in KifuwarabeGo2026.
+
+## Documentation migration
+
+The 12 Japanese explanations under the original `Presentation/StationeryUI` were reviewed.
+Common documentation now lives next to the extracted source; see [the guide](control-guide.md).
+
+| Original explanation | Destination / retained responsibility |
+|---|---|
+| Root | `src/StationeryUI.MonoGame/プログラム解説.md`; application root now explains its adapter |
+| Controls root | `src/StationeryUI.MonoGame/Controls/プログラム解説.md` |
+| `Controls/Button` | `src/StationeryUI.MonoGame/Controls/Button/プログラム解説.md` |
+| `Controls/ChartAxisSectionLabel` | `src/StationeryUI.MonoGame/Controls/ChartAxisSectionLabel/プログラム解説.md` |
+| `Controls/LinkUnderline` | `src/StationeryUI.MonoGame/Controls/LinkUnderline/プログラム解説.md` |
+| `Controls/MultilineTextUnderline` | `src/StationeryUI.MonoGame/Controls/MultilineTextUnderline/プログラム解説.md` |
+| `Controls/PopupNumberUnderline` | `src/StationeryUI.MonoGame/Controls/PopupNumberUnderline/プログラム解説.md` |
+| `Controls/SectionLabel` | `src/StationeryUI.MonoGame/Controls/SectionLabel/プログラム解説.md` |
+| `Controls/Shared/Underline` | `src/StationeryUI.MonoGame/Controls/Shared/Underline/プログラム解説.md` |
+| `Controls/SinglelineTextUnderline` | `src/StationeryUI.MonoGame/Controls/SinglelineTextUnderline/プログラム解説.md` |
+| `Controls/TableRowLabel` | `src/StationeryUI.MonoGame/Controls/TableRowLabel/プログラム解説.md` |
+| `Controls/StickyNote` | Remains with application-specific placement code |
+
+GTP numeric-dialog and SGF-comment workflows are retained in the application’s `Presentation/StationeryUI/アプリ固有連携.md`.
+The single-line dialog explanation remains beside `TextInputDialog.cs`; its shared underline explanation was split out.
+Chart pin behavior specific to the Go screen is also retained in the application document.
