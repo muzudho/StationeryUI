@@ -1,0 +1,3 @@
+6af3a1d1a99f32f3100e0d93e2098eb6257391b6fece8f74a9ba469b06c7d402  StationeryUI.0.1.0.nupkg
+9ab694394ef64856681e682cd187296695dab69ece83c9650a4bdabfe4de8ea2  StationeryUI.MonoGame.0.1.0.nupkg
+5963ac4528f35d5aa8737cd467b93033dcca25f57ca0a01fe8f7b8a2e4b5f2b8  StationeryUI.Windows.0.1.0.nupkg
