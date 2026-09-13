@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 
 var tests = new (string Name, Action Run)[]
 {
+    ("ring layout stays square, separated and inside the viewport", RingMenuLayoutTests.Run),
     ("grapheme movement and deletion", () => {
         var e = new UnderlineTextEditor("A😀e\u0301B"); e.MoveTo(e.Text.Length); e.Move(-1, false);
         Equal(5, e.Caret); e.Delete(true); Equal("A😀B", e.Text); e.Delete(true); Equal("AB", e.Text);

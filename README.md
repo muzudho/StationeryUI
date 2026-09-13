@@ -2,7 +2,7 @@
 
 MonoGameでPC向けの設定画面・編集画面を作るための、文房具をモチーフにしたGUIライブラリーです。日本語IMEの入力接続、文字編集、アプリに合わせたテーマを提供します。MITライセンス。
 
-初期版 **0.1.0**。公開APIは今後変更する可能性があります。
+初期版 **0.1.1**。公開APIは今後変更する可能性があります。
 
 ## できること
 
@@ -28,12 +28,33 @@ Windows Formsと同じAPIやデザイナーを提供するものではありま�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="StationeryUI.MonoGame" Version="0.1.0" />
-  <PackageReference Include="StationeryUI.Windows" Version="0.1.0" />
+  <PackageReference Include="StationeryUI.MonoGame" Version="0.1.1" />
+  <PackageReference Include="StationeryUI.Windows" Version="0.1.1" />
 </ItemGroup>
 ```
 
 Windowsのアプリは `net8.0-windows` 以降を対象とします。`StationeryUI` 自体を参照するためにWindowsは必要ありません。
+
+## リングメニューの配置（0.1.1）
+
+CircleSpaceCoordinator から移植した `StationeryUI.Controls.RingMenuLayout` は、描画エンジンに依存せず、正方形のボタンを円周上に等間隔で配置します。先頭は上、以降は時計回りです。画面端では中心を補正し、小さい画面では全体を縮小して、ボタンの重なりとはみ出しを防ぎます。
+
+```csharp
+using StationeryUI.Canvas;
+using StationeryUI.Controls;
+
+var layout = RingMenuLayout.Create(
+    new ScreenRectangle(100, 100, 44, 44), // 起点ボタンの領域
+    1280, 720,                           // 使用可能な画面の幅と高さ
+    5);                                  // キャンセルを含む項目数
+var buttons = layout.Buttons.Select((bounds, index) =>
+    new IconButtonModel(bounds, $"操作 {index + 1}")).ToArray();
+// layout.Center と layout.Radius はリングの帯を描く際にも使用できます。
+```
+
+幅と高さは有限の正数、項目数は1以上を指定してください。メニューの開閉、操作実行、入力遮断、描画はホスト側が担当します。各ボタンに操作内容を示すアクセシブル名を付け、Tab・矢印キーで移動、Enter・Spaceで実行、Escで閉じる操作を接続してください。色は `StationeryButtonRenderer` と `StationeryTheme` で適用できます。囲碁・会場などのアプリ固有モデルや MonoGame・Windows への依存はありません。
+
+既存の CircleSpaceCoordinator から移行する場合、`CircleSpaceCoordinator.ReusableControls.RingMenuLayout` を `StationeryUI.Controls.RingMenuLayout` に置き換えます。`Create` の引数と戻り値の構造は同じです。
 
 ## サンプルを動かす
 

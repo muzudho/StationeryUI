@@ -15,3 +15,5 @@
 - [TableRowLabel](../src/StationeryUI.MonoGame/Controls/TableRowLabel/プログラム解説.md)
 
 GTP オプションの下書き保存、SGF コメントの反映、画面別の付箋配置は利用アプリ固有のため、アプリ側の解説に残しています。
+
+[リストUI設計の目安](list-ui-guidelines.md)：上下移動の最悪回数と、50回以内になる10件の目安。
