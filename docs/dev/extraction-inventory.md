@@ -52,21 +52,21 @@ Application-specific sticky-note routing, board/result icons, diagnostic dialogs
 ## Documentation migration
 
 The 12 Japanese explanations under the original `Presentation/StationeryUI` were reviewed.
-Common documentation now lives next to the extracted source; see [the guide](control-guide.md).
+Common documentation now lives under `docs/dev/StationeryUI.MonoGame`; see [the guide](control-guide.md).
 
 | Original explanation | Destination / retained responsibility |
 |---|---|
-| Root | `src/StationeryUI.MonoGame/プログラム解説.md`; application root now explains its adapter |
-| Controls root | `src/StationeryUI.MonoGame/Controls/プログラム解説.md` |
-| `Controls/Button` | `src/StationeryUI.MonoGame/Controls/Button/プログラム解説.md` |
-| `Controls/ChartAxisSectionLabel` | `src/StationeryUI.MonoGame/Controls/ChartAxisSectionLabel/プログラム解説.md` |
-| `Controls/LinkUnderline` | `src/StationeryUI.MonoGame/Controls/LinkUnderline/プログラム解説.md` |
-| `Controls/MultilineTextUnderline` | `src/StationeryUI.MonoGame/Controls/MultilineTextUnderline/プログラム解説.md` |
-| `Controls/PopupNumberUnderline` | `src/StationeryUI.MonoGame/Controls/PopupNumberUnderline/プログラム解説.md` |
-| `Controls/SectionLabel` | `src/StationeryUI.MonoGame/Controls/SectionLabel/プログラム解説.md` |
-| `Controls/Shared/Underline` | `src/StationeryUI.MonoGame/Controls/Shared/Underline/プログラム解説.md` |
-| `Controls/SinglelineTextUnderline` | `src/StationeryUI.MonoGame/Controls/SinglelineTextUnderline/プログラム解説.md` |
-| `Controls/TableRowLabel` | `src/StationeryUI.MonoGame/Controls/TableRowLabel/プログラム解説.md` |
+| Root | `docs/dev/StationeryUI.MonoGame/プログラム解説.md`; application root now explains its adapter |
+| Controls root | `docs/dev/StationeryUI.MonoGame/Controls/プログラム解説.md` |
+| `Controls/Button` | `docs/dev/StationeryUI.MonoGame/Controls/Button/プログラム解説.md` |
+| `Controls/ChartAxisSectionLabel` | `docs/dev/StationeryUI.MonoGame/Controls/ChartAxisSectionLabel/プログラム解説.md` |
+| `Controls/LinkUnderline` | `docs/dev/StationeryUI.MonoGame/Controls/LinkUnderline/プログラム解説.md` |
+| `Controls/MultilineTextUnderline` | `docs/dev/StationeryUI.MonoGame/Controls/MultilineTextUnderline/プログラム解説.md` |
+| `Controls/PopupNumberUnderline` | `docs/dev/StationeryUI.MonoGame/Controls/PopupNumberUnderline/プログラム解説.md` |
+| `Controls/SectionLabel` | `docs/dev/StationeryUI.MonoGame/Controls/SectionLabel/プログラム解説.md` |
+| `Controls/Shared/Underline` | `docs/dev/StationeryUI.MonoGame/Controls/Shared/Underline/プログラム解説.md` |
+| `Controls/SinglelineTextUnderline` | `docs/dev/StationeryUI.MonoGame/Controls/SinglelineTextUnderline/プログラム解説.md` |
+| `Controls/TableRowLabel` | `docs/dev/StationeryUI.MonoGame/Controls/TableRowLabel/プログラム解説.md` |
 | `Controls/StickyNote` | Remains with application-specific placement code |
 
 GTP numeric-dialog and SGF-comment workflows are retained in the application’s `Presentation/StationeryUI/アプリ固有連携.md`.

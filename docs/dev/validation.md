@@ -16,7 +16,7 @@
 | サークルの既存文房具UI検査 | 13/13成功 |
 | サークルのデスクトップ検査 | 44/44成功 |
 | Linuxでのコア検査 | [GitHub Actions](https://github.com/muzudho/StationeryUI/actions/runs/34235943090)で成功。Windowsジョブのビルド・テスト・packも成功 |
-| 公開パッケージ | GitHub Releaseから3ファイルを再ダウンロードし、両アプリの同梱物とSHA-256一致を確認。値は `package-checksums.txt` |
+| 公開パッケージ | GitHub Releaseから3ファイルを再ダウンロードし、両アプリの同梱物とSHA-256一致を確認。値は [package-checksums.txt](../user/package-checksums.txt) |
 | 実IMEの候補選択・変換確定 | 未実施。SDLイベントの自動検査は実IME操作の代用とはしない |
 | Windowsの各DPI・複数モニター | 未実施。サンプル内の論理拡大率とOSのDPI切替は区別する |
 | タッチ実機、WindowsDX、Linux/macOSのUI | 未検証・初期版の保証外 |
