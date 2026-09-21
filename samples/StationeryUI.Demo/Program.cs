@@ -39,11 +39,15 @@ internal sealed class Demo : Game
     {
         manager = new(this) { PreferredBackBufferWidth = 1000, PreferredBackBufferHeight = 780 };
         Window.AllowUserResizing = true;
-        Window.Title = "StationeryUI — ホバーで EDIT / POPUP、クリックで編集";
+        // MonoGame 3.8.5.1 recreates the SDL window using an ANSI-marshaled title.
+        // Keep this initial title ASCII; set Japanese after native window creation.
+        Window.Title = "StationeryUI";
         IsMouseVisible = true;
     }
     protected override void LoadContent()
     {
+        // The existing-window title setter encodes UTF-8 correctly.
+        Window.Title = "StationeryUI — ホバーで EDIT / POPUP、クリックで編集";
         var source = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(attribute => attribute.Key == "StationeryConfigurationSource")?.Value;
         var configurationPath = Environment.GetEnvironmentVariable("STATIONERYUI_CONFIG_PATH");

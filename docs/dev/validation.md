@@ -33,6 +33,15 @@
 - `artifacts/style-smoke/default.png` と `padding.png` を目視確認。原本の四辺 8px と、非対称パディング・高さ不足時の縮小を確認。
 - F5 の実キー操作、実行中のエディター保存による画面変化、実 IME の手動操作は未実施。リロードの状態遷移は自動検査で確認。
 
+## 2026-09-21 起動時の日本語タイトル文字化け
+
+- `Program.cs` は正常な UTF-8。Debug／Release のコンパイル済み文字列も日本語が正常だった。
+- 修正前のデモを起動し、`GetWindowTextW` で `StationeryUI ? �z�o…` というタイトルを読み取って文字化けを再現。
+- MonoGame 3.8.5.1 の [ウィンドウ再作成処理](https://github.com/MonoGame/MonoGame/blob/v3.8.5.1/MonoGame.Framework/Platform/SDL/SDLGameWindow.cs) は、コンストラクターで設定したタイトルを `SDL_CreateWindow` へ渡す。[SDL バインディング](https://github.com/MonoGame/MonoGame/blob/v3.8.5.1/MonoGame.Framework/Platform/SDL/SDL2.cs) の作成側は string の ANSI マーシャリングで、タイトル更新側は UTF-8 を明示している。
+- コンストラクターでは ASCII の `StationeryUI` を使い、ネイティブウィンドウ作成後の `LoadContent` で日本語タイトルを設定するよう修正。ソースや JSON の文字コード変換は不要。
+- Debug／Release ビルド成功（警告・エラー 0）。両方を起動して `GetWindowTextW` の結果が `StationeryUI — ホバーで EDIT / POPUP、クリックで編集` と完全一致することを確認。
+- 検証スクリプトと取得したタイトルは `artifacts/title-check/` に保存。ウィンドウは検証後に終了。
+
 ## 手動確認の手順
 
 ### スタイル読み込み設定の分離（2026-09-21 追補）
