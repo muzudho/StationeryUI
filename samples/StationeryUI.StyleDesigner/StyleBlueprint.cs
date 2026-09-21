@@ -190,7 +190,7 @@ public sealed class StyleBlueprint
         })) + Environment.NewLine;
     }
 
-    public string AddLayout(string type)
+    public string AddLayout(string type, string? requestedId = null)
     {
         if (type is not ("panel" or "floating-layout")) throw new ArgumentException("追加できない種類です。");
         var draft = JsonNode.Parse(BuildJson())!.AsObject();
@@ -198,7 +198,9 @@ public sealed class StyleBlueprint
         var prefix = type == "panel" ? "panel" : "floatingLayout";
         var number = 1;
         while (layouts.Any(l => (string?)l!["id"] == prefix + number)) number++;
-        var id = prefix + number;
+        var id = requestedId ?? prefix + number;
+        var error = CheckId(id, layouts.Select(l => (string)l!["id"]!)).Error;
+        if (error is not null) throw new ArgumentException(error);
         var added = new JsonObject { ["id"] = id, ["type"] = type };
         if (type == "floating-layout")
         {
@@ -212,6 +214,86 @@ public sealed class StyleBlueprint
         imported = draft; SelectedLayoutId = null;
         SelectLayout(id);
         return id;
+    }
+
+    public static (string? Error, string? Warning) CheckId(string id, IEnumerable<string> siblings)
+    {
+        if (id.Length == 0 || id.Any(c => !(c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9' or '_')))
+            return ("Id は英字・数字・アンダースコアだけで、1文字以上入力してください。", null);
+        if (siblings.Contains(id, StringComparer.Ordinal)) return ("同じ親の中に、この Id が既にあります。", null);
+        var warnings = new List<string>();
+        if (char.IsAsciiDigit(id[0])) warnings.Add("数字で始まっています");
+        if (!System.Text.RegularExpressions.Regex.IsMatch(id, "^[a-z][a-z0-9]*(?:[A-Z][a-z0-9]+)*$")) warnings.Add("camelCase ではありません");
+        return (null, warnings.Count == 0 ? null : "警告：" + string.Join("。", warnings) + "（このまま確定できます）。");
+    }
+
+    private static JsonNode NodeAt(JsonNode root, IReadOnlyList<string> path)
+    {
+        foreach (var part in path) root = root is JsonArray array ? array[int.Parse(part, CultureInfo.InvariantCulture)]! : root[part]!;
+        return root;
+    }
+
+    public string? NodeId(IReadOnlyList<string> path)
+    {
+        if (path.Count < 2 || path[0] is not ("models" or "layouts")) return null;
+        // Only model nodes and layout definitions, not metadata objects with an id property.
+        if (path[0] == "layouts" && path.Count != 2) return null;
+        if (path[0] == "models" && (path.Count % 2 != 0 || path.Where((_, i) => i > 0 && i % 2 == 0).Any(p => p != "children"))) return null;
+        return NodeAt(JsonNode.Parse(BuildJson())!, path) is JsonObject obj ? (string?)obj["id"] : null;
+    }
+
+    public (string? Error, string? Warning) ValidateId(string id, IReadOnlyList<string>? path = null)
+    {
+        var root = JsonNode.Parse(BuildJson())!;
+        var array = path is null ? root["layouts"]!.AsArray() : NodeAt(root, path.Take(path.Count - 1).ToArray()).AsArray();
+        var current = path is null ? null : NodeAt(root, path);
+        return CheckId(id, array.Where(n => n != current).Select(n => (string)n!["id"]!));
+    }
+
+    public void RenameId(IReadOnlyList<string> path, string id)
+    {
+        if (NodeId(path) is null) throw new ArgumentException("Id を持つモデルかレイアウトを操作対象にしてください。");
+        var error = ValidateId(id, path).Error;
+        if (error is not null) throw new ArgumentException(error);
+        var draft = JsonNode.Parse(BuildJson())!.AsObject();
+        var settings = StationeryStyleSettings.Parse(draft.ToJsonString());
+        var node = NodeAt(draft, path);
+        var oldId = (string)node["id"]!;
+        if (oldId == id) return;
+        var selected = IsImported ? SelectedLayoutId : "mainGrid";
+        if (path[0] == "layouts")
+        {
+            foreach (var binding in draft["bindings"]!.AsArray())
+                if ((string?)binding!["layout"] == oldId) binding["layout"] = id;
+            if (selected == oldId) selected = id;
+        }
+        else
+        {
+            var ids = new List<string>();
+            for (JsonNode? ancestor = node; ancestor is not null && ancestor != draft; ancestor = ancestor.Parent)
+                if (ancestor is JsonObject obj && obj["id"] is JsonValue value) ids.Insert(0, value.GetValue<string>());
+            var oldPath = "/" + string.Join("/", ids);
+            ids[^1] = id;
+            var newPath = "/" + string.Join("/", ids);
+            void Rewrite(JsonNode binding, string key, string? resolved)
+            {
+                if (resolved is not null && (resolved == oldPath || resolved.StartsWith(oldPath + "/", StringComparison.Ordinal)))
+                    binding[key] = newPath + resolved[oldPath.Length..];
+            }
+            for (var i = 0; i < settings.Bindings.Count; i++)
+            {
+                var binding = draft["bindings"]![i]!;
+                var resolved = settings.Bindings[i];
+                Rewrite(binding, binding["parentModel"] is null ? "model" : "parentModel", resolved.ModelPath);
+                Rewrite(binding, "firstModel", resolved.FirstModel); Rewrite(binding, "secondModel", resolved.SecondModel);
+                Rewrite(binding, "inspectorModel", resolved.InspectorModel);
+                for (var c = 0; c < resolved.Children.Count; c++) Rewrite(binding["childrenModel"]![c]!, "model", resolved.Children[c].ModelPath);
+            }
+        }
+        node["id"] = id;
+        Serialize(draft);
+        imported = draft; SelectedLayoutId = null;
+        if (selected is not null) SelectLayout(selected);
     }
 
     public void DeleteNode(IReadOnlyList<string> path)

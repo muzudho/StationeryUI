@@ -1,4 +1,4 @@
-param([string]$Executable = 'samples/StationeryUI.StyleDesigner/bin/Release/net8.0-windows/StationeryUI.StyleDesigner.exe', [switch]$Existing, [switch]$NativeDialog, [switch]$CancelDialog, [switch]$Dark, [ValidateSet('panel','floating','delete')][string]$LayoutEditing)
+param([string]$Executable = 'samples/StationeryUI.StyleDesigner/bin/Release/net8.0-windows/StationeryUI.StyleDesigner.exe', [switch]$Existing, [switch]$NativeDialog, [switch]$CancelDialog, [switch]$Dark, [ValidateSet('panel','floating','delete','rename')][string]$LayoutEditing)
 $ErrorActionPreference = 'Stop'
 $workspace = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $testDirectory = Join-Path $workspace ('artifacts/style-designer-test/' + [Guid]::NewGuid().ToString('N'))

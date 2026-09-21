@@ -7,7 +7,9 @@ internal sealed partial class DesignerGame
 {
     private readonly Dictionary<string, string[]> treePaths = [];
     private readonly List<(StationeryUiHost.Element Field, string Key)> panelFields = [];
-    private StationeryUiHost.Element? addChild, deleteNode;
+    private StationeryUiHost.Element? addChild, deleteNode, renameId, idField, idFeedback;
+    private readonly List<StationeryUiHost.Element> idConfirmButtons = [];
+    private string[]? renamePath;
     private StationeryUiHost? layoutDialog;
     private string? layoutChoice, revealLayout;
 
@@ -23,6 +25,15 @@ internal sealed partial class DesignerGame
             treeJson = null; lastTreeSelection = null;
             message = "要素を削除しました。"; rebuild = true;
         }));
+        renameId = sidebar.AddButton("renameId", new(8, 758, 300, 44), "Ｉｄ変更", () => pendingPage = () => Guard(() =>
+        {
+            Capture();
+            var target = styleTree?.Tree?.TargetItem;
+            if (target is null || !treePaths.TryGetValue(target.Id, out var path)) return;
+            var id = blueprint.NodeId(path);
+            if (id is null) return;
+            OpenIdDialog(path, id);
+        }));
         UpdateTreeActions();
     }
 
@@ -33,18 +44,51 @@ internal sealed partial class DesignerGame
         var path = target is not null ? treePaths.GetValueOrDefault(target.Id) : null;
         sidebar.Focus.SetEnabled(addChild.Path, path is ["layouts"]);
         sidebar.Focus.SetEnabled(deleteNode.Path, path is { Length: > 1 });
+        if (renameId is not null)
+        {
+            var enabled = false;
+            try { enabled = path is not null && blueprint.NodeId(path) is not null; }
+            catch (System.Text.Json.JsonException) { }
+            sidebar.Focus.SetEnabled(renameId.Path, enabled);
+        }
     }
 
     private void OpenLayoutDialog()
+        => Guard(() =>
+        {
+            Capture();
+            var suffix = 1;
+            while (blueprint.ValidateId("layout" + suffix).Error is not null) suffix++;
+            OpenIdDialog(null, "layout" + suffix);
+        });
+
+    private void OpenIdDialog(string[]? path, string id)
     {
         ui.Update(new GameTime(), false, new(), new());
         sidebar?.Update(new GameTime(), false, new(), new());
         layoutChoice = null;
+        renamePath = path;
+        idConfirmButtons.Clear();
         layoutDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
-        layoutDialog.AddTextBlock(layoutDialog.Root.AddChild("dialogHelp", "textBlock"), new(430, 280, 740, 240), "子要素追加 — レイアウトの種類を選んでください\n追加した定義は bindings でモデルに割り当てられます。");
-        layoutDialog.AddButton("panel", new(460, 380, 290, 48), "panel", () => layoutChoice = "panel");
-        layoutDialog.AddButton("floating", new(770, 380, 370, 48), "floating-layout", () => layoutChoice = "floating-layout");
-        layoutDialog.AddButton("cancel", new(460, 448, 680, 44), "キャンセル", () => layoutChoice = "cancel");
+        layoutDialog.AddTextBlock(layoutDialog.Root.AddChild("dialogHelp", "textBlock"), new(430, 210, 740, 370),
+            path is null ? "子要素追加 — 文房具Ｉｄを入力し、種類を選んでください\n英字・数字・アンダースコア。推奨：camelCase" : "Ｉｄ変更 — 新しい文房具Ｉｄを入力してください\n既存の bindings の参照も更新します。");
+        idField = layoutDialog.AddTextBox("stationeryId", new(460, 312, 680, 48), "文房具Ｉｄ", id, 256);
+        if (path is null)
+        {
+            idConfirmButtons.Add(layoutDialog.AddButton("panel", new(460, 380, 290, 48), "panel を追加", () => layoutChoice = "panel"));
+            idConfirmButtons.Add(layoutDialog.AddButton("floating", new(770, 380, 370, 48), "floating-layout を追加", () => layoutChoice = "floating-layout"));
+        }
+        else idConfirmButtons.Add(layoutDialog.AddButton("confirmId", new(460, 380, 680, 48), "変更を確定", () => layoutChoice = "rename"));
+        idFeedback = layoutDialog.AddTextBlock(layoutDialog.Root.AddChild("idFeedback", "textBlock"), new(460, 438, 680, 72), "");
+        layoutDialog.AddButton("cancel", new(460, 522, 680, 44), "キャンセル", () => layoutChoice = "cancel");
+        UpdateIdFeedback();
+    }
+
+    private void UpdateIdFeedback()
+    {
+        var result = blueprint.ValidateId(idField!.Editor!.Text, renamePath);
+        idFeedback!.Label = result.Error ?? result.Warning ?? "この Id は使用できます。";
+        foreach (var button in idConfirmButtons) layoutDialog!.Focus.SetEnabled(button.Path, result.Error is null);
     }
 
     private void UpdateLayoutDialog(GameTime time, double scale)
@@ -55,21 +99,40 @@ internal sealed partial class DesignerGame
         if (!string.IsNullOrEmpty(smokeOutput) && layoutSmoke is not null)
         {
             keyboard = new();
-            mouse = SmokeMouse(layoutDialog, layoutSmoke == "panel" ? 470 : 780, 395, frames == 9);
+            if (renamePath is not null) SetText(idField!, "renamedLayout");
+            else if (frames == 8) SetText(idField!, "mainGrid");
+            else if (frames == 9) SetText(idField!, "123_layout");
+            mouse = SmokeMouse(layoutDialog, renamePath is not null || layoutSmoke == "panel" ? 470 : 780, 395, frames == (renamePath is null ? 9 : 17));
         }
+        UpdateIdFeedback();
         layoutDialog.Update(time, IsActive || !string.IsNullOrEmpty(smokeOutput), keyboard, mouse);
+        UpdateIdFeedback();
+        if (!string.IsNullOrEmpty(smokeOutput) && layoutSmoke is not null && renamePath is null)
+        {
+            if (frames == 8 && idConfirmButtons.Any(b => layoutDialog.Focus.IsEnabled(b.Path))) throw new InvalidOperationException("Duplicate Id was enabled.");
+            if (frames == 9 && (idFeedback!.Label.Length == 0 || idConfirmButtons.Any(b => !layoutDialog.Focus.IsEnabled(b.Path)))) throw new InvalidOperationException("Warning Id was blocked.");
+        }
         if (Keyboard.GetState().IsKeyDown(Keys.Escape)) layoutChoice = "cancel";
         if (layoutChoice is null) return;
         var choice = layoutChoice;
-        layoutDialog.Dispose(); layoutDialog = null; layoutChoice = null;
-        if (choice == "cancel") return;
-        Guard(() =>
+        layoutChoice = null;
+        if (choice == "cancel") { layoutDialog.Dispose(); layoutDialog = null; return; }
+        try
         {
-            Capture(); revealLayout = blueprint.AddLayout(choice);
+            var id = idField!.Editor!.Text;
+            if (choice == "rename")
+            {
+                blueprint.RenameId(renamePath!, id);
+                if (renamePath![0] == "layouts") revealLayout = id;
+            }
+            else revealLayout = blueprint.AddLayout(choice, id);
+            layoutDialog.Dispose(); layoutDialog = null;
             selectedRow = selectedColumn = 0;
-            message = $"{revealLayout} を追加しました。設定を入力してください。";
+            message = choice == "rename" ? $"Id を {id} に変更しました。" : $"{id} を追加しました。設定を入力してください。";
             BuildUi();
-        });
+        }
+        catch (Exception ex) when (ex is ArgumentException or System.Text.Json.JsonException)
+        { idFeedback!.Label = ex.Message; }
     }
 
     private readonly string? layoutSmoke = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_LAYOUT");
@@ -103,6 +166,8 @@ internal sealed partial class DesignerGame
         }
         if (layoutSmoke == "delete" && frames is >= 14 and <= 15)
             mouse = SmokeMouse(sidebar!, 200, 730, frames == 14);
+        if (layoutSmoke == "rename" && frames is >= 14 and <= 15)
+            mouse = SmokeMouse(sidebar!, 100, 780, frames == 14);
         return true;
     }
 
@@ -112,6 +177,7 @@ internal sealed partial class DesignerGame
         if (layoutDialog is not null || styleTree!.Tree!.SelectedItem is not null)
             throw new InvalidOperationException($"Dialog open: {layoutDialog is not null}; selection: {styleTree!.Tree!.SelectedItem?.Id}; message: {message}");
         var settings = StationeryUI.Styling.StationeryStyleSettings.Parse(blueprint.BuildJson());
+        if (layoutSmoke == "rename" && blueprint.SelectedLayoutId != "renamedLayout") throw new InvalidOperationException("Rename Id button failed.");
         if (layoutSmoke == "delete")
         {
             if (settings.Layouts.Count != 1) throw new InvalidOperationException("Delete button failed.");

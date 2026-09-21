@@ -93,7 +93,7 @@ internal sealed partial class DesignerGame
         sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
         sidebar.AddTextBlock(sidebar.Root.AddChild("heading", "textBlock"), new(8, 8, 300, 76), "2 / 2 — スタイルツリー\nmodels / layouts / bindings");
         styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 92, 300, 600), "スタイルの構造", new());
-        sidebar.AddTextBlock(sidebar.Root.AddChild("treeHelp", "textBlock"), new(8, 782, 300, 110), "＋／－で開閉。水色の枠が操作対象です。\nlayouts 内の panel や表をクリックすると編集できます。");
+        sidebar.AddTextBlock(sidebar.Root.AddChild("treeHelp", "textBlock"), new(8, 814, 300, 78), "水色の枠が操作対象です。\nlayouts 内の panel や表をクリックすると編集できます。");
         BuildTreeActions();
         treeJson = null;
         try { RefreshTree(blueprint.BuildJson()); }

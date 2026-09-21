@@ -9,6 +9,7 @@ internal static class StyleBlueprintTests
     {
         ImportedStyles();
         LayoutEditing();
+        IdEditing();
         var plan = new StyleBlueprint();
         plan.Resize(3, 2);
         plan.Columns[0].Number = "1.5";
@@ -77,6 +78,44 @@ internal static class StyleBlueprintTests
         var readOnly = StyleBlueprint.Parse("{\"models\":[{\"id\":\"root\",\"type\":\"viewport\"}],\"layouts\":[],\"bindings\":[],\"window\":{\"width\":1000}}");
         Check(!readOnly.CanEditGrid && JsonNode.Parse(readOnly.BuildJson())!["window"]!["width"]!.GetValue<int>() == 1000, "non-grid document stays intact");
         Reject(() => StyleBlueprint.Parse("{"));
+    }
+
+    private static void IdEditing()
+    {
+        foreach (var id in new[] { "", "with space", "日本語", "bad-id", "a/b" })
+            Check(StyleBlueprint.CheckId(id, []).Error is not null, "invalid id characters");
+        foreach (var id in new[] { "UpperCase", "snake_case", "123name", "fooBAR" })
+        {
+            var result = StyleBlueprint.CheckId(id, []);
+            Check(result.Error is null && result.Warning is not null, "non-camel id is warning only");
+        }
+        Check(StyleBlueprint.CheckId("myPanel2", []).Warning is null, "camelCase accepted");
+        var plan = new StyleBlueprint();
+        plan.AddLayout("panel", "123_panel");
+        var before = plan.BuildJson();
+        try { plan.AddLayout("panel", "mainGrid"); throw new Exception("Duplicate accepted"); } catch (ArgumentException) { }
+        Check(plan.BuildJson() == before, "duplicate add is atomic");
+        plan.RenameId(["layouts", "0"], "newGrid");
+        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].Layout == "newGrid", "layout references updated");
+        plan.RenameId(["models", "0", "children", "0"], "renamedPage");
+        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].ModelPath == "/design/renamedPage", "model parent references updated");
+        plan.RenameId(["models", "0", "children", "0", "children", "0"], "newCell");
+        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].Children[0].ModelPath == "/design/renamedPage/newCell", "child references updated");
+        Check(plan.ValidateId("cellR1C2", ["models", "0", "children", "0", "children", "0"]).Error is not null, "sibling duplicate blocked");
+        Check(plan.ValidateId("newCell", ["models", "0", "children", "0", "children", "0"]).Error is null, "unchanged id accepted");
+        before = plan.BuildJson();
+        try { plan.RenameId(["models", "0", "children", "0", "children", "0"], "cellR1C2"); throw new Exception("Duplicate rename accepted"); } catch (ArgumentException) { }
+        Check(plan.BuildJson() == before, "duplicate rename is atomic");
+        Check(StyleBlueprint.CheckId("MyPanel", ["myPanel"]).Error is null, "case-sensitive sibling ids");
+        var fixture = StyleBlueprint.Open(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
+        fixture.RenameId(["models", "0", "children", "0", "children", "0"], "renamedName");
+        var root = JsonNode.Parse(fixture.BuildJson())!;
+        var pageChildren = root["models"]![0]!["children"]![0]!["children"]!.AsArray();
+        var dialog = pageChildren.Single(n => (string?)n!["id"] == "editDialog")!;
+        Check((string?)dialog["children"]![0]!["id"] == "nameField", "same id under other parent not renamed");
+        fixture.RenameId(["models", "0"], "newRoot");
+        var settings = StationeryStyleSettings.Parse(fixture.BuildJson());
+        Check(settings.Bindings.All(b => b.ModelPath.StartsWith("/newRoot/", StringComparison.Ordinal) || b.ModelPath == "/newRoot"), "all binding kinds survive root rename");
     }
 
     private static void LayoutEditing()
