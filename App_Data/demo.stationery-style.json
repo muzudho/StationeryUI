@@ -1,5 +1,7 @@
 {
     "viewport": {
+        "id": "demo",
+        "type": "viewport",
         "padding": {
             "top": "32px",
             "right": "8px",
@@ -7,6 +9,36 @@
             "left": "16px"
         },
         "contents": [
+            {
+                "id": "mainPage",
+                "type": "page",
+                "contents": [
+                    {
+                        "id": "nameField",
+                        "type": "textBox"
+                    },
+                    {
+                        "id": "memoField",
+                        "type": "textBox"
+                    },
+                    {
+                        "id": "themeButton",
+                        "type": "button"
+                    },
+                    {
+                        "id": "scaleButton",
+                        "type": "button"
+                    },
+                    {
+                        "id": "applyTitleButton",
+                        "type": "button"
+                    },
+                    {
+                        "id": "openDialogButton",
+                        "type": "button"
+                    }
+                ]
+            }
         ]
     }
 }
