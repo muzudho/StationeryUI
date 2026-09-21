@@ -69,7 +69,7 @@ internal sealed partial class DesignerGame
         layoutChoice = null;
         renamePath = path;
         idConfirmButtons.Clear();
-        layoutDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
+        layoutDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
         layoutDialog.AddTextBlock(layoutDialog.Root.AddChild("dialogHelp", "textBlock"), new(430, 210, 740, 370),
             path is null ? "子要素追加 — 文房具Ｉｄを入力し、種類を選んでください\n英字・数字・アンダースコア。推奨：camelCase" : "Ｉｄ変更 — 新しい文房具Ｉｄを入力してください\n既存の bindings の参照も更新します。");
         idField = layoutDialog.AddTextBox("stationeryId", new(460, 312, 680, 48), "文房具Ｉｄ", id, 256);
@@ -104,6 +104,7 @@ internal sealed partial class DesignerGame
             else if (frames == 9) SetText(idField!, "123_layout");
             mouse = SmokeMouse(layoutDialog, renamePath is not null || layoutSmoke == "panel" ? 470 : 780, 395, frames == (renamePath is null ? 9 : 17));
         }
+        inspectorMouse = mouse;
         UpdateIdFeedback();
         layoutDialog.Update(time, IsActive || !string.IsNullOrEmpty(smokeOutput), keyboard, mouse);
         UpdateIdFeedback();
@@ -168,12 +169,15 @@ internal sealed partial class DesignerGame
             mouse = SmokeMouse(sidebar!, 200, 730, frames == 14);
         if (layoutSmoke == "rename" && frames is >= 14 and <= 15)
             mouse = SmokeMouse(sidebar!, 100, 780, frames == 14);
+        if (frames >= 19) mouse = SmokeMouse(ui, 700, 820, false);
         return true;
     }
 
     private bool ValidateLayoutEditingSmoke()
     {
         if (layoutSmoke is null) return false;
+        if (!toolHint.Label.Contains("先にフォルダーを選択してください", StringComparison.Ordinal))
+            throw new InvalidOperationException("Disabled control tooltip is missing.");
         if (layoutDialog is not null || styleTree!.Tree!.SelectedItem is not null)
             throw new InvalidOperationException($"Dialog open: {layoutDialog is not null}; selection: {styleTree!.Tree!.SelectedItem?.Id}; message: {message}");
         var settings = StationeryUI.Styling.StationeryStyleSettings.Parse(blueprint.BuildJson());
@@ -195,26 +199,23 @@ internal sealed partial class DesignerGame
     private void BuildPanelEditor()
     {
         Text("panelTitle", new(12, 12, 1256, 50), $"2 / 2 — panel：{blueprint.SelectedLayoutId}");
-        Text("panelHelp", new(12, 76, 1256, 88), "margin＝外側の余白、padding＝内側の余白（単位 px）。\nborder はサイズ計算に含めず、パネルの外側に描く枠です。");
-        ui.AddButton("back", new(12, 180, 268, 44), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
+        ui.AddButton("back", new(12, 76, 268, 44), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
         var sides = new[] { "top", "right", "bottom", "left" };
         var sideLabels = new[] { "上", "右", "下", "左" };
-        for (var c = 0; c < sides.Length; c++) Text("side" + c, new(120 + c * 104, 230, 100, 40), sideLabels[c] + " (px)");
+        for (var c = 0; c < sides.Length; c++) Text("side" + c, new(120 + c * 104, 136, 100, 40), sideLabels[c] + " (px)");
         var groups = new[] { "margin", "padding", "border" };
         for (var r = 0; r < groups.Length; r++)
         {
-            Text("group" + r, new(12, 284 + r * 72, 104, 44), groups[r]);
+            Text("group" + r, new(12, 180 + r * 72, 104, 44), groups[r]);
             for (var c = 0; c < sides.Length; c++)
             {
                 var key = groups[r] + "." + sides[c];
-                var field = ui.AddTextBox("edge" + r + c, new(120 + c * 104, 284 + r * 72, 100, 44), key, blueprint.PanelEdges[key].Number, 24);
+                var field = ui.AddTextBox("edge" + r + c, new(120 + c * 104, 180 + r * 72, 100, 44), key, blueprint.PanelEdges[key].Number, 24);
                 panelFields.Add((field, key));
             }
         }
-        Text("panelScope", new(12, 530, 524, 160), "0 以上の数値を指定してください。変更はツリーと出力 JSON に反映されます。\nモデルへの割り当ては bindings で指定します。");
         BuildLivePreviewHeader();
         BuildOutputControls(762);
-        status = Text("status", new(12, 850, 1256, 48), message);
         BuildSidebar();
     }
 }

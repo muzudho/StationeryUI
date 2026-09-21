@@ -73,6 +73,7 @@ internal sealed partial class DesignerGame : Game
     {
         Window.Title = $"文房具 UI — スタイル設計ツール v{AppVersion}";
         input = new(Window.Handle);
+        BuildInspector();
         if (!string.IsNullOrEmpty(smokeOutput) && Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_DARK") == "1")
             theme = StationeryTheme.Dark with { FontSize = 16, Padding = 4 };
         BuildWelcome();
@@ -104,7 +105,7 @@ internal sealed partial class DesignerGame : Game
     private void BuildUi()
     {
         ui?.Dispose(); tracks.Clear(); panelFields.Clear(); ResetLivePreview();
-        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
+        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
         if (blueprint.CanEditPanel) { BuildPanelEditor(); return; }
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
         Text("title", new(12, 8, 1256, 42), blueprint.IsImported ? $"2 / 2 — 編集中：{blueprint.SelectedLayoutId}（既存モデルと bindings は保持）" : "2 / 2 — 新規スタイル設計（横・縦とも 1～8 セル）");
@@ -130,34 +131,32 @@ internal sealed partial class DesignerGame : Game
         }));
         ui.AddButton("theme", new(720, 54, 180, 44), "明るい／暗い", () =>
         { theme = theme.Background == StationeryTheme.Light.Background ? StationeryTheme.Dark with { FontSize = 16, Padding = 4 } : StationeryTheme.Light with { FontSize = 16, Padding = 4 }; ui.Theme = theme; });
-        Text("help", new(12, 104, 1256, 64), "列幅・行高を変更すると右のプレビューに即時反映します。\nプレビューのセルをクリックして、種類や表示名を設定できます。");
-        Text("columnTracksTitle", new(12, 178, 252, 36), "列の幅（数値 / 単位）");
-        Text("rowTracksTitle", new(280, 178, 256, 36), "行の高さ（数値 / 単位）");
+        Text("columnTracksTitle", new(12, 104, 252, 36), "列の幅（数値 / 単位）");
+        Text("rowTracksTitle", new(280, 104, 256, 36), "行の高さ（数値 / 単位）");
         for (var c = 0; c < blueprint.Columns.Count; c++)
         {
-            Text($"columnIndex{c}", new(12, 220 + c * 44, 36, 40), (c + 1).ToString());
-            AddTrack(blueprint.Columns[c], $"column{c}", new(52, 220 + c * 44, 212, 40), $"列 {c + 1} の幅");
+            Text($"columnIndex{c}", new(12, 146 + c * 44, 36, 40), (c + 1).ToString());
+            AddTrack(blueprint.Columns[c], $"column{c}", new(52, 146 + c * 44, 212, 40), $"列 {c + 1} の幅");
         }
         for (var r = 0; r < blueprint.Rows.Count; r++)
         {
-            Text($"rowIndex{r}", new(280, 220 + r * 44, 36, 40), (r + 1).ToString());
-            AddTrack(blueprint.Rows[r], $"row{r}", new(320, 220 + r * 44, 216, 40), $"行 {r + 1} の高さ");
+            Text($"rowIndex{r}", new(280, 146 + r * 44, 36, 40), (r + 1).ToString());
+            AddTrack(blueprint.Rows[r], $"row{r}", new(320, 146 + r * 44, 216, 40), $"行 {r + 1} の高さ");
         }
-        Text("selected", new(12, 586, 180, 44), "選択セルの文房具：");
-        kind = ui.AddButton("kind", new(196, 586, 340, 44), blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(selectedRow, selectedColumn).Kind), () =>
+        Text("selected", new(12, 512, 180, 44), "選択セルの文房具：");
+        kind = ui.AddButton("kind", new(196, 512, 340, 44), blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(selectedRow, selectedColumn).Kind), () =>
         {
             if (blueprint.IsImported) return;
             var cell = blueprint.At(selectedRow, selectedColumn);
             var index = StyleBlueprint.Kinds.ToList().IndexOf(cell.Kind);
             cell.Kind = StyleBlueprint.Kinds[(index + 1) % StyleBlueprint.Kinds.Count]; kind.Label = KindLabel(cell.Kind);
         });
-        Text("labelTitle", new(12, 646, 100, 36), blueprint.IsImported ? "モデル：" : "表示名：");
-        label = ui.AddTextBox("label", new(12, 690, 524, 44), "選択セルの表示名", blueprint.IsImported ? ImportedCellDescription(selectedRow, selectedColumn) : blueprint.At(selectedRow, selectedColumn).Label);
+        Text("labelTitle", new(12, 572, 100, 36), blueprint.IsImported ? "モデル：" : "表示名：");
+        label = ui.AddTextBox("label", new(12, 616, 524, 44), "選択セルの表示名", blueprint.IsImported ? ImportedCellDescription(selectedRow, selectedColumn) : blueprint.At(selectedRow, selectedColumn).Label);
         ui.Focus.SetEnabled(label.Path, !blueprint.IsImported);
         ui.Focus.SetEnabled(kind.Path, !blueprint.IsImported);
         BuildLivePreviewHeader();
         BuildOutputControls(762);
-        status = Text("status", new(12, 850, 1256, 48), message);
         BuildSidebar();
     }
     private static string KindLabel(string kind) => kind switch
@@ -172,13 +171,15 @@ internal sealed partial class DesignerGame : Game
     }
     protected override void Update(GameTime gameTime)
     {
-        var scale = Math.Max(.1, Math.Min(GraphicsDevice.Viewport.Width / 1600.0, GraphicsDevice.Viewport.Height / 900.0));
+        var scale = BodyScale;
         if (layoutDialog is not null) { UpdateLayoutDialog(gameTime, scale); base.Update(gameTime); return; }
         ui.Viewport.Scale = scale;
         ui.Viewport.Offset = new(editingPage ? 320 * scale : 0, 0);
         if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Theme = theme; }
         var mouse = Mouse.GetState(); var keyboard = Keyboard.GetState();
         PrepareDesignerSmoke(ref mouse, ref keyboard);
+        inspectorMouse = mouse;
+        inspector.Update(gameTime, IsActive || !string.IsNullOrEmpty(smokeOutput), new(), mouse);
         if (editingPage && mouse.LeftButton == ButtonState.Pressed) sidebarActive = mouse.X < 320 * scale;
         var active = IsActive || !string.IsNullOrEmpty(smokeOutput);
         if (editingPage && sidebar is not null)
@@ -217,6 +218,7 @@ internal sealed partial class DesignerGame : Game
         GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background)); ui.Draw();
         if (editingPage) { sidebar?.Draw(); DrawLivePreview(); }
         layoutDialog?.Draw();
+        DrawInspector();
         CaptureWelcomeSmoke();
         if (!string.IsNullOrEmpty(smokeOutput) && ++frames == 22)
         {
@@ -232,5 +234,5 @@ internal sealed partial class DesignerGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }

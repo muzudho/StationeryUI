@@ -24,9 +24,8 @@ internal sealed partial class DesignerGame
     {
         editingPage = false; sidebarActive = false;
         ui?.Dispose(); sidebar?.Dispose(); sidebar = null;
-        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
+        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
         Text("welcomeTitle", new(180, 100, 1240, 64), "1 / 2 — スタイル設計を始める");
-        Text("welcomeHelp", new(180, 184, 1240, 96), "新しい設計を作るか、既存のスタイル設定ファイルを読み込むかを選んでください。\n編集結果は別の JSON ファイルへエクスポートします。元のファイルは変更しません。");
         ui.AddButton("new", new(180, 310, 520, 64), hasDraft ? "新規作成（現在のプランを置換）" : "新規作成", () =>
         {
             pendingPage = () =>
@@ -41,7 +40,6 @@ internal sealed partial class DesignerGame
                 BeginEditing("新しいプランを作成しました。");
             };
         });
-        Text("sourceLabel", new(180, 414, 1240, 82), "下のボタンから Windows のファイル選択ダイアログを開きます。\n既存の *.stationery-style.json を選んでください。");
         ui.AddButton("open", new(180, 548, 520, 64), "既存のファイルを編集する", () => Guard(() =>
         {
             var path = ChooseStyleFile();
@@ -57,7 +55,6 @@ internal sealed partial class DesignerGame
             };
         }));
         if (hasDraft) ui.AddButton("resume", new(740, 310, 520, 64), "現在の編集を再開", () => pendingPage = () => BeginEditing("編集を再開しました。"));
-        status = Text("welcomeStatus", new(180, 670, 1240, 130), message);
     }
 
     private void BeginEditing(string text)
@@ -66,7 +63,7 @@ internal sealed partial class DesignerGame
         message = text; treeJson = null; lastTreeSelection = null;
         if (!string.IsNullOrEmpty(smokeOutput)) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-style.json");
         BuildUi();
-        var scale = Math.Max(.1, Math.Min(GraphicsDevice.Viewport.Width / 1600.0, GraphicsDevice.Viewport.Height / 900.0));
+        var scale = BodyScale;
         ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, 0);
         if (sidebar is not null) sidebar.Viewport.Scale = scale;
     }
@@ -74,11 +71,9 @@ internal sealed partial class DesignerGame
     private void BuildReadOnly()
     {
         Text("readOnlyTitle", new(12, 12, 1256, 64), "2 / 2 — スタイルの確認");
-        Text("readOnlyHelp", new(12, 100, 524, 150), "このファイルには、表で編集できる 8×8 以下のフローティングレイアウトがありません。\n左側のツリーでスタイル全体を確認できます。内容を保ったまま別名で出力できます。");
         ui.AddButton("back", new(12, 280, 300, 52), "1 ページ目へ戻る", () => pendingPage = BuildWelcome);
         BuildLivePreviewHeader();
         BuildOutputControls(762);
-        status = Text("status", new(12, 850, 1256, 48), message);
         BuildSidebar();
     }
 
@@ -91,10 +86,9 @@ internal sealed partial class DesignerGame
             return;
         }
         sidebar?.Dispose();
-        sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
+        sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
         sidebar.AddTextBlock(sidebar.Root.AddChild("heading", "textBlock"), new(8, 8, 300, 76), "2 / 2 — スタイルツリー\nmodels / layouts / bindings");
         styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 92, 300, 600), "スタイルの構造", new());
-        sidebar.AddTextBlock(sidebar.Root.AddChild("treeHelp", "textBlock"), new(8, 814, 300, 78), "水色の枠が操作対象です。\nlayouts 内の panel や表をクリックすると編集できます。");
         BuildTreeActions();
         treeJson = null;
         try { RefreshTree(blueprint.BuildJson()); }
@@ -237,6 +231,8 @@ internal sealed partial class DesignerGame
     }
     private void ValidateDesignerSmoke()
     {
+        if (toolHint.Bounds.Height + status.Bounds.Height != 80 || status.Bounds.Y + status.Bounds.Height != GraphicsDevice.Viewport.Height)
+            throw new InvalidOperationException("Inspector must reserve exactly 80 viewport pixels.");
         if (ValidateLayoutEditingSmoke()) return;
         if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG") == "1" && !testedNativeDialog)
             throw new InvalidOperationException("Native file dialog was not observed.");

@@ -39,6 +39,8 @@ public sealed partial class StationeryUiHost : IDisposable
     public StationeryNode Root { get; private set; }
 
     public string? HoveredToolHint { get; private set; }
+    /// <summary>Optional application hints; an element's explicit ToolHint takes precedence.</summary>
+    public Func<Element, string?>? ToolHintProvider { get; set; }
     public sealed class Element
     {
         public string? ToolHint { get; set; }
@@ -198,7 +200,7 @@ public sealed partial class StationeryUiHost : IDisposable
         var control = keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl);
         var pointer = Viewport.ToLogical(new(mouse.X, mouse.Y));
         var hit = elements.LastOrDefault(e => Contains(e.Bounds, pointer));
-        HoveredToolHint = hit?.ToolHint;
+        HoveredToolHint = hit is null ? null : hit.ToolHint ?? ToolHintProvider?.Invoke(hit);
         PointerConsumed = hit is not null || Focus.CapturedId is not null || Focus.HasModal;
         var pressedMouse = mouse.LeftButton == ButtonState.Pressed && previousMouse.LeftButton == ButtonState.Released;
         if (pressedMouse && hit is not null)

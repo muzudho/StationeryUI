@@ -155,6 +155,8 @@ ui.Viewport.Scale = 1.5;
 
 ## 関連資料
 
+- [インスペクターパネルとツールヒント欄](inspector-panel-guide.md)：画面下の80pxに操作説明を集約する設計ガイド。
+
 - [下線付きテキストの見分け方](underline-guide.md)
 - [リストUI設計の目安](list-ui-guidelines.md)
 - [配布パッケージのチェックサム](package-checksums.txt)

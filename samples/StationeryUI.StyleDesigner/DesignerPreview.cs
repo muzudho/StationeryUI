@@ -15,7 +15,7 @@ internal sealed partial class DesignerGame
     private string? previewKey;
     private bool previewMouseDown;
     private ScreenRectangle previewWindow;
-    private readonly ScreenRectangle previewArea = new(560, 218, 708, 526);
+    private readonly ScreenRectangle previewArea = new(560, 144, 708, 600);
 
     private void ResetLivePreview()
     {
@@ -24,7 +24,7 @@ internal sealed partial class DesignerGame
 
     private void BuildLivePreviewHeader()
     {
-        livePreviewTitle = Text("livePreviewTitle", new(560, 178, 708, 36), "編集プレビュー");
+        livePreviewTitle = Text("livePreviewTitle", new(560, 104, 708, 36), "編集プレビュー");
     }
 
     private void UpdateLivePreview(string json, MouseState mouse)

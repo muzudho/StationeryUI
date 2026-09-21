@@ -49,6 +49,5 @@ internal sealed partial class DesignerGame
             message = "新しい JSON を作成しました：" + path;
         }));
         ui.Focus.SetEnabled(create.Path, selectedOutputFolder is not null);
-        Text("folderHint", new(864, y + 44, 404, 38), selectedOutputFolder is null ? "先にフォルダーを選択してください" : "新規作成は同名ファイルを上書きしません");
     }
 }

@@ -1,0 +1,72 @@
+using Microsoft.Xna.Framework.Input;
+using StationeryUI.MonoGame;
+using StationeryUI.Windows;
+
+internal sealed partial class DesignerGame
+{
+    private StationeryUiHost inspector = null!;
+    private StationeryUiHost.Element toolHint = null!;
+    private MouseState inspectorMouse;
+    private const int InspectorHeight = 80;
+    private double BodyScale => Math.Max(.1, Math.Min(GraphicsDevice.Viewport.Width / 1600.0,
+        Math.Max(1, GraphicsDevice.Viewport.Height - InspectorHeight) / 850.0));
+
+    private void BuildInspector()
+    {
+        inspector = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family));
+        toolHint = inspector.AddTextBlock(inspector.Root.AddChild("toolHint", "textBlock"), new(), "");
+        status = inspector.AddTextBlock(inspector.Root.AddChild("status", "textBlock"), new(), message);
+    }
+
+    private string? DesignerToolHint(StationeryUiHost.Element element) => element.Id switch
+    {
+        "new" => "新しい設計を始めます。現在のプランは置き換わるため、必要な内容は先にエクスポートしてください。",
+        "resume" => "メモリー上に残っているプランの編集を再開します。",
+        "open" or "chooseFile" => "Windows のファイル選択から既存の JSON を開きます。編集結果は別名で出力します。",
+        "back" => "1ページ目へ戻ります。現在のプランは「現在の編集を再開」で続けられます。",
+        "columns" => "横のセル数（1～8）を入力し、「表を作る／更新」で反映します。",
+        "rows" => "縦のセル数（1～8）を入力し、「表を作る／更新」で反映します。",
+        "resize" => "行列数を反映します。表を縮めてセルが消える場合は、もう一度押すと確定します。",
+        "theme" => "明るいテーマと暗いテーマを切り替えます。",
+        "kind" => blueprint.IsImported ? "既存モデルの種類は保持します。" : "プレビューで選んだセルの文房具の種類を切り替えます。",
+        "label" => blueprint.IsImported ? "このセルに配置されたモデルを表示しています。" : "選択したセルの表示名を入力します。右のプレビューへ反映されます。",
+        "output" => "新しい JSON の出力先。末尾は .stationery-style.json にします。既存ファイルは上書きしません。",
+        "export" => "現在の設計を出力先の JSON にエクスポートします。AI へ実装を依頼する設計図として使えます。",
+        "chooseFolder" => "新規作成先のフォルダーを Windows のダイアログで選びます。",
+        "createFile" => selectedOutputFolder is null ? "先にフォルダーを選択してください。" : "選択フォルダーへ現在の設計を作成します。同名があれば連番にして上書きを避けます。",
+        "styleTree" => "＋／－で開閉。水色の枠が操作対象です。layouts 内の panel や表をクリックすると設定を編集できます。",
+        "addChild" => "トップ階層の layouts を操作対象にすると有効になります。Id を指定して panel または floating-layout を追加します。",
+        "deleteNode" => "操作対象の子要素を削除します。トップ階層は削除できません。参照や必須設定を壊す削除も拒否します。",
+        "renameId" => "モデルかレイアウトの Id を変更し、bindings の参照も更新します。同じ親での重複は禁止です。",
+        "stationeryId" => "英字・数字・アンダースコアのみ。camelCase を推奨します。数字始まりなどの警告があっても確定できます。",
+        "panel" => "指定した Id の panel を追加し、margin・padding・border の設定画面を開きます。",
+        "floating" => "指定した Id の floating-layout を追加し、列幅・行高を設定します。",
+        "confirmId" => "入力した Id に変更します。既存の bindings の参照も追従します。",
+        "cancel" => "変更を確定せず、ダイアログを閉じます。Esc キーでも閉じられます。",
+        _ when element.Id.StartsWith("edge", StringComparison.Ordinal) => element.AccessibleName + "：0以上の px 値。margin は外側、padding は内側の余白。border は全体のサイズ計算に含めません。",
+        _ when element.Id.EndsWith("Unit", StringComparison.Ordinal) => "px は固定サイズ、rate は残りの領域を分け合う比です。クリックで単位を切り替えます。",
+        _ when element.Editor is not null => element.AccessibleName + "。0以上の数値を入力してください。配置プレビューに即時反映します。",
+        _ => null
+    };
+
+    private void DrawInspector()
+    {
+        var height = Math.Min(InspectorHeight, GraphicsDevice.Viewport.Height);
+        var y = GraphicsDevice.Viewport.Height - height;
+        inspector.Theme = theme with { FontSize = 14, Padding = 2 };
+        toolHint.Bounds = new(0, y, GraphicsDevice.Viewport.Width, Math.Min(56, height));
+        status.Bounds = new(0, y + Math.Min(56, height), GraphicsDevice.Viewport.Width, Math.Max(0, height - 56));
+        status.Theme = theme with { FontSize = 12, Padding = 1 };
+        string? hint = null;
+        if (inspectorMouse.Y < y)
+        {
+            if (layoutDialog is not null) hint = layoutDialog.HoveredToolHint;
+            else if (editingPage && livePreview is not null && inspectorMouse.X >= previewWindow.X && inspectorMouse.X < previewWindow.X + previewWindow.Width
+                && inspectorMouse.Y >= previewWindow.Y && inspectorMouse.Y < previewWindow.Y + previewWindow.Height)
+                hint = "配置プレビュー：セルをクリックして編集対象を選びます。プレビュー領域をビューポートとして px と rate を計算します。";
+            else hint = ui.HoveredToolHint ?? (editingPage ? sidebar?.HoveredToolHint : null);
+        }
+        toolHint.Label = hint is null ? "ツールヒント：コントロールにマウスを合わせると説明を表示します。" : "ツールヒント：" + hint;
+        inspector.Draw();
+    }
+}
