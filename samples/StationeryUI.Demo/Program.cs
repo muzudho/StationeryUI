@@ -270,6 +270,7 @@ internal sealed partial class Demo : Game
                 if (popupOpen || activePage != "topDemoPage") ui.Update(gameTime, false, keyboard, mouse);
             }
         }
+        UpdateToolHints();
         base.Update(gameTime);
     }
     protected override void Draw(GameTime gameTime)

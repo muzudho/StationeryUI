@@ -246,3 +246,44 @@ StationeryStyleFile の validate コールバックに検証を渡すと、不�
 
 Configuration は監視方針、ConfigurationFilePath と FilePath はそれぞれの読み込み先。
 layouts の配列順とモデルは独立しているため、Layouts[0] から対象モデルの設定を決めない。
+
+## ページの表示領域とインスペクターパネル
+
+フルスクリーンはアプリのウィンドウ内いっぱいに表示する意味で、OS の全画面モードには切り替えない。
+
+| 種類 | 表示 |
+|---|---|
+| `fullscreen-layout` | 本文がページ全体を使い、インスペクターは高さ 0 で非表示 |
+| `work-page-layout` | 本文の下にインスペクターを確保。既定の高さは 80px |
+
+デモはトップデモページを作業ページ、スプリットペーンデモページをフルスクリーンにしている。原本は `App_Data/demo.stationery-style.json`。
+
+関連部分の抜粋：
+
+```json
+{
+    "layouts": [
+        { "id": "fullscreenLayout", "type": "fullscreen-layout" },
+        { "id": "workPageLayout", "type": "work-page-layout", "inspectorHeight": "80px" }
+    ],
+    "bindings": [
+        {
+            "layout": "workPageLayout",
+            "model": "demo/topDemoPage",
+            "inspectorModel": "inspectorPanel"
+        }
+    ]
+}
+```
+
+既存の binding の `layout` を `fullscreenLayout` に変えるだけで切り替えられる。`models`、本文のセル配置、`inspectorModel` は同じまま使う。同じページへ両方を同時に bind しない。
+読み込み用設定の `autoReload` が有効なら保存後に反映され、文房具 Id や入力値、ツリーの開閉状態を保持する。
+
+`inspectorModel` はページ直下の `container` を指定する。デモは `inspectorPanel` 内に読み取り専用の `toolHint` を置き、floating-layout の binding でパネル全体へ広げている。
+ボタンやリンクにマウスを合わせると説明が表示され、離すと案内文に戻る。この下部パネルは F12 の別ウィンドウとは独立している。
+
+高さの px は UI 拡大率に影響されない。ページが 80px より低い場合は収まる高さに縮める。
+インスペクターはページの外枠いっぱいの横幅を使い、ページ本文の padding の影響を受けない。祖先の padding でページ全体が狭められている場合は、その幅に収まる。
+デモではルートの padding を 0px にし、本文の 8px の余白を各ページの `pagePadding` に移した。これでパネルは画面の左右端まで広がる。
+
+既存のデモ用 JSON を移行するときは、両ページへ inspectorPanel と toolHint を追加し、それぞれのページレイアウトとヒントのセルを bind する。原本と C# のフォールバックは同じ構造を保つ。

@@ -9,6 +9,7 @@ internal sealed partial class Demo
     private string activePage = "topDemoPage";
     private DesktopUi? splitUi;
     private DesktopUi.Element forwardLink = null!, backLink = null!, verticalSplit = null!, horizontalSplit = null!;
+    private DesktopUi.Element topToolHint = null!, splitToolHint = null!;
     private readonly List<DesktopUi.Element> splitElements = [];
 
     private void Navigate(string page)
@@ -32,7 +33,33 @@ internal sealed partial class Demo
         splitUi.BindSplitContent(verticalSplit, left, right);
         splitUi.BindSplitContent(horizontalSplit, top, bottom);
         splitElements.AddRange(new[] { backLink, verticalSplit, horizontalSplit, left, right, top, bottom });
+        topToolHint = ui.AddTextBlock(modelBinding.Main["toolHint"], new(), "");
+        splitToolHint = splitUi.AddTextBlock(modelBinding.SplitControls["toolHint"], new(), "");
+        styledElements.Add(topToolHint);
+        splitElements.Add(splitToolHint);
+        foreach (var element in styledElements.Concat(splitElements))
+            element.ToolHint = element.Node.Kind switch
+            {
+                "button" => element.Id switch
+                {
+                    "themeButton" => "明るいテーマと暗いテーマを切り替えます。",
+                    "scaleButton" => "文字と UI の拡大率を切り替えます。",
+                    "applyTitleButton" => "名前欄の内容をウィンドウのタイトルに反映します。",
+                    "openDialogButton" => "編集用のダイアログを開きます。",
+                    _ => element.Label
+                },
+                "link" => element == forwardLink ? "スプリットペーンデモページへ移動します。" : "トップデモページへ戻ります。",
+                "textBox" => "クリックしてテキストを編集できます。",
+                "splitPane" => "仕切りをドラッグしてペーンの大きさを変更できます。",
+                "tree" => "＋／－で子ノードを開閉できます。",
+                _ => null
+            };
         Navigate("topDemoPage");
+    }
+    private void UpdateToolHints()
+    {
+        topToolHint.Label = popupOpen ? "" : ui!.HoveredToolHint ?? "ツールヒント：ボタンなどにマウスを合わせると説明を表示します。";
+        splitToolHint.Label = splitUi!.HoveredToolHint ?? "ツールヒント：ボタンなどにマウスを合わせると説明を表示します。";
     }
     private void ApplySplitStyles(StationeryLayoutResult arranged)
     {
@@ -49,10 +76,19 @@ internal sealed partial class Demo
             }
         }
     }
-    private static bool IsPageSmoke(string? scenario) => scenario is "page-open" or "page-back" or "page-keyboard" or "split-vertical" or "split-horizontal" or "split-keyboard";
+    private static bool IsPageSmoke(string? scenario) => scenario is "page-hint" or "page-hint-clear" or "page-open" or "page-back" or "page-keyboard" or "split-vertical" or "split-horizontal" or "split-keyboard";
     private void PreparePageSmoke(string? scenario, bool smoke, ref KeyboardState keyboard, ref MouseState mouse)
     {
         if (!smoke || !IsPageSmoke(scenario)) return;
+        if (scenario is "page-hint" or "page-hint-clear")
+        {
+            var target = styledElements.Single(e => e.Id == "themeButton");
+            var box = ui!.Viewport.ToWindow(scenario == "page-hint-clear" && updateFrames >= 4 ? topToolHint.Bounds : target.Bounds);
+            mouse = new((int)(box.X + 24), (int)(box.Y + 24), 0, ButtonState.Released,
+                ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+            keyboard = new();
+            return;
+        }
         if (scenario == "page-back" && updateFrames == 1)
         {
             name!.Editor!.SelectAll(); name.Editor.Insert("ページを戻っても保持");
@@ -103,6 +139,18 @@ internal sealed partial class Demo
     private void ValidatePageSmoke(string? scenario)
     {
         if (!IsPageSmoke(scenario)) return;
+        if (scenario is "page-hint" or "page-hint-clear")
+        {
+            var box = ui!.Viewport.ToWindow(topToolHint.Bounds);
+            if (box.X != 0 || box.Width != GraphicsDevice.Viewport.Width || box.Height != 80 || box.Y + box.Height != GraphicsDevice.Viewport.Height)
+                throw new InvalidOperationException("Inspector must fill the bottom 80 window pixels at any UI scale.");
+            if (scenario == "page-hint" && topToolHint.Label != "明るいテーマと暗いテーマを切り替えます。" ||
+                scenario == "page-hint-clear" && !topToolHint.Label.StartsWith("ツールヒント："))
+                throw new InvalidOperationException("Tool hint hover/leave failed.");
+            return;
+        }
+        if (activePage == "splitPaneDemoPage" && splitToolHint.Bounds.Height != 0)
+            throw new InvalidOperationException("Fullscreen inspector must be hidden.");
         if (activePage != (scenario is "page-back" or "page-keyboard" ? "topDemoPage" : "splitPaneDemoPage")) throw new InvalidOperationException("Page navigation failed.");
         if (scenario == "split-keyboard" && verticalSplit.Split!.Ratio <= .5) throw new InvalidOperationException("Split keyboard adjustment failed.");
         if (scenario == "split-vertical" && verticalSplit.Split!.Ratio < .65 || scenario == "split-horizontal" && horizontalSplit.Split!.Ratio < .65)

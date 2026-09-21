@@ -20,6 +20,7 @@ public static class StationeryLayoutEngine
             .ToDictionary(binding => binding.ModelPath, binding => layouts[binding.Layout], StringComparer.Ordinal);
         var grids = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "floating-layout")
             .ToDictionary(binding => binding.ModelPath, StringComparer.Ordinal);
+        var pages = settings.Bindings.Where(b => b.InspectorModel is not null).ToDictionary(b => b.ModelPath);
         var positions = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var splits = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "split-pane").ToDictionary(binding => binding.ModelPath);
         var bounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
@@ -30,9 +31,15 @@ public static class StationeryLayoutEngine
             var outer = positions.GetValueOrDefault(node.Path, inherited);
             bounds.Add(node.Path, outer);
             var content = outer;
+            if (pages.TryGetValue(node.Path, out var page))
+            {
+                var inspectorHeight = Math.Min(outer.Height, layouts[page.Layout].InspectorHeight);
+                content = outer with { Height = outer.Height - inspectorHeight };
+                positions.Add(page.InspectorModel!, new(outer.X, outer.Y + content.Height, outer.Width, inspectorHeight));
+            }
             if (panels.TryGetValue(node.Path, out var panel))
             {
-                var inset = panel.Padding.GetContentBounds(outer.Width, outer.Height);
+                var inset = panel.Padding.GetContentBounds(content.Width, content.Height);
                 content = inset with { X = outer.X + inset.X, Y = outer.Y + inset.Y };
             }
             contents.Add(node.Path, content);

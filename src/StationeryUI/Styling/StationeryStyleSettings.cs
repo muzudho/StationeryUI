@@ -35,11 +35,11 @@ public readonly record struct LayoutTrack(double Value, bool IsRate);
 
 /// <summary>A reusable layout definition. It has no reference to model identities.</summary>
 public sealed record StationeryLayoutNode(string Id, string Type, ViewportPadding Padding,
-    IReadOnlyList<LayoutTrack> Rows, IReadOnlyList<LayoutTrack> Columns, SplitPaneOptions? Split = null);
+    IReadOnlyList<LayoutTrack> Rows, IReadOnlyList<LayoutTrack> Columns, SplitPaneOptions? Split = null, double InspectorHeight = 0);
 public sealed record StationeryCellBinding(string ModelPath, int Row, int Column);
 /// <summary>References are resolved to canonical model paths when a complete settings snapshot is parsed.</summary>
 public sealed record StationeryLayoutBinding(string Layout, string ModelPath, IReadOnlyList<StationeryCellBinding> Children,
-    string? FirstModel = null, string? SecondModel = null);
+    string? FirstModel = null, string? SecondModel = null, string? InspectorModel = null);
 
 public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> Models,
     IReadOnlyList<StationeryLayoutNode> Layouts, IReadOnlyList<StationeryLayoutBinding> Bindings)
@@ -83,14 +83,23 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             ValidateId(id, path);
             if (!layoutIds.Add(id)) throw new JsonException($"Duplicate layout Id '{id}'.");
             var type = ReadString(item, "type", path);
-            if (type is not ("panel" or "floating-layout" or "split-pane")) throw new JsonException($"{path}.type must be panel, floating-layout or split-pane.");
+            if (type is not ("panel" or "floating-layout" or "split-pane" or "fullscreen-layout" or "work-page-layout")) throw new JsonException($"{path}.type must be panel, floating-layout, split-pane, fullscreen-layout or work-page-layout.");
             if (item.TryGetProperty("children", out _) || item.TryGetProperty("contents", out _) ||
                 item.TryGetProperty("model", out _) || item.TryGetProperty("parentModel", out _))
                 throw new JsonException($"{path}: model references and placement belong in bindings.");
             var padding = default(ViewportPadding);
             SplitPaneOptions? split = null;
+            double inspectorHeight = 0;
             IReadOnlyList<LayoutTrack> rows = Array.Empty<LayoutTrack>(), columns = Array.Empty<LayoutTrack>();
-            if (type == "panel")
+            if (type is "fullscreen-layout" or "work-page-layout")
+            {
+                if (type == "work-page-layout")
+                    inspectorHeight = item.TryGetProperty("inspectorHeight", out var h) ? ReadLength(h, path + ".inspectorHeight", false).Value : 80;
+                else if (item.TryGetProperty("inspectorHeight", out _)) throw new JsonException("fullscreen-layout has no inspectorHeight.");
+                if (item.TryGetProperty("padding", out _) || item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
+                    throw new JsonException("Page layouts use a separate panel or floating-layout for content.");
+            }
+            else if (type == "panel")
             {
                 if (item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
                     throw new JsonException($"{path}: track definitions require floating-layout.");
@@ -122,12 +131,13 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 rows = ReadTracks(item, "row-definitions", path);
                 columns = ReadTracks(item, "column-definitions", path);
             }
-            layouts.Add(new(id, type, padding, rows, columns, split));
+            layouts.Add(new(id, type, padding, rows, columns, split, inspectorHeight));
         }
         var bindings = new List<StationeryLayoutBinding>();
         var panels = new HashSet<string>(StringComparer.Ordinal);
         var grids = new HashSet<string>(StringComparer.Ordinal);
         var placedModels = new HashSet<string>(StringComparer.Ordinal);
+        var pages = new HashSet<string>(StringComparer.Ordinal);
         var splits = new HashSet<string>(StringComparer.Ordinal);
         foreach (var item in ReadArray(root, "bindings", "root").EnumerateArray())
         {
@@ -136,6 +146,18 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             var layoutId = ReadString(item, "layout", path);
             var layout = layouts.FirstOrDefault(layout => layout.Id == layoutId)
                 ?? throw new JsonException($"{path}: unknown layout '{layoutId}'.");
+            if (layout.Type is "fullscreen-layout" or "work-page-layout")
+            {
+                var node = ResolveModel(modelTree, ReadString(item, "model", path), null);
+                var inspector = ResolveModel(modelTree, ReadString(item, "inspectorModel", path), node);
+                if (node.Kind != "page" || inspector.Parent != node || inspector.Kind != "container" ||
+                    !pages.Add(node.Path) || !placedModels.Add(inspector.Path))
+                    throw new JsonException("A page requires one page layout and a direct inspector container placed only once.");
+                if (item.TryGetProperty("parentModel", out _) || item.TryGetProperty("childrenModel", out _))
+                    throw new JsonException("Page layouts use model and inspectorModel.");
+                bindings.Add(new(layoutId, node.Path, Array.Empty<StationeryCellBinding>(), InspectorModel: inspector.Path));
+                continue;
+            }
             if (layout.Type == "split-pane")
             {
                 var node = ResolveModel(modelTree, ReadString(item, "model", path), null);

@@ -36,8 +36,10 @@ public sealed partial class DesktopUi : IDisposable
     public bool PointerConsumed { get; private set; }
     public StationeryNode Root { get; private set; }
 
+    public string? HoveredToolHint { get; private set; }
     public sealed class Element
     {
+        public string? ToolHint { get; set; }
         internal Element(StationeryNode node, ScreenRectangle bounds, string label) { Node = node; Bounds = bounds; Label = label; }
         public StationeryNode Node { get; internal set; }
         public string Id => Node.Id;
@@ -162,6 +164,7 @@ public sealed partial class DesktopUi : IDisposable
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         KeyboardConsumed = PointerConsumed = false;
+        HoveredToolHint = null;
         ArrangeSplitPanes();
         foreach (var element in elements)
             Focus.SetVisible(element.Path, element.Bounds.Width > 0 && element.Bounds.Height > 0);
@@ -193,6 +196,7 @@ public sealed partial class DesktopUi : IDisposable
         var control = keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl);
         var pointer = Viewport.ToLogical(new(mouse.X, mouse.Y));
         var hit = elements.LastOrDefault(e => Contains(e.Bounds, pointer));
+        HoveredToolHint = hit?.ToolHint;
         PointerConsumed = hit is not null || Focus.CapturedId is not null || Focus.HasModal;
         var pressedMouse = mouse.LeftButton == ButtonState.Pressed && previousMouse.LeftButton == ButtonState.Released;
         if (pressedMouse && hit is not null)

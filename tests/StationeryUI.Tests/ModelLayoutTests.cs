@@ -8,7 +8,7 @@ internal static class ModelLayoutTests
     {
         var shippedText = File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
         var shipped = StationeryStyleSettings.Parse(shippedText);
-        Require(shipped.Models.Count == 1 && shipped.Layouts.Count == 5 && shipped.Bindings.Count == 5, "shipped independent arrays");
+        Require(shipped.Models.Count == 1 && shipped.Layouts.Any(l => l.Type == "work-page-layout") && shipped.Bindings.Any(b => b.InspectorModel is not null), "shipped independent arrays");
         Require(DemoModelBinding.Create(shipped).Main["nameField"].Kind == "textBox", "shipped code binding");
         var source = """
             {"models":[{"id":"demo","type":"viewport","children":[

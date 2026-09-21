@@ -67,6 +67,16 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             {
               "id": "splitPaneDemoLink",
               "type": "link"
+            },
+            {
+              "id": "inspectorPanel",
+              "type": "container",
+              "children": [
+                {
+                  "id": "toolHint",
+                  "type": "textBlock"
+                }
+              ]
             }
           ]
         },
@@ -105,6 +115,16 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   "type": "textBox"
                 }
               ]
+            },
+            {
+              "id": "inspectorPanel",
+              "type": "container",
+              "children": [
+                {
+                  "id": "toolHint",
+                  "type": "textBlock"
+                }
+              ]
             }
           ]
         }
@@ -116,10 +136,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "id": "demoViewport",
       "type": "panel",
       "padding": {
-        "top": "8px",
-        "right": "8px",
-        "bottom": "8px",
-        "left": "8px"
+        "top": "0px",
+        "right": "0px",
+        "bottom": "0px",
+        "left": "0px"
       }
     },
     {
@@ -164,6 +184,35 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "ratio": 0.5,
       "dividerWidth": "10px",
       "minimumPaneSize": "60px"
+    },
+    {
+      "id": "fullscreenLayout",
+      "type": "fullscreen-layout"
+    },
+    {
+      "id": "workPageLayout",
+      "type": "work-page-layout",
+      "inspectorHeight": "80px"
+    },
+    {
+      "id": "pagePadding",
+      "type": "panel",
+      "padding": {
+        "top": "8px",
+        "right": "8px",
+        "bottom": "8px",
+        "left": "8px"
+      }
+    },
+    {
+      "id": "inspectorContents",
+      "type": "floating-layout",
+      "row-definitions": [
+        "1rate"
+      ],
+      "column-definitions": [
+        "1rate"
+      ]
     }
   ],
   "bindings": [
@@ -249,6 +298,46 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "model": "demo/splitPaneDemoPage/horizontalSplit",
       "firstModel": "topPane",
       "secondModel": "bottomPane"
+    },
+    {
+      "layout": "workPageLayout",
+      "model": "demo/topDemoPage",
+      "inspectorModel": "inspectorPanel"
+    },
+    {
+      "layout": "pagePadding",
+      "model": "demo/topDemoPage"
+    },
+    {
+      "layout": "inspectorContents",
+      "parentModel": "demo/topDemoPage/inspectorPanel",
+      "childrenModel": [
+        {
+          "model": "toolHint",
+          "row": 0,
+          "column": 0
+        }
+      ]
+    },
+    {
+      "layout": "fullscreenLayout",
+      "model": "demo/splitPaneDemoPage",
+      "inspectorModel": "inspectorPanel"
+    },
+    {
+      "layout": "pagePadding",
+      "model": "demo/splitPaneDemoPage"
+    },
+    {
+      "layout": "inspectorContents",
+      "parentModel": "demo/splitPaneDemoPage/inspectorPanel",
+      "childrenModel": [
+        {
+          "model": "toolHint",
+          "row": 0,
+          "column": 0
+        }
+      ]
     }
   ]
 }
@@ -262,18 +351,21 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             ?? throw new JsonException("topDemoPage is required.");
         var splitPage = root.Children.SingleOrDefault(node => node.Id == "splitPaneDemoPage" && node.Kind == "page")
             ?? throw new JsonException("splitPaneDemoPage is required.");
+        foreach (var page in new[] { topPage, splitPage })
+            if (!settings.Bindings.Any(b => b.ModelPath == page.Path && b.InspectorModel == page.Path + "/inspectorPanel"))
+                throw new JsonException($"{page.Path} requires a page layout bound to inspectorPanel.");
         var dialogs = all.Where(node => node.Id == "editDialog" && node.Kind == "dialog").ToArray();
         if (dialogs.Length != 1) throw new JsonException("Demo models requires one editDialog of type dialog.");
         var dialog = dialogs[0];
         if (!dialog.IsWithin(topPage)) throw new JsonException("editDialog must be in topDemoPage.");
         var main = Bind(all.Where(node => node.IsWithin(topPage) && !node.IsWithin(dialog)), new Dictionary<string, string>
         {
-            ["nameField"] = "textBox", ["memoField"] = "textBox", ["themeButton"] = "button",
+            ["toolHint"] = "textBlock", ["nameField"] = "textBox", ["memoField"] = "textBox", ["themeButton"] = "button",
             ["scaleButton"] = "button", ["applyTitleButton"] = "button", ["openDialogButton"] = "button", ["sampleTree"] = "tree", ["splitPaneDemoLink"] = "link"
         });
         var splitControls = Bind(Descendants(splitPage), new Dictionary<string, string>
         {
-            ["topDemoLink"] = "link", ["verticalSplit"] = "splitPane", ["horizontalSplit"] = "splitPane",
+            ["toolHint"] = "textBlock", ["topDemoLink"] = "link", ["verticalSplit"] = "splitPane", ["horizontalSplit"] = "splitPane",
             ["leftPane"] = "textBox", ["rightPane"] = "textBox", ["topPane"] = "textBox", ["bottomPane"] = "textBox"
         });
         var dialogControls = Bind(all.Where(node => node.IsWithin(dialog)), new Dictionary<string, string>
