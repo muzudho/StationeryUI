@@ -298,7 +298,9 @@ public sealed partial class StationeryUiHost : IDisposable
         caret = editor.SelectionStart + Math.Clamp(composition.CaretIndex, 0, composition.Text.Length);
         return editor.Text.Remove(editor.SelectionStart, editor.SelectionLength).Insert(editor.SelectionStart, composition.Text);
     }
-    private double Measure(string text, StationeryTheme theme) => rasterizerFactory(theme.FontFamily).MeasureTextWidth(text, theme.FontSize, false);
+    private int TextPixelSize(StationeryTheme theme) => Math.Max(1, (int)Math.Round(theme.FontSize * Viewport.Scale));
+    private double Measure(string text, StationeryTheme theme) =>
+        rasterizerFactory(theme.FontFamily).MeasureTextWidth(text, TextPixelSize(theme), false) / Viewport.Scale;
     public void Draw()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -397,18 +399,22 @@ public sealed partial class StationeryUiHost : IDisposable
     private void DrawText(string text, double x, double y, StationeryTheme theme, ButtonColor color)
     {
         if (text.Length == 0) return;
-        var key = (text, theme.FontFamily, theme.FontSize);
+        // Rasterize at the final window size. Resampling small glyphs loses thin strokes,
+        // especially white text on a dark surface at fractional viewport scales.
+        var pixelSize = TextPixelSize(theme);
+        var key = (text, theme.FontFamily, pixelSize);
         if (!textures.TryGetValue(key, out var texture))
         {
             if (textures.Count >= 128)
             {
                 var oldest = textures.First(); oldest.Value.Dispose(); textures.Remove(oldest.Key);
             }
-            using var stream = new MemoryStream(rasterizerFactory(theme.FontFamily).RasterizePng(text, theme.FontSize, false));
+            using var stream = new MemoryStream(rasterizerFactory(theme.FontFamily).RasterizePng(text, pixelSize, false));
             texture = Texture2D.FromStream(graphics, stream);
             textures.Add(key, texture);
         }
-        sprites.Draw(texture, RectangleOf(Viewport.ToWindow(new(x, y, texture.Width, texture.Height))), Convert(color));
+        var position = Viewport.ToWindow(new(x, y, 0, 0));
+        sprites.Draw(texture, new Rectangle((int)Math.Round(position.X), (int)Math.Round(position.Y), texture.Width, texture.Height), Convert(color));
     }
     private void Fill(ScreenRectangle rect, ButtonColor color) => sprites.Draw(pixel, RectangleOf(Viewport.ToWindow(rect)), Convert(color));
     private void DrawButtonOutline(ScreenRectangle bounds, double width, ButtonColor color)
