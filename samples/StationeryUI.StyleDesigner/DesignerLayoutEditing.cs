@@ -66,8 +66,7 @@ internal sealed partial class DesignerGame
 
     private void OpenIdDialog(string[]? path, string id)
     {
-        ui.Update(new GameTime(), false, new(), new());
-        sidebar?.Update(new GameTime(), false, new(), new());
+        SuspendBackgroundInput();
         layoutChoice = null;
         renamePath = path;
         idConfirmButtons.Clear();

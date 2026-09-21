@@ -80,8 +80,7 @@ internal sealed partial class DesignerGame
         // Invalid input may still be discarded by restoring a valid savepoint.
         try { saveSession.Observe(blueprint.BuildJson()); } catch (JsonException) { }
         var points = saveSession.ListSavePoints();
-        ui.Update(new GameTime(), false, new(), new());
-        sidebar?.Update(new GameTime(), false, new(), new());
+        SuspendBackgroundInput();
         restoreChoice = null;
         restoreDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family))
             { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };

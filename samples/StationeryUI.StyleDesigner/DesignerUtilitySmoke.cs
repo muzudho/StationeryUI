@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Input;
 internal sealed partial class DesignerGame
 {
     private bool disabledExportHintVerified;
+    private bool exportSmokeFolderChosen;
 
     private void PrepareUtilitySmoke(ref MouseState mouse, ref KeyboardState keyboard)
     {
@@ -13,8 +14,9 @@ internal sealed partial class DesignerGame
             mouse = SmokeMouse(utilityDialog!, 240, 390, frames == 13);
             return;
         }
-        if (frames == 21)
+        if (frames == 21 && !exportSmokeFolderChosen)
         {
+            exportSmokeFolderChosen = true;
             if (utilityDialog!.Focus.IsEnabled(createFileButton!.Path)) throw new InvalidOperationException("Create must start disabled.");
             if (layoutSmoke is null)
             {
@@ -34,6 +36,14 @@ internal sealed partial class DesignerGame
         }
         mouse = frames < 24 ? SmokeMouse(utilityDialog!, 800, 390, frames == 22)
             : SmokeMouse(utilityDialog!, 240, 534, frames == 24);
+        if (frames is 20 or 21)
+        {
+            // Click the background's Back button and send keyboard input while modal.
+            mouse = SmokeMouse(applicationBar, 200, 20, frames == 20);
+            keyboard = frames == 20 ? new(Keys.Tab) : new(Keys.A);
+        }
+        if (frames == 22 && (!editingPage || !exportDialog || pendingPage is not null))
+            throw new InvalidOperationException("Background controls received modal input.");
         if (frames == 27) keyboard = new(Keys.Escape);
     }
 

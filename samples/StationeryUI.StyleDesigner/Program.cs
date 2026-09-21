@@ -193,10 +193,11 @@ internal sealed partial class DesignerGame : Game
         GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background)); ui.Draw();
         if (editingPage) { sidebar?.Draw(); DrawLivePreview(); }
         if (editingPage) { ArrangeApplicationBar(); applicationBar.Draw(); }
+        DrawInspector();
+        DrawModalBackdrop();
         layoutDialog?.Draw();
         restoreDialog?.Draw();
         utilityDialog?.Draw();
-        DrawInspector();
         CaptureWelcomeSmoke();
         SavePickerScreenshot();
         CaptureUtilitySmoke();
@@ -214,5 +215,5 @@ internal sealed partial class DesignerGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }

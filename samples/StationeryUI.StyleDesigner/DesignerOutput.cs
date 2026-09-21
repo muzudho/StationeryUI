@@ -13,9 +13,7 @@ internal sealed partial class DesignerGame
 
     private void StartUtilityDialog(string title, bool exporting)
     {
-        ui.Update(new GameTime(), false, new(), new());
-        sidebar?.Update(new GameTime(), false, new(), new());
-        applicationBar.Update(new GameTime(), false, new(), new());
+        SuspendBackgroundInput();
         exportDialog = exporting; utilityAction = null;
         utilityDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family))
             { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
