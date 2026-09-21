@@ -121,7 +121,7 @@ internal sealed class Demo : Game
             }
             appliedStyle = styles.Current;
         }
-        var content = styles.Current.Layout[0].Padding.GetContentBounds(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        var content = styles.Current.Layouts[0].Padding.GetContentBounds(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         hasContentArea = content.Width >= 1 && content.Height >= 1;
         if (!hasContentArea) return;
         // Fit the demo's fixed rows inside all four padding edges, using the same transform for input and drawing.

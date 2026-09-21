@@ -2,30 +2,30 @@ using StationeryUI.Inspection;
 using StationeryUI.Styling;
 using System.Text.Json;
 
-/// <summary>Connects stable code-defined roles to model nodes. Layout wrappers never change these roles.</summary>
+/// <summary>Connects stable code-defined roles to models nodes. Layouts wrappers never change these roles.</summary>
 internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode Dialog,
     IReadOnlyDictionary<string, StationeryNode> Main, IReadOnlyDictionary<string, StationeryNode> DialogControls, string Signature)
 {
     public static StationeryStyleSettings Fallback { get; } = StationeryStyleSettings.Parse("""
         {
-          "model": {"id":"demo","type":"viewport","children":[
+          "models": [{"id":"demo","type":"viewport","children":[
             {"id":"nameField","type":"textBox"}, {"id":"memoField","type":"textBox"},
             {"id":"themeButton","type":"button"}, {"id":"scaleButton","type":"button"},
             {"id":"applyTitleButton","type":"button"}, {"id":"openDialogButton","type":"button"},
             {"id":"editDialog","type":"dialog","children":[
               {"id":"nameField","type":"textBox"}, {"id":"cancelButton","type":"button"}, {"id":"saveButton","type":"button"}
             ]}
-          ]},
-          "layout":[{"id":"demo","type":"viewport"}]
+          ]}],
+          "layouts":[{"id":"demo","type":"viewport"}]
         }
         """);
 
     public static DemoModelBinding Create(StationeryStyleSettings settings)
     {
-        var root = settings.Model.CreateTree();
+        var root = settings.Models[0].CreateTree();
         var all = Descendants(root).ToArray();
         var dialogs = all.Where(node => node.Id == "editDialog" && node.Kind == "dialog").ToArray();
-        if (dialogs.Length != 1) throw new JsonException("Demo model requires one editDialog of type dialog.");
+        if (dialogs.Length != 1) throw new JsonException("Demo models requires one editDialog of type dialog.");
         var dialog = dialogs[0];
         var main = Bind(all.Where(node => !node.IsWithin(dialog)), new Dictionary<string, string>
         {
@@ -57,7 +57,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode Dial
         {
             var matches = all.Where(node => node.Id == id).ToArray();
             if (matches.Length != 1 || matches[0].Kind != kind)
-                throw new JsonException($"Demo model requires exactly one {id} of type {kind} in its main/dialog scope.");
+                throw new JsonException($"Demo models requires exactly one {id} of type {kind} in its main/dialog scope.");
             result.Add(id, matches[0]);
         }
         return result;

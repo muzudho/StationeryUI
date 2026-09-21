@@ -136,7 +136,7 @@ internal static class StationeryStyleTests
     }
 
     private static string Style(string padding = "{}") =>
-        "{\"model\":{\"id\":\"demo\",\"type\":\"viewport\"},\"layout\":[{\"id\":\"demo\",\"type\":\"viewport\",\"padding\":" + padding + "}]}";
+        "{\"models\":[{\"id\":\"demo\",\"type\":\"viewport\"}],\"layouts\":[{\"id\":\"demo\",\"type\":\"viewport\",\"padding\":" + padding + "}]}";
     private static void Poll(StationeryStyleFile file) => file.Update(TimeSpan.FromMilliseconds(500));
     private static void Reject(string json)
     {

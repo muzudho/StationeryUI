@@ -1,44 +1,55 @@
 {
-    "model": {
-        "id": "demo",
-        "type": "viewport",
-        "children": [
-            {
-                "id": "nameField",
-                "type": "textBox"
-            },
-            {
-                "id": "memoField",
-                "type": "textBox"
-            },
-            {
-                "id": "themeButton",
-                "type": "button"
-            },
-            {
-                "id": "scaleButton",
-                "type": "button"
-            },
-            {
-                "id": "applyTitleButton",
-                "type": "button"
-            },
-            {
-                "id": "openDialogButton",
-                "type": "button"
-            },
-            {
-                "id": "editDialog",
-                "type": "dialog",
-                "children": [
-                    { "id": "nameField", "type": "textBox" },
-                    { "id": "cancelButton", "type": "button" },
-                    { "id": "saveButton", "type": "button" }
-                ]
-            }
-        ]
-    },
-    "layout": [
+    "models": [
+        {
+            "id": "demo",
+            "type": "viewport",
+            "children": [
+                {
+                    "id": "nameField",
+                    "type": "textBox"
+                },
+                {
+                    "id": "memoField",
+                    "type": "textBox"
+                },
+                {
+                    "id": "themeButton",
+                    "type": "button"
+                },
+                {
+                    "id": "scaleButton",
+                    "type": "button"
+                },
+                {
+                    "id": "applyTitleButton",
+                    "type": "button"
+                },
+                {
+                    "id": "openDialogButton",
+                    "type": "button"
+                },
+                {
+                    "id": "editDialog",
+                    "type": "dialog",
+                    "children": [
+                        {
+                            "id": "nameField",
+                            "type": "textBox"
+                        },
+                        {
+                            "id": "cancelButton",
+                            "type": "button"
+                        },
+                        {
+                            "id": "saveButton",
+                            "type": "button"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "layouts": [
         {
             "id": "demo",
             "type": "viewport",
