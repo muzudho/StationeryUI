@@ -28,6 +28,8 @@ internal sealed partial class DesignerGame : Game
 {
     private static readonly string AppVersion = typeof(DesignerGame).Assembly.GetName().Version!.ToString(3);
     private readonly GraphicsDeviceManager manager;
+    private readonly System.Drawing.Rectangle startupWorkArea;
+    private readonly int startupFrameWidth, startupFrameHeight;
     private StyleBlueprint blueprint = new();
     private WindowsTextInputService input = null!;
     private StationeryUiHost ui = null!;
@@ -47,9 +49,27 @@ internal sealed partial class DesignerGame : Game
 
     public DesignerGame()
     {
-        manager = new(this) { PreferredBackBufferWidth = 1600, PreferredBackBufferHeight = 900 };
+        // WorkingArea excludes the taskbar, including taskbars on the top or left.
+        startupWorkArea = System.Windows.Forms.Screen.FromPoint(System.Windows.Forms.Cursor.Position).WorkingArea;
+        startupFrameWidth = Math.Max(32, System.Windows.Forms.SystemInformation.FrameBorderSize.Width * 2);
+        startupFrameHeight = Math.Max(96, System.Windows.Forms.SystemInformation.CaptionHeight + System.Windows.Forms.SystemInformation.FrameBorderSize.Height * 2);
+        var scale = Math.Min(1, Math.Min(
+            Math.Max(1, startupWorkArea.Width * .9 - startupFrameWidth) / 1600.0,
+            Math.Max(1, startupWorkArea.Height * .9 - startupFrameHeight) / 900.0));
+        manager = new(this)
+        {
+            PreferredBackBufferWidth = Math.Max(1, (int)(1600 * scale)),
+            PreferredBackBufferHeight = Math.Max(1, (int)(900 * scale))
+        };
         Window.Title = "StationeryUI Style Designer";
         Window.AllowUserResizing = true; IsMouseVisible = true;
+    }
+    protected override void Initialize()
+    {
+        base.Initialize();
+        Window.Position = new(
+            startupWorkArea.Left + Math.Max(0, (startupWorkArea.Width - Window.ClientBounds.Width - startupFrameWidth) / 2),
+            startupWorkArea.Top + Math.Max(0, (startupWorkArea.Height - Window.ClientBounds.Height - startupFrameHeight) / 2));
     }
     protected override void LoadContent()
     {
