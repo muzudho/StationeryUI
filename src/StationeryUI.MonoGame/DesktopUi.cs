@@ -31,15 +31,15 @@ public sealed class DesktopUi : IDisposable
     private bool disposed;
     public StationeryTheme Theme { get; set; } = StationeryTheme.Dark;
     public UiViewport Viewport { get; } = new();
-    public FocusManager Focus { get; } = new();
+    public FocusManager Focus { get; private set; } = new();
     public bool KeyboardConsumed { get; private set; }
     public bool PointerConsumed { get; private set; }
-    public StationeryNode Root { get; }
+    public StationeryNode Root { get; private set; }
 
     public sealed class Element
     {
         internal Element(StationeryNode node, ScreenRectangle bounds, string label) { Node = node; Bounds = bounds; Label = label; }
-        public StationeryNode Node { get; }
+        public StationeryNode Node { get; internal set; }
         public string Id => Node.Id;
         public string Path => Node.Path;
         public ScreenRectangle Bounds { get; set; }
@@ -64,19 +64,50 @@ public sealed class DesktopUi : IDisposable
     }
     public Element AddTextBox(string id, ScreenRectangle bounds, string accessibleName, string text = "", int maximumLength = 1024,
         StationeryNode? parent = null)
+        => AddTextBox(AddNode(id, "textBox", parent), bounds, accessibleName, text, maximumLength);
+
+    public Element AddTextBox(StationeryNode node, ScreenRectangle bounds, string accessibleName, string text = "", int maximumLength = 1024)
     {
-        var element = new Element(AddNode(id, "textBox", parent), bounds, accessibleName) { Editor = new(text, maximumLength) };
+        ValidateNode(node, "textBox");
+        var element = new Element(node, bounds, accessibleName) { Editor = new(text, maximumLength) };
         element.Session = new(input, element.Editor);
         Focus.Register(element.Path);
         elements.Add(element);
         return element;
     }
     public Element AddButton(string id, ScreenRectangle bounds, string label, Action clicked, StationeryNode? parent = null)
+        => AddButton(AddNode(id, "button", parent), bounds, label, clicked);
+
+    public Element AddButton(StationeryNode node, ScreenRectangle bounds, string label, Action clicked)
     {
-        var element = new Element(AddNode(id, "button", parent), bounds, label) { Click = clicked };
+        ValidateNode(node, "button");
+        var element = new Element(node, bounds, label) { Click = clicked };
         Focus.Register(element.Path);
         elements.Add(element);
         return element;
+    }
+    private void ValidateNode(StationeryNode node, string kind)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (!node.IsWithin(Root) || node.Kind != kind || elements.Any(element => element.Node == node))
+            throw new ArgumentException("Node must be an unbound node of the expected type in this UI's model.", nameof(node));
+    }
+
+    /// <summary>Replaces model identities atomically while preserving controls, editing state and callbacks.</summary>
+    public void RebindModel(StationeryNode root, Func<Element, StationeryNode> resolve)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        var bindings = elements.Select(element => (Element: element, Node: resolve(element))).ToArray();
+        if (bindings.Any(binding => !binding.Node.IsWithin(root) || binding.Node.Kind != binding.Element.Node.Kind) ||
+            bindings.Select(binding => binding.Node.Path).Distinct(StringComparer.Ordinal).Count() != bindings.Length)
+            throw new ArgumentException("Model bindings must have matching types and unique paths.", nameof(resolve));
+        var focused = elements.FirstOrDefault(element => element.Path == Focus.FocusedId);
+        var nextFocus = new FocusManager();
+        foreach (var binding in bindings) nextFocus.Register(binding.Node.Path);
+        Root = root;
+        foreach (var binding in bindings) binding.Element.Node = binding.Node;
+        Focus = nextFocus;
+        if (focused is not null) Focus.Focus(focused.Path);
     }
     private StationeryNode AddNode(string id, string kind, StationeryNode? parent)
     {

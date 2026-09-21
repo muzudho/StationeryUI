@@ -10,7 +10,7 @@
 | ファイル | 内容 |
 |---|---|
 | `App_Data/demo.stationery-config.json` | スタイルの読み込み先とオートリロード設定 |
-| `App_Data/demo.stationery-style.json` | パディングなどの見た目 |
+| `App_Data/demo.stationery-style.json` | model の文房具構造と layout の配置設定 |
 
 開発時（Debug ビルド）はリポジトリーの `App_Data` の原本を使う。
 ビルド／publish 時には両方を出力先の `App_Data` にコピーする。
@@ -57,45 +57,67 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
 
 スタイルファイル自体には `autoReload` を置かない。以前の場所に残っている場合は、未知のプロパティとして無視される。
 
-## 画面レイアウトのルート要素は viewport
+## model と layout
+
+トップレベルは `model` オブジェクトと `layout` 配列に分ける。両方必須。
+旧トップレベルの `viewport` は廃止し、残っているファイルは読み込みエラーにする。
+`"type": "viewport"` という部品の種類は引き続き使用する。
+
+以下は読み込み形式の最小例。実際のデモでは原本に含まれる文房具の定義も必要。
 
 ```json
 {
-    "viewport": {
-    }
-}
-```
-
-👆　とりあえず、 `viewport` オブジェクト要素を作る。  
-
-
-例えば、パディングの設定は以下のようにする。  
-
-```json
-{
-    "viewport": {
-        "padding": {
-            "top": "8px",
-            "right": "8px",
-            "bottom": "8px",
-            "left": "8px"
-        }
-    }
-}
-```
-
-内側の要素は `contents` 配列にまとめる。  
-
-```json
-{
-    "viewport": {
-        "contents": [
+    "model": {
+        "id": "demo",
+        "type": "viewport",
+        "children": [
+            { "id": "nameField", "type": "textBox" }
         ]
-    }
+    },
+    "layout": [
+        {
+            "id": "demo",
+            "type": "viewport",
+            "padding": {
+                "top": "32px",
+                "right": "8px",
+                "bottom": "8px",
+                "left": "16px"
+            }
+        }
+    ]
 }
 ```
 
-`contents` は将来のための予約項目。現時点では内容からコントロールを生成せず、デモ側の配置を使う。
+`model` は文房具の所属を表す。各ノードに `id` と `type` を置き、子は `children` 配列にまとめる。
+`children` は省略可能。Id の許可文字や兄弟間の重複チェックは [文房具 Id の規約](developer-window.md) に従う。
+モデルから作った階層を実際の UI に結び付けるため、F12 のパスもこの階層に従う。
+例えば原本の名前欄は `/demo/nameField`。モデル側で `inputs` コンテナーに包めば `/demo/inputs/nameField` になる。
+
+`layout` は配置のための設定。`id` はレイアウト独自の Id ではなく、対象モデルの参照。
+現在はモデルのルートに対する viewport 設定を **1 件** 指定する。`"demo"` または `"/demo"` の両方を使える。
+存在しない参照やルート以外への参照はエラー。`"id": "id"` のような仮の名前は使わない。
+現時点の対応項目は viewport の四辺のパディング。行・列・配置専用グループや、layout 内の入れ子は今後追加する。
+未実装のレイアウト型、複数の viewport 設定、layout の `children` / `contents` は黙って無視せずエラーにする。
+
+model にコンテナーを追加しても位置は自動変更しない。layout のパディングを変えても model のパスは変わらない。
+F12 が表示するのは model のツリーで、レイアウトツリーの表示はまだ追加していない。
+
+## デモの文房具とコードの役割
+
+原本の model には、メイン画面の 6 部品と `editDialog` を定義する。
+ダイアログにも `nameField`、`cancelButton`、`saveButton` を定義する。
+Id はコード側の動作との接続にも使う固定名で、AI コーディング時に model と C# を合わせて生成・保守する。
+表示文字列、入力処理、保存などの動作は C# が担当し、JSON の `type` だけから任意の新しいコントロールを生成するわけではない。
+
+メイン側には `nameField` / `memoField`（textBox）、`themeButton` / `scaleButton` / `applyTitleButton` / `openDialogButton`（button）が各 1 個必要。
+ダイアログ側には `nameField`（textBox）、`cancelButton` / `saveButton`（button）が各 1 個必要。
+コードとの接続先が不明になる欠落・重複・型違い・未接続の部品は、model と layout 全体を採用せず、最後の正常な設定を維持する。
+メインとダイアログの各範囲内では、必要な部品を `page` / `container` で包み直せる。
+
+model の変更も自動リロード／F5 の対象。階層を更新しても、既存コントロールのテキスト・選択範囲・テーマ・イベント処理は維持する。
+フォーカスのパスも更新し、変更時点のマウスキャプチャは解除する。
+起動時に不正なファイルだった場合は、コード内の標準モデルと四辺 `8px` を使う。
 
 ## パディングの値と画面への反映
 
@@ -112,7 +134,9 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
 例えば右だけ `"120px"` にして保存すると、横長の入力欄の右端が内側へ移動する。
 下だけ大きくすると、必要に応じてデモの行全体が縮小される。
 
-現段階の対応範囲は、デモの起動時読み込み、オートリロード、ビューポートの四辺のパディング。
+現段階の対応範囲は、model による文房具の階層、layout によるルートのパディング、起動時読み込みとオートリロード。
 ライブラリ側では `StationeryUI.Styling.StationeryStyleFile` と `StationeryStyleSettings` を利用できる。
 コンストラクターにはスタイルファイルではなく読み込み設定ファイルのパスを渡す。`Configuration` から監視方針、`ConfigurationFilePath` と `FilePath` からそれぞれの読み込み先を取得できる。
-他の MonoGame アプリでは、ゲームの Update から `StationeryStyleFile.Update` を呼び、`Current.Padding.GetContentBounds` の結果を配置に使う。
+他の MonoGame アプリでは、ゲームの Update から `StationeryStyleFile.Update` を呼び、`Current.Layout[0].Padding.GetContentBounds` の結果を配置に使う。
+
+モデルを取り込む場合は `Current.Model.CreateTree()` でノードを作り、`DesktopUi.AddTextBox` / `AddButton` のノード指定版で結び付ける。モデル更新には `RebindModel` を使う。

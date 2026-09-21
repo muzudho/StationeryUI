@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 
 var tests = new (string Name, Action Run)[]
 {
+    ("model hierarchy, layout reference and semantic reload validation", ModelLayoutTests.Run),
     ("stationery IDs resolve by ancestry and keep duplicate local IDs isolated", StationeryNodeTests.Run),
     ("style parsing, padding and reload preserve the last good snapshot", StationeryStyleTests.Run),
     ("ring layout stays square, separated and inside the viewport", RingMenuLayoutTests.Run),

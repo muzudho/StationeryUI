@@ -36,7 +36,8 @@ internal sealed class Demo : Game
     private bool previousReloadKey;
     private bool hasContentArea;
     private string? reportedStyleError;
-    private readonly StationeryNode stationeryRoot = new("demo");
+    private DemoModelBinding modelBinding = null!;
+    private StationeryStyleSettings? appliedStyle;
     private readonly StationeryDeveloperWindow developerWindow = new();
     private bool previousDeveloperKey;
     private double inspectionElapsed;
@@ -59,7 +60,9 @@ internal sealed class Demo : Game
         if (string.IsNullOrWhiteSpace(configurationPath))
             configurationPath = source is not null && Directory.Exists(Path.GetDirectoryName(source))
                 ? source : Path.Combine(AppContext.BaseDirectory, "App_Data", "demo.stationery-config.json");
-        styles = new(configurationPath);
+        styles = new(configurationPath, DemoModelBinding.Fallback, settings => { _ = DemoModelBinding.Create(settings); });
+        modelBinding = DemoModelBinding.Create(styles.Current);
+        appliedStyle = styles.Current;
         System.Diagnostics.Trace.WriteLine($"StationeryUI configuration: {styles.ConfigurationFilePath}");
         System.Diagnostics.Trace.WriteLine($"StationeryUI style: {styles.FilePath}");
         if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG")))
@@ -72,12 +75,12 @@ internal sealed class Demo : Game
             cache.EndFrame();
         }
         input = new(Window.Handle);
-        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), stationeryRoot.AddChild("mainPage", "page"));
+        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), modelBinding.Root);
         badges = new(GraphicsDevice);
-        popupUi = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), stationeryRoot.AddChild("editDialog", "dialog"));
-        popupText = popupUi.AddTextBox("nameField", new(32, 70, 736, 64), "ダイアログのテキスト");
-        popupUi.AddButton("cancelButton", new(32, 180, 320, 64), "キャンセル", () => popupOpen = false);
-        popupUi.AddButton("saveButton", new(380, 180, 388, 64), "保存して閉じる", () =>
+        popupUi = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), modelBinding.Dialog);
+        popupText = popupUi.AddTextBox(modelBinding.DialogControls["nameField"], new(32, 70, 736, 64), "ダイアログのテキスト");
+        popupUi.AddButton(modelBinding.DialogControls["cancelButton"], new(32, 180, 320, 64), "キャンセル", () => popupOpen = false);
+        popupUi.AddButton(modelBinding.DialogControls["saveButton"], new(380, 180, 388, 64), "保存して閉じる", () =>
         {
             popupValue = popupText.Editor!.Text;
             popupLink!.Label = popupValue;
@@ -87,12 +90,12 @@ internal sealed class Demo : Game
         if (double.TryParse(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_SCALE"),
             System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var smokeScale)
             && double.IsFinite(smokeScale) && smokeScale > 0) requestedScale = smokeScale;
-        name = ui.AddTextBox("nameField", new(32, 40, 700, 64), "名前", "文房具UIへようこそ");
-        memo = ui.AddTextBox("memoField", new(32, 130, 700, 64), "メモ", "日本語・結合文字 e\u0301 を編集できます");
-        var themeButton = ui.AddButton("themeButton", new(32, 230, 300, 64), "明るい／暗いテーマ", () => ui.Theme = ui.Theme == StationeryTheme.Dark ? StationeryTheme.Light : StationeryTheme.Dark);
-        var scaleButton = ui.AddButton("scaleButton", new(360, 230, 270, 64), "拡大率を変える", () => requestedScale = requestedScale >= 1.5 ? 1 : requestedScale + .25);
-        var acceptButton = ui.AddButton("applyTitleButton", new(32, 330, 600, 64), "入力内容をタイトルに反映", () => Window.Title = name.Editor!.Text);
-        popupLink = ui.AddButton("openDialogButton", new(32, 420, 700, 64), popupValue, () =>
+        name = ui.AddTextBox(modelBinding.Main["nameField"], new(32, 40, 700, 64), "名前", "文房具UIへようこそ");
+        memo = ui.AddTextBox(modelBinding.Main["memoField"], new(32, 130, 700, 64), "メモ", "日本語・結合文字 e\u0301 を編集できます");
+        var themeButton = ui.AddButton(modelBinding.Main["themeButton"], new(32, 230, 300, 64), "明るい／暗いテーマ", () => ui.Theme = ui.Theme == StationeryTheme.Dark ? StationeryTheme.Light : StationeryTheme.Dark);
+        var scaleButton = ui.AddButton(modelBinding.Main["scaleButton"], new(360, 230, 270, 64), "拡大率を変える", () => requestedScale = requestedScale >= 1.5 ? 1 : requestedScale + .25);
+        var acceptButton = ui.AddButton(modelBinding.Main["applyTitleButton"], new(32, 330, 600, 64), "入力内容をタイトルに反映", () => Window.Title = name.Editor!.Text);
+        popupLink = ui.AddButton(modelBinding.Main["openDialogButton"], new(32, 420, 700, 64), popupValue, () =>
         {
             popupText.Editor!.SelectAll();
             popupText.Editor.Insert(popupValue);
@@ -107,7 +110,18 @@ internal sealed class Demo : Game
 
     private void ApplyStyles()
     {
-        var content = styles.Current.Padding.GetContentBounds(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        if (!ReferenceEquals(appliedStyle, styles.Current))
+        {
+            var next = DemoModelBinding.Create(styles.Current);
+            if (next.Signature != modelBinding.Signature)
+            {
+                ui!.RebindModel(next.Root, element => next.Main[element.Id]);
+                popupUi!.RebindModel(next.Dialog, element => next.DialogControls[element.Id]);
+                modelBinding = next;
+            }
+            appliedStyle = styles.Current;
+        }
+        var content = styles.Current.Layout[0].Padding.GetContentBounds(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         hasContentArea = content.Width >= 1 && content.Height >= 1;
         if (!hasContentArea) return;
         // Fit the demo's fixed rows inside all four padding edges, using the same transform for input and drawing.
@@ -232,14 +246,12 @@ internal sealed class Demo : Game
     }
     private IReadOnlyList<StationeryInspectionEntry> InspectStationery()
     {
-        var entries = new List<StationeryInspectionEntry>
-        {
-            new(stationeryRoot.Id, stationeryRoot.Path, null, stationeryRoot.Kind, "デモ画面", true,
-                new ScreenRectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height))
-        };
-        if (ui is not null) entries.AddRange(ui.Inspect(hasContentArea));
-        if (popupUi is not null) entries.AddRange(popupUi.Inspect(hasContentArea && popupOpen));
-        return entries;
+        var entries = ui!.Inspect(hasContentArea).ToDictionary(entry => entry.Path, StringComparer.Ordinal);
+        foreach (var entry in popupUi!.Inspect(hasContentArea && popupOpen)) entries[entry.Path] = entry;
+        var root = modelBinding.Root;
+        entries[root.Path] = new(root.Id, root.Path, null, root.Kind, "デモ画面", true,
+            new ScreenRectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
+        return entries.Values.ToArray();
     }
 
     protected override void Dispose(bool disposing)

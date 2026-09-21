@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><IsPackable>false</IsPackable></PropertyGroup>
   <ItemGroup><ProjectReference Include="../../src/StationeryUI/StationeryUI.csproj" /></ItemGroup>
+  <ItemGroup><Compile Include="../../samples/StationeryUI.Demo/DemoModelBinding.cs" Link="DemoModelBinding.cs" /></ItemGroup>
 </Project>

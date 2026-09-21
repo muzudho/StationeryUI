@@ -15,6 +15,7 @@ public sealed class StationeryStyleFile
     private string? configurationError;
     private string? styleError;
     private bool needsInitialStyle = true;
+    private readonly Action<StationeryStyleSettings>? validate;
 
     public string ConfigurationFilePath { get; }
     public string FilePath { get; private set; }
@@ -22,8 +23,12 @@ public sealed class StationeryStyleFile
     public StationeryStyleSettings Current { get; private set; } = StationeryStyleSettings.Default;
     public string? LastError => configurationError ?? styleError;
 
-    public StationeryStyleFile(string configurationFilePath)
+    public StationeryStyleFile(string configurationFilePath, StationeryStyleSettings? fallback = null,
+        Action<StationeryStyleSettings>? validate = null)
     {
+        this.validate = validate;
+        Current = fallback ?? StationeryStyleSettings.Default;
+        validate?.Invoke(Current);
         ConfigurationFilePath = Path.GetFullPath(configurationFilePath);
         FilePath = ResolveStylePath(Configuration.StyleFile);
         Reload();
@@ -103,7 +108,9 @@ public sealed class StationeryStyleFile
                 pendingStyleText = text;
                 return false;
             }
-            Current = StationeryStyleSettings.Parse(text);
+            var next = StationeryStyleSettings.Parse(text);
+            validate?.Invoke(next);
+            Current = next;
             acceptedStyleText = text;
             pendingStyleText = null;
             styleError = null;

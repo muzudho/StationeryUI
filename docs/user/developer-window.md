@@ -18,8 +18,8 @@ Debug／Release の両方で使える。既に開いている場合は同じウ�
 
 ## 文房具 Id の命名
 
-文房具 Id は C# の UI 生成コードで付ける固定の名前。
-AI コーディング時もこの生成箇所に埋め込む。人間が設定ファイルや開発者ウィンドウから Id を登録・編集する必要はない。
+文房具 Id はコードの動作と結び付く固定の名前。デモではスタイルファイルの `model` に階層とともに宣言する。
+AI コーディング時は `model` の宣言と C# の接続箇所を合わせて生成・保守する。人間が設定ファイルや開発者ウィンドウから Id を登録・編集する必要はない。
 実行時の連番やランダム値は使わず、再起動やスタイル変更で名前が変わらないようにする。
 
 - 許可する文字は ASCII の `A-Z`、`a-z`、`0-9`、`_` のみ。空文字は不可。
@@ -33,9 +33,8 @@ Id の重複や禁止文字は登録時にエラーにする。自動で連番�
 
 ```text
 /demo
-    /mainPage
-        /nameField
-        /memoField
+    /nameField
+    /memoField
     /editDialog
         /nameField
         /saveButton
@@ -45,7 +44,7 @@ Id の重複や禁止文字は登録時にエラーにする。自動で連番�
 
 ```json
 [
-    "/demo/mainPage/nameField",
+    "/demo/nameField",
     "/demo/editDialog/nameField"
 ]
 ```
@@ -80,3 +79,5 @@ ui.Focus.Focus(name.Path);
 
 現時点で自動登録の対象は `DesktopUi` で生成したコントロール。
 描画ヘルパーや個別の MonoGame コントロールは、利用アプリ側で対応する `StationeryNode` とスナップショットを登録する。
+
+デモの F12 は、読み込んだ `model` の階層を表示する。コードだけで作る上の例とは異なり、デモの原本には `mainPage` コンテナーを置かず、名前欄は `/demo/nameField` になる。model と layout の役割は [スタイル設定ガイド](stationery-style-settings.md) を参照。

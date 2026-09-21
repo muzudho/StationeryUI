@@ -1,44 +1,53 @@
 {
-    "viewport": {
+    "model": {
         "id": "demo",
         "type": "viewport",
-        "padding": {
-            "top": "32px",
-            "right": "8px",
-            "bottom": "8px",
-            "left": "16px"
-        },
-        "contents": [
+        "children": [
             {
-                "id": "mainPage",
-                "type": "page",
-                "contents": [
-                    {
-                        "id": "nameField",
-                        "type": "textBox"
-                    },
-                    {
-                        "id": "memoField",
-                        "type": "textBox"
-                    },
-                    {
-                        "id": "themeButton",
-                        "type": "button"
-                    },
-                    {
-                        "id": "scaleButton",
-                        "type": "button"
-                    },
-                    {
-                        "id": "applyTitleButton",
-                        "type": "button"
-                    },
-                    {
-                        "id": "openDialogButton",
-                        "type": "button"
-                    }
+                "id": "nameField",
+                "type": "textBox"
+            },
+            {
+                "id": "memoField",
+                "type": "textBox"
+            },
+            {
+                "id": "themeButton",
+                "type": "button"
+            },
+            {
+                "id": "scaleButton",
+                "type": "button"
+            },
+            {
+                "id": "applyTitleButton",
+                "type": "button"
+            },
+            {
+                "id": "openDialogButton",
+                "type": "button"
+            },
+            {
+                "id": "editDialog",
+                "type": "dialog",
+                "children": [
+                    { "id": "nameField", "type": "textBox" },
+                    { "id": "cancelButton", "type": "button" },
+                    { "id": "saveButton", "type": "button" }
                 ]
             }
         ]
-    }
+    },
+    "layout": [
+        {
+            "id": "demo",
+            "type": "viewport",
+            "padding": {
+                "top": "32px",
+                "right": "32px",
+                "bottom": "8px",
+                "left": "32px"
+            }
+        }
+    ]
 }

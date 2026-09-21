@@ -6,18 +6,16 @@ internal static class StationeryStyleTests
 {
     public static void Run()
     {
-        Equal(StationeryStyleSettings.Default, StationeryStyleSettings.Parse("{}"));
-        var settings = StationeryStyleSettings.Parse("""
-            {"viewport":{"padding":{"top":"12.5px","right":"20px","bottom":"30px","left":"40px"},"contents":[]}}
-            """);
+        Equal(StationeryStyleSettings.Default.Padding, StationeryStyleSettings.Parse(Style()).Padding);
+        var settings = StationeryStyleSettings.Parse(Style("""{"top":"12.5px","right":"20px","bottom":"30px","left":"40px"}"""));
         Equal(new ScreenRectangle(40, 12.5, 940, 737.5), settings.Padding.GetContentBounds(1000, 780));
         Equal(new ScreenRectangle(40, 12.5, 0, 0), settings.Padding.GetContentBounds(50, 20));
         Equal(new ScreenRectangle(5, 5, 0, 0), settings.Padding.GetContentBounds(5, 5));
-        Equal(new ViewportPadding(8, 8, 8, 0), StationeryStyleSettings.Parse("""{"viewport":{"padding":{"left":"0px"}}}""").Padding);
+        Equal(new ViewportPadding(8, 8, 8, 0), StationeryStyleSettings.Parse(Style("""{"left":"0px"}""")).Padding);
         foreach (var bad in new[] { "null", "[]", "{", """{"viewport":null}""", """{"viewport":{"padding":[]}}""" })
             Reject(bad);
         foreach (var badValue in new[] { "8", "null", "true", "\"-1px\"", "\"2em\"", "\"NaNpx\"", "\"Infinitypx\"", "\"8\"", "\"\"" })
-            Reject("{\"viewport\":{\"padding\":{\"top\":" + badValue + "}}}");
+            Reject(Style("{\"top\":" + badValue + "}"));
 
         var directory = Path.Combine(Path.GetTempPath(), "stationery-style-tests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
@@ -30,9 +28,9 @@ internal static class StationeryStyleTests
             Configure(true);
             var file = new StationeryStyleFile(configPath);
             Equal(path, file.FilePath); // Relative to configuration, independent of the working directory.
-            Equal(StationeryStyleSettings.Default, file.Current);
+            Equal(StationeryStyleSettings.Default.Padding, file.Current.Padding);
             Equal(true, file.LastError is not null);
-            File.WriteAllText(path, """{"viewport":{"padding":{"left":"24px"}}}""");
+            File.WriteAllText(path, Style("""{"left":"24px"}"""));
             Poll(file); // First read waits for a stable snapshot.
             Equal(8d, file.Current.Padding.Left);
             Poll(file);
@@ -43,14 +41,14 @@ internal static class StationeryStyleTests
             Equal(true, file.Configuration.AutoReload);
             Equal(24d, file.Current.Padding.Left);
             Equal(true, file.LastError is not null);
-            File.WriteAllText(path, """{"viewport":{"padding":{"bottom":"80px"}}}""");
+            File.WriteAllText(path, Style("""{"bottom":"80px"}"""));
             Poll(file); Poll(file);
             Equal(80d, file.Current.Padding.Bottom);
             Equal(8d, file.Current.Padding.Left); // Omitted sides reset to defaults.
             Configure(false);
             Poll(file); Poll(file);
             Equal(false, file.Configuration.AutoReload);
-            File.WriteAllText(path, """{"viewport":{"padding":{"right":"16px"}}}""");
+            File.WriteAllText(path, Style("""{"right":"16px"}"""));
             Poll(file); Poll(file);
             Equal(8d, file.Current.Padding.Right); // Style edits are frozen while disabled.
             Configure(true);
@@ -61,17 +59,17 @@ internal static class StationeryStyleTests
             Poll(file);
             Equal(16d, file.Current.Padding.Right);
             Equal(true, file.LastError is not null);
-            File.WriteAllText(path, "{}");
+            File.WriteAllText(path, Style());
             Poll(file); Poll(file);
-            Equal(StationeryStyleSettings.Default, file.Current);
+            Equal(StationeryStyleSettings.Default.Padding, file.Current.Padding);
             Equal(null, file.LastError);
             // Atomic-save replacement and same-length edits are detected by content, not timestamps.
             var replacement = Path.Combine(directory, "replacement.json");
-            File.WriteAllText(replacement, """{"viewport":{"padding":{"right":"32px"}}}""");
+            File.WriteAllText(replacement, Style("""{"right":"32px"}"""));
             File.Move(replacement, path, true);
             Poll(file); Poll(file);
             Equal(32d, file.Current.Padding.Right);
-            File.WriteAllText(path, """{"viewport":{"padding":{"right":"64px"}}}""");
+            File.WriteAllText(path, Style("""{"right":"64px"}"""));
             Poll(file); Poll(file);
             Equal(64d, file.Current.Padding.Right);
 
@@ -93,30 +91,30 @@ internal static class StationeryStyleTests
             Equal(null, file.LastError);
 
             // Manual reload still works with auto reload off.
-            File.WriteAllText(path, "{}");
+            File.WriteAllText(path, Style());
             Equal(true, file.Reload());
-            Equal(StationeryStyleSettings.Default, file.Current);
+            Equal(StationeryStyleSettings.Default.Padding, file.Current.Padding);
             Equal(false, file.Configuration.AutoReload);
 
             // Switching paths loads the new file once even while auto reload is off.
             var alternate = Path.Combine(directory, "alternate.json");
-            File.WriteAllText(alternate, """{"viewport":{"padding":{"top":"99px"}}}""");
+            File.WriteAllText(alternate, Style("""{"top":"99px"}"""));
             Configure(false, "alternate.json");
             Poll(file); Poll(file); Poll(file);
             Equal(alternate, file.FilePath);
             Equal(99d, file.Current.Padding.Top);
-            File.WriteAllText(alternate, "{}");
+            File.WriteAllText(alternate, Style());
             Poll(file); Poll(file);
             Equal(99d, file.Current.Padding.Top);
             Configure(true, alternate); // Absolute paths also work.
             Poll(file); Poll(file); Poll(file);
-            Equal(StationeryStyleSettings.Default, file.Current);
+            Equal(StationeryStyleSettings.Default.Padding, file.Current.Padding);
 
             Configure(false, "missing.json");
             Poll(file); Poll(file); Poll(file);
             Equal(true, file.LastError is not null);
-            Equal(StationeryStyleSettings.Default, file.Current);
-            File.WriteAllText(Path.Combine(directory, "missing.json"), """{"viewport":{"padding":{"left":"42px"}}}""");
+            Equal(StationeryStyleSettings.Default.Padding, file.Current.Padding);
+            File.WriteAllText(Path.Combine(directory, "missing.json"), Style("""{"left":"42px"}"""));
             Poll(file); Poll(file);
             Equal(42d, file.Current.Padding.Left);
             Equal(null, file.LastError);
@@ -137,6 +135,8 @@ internal static class StationeryStyleTests
         finally { Directory.Delete(directory, true); }
     }
 
+    private static string Style(string padding = "{}") =>
+        "{\"model\":{\"id\":\"demo\",\"type\":\"viewport\"},\"layout\":[{\"id\":\"demo\",\"type\":\"viewport\",\"padding\":" + padding + "}]}";
     private static void Poll(StationeryStyleFile file) => file.Update(TimeSpan.FromMilliseconds(500));
     private static void Reject(string json)
     {
