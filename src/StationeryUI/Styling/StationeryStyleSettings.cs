@@ -15,22 +15,15 @@ public readonly record struct ViewportPadding(double Top, double Right, double B
     }
 }
 
-public sealed record StationeryStyleSettings(bool AutoReload, ViewportPadding Padding)
+public sealed record StationeryStyleSettings(ViewportPadding Padding)
 {
-    public static StationeryStyleSettings Default { get; } = new(true, new(8, 8, 8, 8));
+    public static StationeryStyleSettings Default { get; } = new(new ViewportPadding(8, 8, 8, 8));
 
     /// <summary>Parses a complete snapshot. Unknown properties are reserved for future extensions.</summary>
     public static StationeryStyleSettings Parse(string json)
     {
         using var document = JsonDocument.Parse(json);
         var root = RequireObject(document.RootElement, "root");
-        var autoReload = Default.AutoReload;
-        if (root.TryGetProperty("autoReload", out var reload))
-        {
-            if (reload.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
-                throw new JsonException("autoReload must be true or false.");
-            autoReload = reload.GetBoolean();
-        }
         var padding = Default.Padding;
         if (root.TryGetProperty("viewport", out var viewport))
         {
@@ -42,7 +35,7 @@ public sealed record StationeryStyleSettings(bool AutoReload, ViewportPadding Pa
                     ReadPixels(value, "bottom", padding.Bottom), ReadPixels(value, "left", padding.Left));
             }
         }
-        return new(autoReload, padding);
+        return new(padding);
     }
 
     private static JsonElement RequireObject(JsonElement value, string path) =>

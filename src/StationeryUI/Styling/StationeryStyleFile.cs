@@ -1,66 +1,123 @@
-namespace StationeryUI.Styling;
+﻿namespace StationeryUI.Styling;
 
 using System.Text.Json;
 
-/// <summary>Loads styles on the calling thread. Call Update from the game loop; no background callbacks are used.</summary>
+/// <summary>Always watches loading configuration; watches visual styles only when enabled.
+/// Call Update from the game loop. All reads and state changes occur on the calling thread.</summary>
 public sealed class StationeryStyleFile
 {
     private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(500);
     private TimeSpan elapsed;
-    private string? acceptedText;
-    private string? pendingText;
+    private string? acceptedConfigurationText;
+    private string? pendingConfigurationText;
+    private string? acceptedStyleText;
+    private string? pendingStyleText;
+    private string? configurationError;
+    private string? styleError;
+    private bool needsInitialStyle = true;
 
-    public string FilePath { get; }
+    public string ConfigurationFilePath { get; }
+    public string FilePath { get; private set; }
+    public StationeryStyleConfiguration Configuration { get; private set; } = StationeryStyleConfiguration.Default;
     public StationeryStyleSettings Current { get; private set; } = StationeryStyleSettings.Default;
-    public string? LastError { get; private set; }
+    public string? LastError => configurationError ?? styleError;
 
-    public StationeryStyleFile(string filePath)
+    public StationeryStyleFile(string configurationFilePath)
     {
-        FilePath = Path.GetFullPath(filePath);
+        ConfigurationFilePath = Path.GetFullPath(configurationFilePath);
+        FilePath = ResolveStylePath(Configuration.StyleFile);
         Reload();
     }
 
-    /// <summary>Reads immediately, even with auto reload disabled. Failure preserves the last good settings.</summary>
-    public bool Reload() => TryLoad(requireStableText: false);
+    /// <summary>Reads both files immediately, even with style auto reload disabled.</summary>
+    public bool Reload()
+    {
+        ReadConfiguration(requireStableText: false);
+        return ReadStyle(requireStableText: false);
+    }
 
-    /// <summary>Polls at most twice per second, accepting a change after two identical reads.</summary>
+    /// <summary>Configuration is checked even when style auto reload is off.</summary>
     public bool Update(TimeSpan delta)
     {
-        if (!Current.AutoReload) return false;
         elapsed += delta;
         if (elapsed < PollInterval) return false;
         elapsed = TimeSpan.Zero;
-        return TryLoad(requireStableText: true);
+        ReadConfiguration(requireStableText: true);
+        return (Configuration.AutoReload || needsInitialStyle) && ReadStyle(requireStableText: true);
     }
 
-    private bool TryLoad(bool requireStableText)
+    private string ResolveStylePath(string path) => Path.GetFullPath(path, Path.GetDirectoryName(ConfigurationFilePath)!);
+
+    private void ReadConfiguration(bool requireStableText)
+    {
+        try
+        {
+            var text = File.ReadAllText(ConfigurationFilePath);
+            if (text == acceptedConfigurationText)
+            {
+                pendingConfigurationText = null;
+                configurationError = null;
+                return;
+            }
+            if (requireStableText && text != pendingConfigurationText)
+            {
+                pendingConfigurationText = text;
+                return;
+            }
+            var next = StationeryStyleConfiguration.Parse(text);
+            var path = ResolveStylePath(next.StyleFile);
+            if (path != FilePath)
+            {
+                FilePath = path;
+                acceptedStyleText = null;
+                needsInitialStyle = true;
+            }
+            // Never reuse a pre-disable snapshot when resuming or changing paths.
+            pendingStyleText = null;
+            Configuration = next;
+            acceptedConfigurationText = text;
+            pendingConfigurationText = null;
+            configurationError = null;
+        }
+        catch (Exception ex) when (IsReadError(ex))
+        {
+            configurationError = $"{ConfigurationFilePath}: {ex.Message}";
+            pendingConfigurationText = null;
+        }
+    }
+
+    private bool ReadStyle(bool requireStableText)
     {
         try
         {
             var text = File.ReadAllText(FilePath);
-            if (text == acceptedText)
+            if (text == acceptedStyleText)
             {
-                pendingText = null;
-                LastError = null;
+                pendingStyleText = null;
+                styleError = null;
+                needsInitialStyle = false;
                 return false;
             }
-            if (requireStableText && text != pendingText)
+            if (requireStableText && text != pendingStyleText)
             {
-                pendingText = text;
+                pendingStyleText = text;
                 return false;
             }
-            var next = StationeryStyleSettings.Parse(text);
-            Current = next;
-            acceptedText = text;
-            pendingText = null;
-            LastError = null;
+            Current = StationeryStyleSettings.Parse(text);
+            acceptedStyleText = text;
+            pendingStyleText = null;
+            styleError = null;
+            needsInitialStyle = false;
             return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        catch (Exception ex) when (IsReadError(ex))
         {
-            LastError = $"{FilePath}: {ex.Message}";
-            pendingText = null;
+            styleError = $"{FilePath}: {ex.Message}";
+            pendingStyleText = null;
             return false;
         }
     }
+
+    private static bool IsReadError(Exception ex) =>
+        ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException;
 }

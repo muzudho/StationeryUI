@@ -45,12 +45,13 @@ internal sealed class Demo : Game
     protected override void LoadContent()
     {
         var source = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>()
-            .FirstOrDefault(attribute => attribute.Key == "StationeryStyleSource")?.Value;
-        var stylePath = Environment.GetEnvironmentVariable("STATIONERYUI_STYLE_PATH");
-        if (string.IsNullOrWhiteSpace(stylePath))
-            stylePath = source is not null && Directory.Exists(Path.GetDirectoryName(source))
-                ? source : Path.Combine(AppContext.BaseDirectory, "App_Data", "demo.stationery-style.json");
-        styles = new(stylePath);
+            .FirstOrDefault(attribute => attribute.Key == "StationeryConfigurationSource")?.Value;
+        var configurationPath = Environment.GetEnvironmentVariable("STATIONERYUI_CONFIG_PATH");
+        if (string.IsNullOrWhiteSpace(configurationPath))
+            configurationPath = source is not null && Directory.Exists(Path.GetDirectoryName(source))
+                ? source : Path.Combine(AppContext.BaseDirectory, "App_Data", "demo.stationery-config.json");
+        styles = new(configurationPath);
+        System.Diagnostics.Trace.WriteLine($"StationeryUI configuration: {styles.ConfigurationFilePath}");
         System.Diagnostics.Trace.WriteLine($"StationeryUI style: {styles.FilePath}");
         if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG")))
         {

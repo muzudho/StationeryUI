@@ -1,11 +1,10 @@
 {
-    "autoReload": true,
     "viewport": {
         "padding": {
-            "top": "16px",
+            "top": "32px",
             "right": "8px",
             "bottom": "8px",
-            "left": "8px"
+            "left": "16px"
         },
         "contents": [
         ]
