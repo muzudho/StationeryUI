@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><IsPackable>false</IsPackable></PropertyGroup>
   <ItemGroup><ProjectReference Include="../../src/StationeryUI/StationeryUI.csproj" /></ItemGroup>
+  <ItemGroup><Compile Include="../../samples/StationeryUI.StyleDesigner/StyleBlueprint.cs" Link="StyleBlueprint.cs" /></ItemGroup>
   <ItemGroup><ProjectReference Include="../../src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj" /></ItemGroup>
   <ItemGroup><Compile Include="../../samples/StationeryUI.Demo/DemoModelBinding.cs" Link="DemoModelBinding.cs" /></ItemGroup>
   <ItemGroup><None Include="../../App_Data/demo.stationery-style.json" Link="Fixtures/demo.stationery-style.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
