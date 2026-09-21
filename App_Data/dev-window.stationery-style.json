@@ -1,0 +1,63 @@
+{
+    "window": {
+        "width": 1000,
+        "height": 660
+    },
+    "models": [
+        {
+            "id": "developerWindow",
+            "type": "viewport",
+            "children": [
+                { "id": "instructions", "type": "textBlock" },
+                {
+                    "id": "inspectorSplit",
+                    "type": "splitPane",
+                    "children": [
+                        { "id": "stationeryTree", "type": "tree" },
+                        { "id": "details", "type": "textBlock" }
+                    ]
+                },
+                { "id": "copyPath", "type": "button" }
+            ]
+        }
+    ],
+    "layouts": [
+        {
+            "id": "windowPadding",
+            "type": "panel",
+            "padding": { "top": "8px", "right": "8px", "bottom": "8px", "left": "8px" }
+        },
+        {
+            "id": "windowRows",
+            "type": "floating-layout",
+            "row-definitions": ["104px", "1rate", "48px"],
+            "column-definitions": ["1rate"]
+        },
+        {
+            "id": "inspectorColumns",
+            "type": "split-pane",
+            "orientation": "vertical",
+            "ratio": 0.4,
+            "dividerWidth": "10px",
+            "minimumPaneSize": "120px"
+        }
+    ],
+    "bindings": [
+        { "layout": "windowPadding", "model": "developerWindow" },
+        {
+            "layout": "windowRows",
+            "parentModel": "developerWindow",
+            "childrenModel": [
+                { "model": "instructions", "row": 0, "column": 0 },
+                { "model": "inspectorSplit", "row": 1, "column": 0 },
+                { "model": "copyPath", "row": 2, "column": 0 }
+            ]
+        },
+        {
+            "layout": "inspectorColumns",
+            "model": "developerWindow/inspectorSplit",
+            "firstModel": "stationeryTree",
+            "secondModel": "details"
+        }
+    ]
+}

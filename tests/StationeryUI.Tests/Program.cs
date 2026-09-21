@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 
 var tests = new (string Name, Action Run)[]
 {
+    ("developer style external overrides and embedded distribution defaults", DeveloperStyleTests.Run),
     ("developer inspection preserves selection, expansion and live details", DeveloperInspectionTests.Run),
     ("split panes arrange, clamp, preserve state and validate style bindings", SplitPaneTests.Run),
     ("tree expansion, selection, keyboard navigation and scoped IDs", TreeViewTests.Run),

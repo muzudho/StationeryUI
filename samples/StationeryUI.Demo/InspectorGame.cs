@@ -12,6 +12,7 @@ using System.Text.Json;
 internal sealed class InspectorGame : Game
 {
     private readonly GraphicsDeviceManager manager;
+    private readonly StationeryDeveloperStyle style = StationeryDeveloperStyle.Load();
     private readonly string pipeName;
     private readonly CancellationTokenSource stopping = new();
     private readonly object gate = new();
@@ -32,7 +33,7 @@ internal sealed class InspectorGame : Game
     public InspectorGame(string pipeName)
     {
         this.pipeName = pipeName;
-        manager = new(this) { PreferredBackBufferWidth = 1000, PreferredBackBufferHeight = 660 };
+        manager = new(this) { PreferredBackBufferWidth = style.Width, PreferredBackBufferHeight = style.Height };
         Window.Title = "StationeryUI Inspector";
         Window.AllowUserResizing = true; IsMouseVisible = true;
     }
@@ -40,7 +41,7 @@ internal sealed class InspectorGame : Game
     {
         Window.Title = "F12 開発者ウィンドウ — 文房具UI";
         input = new(Window.Handle);
-        view = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family));
+        view = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), style);
         connection = Task.Run(ConnectAsync);
     }
     private async Task ConnectAsync()
