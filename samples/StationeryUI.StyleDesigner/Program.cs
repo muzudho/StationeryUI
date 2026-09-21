@@ -15,10 +15,10 @@ internal static class Program
     private static void Main() { using var game = new DesignerGame(); game.Run(); }
 }
 
-internal sealed class DesignerGame : Game
+internal sealed partial class DesignerGame : Game
 {
     private readonly GraphicsDeviceManager manager;
-    private readonly StyleBlueprint blueprint = new();
+    private StyleBlueprint blueprint = new();
     private WindowsTextInputService input = null!;
     private DesktopUi ui = null!;
     private DesktopUi.Element columns = null!, rows = null!, label = null!, kind = null!, status = null!, output = null!;
@@ -37,7 +37,7 @@ internal sealed class DesignerGame : Game
 
     public DesignerGame()
     {
-        manager = new(this) { PreferredBackBufferWidth = 1280, PreferredBackBufferHeight = 900 };
+        manager = new(this) { PreferredBackBufferWidth = 1600, PreferredBackBufferHeight = 900 };
         Window.Title = "StationeryUI Style Designer";
         Window.AllowUserResizing = true; IsMouseVisible = true;
     }
@@ -45,14 +45,7 @@ internal sealed class DesignerGame : Game
     {
         Window.Title = "文房具 UI — スタイル設計ツール";
         input = new(Window.Handle);
-        if (!string.IsNullOrEmpty(smokeOutput))
-        {
-            blueprint.Resize(3, 2);
-            blueprint.Columns[0].Number = "1.5";
-            blueprint.Columns[1].Number = "120"; blueprint.Columns[1].IsRate = false;
-            outputPath = Path.Combine(smokeOutput, "plan.stationery-style.json");
-        }
-        BuildUi();
+        BuildWelcome();
     }
     private DesktopUi.Element Text(string id, ScreenRectangle bounds, string text) =>
         ui.AddTextBlock(ui.Root.AddChild(id, "textBlock"), bounds, text);
@@ -65,15 +58,18 @@ internal sealed class DesignerGame : Game
     }
     private void Capture()
     {
+        if (!editingPage || !blueprint.CanEditGrid) return;
         foreach (var (field, _, track) in tracks) track.Number = field.Editor!.Text;
-        blueprint.At(selectedRow, selectedColumn).Label = label.Editor!.Text;
+        if (!blueprint.IsImported) blueprint.At(selectedRow, selectedColumn).Label = label.Editor!.Text;
         outputPath = output.Editor!.Text;
     }
     private void BuildUi()
     {
         ui?.Dispose(); tracks.Clear(); cells.Clear(); preview.Clear();
         ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme };
-        Text("title", new(12, 8, 1256, 42), "スタイル設計ツール — 設計図を作り、JSON を AI コーディングへ渡す（横・縦とも 1～8 セル）");
+        if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
+        Text("title", new(12, 8, 1256, 42), blueprint.IsImported ? $"2 / 2 — 編集中：{blueprint.SelectedLayoutId}（既存モデルと bindings は保持）" : "2 / 2 — 新規スタイル設計（横・縦とも 1～8 セル）");
+        ui.AddButton("back", new(1070, 54, 198, 44), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
         Text("columnsLabel", new(12, 54, 140, 44), "横のセル数");
         columns = ui.AddTextBox("columns", new(154, 54, 80, 44), "横のセル数", blueprint.Columns.Count.ToString());
         Text("rowsLabel", new(246, 54, 140, 44), "縦のセル数");
@@ -107,19 +103,23 @@ internal sealed class DesignerGame : Game
                 var element = ui.AddButton($"cell{r}_{c}", new(196 + c * cw, 230 + r * rh, cw - 4, rh - 4), "", () =>
                 {
                     Capture(); selectedRow = rr; selectedColumn = cc;
-                    SetText(label, blueprint.At(rr, cc).Label); kind.Label = KindLabel(blueprint.At(rr, cc).Kind);
+                    SetText(label, blueprint.IsImported ? ImportedCellDescription(rr, cc) : blueprint.At(rr, cc).Label);
+                    kind.Label = blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(rr, cc).Kind);
                 });
                 cells.Add((element, r, c));
             }
         Text("selected", new(12, 562, 180, 44), "選択セルの文房具：");
-        kind = ui.AddButton("kind", new(196, 562, 190, 44), KindLabel(blueprint.At(selectedRow, selectedColumn).Kind), () =>
+        kind = ui.AddButton("kind", new(196, 562, 190, 44), blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(selectedRow, selectedColumn).Kind), () =>
         {
+            if (blueprint.IsImported) return;
             var cell = blueprint.At(selectedRow, selectedColumn);
             var index = StyleBlueprint.Kinds.ToList().IndexOf(cell.Kind);
             cell.Kind = StyleBlueprint.Kinds[(index + 1) % StyleBlueprint.Kinds.Count]; kind.Label = KindLabel(cell.Kind);
         });
-        Text("labelTitle", new(400, 562, 100, 44), "表示名：");
-        label = ui.AddTextBox("label", new(504, 562, 764, 44), "選択セルの表示名", blueprint.At(selectedRow, selectedColumn).Label);
+        Text("labelTitle", new(400, 562, 100, 44), blueprint.IsImported ? "モデル：" : "表示名：");
+        label = ui.AddTextBox("label", new(504, 562, 764, 44), "選択セルの表示名", blueprint.IsImported ? ImportedCellDescription(selectedRow, selectedColumn) : blueprint.At(selectedRow, selectedColumn).Label);
+        ui.Focus.SetEnabled(label.Path, !blueprint.IsImported);
+        ui.Focus.SetEnabled(kind.Path, !blueprint.IsImported);
         Text("previewTitle", new(12, 620, 180, 136), "サイズ配分\n1000×600px\n縦・横を縮めて表示");
         for (var r = 0; r < blueprint.Rows.Count; r++)
             for (var c = 0; c < blueprint.Columns.Count; c++)
@@ -132,6 +132,7 @@ internal sealed class DesignerGame : Game
             message = "設計図を出力しました。この JSON を AI に渡して「こう作って」と指示できます。";
         }));
         status = Text("status", new(12, 824, 1256, 64), message);
+        BuildSidebar();
     }
     private static string KindLabel(string kind) => kind switch
     { "container" => "未指定（空き領域）", "button" => "ボタン", "textBox" => "テキスト入力", "textBlock" => "説明テキスト", "link" => "ページリンク", "tree" => "ツリー", _ => kind };
@@ -145,31 +146,39 @@ internal sealed class DesignerGame : Game
     }
     protected override void Update(GameTime gameTime)
     {
-        var scale = Math.Min(GraphicsDevice.Viewport.Width / 1280.0, GraphicsDevice.Viewport.Height / 900.0);
-        ui.Viewport.Scale = Math.Max(.1, scale);
+        var scale = Math.Max(.1, Math.Min(GraphicsDevice.Viewport.Width / 1600.0, GraphicsDevice.Viewport.Height / 900.0));
+        ui.Viewport.Scale = scale;
+        ui.Viewport.Offset = new(editingPage ? 320 * scale : 0, 0);
+        if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Theme = theme; }
         var mouse = Mouse.GetState(); var keyboard = Keyboard.GetState();
-        if (!string.IsNullOrEmpty(smokeOutput))
+        PrepareDesignerSmoke(ref mouse, ref keyboard);
+        if (editingPage && mouse.LeftButton == ButtonState.Pressed) sidebarActive = mouse.X < 320 * scale;
+        var active = IsActive || !string.IsNullOrEmpty(smokeOutput);
+        if (editingPage && sidebar is not null)
         {
-            // Exercise the kind button through normal UI input, then export a new test blueprint.
-            if (frames == 4) { SetText(columns, "4"); SetText(rows, "3"); }
-            if (frames == 8) { SetText(columns, "2"); SetText(rows, "1"); }
-            var point = ui.Viewport.ToWindow(frames >= 4 ? new ScreenRectangle(484, 54, 220, 44) : kind.Bounds);
-            mouse = new((int)point.X + 10, (int)point.Y + 10, 0, frames is 1 or 5 or 9 or 11 ? ButtonState.Pressed : ButtonState.Released,
-                ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
-            keyboard = new();
-            if (frames == 3 && !smokeClicked) { SetText(label, "開始ボタン"); smokeClicked = true; }
+            sidebar.Update(gameTime, active, sidebarActive ? keyboard : new(), mouse);
+            HandleTreeSelection();
         }
-        ui.Update(gameTime, IsActive || !string.IsNullOrEmpty(smokeOutput), keyboard, mouse);
-        if (rebuild) { rebuild = false; BuildUi(); ui.Viewport.Scale = Math.Max(.1, scale); }
+        ui.Update(gameTime, active, !editingPage || !sidebarActive ? keyboard : new(), mouse);
+        if (pendingPage is not null) { var action = pendingPage; pendingPage = null; action(); return; }
+        if (!editingPage) { status.Label = message; base.Update(gameTime); return; }
+        if (rebuild) { rebuild = false; BuildUi(); ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, 0); }
+        if (!blueprint.CanEditGrid) { status.Label = message; base.Update(gameTime); return; }
         Capture();
         foreach (var (element, row, column) in cells)
         {
             var cell = blueprint.At(row, column);
-            element.Label = $"{(row == selectedRow && column == selectedColumn ? "● " : "")}{row + 1},{column + 1} {(string.IsNullOrEmpty(cell.Label) ? KindLabel(cell.Kind) : cell.Label)}";
+            var description = blueprint.IsImported ? ImportedCellDescription(row, column) : (string.IsNullOrEmpty(cell.Label) ? KindLabel(cell.Kind) : cell.Label);
+            element.Label = $"{(row == selectedRow && column == selectedColumn ? "● " : "")}{row + 1},{column + 1} {description}";
         }
         try
         {
-            var arranged = StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(blueprint.BuildJson()), 1000, 600);
+            var json = blueprint.BuildJson();
+            RefreshTree(json);
+            var visual = new StyleBlueprint(); visual.Resize(blueprint.Columns.Count, blueprint.Rows.Count);
+            for (var i = 0; i < visual.Columns.Count; i++) { visual.Columns[i].Number = blueprint.Columns[i].Number; visual.Columns[i].IsRate = blueprint.Columns[i].IsRate; }
+            for (var i = 0; i < visual.Rows.Count; i++) { visual.Rows[i].Number = blueprint.Rows[i].Number; visual.Rows[i].IsRate = blueprint.Rows[i].IsRate; }
+            var arranged = StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(visual.BuildJson()), 1000, 600);
             foreach (var (element, row, column) in preview)
             {
                 var rect = arranged.Bounds[$"/design/mainPage/cellR{row + 1}C{column + 1}"];
@@ -187,10 +196,11 @@ internal sealed class DesignerGame : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(DesktopUi.Convert(ui.Theme.Background)); ui.Draw();
-        if (!string.IsNullOrEmpty(smokeOutput) && ++frames == 16)
+        if (editingPage) sidebar?.Draw();
+        CaptureWelcomeSmoke();
+        if (!string.IsNullOrEmpty(smokeOutput) && ++frames == 19)
         {
-            if (blueprint.At(0, 0).Kind != "button" || blueprint.At(0, 0).Label != "開始ボタン") throw new InvalidOperationException("Designer cell editing failed.");
-            if (blueprint.Columns.Count != 2 || blueprint.Rows.Count != 1) throw new InvalidOperationException("Designer resize/confirmation failed.");
+            ValidateDesignerSmoke();
             blueprint.Export(outputPath);
             var data = new Microsoft.Xna.Framework.Color[GraphicsDevice.Viewport.Width * GraphicsDevice.Viewport.Height];
             GraphicsDevice.GetBackBufferData(data);
@@ -202,5 +212,5 @@ internal sealed class DesignerGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { ui?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }

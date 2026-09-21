@@ -1,11 +1,13 @@
 using StationeryUI.StyleDesigner;
 using StationeryUI.Styling;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 internal static class StyleBlueprintTests
 {
     public static void Run()
     {
+        ImportedStyles();
         var plan = new StyleBlueprint();
         plan.Resize(3, 2);
         plan.Columns[0].Number = "1.5";
@@ -45,6 +47,32 @@ internal static class StyleBlueprintTests
             Check(Directory.GetFiles(directory).Length == 1, "invalid draft creates no output");
         }
         finally { Directory.Delete(directory, true); }
+    }
+    private static void ImportedStyles()
+    {
+        var source = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json")))!;
+        source["extraMetadata"] = new JsonObject { ["memo"] = "既存の拡張情報" };
+        var imported = StyleBlueprint.Parse(source.ToJsonString());
+        Check(imported.IsImported && imported.SelectedLayoutId == "topDemoLayout", "opens existing layout");
+        imported.Columns[0].Number = "2.5";
+        var edited = JsonNode.Parse(imported.BuildJson())!;
+        foreach (var key in new[] { "models", "bindings", "extraMetadata" })
+            Check(JsonNode.DeepEquals(source[key], edited[key]), "preserves " + key);
+        Check(JsonNode.DeepEquals(source["layouts"]![0], edited["layouts"]![0]), "preserves unrelated panel");
+        Check(imported.CellDescription(0, 0) == "nameField", "existing model references in table");
+        imported.SelectLayout("splitDemoLayout");
+        imported.Rows[0].Number = "72";
+        imported.SelectLayout("topDemoLayout");
+        Check(imported.Columns[0].Number == "2.5", "selection retains earlier layout edits");
+        Check(StationeryStyleSettings.Parse(imported.BuildJson()).Layouts.Single(l => l.Id == "splitDemoLayout").Rows[0].Value == 72, "other edit retained");
+        try { imported.Resize(1, 1); throw new Exception("Invalid shrink accepted."); } catch (ArgumentException) { }
+        Check(imported.Rows.Count == 5 && imported.Columns.Count == 2, "rejected shrink is atomic");
+        imported.Columns[0].Number = "invalid";
+        Reject(() => imported.SelectLayout("splitDemoLayout"));
+        Check(imported.SelectedLayoutId == "topDemoLayout", "invalid draft not discarded on selection");
+        var readOnly = StyleBlueprint.Parse("{\"models\":[{\"id\":\"root\",\"type\":\"viewport\"}],\"layouts\":[],\"bindings\":[],\"window\":{\"width\":1000}}");
+        Check(!readOnly.CanEditGrid && JsonNode.Parse(readOnly.BuildJson())!["window"]!["width"]!.GetValue<int>() == 1000, "non-grid document stays intact");
+        Reject(() => StyleBlueprint.Parse("{"));
     }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
     private static void Reject(Action action)

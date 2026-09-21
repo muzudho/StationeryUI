@@ -7,9 +7,54 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Encodings.Web;
 
-/// <summary>A new in-memory design, exported as a style file. Never opens or edits an existing file.</summary>
+/// <summary>A detached new or imported design. Export always creates a new file.</summary>
 public sealed class StyleBlueprint
 {
+    private JsonObject? imported;
+    public bool IsImported => imported is not null;
+    public string? SelectedLayoutId { get; private set; }
+    public bool CanEditGrid => !IsImported || SelectedLayoutId is not null;
+    public IReadOnlyList<string> EditableLayouts => imported?["layouts"]!.AsArray()
+        .Where(l => (string?)l!["type"] == "floating-layout" && l["row-definitions"]!.AsArray().Count <= 8 && l["column-definitions"]!.AsArray().Count <= 8)
+        .Select(l => (string)l!["id"]!).ToArray() ?? ["mainGrid"];
+
+    public static StyleBlueprint Open(string path) => Parse(File.ReadAllText(path));
+    public static StyleBlueprint Parse(string json)
+    {
+        StationeryStyleSettings.Parse(json);
+        var plan = new StyleBlueprint { imported = JsonNode.Parse(json)!.AsObject() };
+        if (plan.EditableLayouts.Count > 0) plan.SelectLayout(plan.EditableLayouts[0]);
+        return plan;
+    }
+    public void SelectLayout(string id)
+    {
+        if (!IsImported || !EditableLayouts.Contains(id)) throw new ArgumentException("このレイアウトは表では編集できません。");
+        var committed = JsonNode.Parse(BuildJson())!.AsObject();
+        var layout = committed["layouts"]!.AsArray().Single(l => (string?)l!["id"] == id)!;
+        imported = committed;
+        SelectedLayoutId = null;
+        Resize(layout["column-definitions"]!.AsArray().Count, layout["row-definitions"]!.AsArray().Count);
+        void Read(string key, List<Track> target)
+        {
+            for (var i = 0; i < target.Count; i++)
+            {
+                var value = (string)layout[key]![i]!;
+                target[i].IsRate = value.EndsWith("rate", StringComparison.Ordinal);
+                target[i].Number = value[..^(target[i].IsRate ? 4 : 2)];
+            }
+        }
+        Read("row-definitions", Rows); Read("column-definitions", Columns);
+        SelectedLayoutId = id;
+    }
+
+    public string CellDescription(int row, int column)
+    {
+        if (!IsImported) return At(row, column).Label;
+        var settings = StationeryStyleSettings.Parse(imported!.ToJsonString());
+        var paths = settings.Bindings.Where(b => b.Layout == SelectedLayoutId).SelectMany(b => b.Children)
+            .Where(c => c.Row == row && c.Column == column).Select(c => c.ModelPath);
+        return string.Join(" / ", paths.Select(p => p.Split('/').Last()));
+    }
     public sealed class Track
     {
         public string Number { get; set; } = "1";
@@ -38,6 +83,12 @@ public sealed class StyleBlueprint
     {
         if (columns is < 1 or > 8 || rows is < 1 or > 8)
             throw new ArgumentException("この設計ツールでは横・縦とも 1～8 セルを指定してください。");
+        if (IsImported && SelectedLayoutId is not null)
+        {
+            var settings = StationeryStyleSettings.Parse(BuildJson());
+            if (settings.Bindings.Where(b => b.Layout == SelectedLayoutId).SelectMany(b => b.Children).Any(c => c.Row >= rows || c.Column >= columns))
+                throw new ArgumentException("配置済みの文房具が表の外に出ます。既存の bindings を保つため、このサイズには縮小できません。");
+        }
         static void ResizeTracks(List<Track> tracks, int count)
         {
             while (tracks.Count < count) tracks.Add(new());
@@ -51,6 +102,17 @@ public sealed class StyleBlueprint
 
     public string BuildJson()
     {
+        if (imported is not null)
+        {
+            var draft = (JsonObject)imported.DeepClone();
+            if (SelectedLayoutId is not null)
+            {
+                var layout = draft["layouts"]!.AsArray().Single(l => (string?)l!["id"] == SelectedLayoutId)!;
+                layout["row-definitions"] = new JsonArray(Rows.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>());
+                layout["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>());
+            }
+            return Serialize(draft);
+        }
         var models = new JsonArray();
         var bindings = new JsonArray();
         for (var row = 0; row < Rows.Count; row++)
@@ -78,6 +140,11 @@ public sealed class StyleBlueprint
             ["bindings"] = new JsonArray(new JsonObject
             { ["layout"] = "mainGrid", ["parentModel"] = "design/mainPage", ["childrenModel"] = bindings })
         };
+        return Serialize(root);
+    }
+
+    private static string Serialize(JsonObject root)
+    {
         var json = root.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
         StationeryStyleSettings.Parse(json);
         // Use four spaces, matching the style file convention, without altering label strings.

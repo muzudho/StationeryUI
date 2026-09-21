@@ -24,6 +24,19 @@ public sealed partial class DesktopUi
 
     private static double TreeRowHeight(StationeryTheme theme) => Math.Max(32, theme.FontSize * 1.5 + 8);
 
+    /// <summary>Replaces a tree snapshot while keeping its element identity and scroll position.</summary>
+    public void ReplaceTree(Element element, TreeView tree)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        ArgumentNullException.ThrowIfNull(tree);
+        if (!elements.Contains(element) || element.Tree is null) throw new ArgumentException("Expected a tree element owned by this UI.", nameof(element));
+        if (Focus.CapturedId == element.Path) Focus.ReleasePointer();
+        element.PressedTreeItem = null;
+        element.DraggingTreeScroll = false;
+        element.Tree = tree;
+        element.TreeScroll = Math.Clamp(element.TreeScroll, 0, Math.Max(0, tree.VisibleRows().Count * TreeRowHeight(element.Theme ?? Theme) - element.Bounds.Height));
+    }
+
     private (ScreenRectangle Track, ScreenRectangle Thumb, double Maximum) TreeScrollbar(Element element)
         => Scrollbar(element, element.Tree!.VisibleRows().Count * TreeRowHeight(element.Theme ?? Theme), element.TreeScroll);
 
