@@ -155,6 +155,8 @@ ui.Viewport.Scale = 1.5;
 
 ## 関連資料
 
+- [他アプリへのスタイル設定組み込みガイド](style-settings/README.md)：AI 向けの接続例、オートリロード、JSON の読み方、既存 C# からの段階的な移行。
+
 - [インスペクターパネルとツールヒント欄](inspector-panel-guide.md)：画面下の80pxに操作説明を集約する設計ガイド。
 
 - [下線付きテキストの見分け方](underline-guide.md)
