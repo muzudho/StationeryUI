@@ -24,6 +24,27 @@ public sealed partial class DesktopUi
 
     private static double TreeRowHeight(StationeryTheme theme) => Math.Max(32, theme.FontSize * 1.5 + 8);
 
+    private (ScreenRectangle Track, ScreenRectangle Thumb, double Maximum) TreeScrollbar(Element element)
+    {
+        var total = element.Tree!.VisibleRows().Count * TreeRowHeight(element.Theme ?? Theme);
+        var maximum = Math.Max(0, total - element.Bounds.Height);
+        if (maximum == 0 || element.Bounds.Height <= 0 || element.Bounds.Width <= 0) return default;
+        // Style px are window pixels, including when text/UI zoom is active.
+        var width = Math.Min(element.Bounds.Width, 17 / Viewport.Scale);
+        var track = new ScreenRectangle(element.Bounds.X + element.Bounds.Width - width, element.Bounds.Y, width, element.Bounds.Height);
+        var height = Math.Min(track.Height, Math.Max(17 / Viewport.Scale, track.Height * track.Height / total));
+        var y = track.Y + (track.Height - height) * element.TreeScroll / maximum;
+        return (track, new(track.X, y, width, height), maximum);
+    }
+
+    private void DragTreeScroll(Element element, ScreenPoint pointer)
+    {
+        var bar = TreeScrollbar(element);
+        var travel = bar.Track.Height - bar.Thumb.Height;
+        if (bar.Maximum <= 0 || travel <= 0) { element.DraggingTreeScroll = false; return; }
+        element.TreeScroll = Math.Clamp((pointer.Y - bar.Track.Y - element.TreeThumbGrab * bar.Thumb.Height) / travel, 0, 1) * bar.Maximum;
+    }
+
     private void ClampTreeScroll(Element element)
     {
         var height = TreeRowHeight(element.Theme ?? Theme);
@@ -35,6 +56,7 @@ public sealed partial class DesktopUi
     {
         ClampTreeScroll(element);
         if (!Contains(element.Bounds, pointer)) return (null, false);
+        if (Contains(TreeScrollbar(element).Track, pointer)) return (null, false);
         var theme = element.Theme ?? Theme;
         var height = TreeRowHeight(theme);
         var rows = element.Tree!.VisibleRows();
@@ -47,6 +69,13 @@ public sealed partial class DesktopUi
 
     private void ReleaseTree(Element element, ScreenPoint pointer, bool captured)
     {
+        if (element.DraggingTreeScroll)
+        {
+            if (Focus.CapturedId == element.Path) DragTreeScroll(element, pointer);
+            element.DraggingTreeScroll = false;
+            element.PressedTreeItem = null;
+            return;
+        }
         var hit = TreeHit(element, pointer);
         if (captured && hit.Item is not null && hit.Item == element.PressedTreeItem &&
             hit.Toggle && element.PressedTreeToggle) element.Tree!.Toggle(hit.Item);
@@ -59,6 +88,8 @@ public sealed partial class DesktopUi
     {
         var tree = element.Tree!;
         ClampTreeScroll(element);
+        if (Focus.CapturedId != element.Path) element.DraggingTreeScroll = false;
+        if (element.DraggingTreeScroll) { DragTreeScroll(element, pointer); return; }
         if (hovered && wheel != 0)
         {
             element.TreeScroll -= wheel / 120.0 * TreeRowHeight(element.Theme ?? Theme) * 3;
@@ -66,6 +97,22 @@ public sealed partial class DesktopUi
         }
         if (hovered && pressed && Focus.CapturedId == element.Path)
         {
+            var bar = TreeScrollbar(element);
+            if (Contains(bar.Track, pointer))
+            {
+                element.PressedTreeItem = null;
+                if (Contains(bar.Thumb, pointer))
+                {
+                    element.DraggingTreeScroll = true;
+                    element.TreeThumbGrab = (pointer.Y - bar.Thumb.Y) / bar.Thumb.Height;
+                }
+                else
+                {
+                    element.TreeScroll += pointer.Y < bar.Thumb.Y ? -element.Bounds.Height : element.Bounds.Height;
+                    ClampTreeScroll(element);
+                }
+                return;
+            }
             var hit = TreeHit(element, pointer);
             element.PressedTreeItem = hit.Item;
             element.PressedTreeToggle = hit.Toggle;
@@ -141,13 +188,11 @@ public sealed partial class DesktopUi
             }
             DrawText(row.Item.Label, x + 30, y + 4, theme, theme.Text);
         }
-        var total = rows.Count * height;
-        if (total > element.Bounds.Height)
+        var bar = TreeScrollbar(element);
+        if (bar.Maximum > 0)
         {
-            var thumb = Math.Max(8, element.Bounds.Height * element.Bounds.Height / total);
-            thumb = Math.Min(thumb, element.Bounds.Height);
-            var y = element.Bounds.Y + (element.Bounds.Height - thumb) * element.TreeScroll / (total - element.Bounds.Height);
-            Fill(new(element.Bounds.X + element.Bounds.Width - 4, y, 3, thumb), theme.Border);
+            Fill(bar.Track, theme.Background);
+            Fill(bar.Thumb, element.DraggingTreeScroll || Contains(bar.Thumb, pointer) ? theme.Accent : theme.Border);
         }
         Fill(new(element.Bounds.X, element.Bounds.Y + element.Bounds.Height - theme.BorderWidth, element.Bounds.Width, theme.BorderWidth),
             Focus.FocusedId == element.Path ? theme.Accent : theme.Border);

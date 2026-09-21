@@ -202,6 +202,20 @@ internal sealed class Demo : Game
                         mouse = new MouseState();
                         keyboard = updateFrames == 2 ? new KeyboardState(smokeCase == "tree-end" ? Keys.End : Keys.Left) : new KeyboardState();
                     }
+                    if (smokeCase is "tree-drag" or "tree-drag-up" or "tree-track")
+                    {
+                        var dragging = smokeCase != "tree-track";
+                        var returnUp = smokeCase == "tree-drag-up" && updateFrames >= 4;
+                        var moving = updateFrames >= 3;
+                        var y = !dragging ? bounds.Y + bounds.Height - 3
+                            : returnUp ? bounds.Y - 30
+                            : moving && updateFrames <= 4 ? bounds.Y + bounds.Height + 30 : bounds.Y + 10;
+                        mouse = new MouseState((int)(moving && dragging ? bounds.X + bounds.Width + 30 : bounds.X + bounds.Width - 8),
+                            (int)y, 0,
+                            (updateFrames == 2 || dragging && updateFrames == 3 || smokeCase == "tree-drag-up" && updateFrames == 4)
+                                ? ButtonState.Pressed : ButtonState.Released,
+                            ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+                    }
                 }
                 else
                 {
@@ -270,11 +284,17 @@ internal sealed class Demo : Game
                     throw new InvalidOperationException($"Failed tree smoke scenario: {smokeCase}");
                 var leaf = ui!.Inspect().Single(entry => entry.Path.EndsWith("/stationery/writing/pencil", StringComparison.Ordinal));
                 if (collapsed && leaf.Visible) throw new InvalidOperationException("Collapsed tree descendant remained visible in inspector.");
-                if (smokeCase is "tree-scroll" or "tree-end")
+                if (smokeCase is "tree-scroll" or "tree-end" or "tree-drag" or "tree-track")
                 {
                     var last = ui.Inspect().Single(entry => entry.Path.EndsWith("/stationery/paper", StringComparison.Ordinal));
                     if (!last.Visible || smokeCase == "tree-end" && sampleTree.Tree.SelectedItem?.Id != "paper")
                         throw new InvalidOperationException("Tree scrolling failed to reveal the last node.");
+                }
+                if (smokeCase is "tree-drag" or "tree-drag-up")
+                {
+                    var rootEntry = ui.Inspect().Single(entry => entry.Path.EndsWith("/stationery", StringComparison.Ordinal));
+                    if (rootEntry.Visible != (smokeCase == "tree-drag-up") || ui.Focus.CapturedId is not null)
+                        throw new InvalidOperationException("Tree thumb drag/clamp/release failed.");
                 }
             }
             if (smokeCase == "popup-open" && !popupOpen

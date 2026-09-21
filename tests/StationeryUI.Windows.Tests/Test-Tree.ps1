@@ -4,7 +4,7 @@ $demoPath = Join-Path $workspacePath 'samples/StationeryUI.Demo/bin/Release/net8
 $outputPath = Join-Path $workspacePath 'artifacts/tree-smoke'
 New-Item -ItemType Directory -Force $outputPath | Out-Null
 $env:STATIONERYUI_CONFIG_PATH = ''
-foreach ($scenario in @('tree-close','tree-reopen','tree-cancel','tree-keyboard','tree-scroll','tree-end','popup-save')) {
+foreach ($scenario in @('tree-close','tree-reopen','tree-cancel','tree-keyboard','tree-scroll','tree-end','tree-drag','tree-drag-up','tree-track','popup-save')) {
  foreach ($scale in @('1','1.5')) {
   $env:STATIONERYUI_SMOKE_CASE = $scenario
   $env:STATIONERYUI_SMOKE_SCALE = $scale

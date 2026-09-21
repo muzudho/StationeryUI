@@ -51,6 +51,8 @@ public sealed partial class DesktopUi : IDisposable
         internal double TreeScroll;
         internal TreeItem? PressedTreeItem;
         internal bool PressedTreeToggle;
+        internal bool DraggingTreeScroll;
+        internal double TreeThumbGrab;
         internal TextInputSession? Session;
         internal Action? Click;
         internal double Scroll;
@@ -109,7 +111,12 @@ public sealed partial class DesktopUi : IDisposable
         var nextFocus = new FocusManager();
         foreach (var binding in bindings) nextFocus.Register(binding.Node.Path);
         Root = root;
-        foreach (var binding in bindings) binding.Element.Node = binding.Node;
+        foreach (var binding in bindings)
+        {
+            binding.Element.Node = binding.Node;
+            binding.Element.DraggingTreeScroll = false;
+            binding.Element.PressedTreeItem = null;
+        }
         Focus = nextFocus;
         if (focused is not null) Focus.Focus(focused.Path);
     }
@@ -146,7 +153,11 @@ public sealed partial class DesktopUi : IDisposable
             Focus.SetVisible(element.Path, element.Bounds.Width > 0 && element.Bounds.Height > 0);
         if (!active)
         {
-            foreach (var element in elements) element.PressedTreeItem = null;
+            foreach (var element in elements)
+            {
+                element.PressedTreeItem = null;
+                element.DraggingTreeScroll = false;
+            }
             editing?.Session?.Blur(); editing = null; Focus.Deactivate();
             repeats.Clear();
             previousKeyboard = keyboard; previousMouse = mouse; wasActive = false;
