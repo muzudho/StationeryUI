@@ -10,6 +10,7 @@ internal static class StyleBlueprintTests
         ImportedStyles();
         LayoutEditing();
         IdEditing();
+        LivePreview();
         var plan = new StyleBlueprint();
         plan.Resize(3, 2);
         plan.Columns[0].Number = "1.5";
@@ -78,6 +79,33 @@ internal static class StyleBlueprintTests
         var readOnly = StyleBlueprint.Parse("{\"models\":[{\"id\":\"root\",\"type\":\"viewport\"}],\"layouts\":[],\"bindings\":[],\"window\":{\"width\":1000}}");
         Check(!readOnly.CanEditGrid && JsonNode.Parse(readOnly.BuildJson())!["window"]!["width"]!.GetValue<int>() == 1000, "non-grid document stays intact");
         Reject(() => StyleBlueprint.Parse("{"));
+    }
+
+    private static void LivePreview()
+    {
+        var plan = new StyleBlueprint();
+        plan.Columns[0].Number = "120"; plan.Columns[0].IsRate = false;
+        var before = plan.BuildJson();
+        var small = plan.CreatePreview(400, 300);
+        var large = plan.CreatePreview(800, 500);
+        Check(small.Cells[0].Bounds.Width == 120 && large.Cells[0].Bounds.Width == 120, "preview px independent of viewport");
+        Check(small.Cells[1].Bounds.Width == 280 && large.Cells[1].Bounds.Width == 680, "preview rate follows viewport");
+        Check(large.ScopePath == "/design/mainPage" && !large.Standalone, "preview uses bound model tree");
+        Check(plan.BuildJson() == before, "preview does not mutate plan");
+        var panel = plan.AddLayout("panel");
+        plan.PanelEdges["margin.left"].Number = "10";
+        plan.PanelEdges["padding.left"].Number = "20";
+        var preview = plan.CreatePreview(500, 300);
+        Check(preview.Standalone && preview.Layout.ContentBounds["/previewRoot"].X == 30, "unbound panel preview uses box model");
+        var grid = plan.AddLayout("floating-layout");
+        plan.Columns[0].Number = "0";
+        preview = plan.CreatePreview(500, 300);
+        Check(preview.Standalone && preview.Cells[0].Bounds.Width == 0 && preview.Cells[1].Bounds.Width == 500, "empty zero-width tracks remain configurable");
+        var imported = StyleBlueprint.Open(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
+        imported.SelectLayout("splitDemoLayout");
+        preview = imported.CreatePreview(700, 500);
+        Check(preview.ScopePath.EndsWith("/splitPaneDemoPage", StringComparison.Ordinal), "preview chooses bound page");
+        Check(preview.Settings.Layouts.Any(l => l.Type == "split-pane"), "preview retains split and other layout definitions");
     }
 
     private static void IdEditing()

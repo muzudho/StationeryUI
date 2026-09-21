@@ -74,10 +74,11 @@ internal sealed partial class DesignerGame
     private void BuildReadOnly()
     {
         Text("readOnlyTitle", new(12, 12, 1256, 64), "2 / 2 — スタイルの確認");
-        Text("readOnlyHelp", new(12, 100, 1256, 150), "このファイルには、表で編集できる 8×8 以下のフローティングレイアウトがありません。\n左側のツリーでスタイル全体を確認できます。内容を保ったまま別名で出力できます。");
+        Text("readOnlyHelp", new(12, 100, 524, 150), "このファイルには、表で編集できる 8×8 以下のフローティングレイアウトがありません。\n左側のツリーでスタイル全体を確認できます。内容を保ったまま別名で出力できます。");
         ui.AddButton("back", new(12, 280, 300, 52), "1 ページ目へ戻る", () => pendingPage = BuildWelcome);
-        BuildOutputControls(380);
-        status = Text("status", new(12, 470, 1256, 100), message);
+        BuildLivePreviewHeader();
+        BuildOutputControls(762);
+        status = Text("status", new(12, 850, 1256, 48), message);
         BuildSidebar();
     }
 
@@ -208,8 +209,15 @@ internal sealed partial class DesignerGame
         }
         if (editFrame >= 13)
         {
+            if (editFrame == 13)
+            {
+                var cell = previewSnapshot!.Cells.Single(c => c.Row == 0 && c.Column == 1).Bounds;
+                mouse = new((int)(previewWindow.X + cell.X + cell.Width / 2), (int)(previewWindow.Y + cell.Y + cell.Height / 2), 0,
+                    ButtonState.Pressed, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+                return;
+            }
             var createPoint = ui.Viewport.ToWindow(new StationeryUI.Canvas.ScreenRectangle(678, 806, 174, 38));
-            mouse = new((int)createPoint.X + 10, (int)createPoint.Y + 10, 0, editFrame == 14 ? ButtonState.Pressed : ButtonState.Released,
+            mouse = new((int)createPoint.X + 10, (int)createPoint.Y + 10, 0, editFrame == 15 ? ButtonState.Pressed : ButtonState.Released,
                 ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             return;
         }
@@ -246,6 +254,8 @@ internal sealed partial class DesignerGame
         }
         if (blueprint.At(0, 0).Kind != "button" || blueprint.At(0, 0).Label != "開始ボタン") throw new InvalidOperationException("Designer cell editing failed.");
         if (blueprint.Columns.Count != 2 || blueprint.Rows.Count != 1) throw new InvalidOperationException("Designer resize/confirmation failed.");
+        if (selectedColumn != 1 || selectedRow != 0) throw new InvalidOperationException("Preview cell selection failed.");
+        if (blueprint.At(0, 1).Label != "") throw new InvalidOperationException("Selecting an empty cell copied the previous label.");
         var created = System.IO.Path.Combine(smokeOutput!, "my-plan-2.stationery-style.json");
         if (!File.Exists(created) || File.ReadAllText(System.IO.Path.Combine(smokeOutput!, "my-plan.stationery-style.json")) != "existing file")
             throw new InvalidOperationException("New file creation or collision handling failed.");

@@ -75,6 +75,7 @@ public sealed partial class StationeryUiHost
     }
     private void DrawTextBlock(Element element, StationeryTheme theme)
     {
+        if (element.Label.Length == 0) { Fill(element.Bounds, theme.Surface); return; }
         var lines = TextBlockLines(element, theme);
         var height = theme.FontSize * 1.5 + 4;
         var total = lines.Count * height + theme.Padding * 2;

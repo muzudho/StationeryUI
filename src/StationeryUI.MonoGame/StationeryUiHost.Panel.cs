@@ -8,11 +8,11 @@ public sealed partial class StationeryUiHost
 {
     /// <summary>Draw panel outlines outside their allocated bounds. Call after Draw;
     /// include can restrict drawing to the currently visible model paths.</summary>
-    public void DrawPanelBorders(StationeryLayoutResult layout, Func<string, bool>? include = null)
+    public void DrawPanelBorders(StationeryLayoutResult layout, Func<string, bool>? include = null, ScreenRectangle? clip = null)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         var previous = graphics.ScissorRectangle;
-        graphics.ScissorRectangle = graphics.Viewport.Bounds;
+        graphics.ScissorRectangle = clip is { } area ? Microsoft.Xna.Framework.Rectangle.Intersect(RectangleOf(area), graphics.Viewport.Bounds) : graphics.Viewport.Bounds;
         sprites.Begin(blendState: BlendState.NonPremultiplied, rasterizerState: clipState);
         try
         {

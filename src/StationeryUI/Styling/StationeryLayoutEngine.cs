@@ -14,6 +14,18 @@ public sealed record StationeryLayoutResult(IReadOnlyDictionary<string, ScreenRe
 /// <summary>Computes window-pixel rectangles without changing the model tree or using a graphics device.</summary>
 public static class StationeryLayoutEngine
 {
+    /// <summary>All grid cells, including empty cells, in the supplied viewport-pixel content area.</summary>
+    public static IReadOnlyList<(int Row, int Column, ScreenRectangle Bounds)> ArrangeGridCells(StationeryLayoutNode layout, ScreenRectangle content)
+    {
+        if (layout.Type != "floating-layout") throw new ArgumentException("Expected floating-layout.", nameof(layout));
+        var rows = TrackEdges(layout.Rows, content.Height);
+        var columns = TrackEdges(layout.Columns, content.Width);
+        var result = new List<(int, int, ScreenRectangle)>();
+        for (var r = 0; r < layout.Rows.Count; r++)
+            for (var c = 0; c < layout.Columns.Count; c++)
+                result.Add((r, c, new(content.X + columns[c], content.Y + rows[r], columns[c + 1] - columns[c], rows[r + 1] - rows[r])));
+        return result;
+    }
     public static StationeryLayoutResult Arrange(StationeryStyleSettings settings, double width, double height)
     {
         if (!double.IsFinite(width) || width < 0 || !double.IsFinite(height) || height < 0)

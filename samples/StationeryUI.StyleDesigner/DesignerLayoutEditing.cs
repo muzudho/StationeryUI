@@ -196,21 +196,23 @@ internal sealed partial class DesignerGame
     {
         Text("panelTitle", new(12, 12, 1256, 50), $"2 / 2 — panel：{blueprint.SelectedLayoutId}");
         Text("panelHelp", new(12, 76, 1256, 88), "margin＝外側の余白、padding＝内側の余白（単位 px）。\nborder はサイズ計算に含めず、パネルの外側に描く枠です。");
-        ui.AddButton("back", new(1000, 180, 268, 44), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
+        ui.AddButton("back", new(12, 180, 268, 44), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
         var sides = new[] { "top", "right", "bottom", "left" };
-        for (var c = 0; c < sides.Length; c++) Text("side" + c, new(210 + c * 240, 230, 220, 40), sides[c] + " (px)");
+        var sideLabels = new[] { "上", "右", "下", "左" };
+        for (var c = 0; c < sides.Length; c++) Text("side" + c, new(120 + c * 104, 230, 100, 40), sideLabels[c] + " (px)");
         var groups = new[] { "margin", "padding", "border" };
         for (var r = 0; r < groups.Length; r++)
         {
-            Text("group" + r, new(12, 284 + r * 72, 180, 44), groups[r]);
+            Text("group" + r, new(12, 284 + r * 72, 104, 44), groups[r]);
             for (var c = 0; c < sides.Length; c++)
             {
                 var key = groups[r] + "." + sides[c];
-                var field = ui.AddTextBox("edge" + r + c, new(210 + c * 240, 284 + r * 72, 220, 44), key, blueprint.PanelEdges[key].Number, 24);
+                var field = ui.AddTextBox("edge" + r + c, new(120 + c * 104, 284 + r * 72, 100, 44), key, blueprint.PanelEdges[key].Number, 24);
                 panelFields.Add((field, key));
             }
         }
-        Text("panelScope", new(12, 530, 1256, 80), "0 以上の数値を指定してください。変更はツリーと出力 JSON に反映されます。\nモデルへの割り当ては bindings で指定します。");
+        Text("panelScope", new(12, 530, 524, 160), "0 以上の数値を指定してください。変更はツリーと出力 JSON に反映されます。\nモデルへの割り当ては bindings で指定します。");
+        BuildLivePreviewHeader();
         BuildOutputControls(762);
         status = Text("status", new(12, 850, 1256, 48), message);
         BuildSidebar();

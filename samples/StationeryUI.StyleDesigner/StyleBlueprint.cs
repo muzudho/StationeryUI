@@ -23,6 +23,46 @@ public sealed class StyleBlueprint
         .Select(l => (string)l!["id"]!).ToArray() ?? ["mainGrid"];
 
     public static StyleBlueprint Open(string path) => Parse(File.ReadAllText(path));
+
+    public sealed record Preview(string Json, StationeryStyleSettings Settings, StationeryLayoutResult Layout,
+        string ScopePath, bool Standalone, IReadOnlyList<(int Row, int Column, StationeryUI.Canvas.ScreenRectangle Bounds)> Cells);
+
+    public Preview CreatePreview(double width, double height)
+    {
+        var json = BuildJson();
+        var settings = StationeryStyleSettings.Parse(json);
+        var selectedId = IsImported ? SelectedLayoutId : "mainGrid";
+        var binding = settings.Bindings.FirstOrDefault(b => b.Layout == selectedId);
+        var standalone = selectedId is not null && binding is null;
+        if (standalone)
+        {
+            var layout = JsonNode.Parse(json)!["layouts"]!.AsArray().Single(l => (string?)l!["id"] == selectedId)!.DeepClone();
+            var root = new JsonObject
+            {
+                ["models"] = new JsonArray(new JsonObject { ["id"] = "previewRoot", ["type"] = "viewport" }),
+                ["layouts"] = new JsonArray(layout),
+                ["bindings"] = new JsonArray(CanEditPanel
+                    ? new JsonObject { ["layout"] = selectedId, ["model"] = "previewRoot" }
+                    : new JsonObject { ["layout"] = selectedId, ["parentModel"] = "previewRoot", ["childrenModel"] = new JsonArray() })
+            };
+            json = root.ToJsonString();
+            settings = StationeryStyleSettings.Parse(json);
+            binding = settings.Bindings[0];
+        }
+        var tree = settings.Models[0].CreateTree();
+        var scope = tree;
+        if (binding is not null)
+        {
+            for (var node = tree.Resolve(binding.ModelPath); node is not null; node = node.Parent)
+                if (node.Kind is "page" or "dialog") { scope = node; break; }
+        }
+        if (scope == tree) scope = tree.Children.FirstOrDefault(n => n.Kind == "page") ?? tree;
+        var arranged = StationeryLayoutEngine.Arrange(settings, width, height);
+        var cells = binding is not null && settings.Layouts.Single(l => l.Id == binding.Layout).Type == "floating-layout"
+            ? StationeryLayoutEngine.ArrangeGridCells(settings.Layouts.Single(l => l.Id == binding.Layout), arranged.ContentBounds[binding.ModelPath])
+            : Array.Empty<(int Row, int Column, StationeryUI.Canvas.ScreenRectangle Bounds)>();
+        return new(json, settings, arranged, scope.Path, standalone, cells);
+    }
     public static StyleBlueprint Parse(string json)
     {
         StationeryStyleSettings.Parse(json);

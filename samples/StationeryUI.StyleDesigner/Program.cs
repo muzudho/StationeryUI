@@ -35,8 +35,6 @@ internal sealed partial class DesignerGame : Game
     private StationeryUiHost ui = null!;
     private StationeryUiHost.Element columns = null!, rows = null!, label = null!, kind = null!, status = null!, output = null!;
     private readonly List<(StationeryUiHost.Element Field, StationeryUiHost.Element Unit, StyleBlueprint.Track Track)> tracks = [];
-    private readonly List<(StationeryUiHost.Element Element, int Row, int Column)> cells = [];
-    private readonly List<(StationeryUiHost.Element Element, int Row, int Column)> preview = [];
     private int selectedRow, selectedColumn;
     private bool rebuild;
     private (int Columns, int Rows)? pendingShrink;
@@ -81,7 +79,12 @@ internal sealed partial class DesignerGame : Game
     }
     private StationeryUiHost.Element Text(string id, ScreenRectangle bounds, string text) =>
         ui.AddTextBlock(ui.Root.AddChild(id, "textBlock"), bounds, text);
-    private void SetText(StationeryUiHost.Element field, string text) { field.Editor!.SelectAll(); field.Editor.Insert(text); }
+    private void SetText(StationeryUiHost.Element field, string text)
+    {
+        field.Editor!.SelectAll();
+        if (text.Length == 0) field.Editor.Delete(backward: true);
+        else field.Editor.Insert(text);
+    }
     private void Guard(Action action)
     {
         try { action(); }
@@ -100,7 +103,7 @@ internal sealed partial class DesignerGame : Game
     }
     private void BuildUi()
     {
-        ui?.Dispose(); tracks.Clear(); cells.Clear(); preview.Clear(); panelFields.Clear();
+        ui?.Dispose(); tracks.Clear(); panelFields.Clear(); ResetLivePreview();
         ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
         if (blueprint.CanEditPanel) { BuildPanelEditor(); return; }
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
@@ -127,39 +130,32 @@ internal sealed partial class DesignerGame : Game
         }));
         ui.AddButton("theme", new(720, 54, 180, 44), "明るい／暗い", () =>
         { theme = theme.Background == StationeryTheme.Light.Background ? StationeryTheme.Dark with { FontSize = 16, Padding = 4 } : StationeryTheme.Light with { FontSize = 16, Padding = 4 }; ui.Theme = theme; });
-        Text("help", new(12, 104, 1256, 72), "上の入力欄＝各列の幅、左の入力欄＝各行の高さ。数値と単位を分けて指定します。\n中央の表でセルを選び、下の欄で種類と表示名を指定します。文房具 Id は自動で付きます。");
-        var cw = 1072.0 / blueprint.Columns.Count;
-        var rh = 320.0 / blueprint.Rows.Count;
-        for (var c = 0; c < blueprint.Columns.Count; c++) AddTrack(blueprint.Columns[c], $"column{c}", new(196 + c * cw, 178, cw - 4, 42), $"列 {c + 1} の幅");
-        for (var r = 0; r < blueprint.Rows.Count; r++) AddTrack(blueprint.Rows[r], $"row{r}", new(12, 230 + r * rh, 172, Math.Min(42, rh - 2)), $"行 {r + 1} の高さ");
+        Text("help", new(12, 104, 1256, 64), "列幅・行高を変更すると右のプレビューに即時反映します。\nプレビューのセルをクリックして、種類や表示名を設定できます。");
+        Text("columnTracksTitle", new(12, 178, 252, 36), "列の幅（数値 / 単位）");
+        Text("rowTracksTitle", new(280, 178, 256, 36), "行の高さ（数値 / 単位）");
+        for (var c = 0; c < blueprint.Columns.Count; c++)
+        {
+            Text($"columnIndex{c}", new(12, 220 + c * 44, 36, 40), (c + 1).ToString());
+            AddTrack(blueprint.Columns[c], $"column{c}", new(52, 220 + c * 44, 212, 40), $"列 {c + 1} の幅");
+        }
         for (var r = 0; r < blueprint.Rows.Count; r++)
-            for (var c = 0; c < blueprint.Columns.Count; c++)
-            {
-                var rr = r; var cc = c;
-                var element = ui.AddButton($"cell{r}_{c}", new(196 + c * cw, 230 + r * rh, cw - 4, rh - 4), "", () =>
-                {
-                    Capture(); selectedRow = rr; selectedColumn = cc;
-                    SetText(label, blueprint.IsImported ? ImportedCellDescription(rr, cc) : blueprint.At(rr, cc).Label);
-                    kind.Label = blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(rr, cc).Kind);
-                });
-                cells.Add((element, r, c));
-            }
-        Text("selected", new(12, 562, 180, 44), "選択セルの文房具：");
-        kind = ui.AddButton("kind", new(196, 562, 190, 44), blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(selectedRow, selectedColumn).Kind), () =>
+        {
+            Text($"rowIndex{r}", new(280, 220 + r * 44, 36, 40), (r + 1).ToString());
+            AddTrack(blueprint.Rows[r], $"row{r}", new(320, 220 + r * 44, 216, 40), $"行 {r + 1} の高さ");
+        }
+        Text("selected", new(12, 586, 180, 44), "選択セルの文房具：");
+        kind = ui.AddButton("kind", new(196, 586, 340, 44), blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(selectedRow, selectedColumn).Kind), () =>
         {
             if (blueprint.IsImported) return;
             var cell = blueprint.At(selectedRow, selectedColumn);
             var index = StyleBlueprint.Kinds.ToList().IndexOf(cell.Kind);
             cell.Kind = StyleBlueprint.Kinds[(index + 1) % StyleBlueprint.Kinds.Count]; kind.Label = KindLabel(cell.Kind);
         });
-        Text("labelTitle", new(400, 562, 100, 44), blueprint.IsImported ? "モデル：" : "表示名：");
-        label = ui.AddTextBox("label", new(504, 562, 764, 44), "選択セルの表示名", blueprint.IsImported ? ImportedCellDescription(selectedRow, selectedColumn) : blueprint.At(selectedRow, selectedColumn).Label);
+        Text("labelTitle", new(12, 646, 100, 36), blueprint.IsImported ? "モデル：" : "表示名：");
+        label = ui.AddTextBox("label", new(12, 690, 524, 44), "選択セルの表示名", blueprint.IsImported ? ImportedCellDescription(selectedRow, selectedColumn) : blueprint.At(selectedRow, selectedColumn).Label);
         ui.Focus.SetEnabled(label.Path, !blueprint.IsImported);
         ui.Focus.SetEnabled(kind.Path, !blueprint.IsImported);
-        Text("previewTitle", new(12, 620, 180, 136), "サイズ配分\n1000×600px\n縦・横を縮めて表示");
-        for (var r = 0; r < blueprint.Rows.Count; r++)
-            for (var c = 0; c < blueprint.Columns.Count; c++)
-                preview.Add((Text($"preview{r}_{c}", new(), $"{r + 1},{c + 1}"), r, c));
+        BuildLivePreviewHeader();
         BuildOutputControls(762);
         status = Text("status", new(12, 850, 1256, 48), message);
         BuildSidebar();
@@ -197,35 +193,21 @@ internal sealed partial class DesignerGame : Game
         if (!blueprint.CanEditGrid)
         {
             Capture();
-            try { RefreshTree(blueprint.BuildJson()); status.Label = message; }
+            try { var json = blueprint.BuildJson(); RefreshTree(json); UpdateLivePreview(json, mouse); status.Label = message; }
             catch (JsonException ex) { status.Label = "入力を確認してください：" + ex.Message; }
             base.Update(gameTime); return;
         }
         Capture();
-        foreach (var (element, row, column) in cells)
-        {
-            var cell = blueprint.At(row, column);
-            var description = blueprint.IsImported ? ImportedCellDescription(row, column) : (string.IsNullOrEmpty(cell.Label) ? KindLabel(cell.Kind) : cell.Label);
-            element.Label = $"{(row == selectedRow && column == selectedColumn ? "● " : "")}{row + 1},{column + 1} {description}";
-        }
         try
         {
             var json = blueprint.BuildJson();
             RefreshTree(json);
-            var visual = new StyleBlueprint(); visual.Resize(blueprint.Columns.Count, blueprint.Rows.Count);
-            for (var i = 0; i < visual.Columns.Count; i++) { visual.Columns[i].Number = blueprint.Columns[i].Number; visual.Columns[i].IsRate = blueprint.Columns[i].IsRate; }
-            for (var i = 0; i < visual.Rows.Count; i++) { visual.Rows[i].Number = blueprint.Rows[i].Number; visual.Rows[i].IsRate = blueprint.Rows[i].IsRate; }
-            var arranged = StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(visual.BuildJson()), 1000, 600);
-            foreach (var (element, row, column) in preview)
-            {
-                var rect = arranged.Bounds[$"/design/mainPage/cellR{row + 1}C{column + 1}"];
-                element.Bounds = new(196 + rect.X * 1.072, 620 + rect.Y * .23, Math.Max(0, rect.Width * 1.072 - 2), Math.Max(0, rect.Height * .23 - 2));
-            }
+            UpdateLivePreview(json, mouse);
             status.Label = message;
         }
         catch (JsonException ex)
         {
-            foreach (var (element, _, _) in preview) element.Bounds = new();
+            ResetLivePreview();
             status.Label = "入力を確認してください：" + ex.Message;
         }
         base.Update(gameTime);
@@ -233,10 +215,10 @@ internal sealed partial class DesignerGame : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background)); ui.Draw();
-        if (editingPage) sidebar?.Draw();
+        if (editingPage) { sidebar?.Draw(); DrawLivePreview(); }
         layoutDialog?.Draw();
         CaptureWelcomeSmoke();
-        if (!string.IsNullOrEmpty(smokeOutput) && ++frames == 19)
+        if (!string.IsNullOrEmpty(smokeOutput) && ++frames == 22)
         {
             var data = new Microsoft.Xna.Framework.Color[GraphicsDevice.Viewport.Width * GraphicsDevice.Viewport.Height];
             GraphicsDevice.GetBackBufferData(data);
@@ -250,5 +232,5 @@ internal sealed partial class DesignerGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }
