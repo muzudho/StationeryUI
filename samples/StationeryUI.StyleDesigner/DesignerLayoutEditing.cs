@@ -169,14 +169,14 @@ internal sealed partial class DesignerGame
             mouse = SmokeMouse(sidebar!, 200, 730, frames == 14);
         if (layoutSmoke == "rename" && frames is >= 14 and <= 15)
             mouse = SmokeMouse(sidebar!, 100, 780, frames == 14);
-        if (frames >= 19) mouse = SmokeMouse(ui, 700, 820, false);
+        if (frames is 19 or 20) mouse = SmokeMouse(applicationBar, 570, 20, frames == 19);
         return true;
     }
 
     private bool ValidateLayoutEditingSmoke()
     {
         if (layoutSmoke is null) return false;
-        if (!toolHint.Label.Contains("先にフォルダーを選択してください", StringComparison.Ordinal))
+        if (!disabledExportHintVerified)
             throw new InvalidOperationException("Disabled control tooltip is missing.");
         if (layoutDialog is not null || styleTree!.Tree!.SelectedItem is not null)
             throw new InvalidOperationException($"Dialog open: {layoutDialog is not null}; selection: {styleTree!.Tree!.SelectedItem?.Id}; message: {message}");
@@ -213,7 +213,6 @@ internal sealed partial class DesignerGame
             }
         }
         BuildLivePreviewHeader();
-        BuildOutputControls(762);
         BuildSidebar();
     }
 }

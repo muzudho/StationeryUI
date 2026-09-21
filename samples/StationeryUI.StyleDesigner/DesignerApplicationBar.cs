@@ -25,6 +25,7 @@ internal sealed partial class DesignerGame
         applicationBar.AddButton("back", new(160, 4, 168, 32), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
         restoreButton = applicationBar.AddButton("restore", new(336, 4, 208, 32), "セーブポイントに戻す",
             () => pendingPage = () => Guard(OpenRestoreDialog));
+        applicationBar.AddButton("export", new(552, 4, 144, 32), "エクスポート", () => pendingPage = () => Guard(OpenExportDialog));
     }
 
     private void ArrangeApplicationBar()

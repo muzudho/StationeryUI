@@ -54,7 +54,7 @@ internal sealed partial class DesignerGame
 
     private void BeginEditing(string text)
     {
-        editingPage = hasDraft = true; pendingShrink = null; sidebarActive = false; applicationBarActive = false; rebuild = false;
+        editingPage = hasDraft = true; sidebarActive = false; applicationBarActive = false; rebuild = false;
         message = text; treeJson = null; lastTreeSelection = null;
         if (!string.IsNullOrEmpty(smokeOutput) && saveSession is null) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-style.json");
         BuildUi();
@@ -66,7 +66,6 @@ internal sealed partial class DesignerGame
     private void BuildReadOnly()
     {
         BuildLivePreviewHeader();
-        BuildOutputControls(762);
         BuildSidebar();
     }
 
@@ -187,31 +186,15 @@ internal sealed partial class DesignerGame
         }
         if (editFrame == 4) { SetText(columns, "4"); SetText(rows, "3"); }
         if (editFrame == 8) { SetText(columns, "2"); SetText(rows, "1"); }
-        if (editFrame == 12)
+        if (editFrame == 13)
         {
-            if (ui.Focus.IsEnabled(ui.Root.Path + "/createFile"))
-                throw new InvalidOperationException("New file must be disabled before folder selection.");
-            selectedOutputFolder = smokeOutput;
-            File.WriteAllText(System.IO.Path.Combine(smokeOutput, "my-plan.stationery-style.json"), "existing file");
-            rebuild = true;
-        }
-        if (editFrame >= 13)
-        {
-            if (editFrame == 13)
-            {
-                var cell = previewSnapshot!.Cells.Single(c => c.Row == 0 && c.Column == 1).Bounds;
-                mouse = new((int)(previewWindow.X + cell.X + cell.Width / 2), (int)(previewWindow.Y + cell.Y + cell.Height / 2), 0,
-                    ButtonState.Pressed, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
-                return;
-            }
-            var createPoint = ui.Viewport.ToWindow(new StationeryUI.Canvas.ScreenRectangle(678, 806, 174, 38));
-            mouse = new((int)createPoint.X + 10, (int)createPoint.Y + 10, 0, editFrame == 15 ? ButtonState.Pressed : ButtonState.Released,
-                ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+            var cell = previewSnapshot!.Cells.Single(c => c.Row == 0 && c.Column == 1).Bounds;
+            mouse = SmokeMouse((int)(previewWindow.X + cell.X + cell.Width / 2), (int)(previewWindow.Y + cell.Y + cell.Height / 2), true);
             return;
         }
-        var point = ui.Viewport.ToWindow(editFrame >= 4 ? new(560, 48, 220, 44) : kind.Bounds);
-        mouse = new((int)point.X + 10, (int)point.Y + 10, 0, editFrame is 1 or 5 or 9 or 11 ? ButtonState.Pressed : ButtonState.Released,
-            ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+        if (frames is >= 17 and <= 19) { mouse = SmokeMouse(applicationBar, 570, 20, frames == 18); return; }
+        var point = ui.Viewport.ToWindow(kind.Bounds);
+        mouse = SmokeMouse((int)point.X + 10, (int)point.Y + 10, editFrame == 1);
         if (editFrame == 3 && !smokeClicked) { SetText(label, "開始ボタン"); smokeClicked = true; }
     }
     private void CaptureWelcomeSmoke()

@@ -28,16 +28,17 @@ internal sealed partial class DesignerGame
         "resume" => "メモリー上に残っているプランの編集を再開します。",
         "open" or "chooseFile" => "JSON を開き、連番の .bak を作成します。変更は最後の入力から1.5秒後に元ファイルへ自動保存します。",
         "back" => "1ページ目へ戻ります。現在のプランは「現在の編集を再開」で続けられます。",
-        "columns" => "横のセル数（1～8）を入力し、「表を作る／更新」で反映します。",
-        "rows" => "縦のセル数（1～8）を入力し、「表を作る／更新」で反映します。",
-        "resize" => "行列数を反映します。表を縮めてセルが消える場合は、もう一度押すと確定します。",
+        "columns" or "columnsLabel" => "列数（1～8）を入力すると自動反映します。縮小するときは確認画面が開きます。",
+        "rows" or "rowsLabel" => "行数（1～8）を入力すると自動反映します。縮小するときは確認画面が開きます。",
+        "confirmShrink" => "範囲外のセルを削除して列数・行数を反映します。閉じる／Esc では元の数に戻します。",
         "columnTracksTitle" => "列ごとの幅を数値と単位で指定します。px は固定幅、rate は残りの幅の配分比です。",
         "rowTracksTitle" => "行ごとの高さを数値と単位で指定します。px は固定高さ、rate は残りの高さの配分比です。",
         "theme" => "明るいテーマと暗いテーマを切り替えます。",
         "kind" => blueprint.IsImported ? "既存モデルの種類は保持します。" : "プレビューで選んだセルの文房具の種類を切り替えます。",
         "label" => blueprint.IsImported ? "このセルに配置されたモデルを表示しています。" : "選択したセルの表示名を入力します。右のプレビューへ反映されます。",
         "output" => "新しい JSON の出力先。末尾は .stationery-style.json にします。既存ファイルは上書きしません。",
-        "export" => "現在の設計を出力し、そのファイルをオートセーブ先にします。編集中の元ファイルと同じパスなら即時保存します。",
+        "export" => "出力先を設定するエクスポートダイアログを開きます。",
+        "writeOutput" => "指定パスへ書き出し、以後のオートセーブ先にします。編集中の元ファイルと同じパスなら即時保存します。",
         "restore" => "バックアップのファイル名と変更日時を確認し、選んだセーブポイントへ戻します。最大20世代を保持します。",
         "chooseFolder" => "新規作成先のフォルダーを Windows のダイアログで選びます。",
         "createFile" => selectedOutputFolder is null ? "先にフォルダーを選択してください。" : "選択フォルダーへ現在の設計を作成します。同名があれば連番にして上書きを避けます。",
@@ -49,7 +50,10 @@ internal sealed partial class DesignerGame
         "panel" => "指定した Id の panel を追加し、margin・padding・border の設定画面を開きます。",
         "floating" => "指定した Id の floating-layout を追加し、列幅・行高を設定します。",
         "confirmId" => "入力した Id に変更します。既存の bindings の参照も追従します。",
-        "cancel" => "変更を確定せず、ダイアログを閉じます。Esc キーでも閉じられます。",
+        "cancel" => utilityDialog is not null
+            ? exportDialog ? "ダイアログを閉じます。書き出し済みのファイルは保持します。Esc キーでも閉じられます。"
+                : "縮小を取り消して元の列数・行数に戻します。Esc キーでも閉じられます。"
+            : "変更を確定せず、ダイアログを閉じます。Esc キーでも閉じられます。",
         _ when element.Id.StartsWith("edge", StringComparison.Ordinal) => element.AccessibleName + "：0以上の px 値。margin は外側、padding は内側の余白。border は全体のサイズ計算に含めません。",
         _ when element.Id.EndsWith("Unit", StringComparison.Ordinal) => "px は固定サイズ、rate は残りの領域を分け合う比です。クリックで単位を切り替えます。",
         _ when element.Editor is not null => element.AccessibleName + "。0以上の数値を入力してください。配置プレビューに即時反映します。",
@@ -75,7 +79,8 @@ internal sealed partial class DesignerGame
         string? hint = null;
         if (inspectorMouse.Y < y)
         {
-            if (restoreDialog is not null) hint = restoreDialog.HoveredToolHint;
+            if (utilityDialog is not null) hint = utilityDialog.HoveredToolHint;
+            else if (restoreDialog is not null) hint = restoreDialog.HoveredToolHint;
             else if (layoutDialog is not null) hint = layoutDialog.HoveredToolHint;
             else if (editingPage && inspectorMouse.Y < ApplicationBarHeight) hint = applicationBar.HoveredToolHint;
             else if (editingPage && livePreview is not null && inspectorMouse.X >= previewWindow.X && inspectorMouse.X < previewWindow.X + previewWindow.Width

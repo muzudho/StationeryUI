@@ -47,6 +47,7 @@ internal sealed partial class DesignerGame
         if (saveSession is null) return true;
         try
         {
+            ValidateGridCounts();
             if (ui.IsComposing) throw new IOException("日本語入力を確定してから操作してください。");
             Capture(); saveSession.Observe(blueprint.BuildJson()); saveSession.Flush();
             saveError = null; invalidDraft = false;
@@ -58,6 +59,7 @@ internal sealed partial class DesignerGame
 
     private void ExportAndTrack(string path)
     {
+        ValidateGridCounts();
         Capture();
         if (saveSession is not null && string.Equals(Path.GetFullPath(path), saveSession.FilePath, StringComparison.OrdinalIgnoreCase))
         { FlushAutoSave(); return; }
@@ -66,7 +68,7 @@ internal sealed partial class DesignerGame
         saveSession = StyleSaveSession.Open(path).Session;
         saveError = null; invalidDraft = false;
         sourceFile = outputPath = saveSession.FilePath;
-        SetText(output, outputPath);
+        if (utilityDialog is not null && exportDialog) SetText(output, outputPath);
         rebuild = true;
         message = "保存しました。以後はこのファイルへ自動保存します：" + outputPath;
     }
