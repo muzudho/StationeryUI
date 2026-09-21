@@ -67,6 +67,21 @@ binding は `layout`、`parentModel`、`childrenModel` を使い、子には `mo
 
 セルへ配置していないモデルは親の内側矩形を引き継ぎます。**未配置は非表示という意味ではありません。** これが意図しない重なりを生む場合は、アプリの検証で必須部品のセル配置を要求します。
 
+## 入れ子のフローティングレイアウト
+
+**配置エンジンでは対応済み**です。外側のグリッドのセルへ `container` モデルを配置し、そのコンテナーを `parentModel` とする別の floating-layout の binding を作ります。内側のグリッドは、そのコンテナーの `ContentBounds` を分割します。
+
+```text
+models:   /app → contentArea (container) → nameField / applyButton
+layouts:  outerGrid、innerGrid（それぞれ独立した定義）
+bindings: outerGrid のセルに contentArea を配置
+          innerGrid の親を /app/contentArea にして、その子を配置
+```
+
+`layouts` 配列の中でレイアウト定義に `children` を書く方式ではありません。レイアウト定義は独立したまま、モデルの親子関係と bindings で入れ子を表現します。配置は外側から内側へ計算され、layouts 配列の順番には依存しません。
+
+現時点では、必要なモデルと対応付けを JSON・C# 側で用意します。エディターで個々のグリッド定義を調整することと、入れ子の構造そのものを GUI で作ることは別です。**セルから内側のレイアウトを追加し、models / bindings の接続を含めて編集できる GUI は今後の目標**です。[導入の意義と今後の目標](README.md)も参照してください。
+
 ## split-pane — 左右・上下の分割
 
 `layouts` の要素：
