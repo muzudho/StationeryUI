@@ -11,6 +11,7 @@ StationeryUI自体の開発・保守を行う方向けの資料です。ライ�
 - [検証記録](validation.md)
 - [貢献方法](CONTRIBUTING.md)
 - [開発日誌：2026年9月](log/2026/09.md)
+- [配布に関する資料](distribution/README.md)：スタイル設計ツールのリリース手順、注意点、配布記録。
 
 ## ビルドと検証
 
