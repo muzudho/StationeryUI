@@ -16,7 +16,18 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode Dial
               {"id":"nameField","type":"textBox"}, {"id":"cancelButton","type":"button"}, {"id":"saveButton","type":"button"}
             ]}
           ]}],
-          "layouts":[{"id":"demo","type":"viewport"}]
+          "layouts":[
+            {"id":"demoViewport","type":"panel"},
+            {"id":"demoPage","type":"floating-layout","row-definitions":["1rate","1rate","1rate","1rate","1rate"],"column-definitions":["1rate","1rate"]}
+          ],
+          "bindings":[
+            {"layout":"demoViewport","model":"demo"},
+            {"layout":"demoPage","parentModel":"demo","childrenModel":[
+              {"model":"nameField","row":0,"column":0}, {"model":"memoField","row":1,"column":0},
+              {"model":"themeButton","row":2,"column":0}, {"model":"scaleButton","row":2,"column":1},
+              {"model":"applyTitleButton","row":3,"column":0}, {"model":"openDialogButton","row":4,"column":0}
+            ]}
+          ]
         }
         """);
 
@@ -36,6 +47,12 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode Dial
         {
             ["nameField"] = "textBox", ["cancelButton"] = "button", ["saveButton"] = "button"
         });
+        var placed = settings.Bindings.SelectMany(binding => binding.Children).Select(child => child.ModelPath).ToHashSet(StringComparer.Ordinal);
+        foreach (var node in main.Values)
+            if (!placed.Contains(node.Path)) throw new JsonException($"Demo control {node.Path} needs a floating-layout cell binding.");
+        if (settings.Bindings.Any(binding => root.Resolve(binding.ModelPath)!.IsWithin(dialog)) ||
+            placed.Any(path => root.Resolve(path)!.IsWithin(dialog)))
+            throw new JsonException("The demo dialog currently uses its code-defined layout; bind the main controls only.");
         var bound = main.Values.Concat(dialogControls.Values).ToHashSet();
         foreach (var node in all)
         {

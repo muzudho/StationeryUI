@@ -1,7 +1,7 @@
 # 文房具ＵＩのスタイル設定ファイルのユーザーズガイド
 
-個別の文房具を将来指定するための Id とパスは、[F12 開発者ウィンドウ](developer-window.md) で確認できる。
-現時点では Id による個別スタイルの適用は未対応。
+配置対象の文房具の Id とパスは、[F12 開発者ウィンドウ](developer-window.md) で確認できる。
+bindings でこのパスを使い、モデルとレイアウトを結び付ける。
 
 ## 設定ファイルの置き場所
 
@@ -10,7 +10,7 @@
 | ファイル | 内容 |
 |---|---|
 | `App_Data/demo.stationery-config.json` | スタイルの読み込み先とオートリロード設定 |
-| `App_Data/demo.stationery-style.json` | models の文房具構造と layouts の配置設定 |
+| `App_Data/demo.stationery-style.json` | models の文房具構造、layouts の配置設定、bindings の対応付け |
 
 開発時（Debug ビルド）はリポジトリーの `App_Data` の原本を使う。
 ビルド／publish 時には両方を出力先の `App_Data` にコピーする。
@@ -57,15 +57,20 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
 
 スタイルファイル自体には `autoReload` を置かない。以前の場所に残っている場合は、未知のプロパティとして無視される。
 
-## models と layouts
+## models・layouts・bindings
 
-トップレベルは `models` 配列と `layouts` 配列に分ける。両方必須。
-現在はどちらも viewport を **1 要素** 入れる。空配列・複数要素・配列以外はエラー。
-旧名の `model` / `layout` は廃止し、新名との混在もエラーにする。
-旧トップレベルの `viewport` は廃止し、残っているファイルは読み込みエラーにする。
-`"type": "viewport"` という部品の種類は引き続き使用する。
+トップレベルには 3 つの配列を置く。すべて必須。
 
-以下は読み込み形式の最小例。実際のデモでは原本に含まれる文房具の定義も必要。
+| 配列 | 役割 |
+|---|---|
+| models | 文房具の所属・親子関係。現在は viewport 型のルートを 1 要素置く |
+| layouts | モデルから独立したレイアウト定義。独自の Id を付ける |
+| bindings | どのモデルに、どのレイアウトを適用するかの対応付け |
+
+旧トップレベルの viewport / model / layout は廃止。旧形式との混在もエラー。
+モデルの type: viewport は継続するが、レイアウトの型は panel または floating-layout を使う。
+
+以下は形式を説明する小さな例。実際のデモでは原本の 6 部品とダイアログも必要。
 
 ```json
 {
@@ -74,73 +79,165 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
             "id": "demo",
             "type": "viewport",
             "children": [
-                { "id": "nameField", "type": "textBox" }
+                { "id": "nameField", "type": "textBox" },
+                { "id": "memoField", "type": "textBox" }
             ]
         }
     ],
     "layouts": [
         {
-            "id": "demo",
-            "type": "viewport",
+            "id": "demoViewport",
+            "type": "panel",
             "padding": {
                 "top": "32px",
-                "right": "8px",
+                "right": "32px",
                 "bottom": "8px",
-                "left": "16px"
+                "left": "32px"
             }
+        },
+        {
+            "id": "demoPage",
+            "type": "floating-layout",
+            "row-definitions": ["1rate"],
+            "column-definitions": ["1rate", "1.5rate"]
+        }
+    ],
+    "bindings": [
+        { "layout": "demoViewport", "model": "demo" },
+        {
+            "layout": "demoPage",
+            "parentModel": "demo",
+            "childrenModel": [
+                { "model": "nameField", "row": 0, "column": 0 },
+                { "model": "memoField", "row": 0, "column": 1 }
+            ]
         }
     ]
 }
 ```
 
-`models` は文房具の所属を表す。各ノードに `id` と `type` を置き、子は `children` 配列にまとめる。
-`children` は省略可能。Id の許可文字や兄弟間の重複チェックは [文房具 Id の規約](developer-window.md) に従う。
-モデルから作った階層を実際の UI に結び付けるため、F12 のパスもこの階層に従う。
-例えば原本の名前欄は `/demo/nameField`。モデル側で `inputs` コンテナーに包めば `/demo/inputs/nameField` になる。
+models の各ノードには id と type、必要なら children 配列を置く。
+文房具 Id は英字・数字・アンダースコアだけで構成し、camelCase を推奨。同じ親の直下では重複できない。
+異なる親の下では同名にでき、外側からたどるパスで区別する。
+詳しくは [文房具 Id の規約](developer-window.md) を参照。
 
-`layouts` は配置のための設定。`id` はレイアウト独自の Id ではなく、対象モデルの参照。
-現在はモデルのルートに対する viewport 設定を **1 件** 指定する。`"demo"` または `"/demo"` の両方を使える。
-存在しない参照やルート以外への参照はエラー。`"id": "id"` のような仮の名前は使わない。
-現時点の対応項目は viewport の四辺のパディング。行・列・配置専用グループや、layouts 内の入れ子は今後追加する。
-未実装のレイアウト型、複数の viewport 設定、layouts の `children` / `contents` は黙って無視せずエラーにする。
+layouts の id はモデルへの参照ではない。例えば demoViewport はレイアウト自身の名前で、
+bindings の model: demo によって初めてモデルと結び付く。
+レイアウト Id も英字・数字・アンダースコアを使い、layouts 配列内で一意にする。
+layouts 内にモデル参照や children / contents は置かない。
 
-models にコンテナーを追加しても位置は自動変更しない。layouts のパディングを変えても models のパスは変わらない。
-F12 が表示するのは models のツリーで、レイアウトツリーの表示はまだ追加していない。
+## bindings の参照と組み合わせ
+
+panel には layout と model を指定する。
+floating-layout には layout、parentModel、childrenModel を指定する。
+childrenModel の各要素の model は、parentModel からたどる相対パス。
+
+- parentModel: demo、model: nameField → /demo/nameField。
+- parentModel: demo、model: inputs/nameField → /demo/inputs/nameField。
+- /demo/editDialog/nameField のような完全パスも使用できる。
+- トップレベルの model / parentModel は demo または /demo のようにルートから指定する。
+- 大文字と小文字を区別する。短い Id の全体検索、ワイルドカード、.. は使わない。
+
+配置対象は parentModel の子孫に限る。親自身や別の枝には配置できない。
+parentModel の型は viewport / page / container / dialog。
+存在しないモデルやレイアウトへの参照は読み込みエラー。
+
+同じモデルに panel と floating-layout をそれぞれ 1 つ適用できる。
+panel が内側の領域を作り、floating-layout がその領域を行と列に分ける。
+同じ型のレイアウトを同じモデルに重ねて指定することはできない。
+別のモデルであれば、同じレイアウト定義を再利用できる。
+
+配置したコンテナーにさらにレイアウトを結び付けることで、入れ子の配置もできる。
+layouts / bindings の配列順には依存せず、外側のモデルから内側へ計算する。
+セルに配置していないモデルは親の内側領域を引き継ぐ。
+モデルの階層を変更したら bindings のパスも更新する。レイアウトの変更だけでは文房具のパスは変わらない。
+
+## floating-layout と rate
+
+row-definitions が上から下の行、column-definitions が左から右の列を定義する。
+row / column は **0 始まり**。各セルに結び付いた文房具は、そのセル全体を占める。
+行の中に文房具が 1 個だけでも、隣の空きセルへ自動的には広がらない。
+
+rate は残りの領域を配分する比率で、小数も指定できる。
+例えば ["1rate", "1.5rate"] は 2:3 の比率で、幅 500px なら 200px と 300px。
+両方を同じ倍率に変えても配置結果は変わらない。
+ウィンドウをリサイズすると、現在の描画領域に合わせて再計算する。
+
+px との混在にも対応する。例えば ["120px", "1rate", "2rate"] は、
+先に 120px を確保し、残りを 1:2 に分ける。
+固定 px の合計が利用可能な領域を超えた場合は、固定部分を比例縮小し、rate 部分は 0px になる。
+正の rate がなく、固定 px だけでは領域を埋めない場合は、末尾に空白を残す。
+
+各定義は非負の有限な数を含む文字列にする。例：0px、12.5px、0rate、1.5rate。
+負数、数値だけの値、指数表記、%、auto は未対応。
+行・列の配列は空にできず、それぞれ最低 1 つは正の値が必要。
+0rate の行・列は折り畳まれ、その中の部品は描画・操作の対象にならない。
+
+範囲外の行・列、同じセルへの二重配置、同じ文房具の二重配置はエラー。
+セル間の gap、複数セルにまたがる span、自動折り返し、内容に応じた行の高さは未対応。
+CSS の float や Grid の互換実装ではなく、この JSON で指定した行・列と対応付けを使う独自の配置方式。
+
+原本のデモは 5 行 × 2 列。themeButton と scaleButton だけが同じ行の左右に並び、
+名前欄・メモ欄などの右側は空きセルになる。
+
+## panel のパディング
+
+padding の四辺を "0px"、"8px"、"12.5px" のような非負の px 文字列で指定する。
+省略した辺は 8px。数値だけの 8、負数、rate、%、em、auto は未対応。
+panel のパディングは子を配置する領域を狭める設定で、各コントロール内部の文字余白とは別。
+
+px は MonoGame の描画領域のピクセル単位。ウィンドウ枠を含まない。
+左・上のパディングを原点とし、右・下も差し引いた内側を使う。
+パディングが大きすぎる場合、内側の幅・高さは 0 まで縮める。
+デモではルートの内側が 1px 未満になると、コンテンツの描画・操作を休止する。
+F5 と自動リロードは継続する。
+
+デモの拡大率ボタンは、セルの位置・大きさを保ったまま文字などの表示倍率を変える。
+パディングやセルの比率は変わらない。ダイアログは内側の領域に収まる倍率で中央に配置する。
 
 ## デモの文房具とコードの役割
 
-原本の models には、メイン画面の 6 部品と `editDialog` を定義する。
-ダイアログにも `nameField`、`cancelButton`、`saveButton` を定義する。
-Id はコード側の動作との接続にも使う固定名で、AI コーディング時に models と C# を合わせて生成・保守する。
-表示文字列、入力処理、保存などの動作は C# が担当し、JSON の `type` だけから任意の新しいコントロールを生成するわけではない。
+原本の models には、メインの 6 部品と editDialog を定義する。
+Id はコードの動作との接続にも使う固定名で、AI コーディング時に models と C# を合わせて生成・保守する。
+表示文字列、入力処理、保存などの動作は C# が担当する。
+JSON の type だけから任意の新しいコントロールを生成するわけではない。
 
-メイン側には `nameField` / `memoField`（textBox）、`themeButton` / `scaleButton` / `applyTitleButton` / `openDialogButton`（button）が各 1 個必要。
-ダイアログ側には `nameField`（textBox）、`cancelButton` / `saveButton`（button）が各 1 個必要。
-コードとの接続先が不明になる欠落・重複・型違い・未接続の部品は、models と layouts 全体を採用せず、最後の正常な設定を維持する。
-メインとダイアログの各範囲内では、必要な部品を `page` / `container` で包み直せる。
+メインには nameField / memoField（textBox）、
+themeButton / scaleButton / applyTitleButton / openDialogButton（button）が各 1 個必要。
+**メインの 6 部品すべてに floating-layout のセルへの binding が必要。**
+ダイアログには nameField（textBox）、cancelButton / saveButton（button）が各 1 個必要。
+ダイアログの配置は現時点では C# が担当するため、ダイアログやその子への binding はデモではエラーにする。
 
-models の変更も自動リロード／F5 の対象。階層を更新しても、既存コントロールのテキスト・選択範囲・テーマ・イベント処理は維持する。
-フォーカスのパスも更新し、変更時点のマウスキャプチャは解除する。
-起動時に不正なファイルだった場合は、コード内の標準モデルと四辺 `8px` を使う。
+各範囲内で必要な部品を page / container で包み直せる。
+欠落・重複・型違い・未接続の部品や不正な binding がある場合、設定全体を採用せず最後の正常な状態を維持する。
+起動時に不正なスタイルだった場合は、コード内の標準モデル、5 行 × 2 列、四辺 8px を使う。
 
-## パディングの値と画面への反映
+models / layouts / bindings の変更はすべて自動リロード／F5 の対象。
+階層や配置を変更しても、既存コントロールのテキスト・選択範囲・テーマ・イベント処理は維持する。
+モデルを変更するとフォーカスのパスも更新し、マウスキャプチャは解除する。
+F12 は models のツリーと実際の文房具の配置座標を表示する。レイアウト専用ツリーの表示は未対応。
 
-四辺をそれぞれ、`"0px"`、`"8px"`、`"12.5px"` のような非負の px 文字列で指定する。
-数値だけの `8`、負数、`%`、`em`、`auto` は未対応。省略した辺は `8px` に戻る。
-未知のプロパティは現在無視するため、設定名は上記の綴りに合わせる。
+未知のプロパティは原則無視するため、設定名は上記の綴りに合わせる。
 
-`px` は MonoGame の描画領域のピクセル単位。ウィンドウ枠を含まず、デモの拡大率を変えてもパディング自体は拡大しない。
-左上の内側をコンテンツの原点とし、右・下のパディングを引いた領域にデモを配置する。
-名前・メモ・ポップアップ用リンクは内側の幅に合わせる。行間などはまだデモ側の固定値。
-領域が狭い場合はデモ全体を縮小して収め、ダイアログも内側の領域に合わせて中央配置する。
-四辺の指定で内側の幅や高さが 1px 未満になった場合は、コンテンツの描画と操作を休止する。F5 と自動リロードは継続する。
+## 他の MonoGame アプリへの組み込み
 
-例えば右だけ `"120px"` にして保存すると、横長の入力欄の右端が内側へ移動する。
-下だけ大きくすると、必要に応じてデモの行全体が縮小される。
+StationeryUI.Styling の StationeryStyleFile に、スタイル自体ではなく読み込み設定ファイルのパスを渡す。
+Update からファイルの Update を呼び、Current と現在の描画領域を配置エンジンに渡す。
 
-現段階の対応範囲は、models による文房具の階層、layouts によるルートのパディング、起動時読み込みとオートリロード。
-ライブラリ側では `StationeryUI.Styling.StationeryStyleFile` と `StationeryStyleSettings` を利用できる。
-コンストラクターにはスタイルファイルではなく読み込み設定ファイルのパスを渡す。`Configuration` から監視方針、`ConfigurationFilePath` と `FilePath` からそれぞれの読み込み先を取得できる。
-他の MonoGame アプリでは、ゲームの Update から `StationeryStyleFile.Update` を呼び、`Current.Layouts[0].Padding.GetContentBounds` の結果を配置に使う。
+```csharp
+styles.Update(gameTime.ElapsedGameTime);
+var arranged = StationeryLayoutEngine.Arrange(
+    styles.Current, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+var nameBounds = arranged.Bounds["/demo/nameField"];
+var innerBounds = arranged.ContentBounds["/demo"];
+```
 
-モデルを取り込む場合は `Current.Models[0].CreateTree()` でノードを作り、`DesktopUi.AddTextBox` / `AddButton` のノード指定版で結び付ける。モデル更新には `RebindModel` を使う。
+Bounds はモデルごとの外枠、ContentBounds は panel のパディングを差し引いた内側で、いずれも完全パスをキーとする。
+結果はウィンドウのピクセル座標。DesktopUi.Viewport に倍率・オフセットを設定している場合は、論理座標へ変換してから Element.Bounds に渡す。
+
+Current.Models[0].CreateTree() でノードを作り、DesktopUi.AddTextBox / AddButton のノード指定版で結び付ける。
+モデルの更新には RebindModel を使う。任意の独自アプリでは、配置対象とコードの役割の検証も行う。
+StationeryStyleFile の validate コールバックに検証を渡すと、不正な設定の採用を防げる。
+
+Configuration は監視方針、ConfigurationFilePath と FilePath はそれぞれの読み込み先。
+layouts の配列順とモデルは独立しているため、Layouts[0] から対象モデルの設定を決めない。

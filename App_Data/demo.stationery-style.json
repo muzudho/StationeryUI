@@ -51,14 +51,62 @@
     ],
     "layouts": [
         {
-            "id": "demo",
-            "type": "viewport",
+            "id": "demoViewport",
+            "type": "panel",
             "padding": {
-                "top": "32px",
-                "right": "32px",
+                "top": "8px",
+                "right": "8px",
                 "bottom": "8px",
-                "left": "32px"
+                "left": "8px"
             }
+        },
+        {
+            "id": "demoPage",
+            "type": "floating-layout",
+            "row-definitions": [ "1rate", "1rate", "1rate", "1rate", "1rate" ],
+            "column-definitions": [ "1rate", "1rate" ]
         }
-    ]
+    ],
+    "bindings": [
+        {
+            "layout": "demoViewport",
+            "model": "demo"
+        },
+        {
+            "layout": "demoPage",
+            "parentModel": "demo",
+            "childrenModel": [
+                {
+                    "model": "nameField",
+                    "row": 0,
+                    "column": 0
+                },
+                {
+                    "model": "memoField",
+                    "row": 1,
+                    "column": 0
+                },
+                {
+                    "model": "themeButton",
+                    "row": 2,
+                    "column": 0
+                },
+                {
+                    "model": "scaleButton",
+                    "row": 2,
+                    "column": 1
+                },
+                {
+                    "model": "applyTitleButton",
+                    "row": 3,
+                    "column": 0
+                },
+                {
+                    "model": "openDialogButton",
+                    "row": 4,
+                    "column": 0
+                }
+            ]
+        }
+    ]  
 }

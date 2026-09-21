@@ -3,7 +3,7 @@ namespace StationeryUI.Input;
 /// <summary>Stable control IDs, ordered keyboard focus, modal scopes and pointer capture.</summary>
 public sealed class FocusManager
 {
-    private readonly List<(string Id, string Scope, bool Enabled)> controls = [];
+    private readonly List<(string Id, string Scope, bool Enabled, bool Visible)> controls = [];
     private readonly Stack<(string Scope, string? Previous)> modals = [];
     public string? FocusedId { get; private set; }
     public string? CapturedId { get; private set; }
@@ -13,10 +13,10 @@ public sealed class FocusManager
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (controls.Any(c => c.Id == id)) throw new ArgumentException("Duplicate control ID.", nameof(id));
-        controls.Add((id, scope, enabled));
+        controls.Add((id, scope, enabled, true));
     }
-    private bool Eligible((string Id, string Scope, bool Enabled) c) =>
-        c.Enabled && c.Scope == (HasModal ? modals.Peek().Scope : "root");
+    private bool Eligible((string Id, string Scope, bool Enabled, bool Visible) c) =>
+        c.Enabled && c.Visible && c.Scope == (HasModal ? modals.Peek().Scope : "root");
     public void ClearFocus() => FocusedId = null;
     public bool Focus(string id)
     {
@@ -39,6 +39,15 @@ public sealed class FocusManager
         controls[index] = controls[index] with { Enabled = enabled };
         if (!enabled && FocusedId == id) { FocusedId = null; Move(); }
         if (!enabled && CapturedId == id) ReleasePointer();
+    }
+    /// <summary>Excludes collapsed controls without changing their enabled state.</summary>
+    public void SetVisible(string id, bool visible)
+    {
+        var index = controls.FindIndex(c => c.Id == id);
+        if (index < 0) throw new ArgumentException("Unknown control.", nameof(id));
+        controls[index] = controls[index] with { Visible = visible };
+        if (!visible && FocusedId == id) { FocusedId = null; Move(); }
+        if (!visible && CapturedId == id) ReleasePointer();
     }
     public void PushModal(string scope)
     {

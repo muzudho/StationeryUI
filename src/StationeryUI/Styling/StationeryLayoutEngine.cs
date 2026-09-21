@@ -1,0 +1,76 @@
+namespace StationeryUI.Styling;
+
+using System.Collections.ObjectModel;
+using StationeryUI.Canvas;
+using StationeryUI.Inspection;
+
+public sealed record StationeryLayoutResult(IReadOnlyDictionary<string, ScreenRectangle> Bounds,
+    IReadOnlyDictionary<string, ScreenRectangle> ContentBounds);
+
+/// <summary>Computes window-pixel rectangles without changing the model tree or using a graphics device.</summary>
+public static class StationeryLayoutEngine
+{
+    public static StationeryLayoutResult Arrange(StationeryStyleSettings settings, double width, double height)
+    {
+        if (!double.IsFinite(width) || width < 0 || !double.IsFinite(height) || height < 0)
+            throw new ArgumentOutOfRangeException(nameof(width), "Window dimensions must be finite and nonnegative.");
+        var layouts = settings.Layouts.ToDictionary(layout => layout.Id, StringComparer.Ordinal);
+        var panels = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "panel")
+            .ToDictionary(binding => binding.ModelPath, binding => layouts[binding.Layout], StringComparer.Ordinal);
+        var grids = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "floating-layout")
+            .ToDictionary(binding => binding.ModelPath, StringComparer.Ordinal);
+        var positions = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var bounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var contents = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+
+        void Visit(StationeryNode node, ScreenRectangle inherited)
+        {
+            var outer = positions.GetValueOrDefault(node.Path, inherited);
+            bounds.Add(node.Path, outer);
+            var content = outer;
+            if (panels.TryGetValue(node.Path, out var panel))
+            {
+                var inset = panel.Padding.GetContentBounds(outer.Width, outer.Height);
+                content = inset with { X = outer.X + inset.X, Y = outer.Y + inset.Y };
+            }
+            contents.Add(node.Path, content);
+            if (grids.TryGetValue(node.Path, out var binding))
+            {
+                var layout = layouts[binding.Layout];
+                var rows = TrackEdges(layout.Rows, content.Height);
+                var columns = TrackEdges(layout.Columns, content.Width);
+                foreach (var child in binding.Children)
+                    positions.Add(child.ModelPath, new(content.X + columns[child.Column], content.Y + rows[child.Row],
+                        columns[child.Column + 1] - columns[child.Column], rows[child.Row + 1] - rows[child.Row]));
+            }
+            foreach (var child in node.Children) Visit(child, content);
+        }
+
+        foreach (var model in settings.Models) Visit(model.CreateTree(), new(0, 0, width, height));
+        return new(new ReadOnlyDictionary<string, ScreenRectangle>(bounds), new ReadOnlyDictionary<string, ScreenRectangle>(contents));
+    }
+
+    private static double[] TrackEdges(IReadOnlyList<LayoutTrack> tracks, double available)
+    {
+        // Normalize weights before summing so even large finite rates cannot overflow.
+        var pixelMax = tracks.Where(track => !track.IsRate).Select(track => track.Value).DefaultIfEmpty(0).Max();
+        var pixelWeights = pixelMax == 0 ? 0 : tracks.Where(track => !track.IsRate).Sum(track => track.Value / pixelMax);
+        var pixelTotal = pixelMax * pixelWeights;
+        var shrinkPixels = pixelTotal > available;
+        var remaining = Math.Max(0, available - pixelTotal);
+        var rateMax = tracks.Where(track => track.IsRate).Select(track => track.Value).DefaultIfEmpty(0).Max();
+        var rateWeights = rateMax == 0 ? 0 : tracks.Where(track => track.IsRate).Sum(track => track.Value / rateMax);
+        var edges = new double[tracks.Count + 1];
+        for (var i = 0; i < tracks.Count; i++)
+        {
+            var track = tracks[i];
+            var size = track.IsRate
+                ? (rateWeights == 0 ? 0 : remaining * (track.Value / rateMax) / rateWeights)
+                : (shrinkPixels ? available * (track.Value / pixelMax) / pixelWeights : track.Value);
+            edges[i + 1] = Math.Min(available, edges[i] + size);
+        }
+        // Prevent rounding accumulation from leaving a seam at the viewport edge.
+        if (rateWeights > 0 || shrinkPixels) edges[^1] = available;
+        return edges;
+    }
+}

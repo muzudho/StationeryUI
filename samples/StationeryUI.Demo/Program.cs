@@ -31,7 +31,7 @@ internal sealed class Demo : Game
     private Point pointer;
     private int updateFrames;
     private StationeryStyleFile styles = null!;
-    private readonly List<(DesktopUi.Element Element, ScreenRectangle Bounds)> styledElements = [];
+    private readonly List<DesktopUi.Element> styledElements = [];
     private double requestedScale = 1;
     private bool previousReloadKey;
     private bool hasContentArea;
@@ -102,8 +102,7 @@ internal sealed class Demo : Game
             popupUi.Focus.Focus(popupText.Path);
             popupOpen = true;
         });
-        foreach (var element in new[] { name, memo, themeButton, scaleButton, acceptButton, popupLink })
-            styledElements.Add((element, element.Bounds with { X = element.Bounds.X - 32, Y = element.Bounds.Y - 40 }));
+        styledElements.AddRange(new[] { name, memo, themeButton, scaleButton, acceptButton, popupLink });
         ApplyStyles();
         // 起動時は未編集にして、名前・メモのホバーバッジを試せるようにする。
     }
@@ -121,15 +120,19 @@ internal sealed class Demo : Game
             }
             appliedStyle = styles.Current;
         }
-        var content = styles.Current.Layouts[0].Padding.GetContentBounds(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        var arranged = StationeryLayoutEngine.Arrange(styles.Current, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        var content = arranged.ContentBounds[modelBinding.Root.Path];
         hasContentArea = content.Width >= 1 && content.Height >= 1;
         if (!hasContentArea) return;
-        // Fit the demo's fixed rows inside all four padding edges, using the same transform for input and drawing.
-        ui!.Viewport.Scale = Math.Min(requestedScale, Math.Min(content.Width / 600, content.Height / 444));
-        ui.Viewport.Offset = new(content.X, content.Y);
-        foreach (var (element, bounds) in styledElements)
-            element.Bounds = element == name || element == memo || element == popupLink
-                ? bounds with { Width = content.Width / ui.Viewport.Scale } : bounds;
+        // Layout owns window-pixel rectangles. UI zoom changes text rendering within those rectangles.
+        ui!.Viewport.Scale = requestedScale;
+        ui.Viewport.Offset = new(0, 0);
+        foreach (var element in styledElements)
+        {
+            var bounds = arranged.Bounds[element.Path];
+            element.Bounds = new(bounds.X / requestedScale, bounds.Y / requestedScale,
+                bounds.Width / requestedScale, bounds.Height / requestedScale);
+        }
         popupUi!.Viewport.Scale = Math.Min(1, Math.Min(content.Width / 800, content.Height / 320));
         popupUi.Viewport.Offset = new(content.X + (content.Width - 800 * popupUi.Viewport.Scale) / 2,
             content.Y + (content.Height - 320 * popupUi.Viewport.Scale) / 2);

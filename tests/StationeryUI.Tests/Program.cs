@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 
 var tests = new (string Name, Action Run)[]
 {
+    ("floating layout rates, pixels, scoped bindings and reusable definitions", FloatingLayoutTests.Run),
     ("model hierarchy, layout reference and semantic reload validation", ModelLayoutTests.Run),
     ("stationery IDs resolve by ancestry and keep duplicate local IDs isolated", StationeryNodeTests.Run),
     ("style parsing, padding and reload preserve the last good snapshot", StationeryStyleTests.Run),
@@ -48,6 +49,12 @@ var tests = new (string Name, Action Run)[]
         var f=new FocusManager(); f.Register("a"); f.Register("b",enabled:false); f.Register("c");
         f.Move(); Equal("a",f.FocusedId); f.Move(); Equal("c",f.FocusedId); f.Move(); Equal("a",f.FocusedId);
         f.Move(true); Equal("c",f.FocusedId);
+        f.CapturePointer("c", 1); f.SetVisible("c", false);
+        Equal("a",f.FocusedId); Equal<string?>(null,f.CapturedId);
+        Equal(false,f.Focus("c"));
+        f.SetVisible("b", false); f.SetVisible("b", true);
+        Equal(false,f.Focus("b")); // Layout visibility must preserve explicit disabling.
+        f.SetVisible("c", true); Equal(true,f.Focus("c"));
     }),
     ("modal excludes background and restores focus", () => {
         var f=new FocusManager(); f.Register("background"); f.Register("ok","dialog"); f.Focus("background");

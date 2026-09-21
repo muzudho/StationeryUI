@@ -126,7 +126,8 @@ public sealed class DesktopUi : IDisposable
         {
             byNode.TryGetValue(node, out var element);
             result.Add(new(node.Id, node.Path, node.Parent?.Path, node.Kind, element?.AccessibleName ?? node.Id,
-                visible, element is null ? null : Viewport.ToWindow(element.Bounds)));
+                visible && (element is null || element.Bounds.Width > 0 && element.Bounds.Height > 0),
+                element is null ? null : Viewport.ToWindow(element.Bounds)));
             foreach (var child in node.Children) Visit(child);
         }
         Visit(Root);
@@ -136,6 +137,8 @@ public sealed class DesktopUi : IDisposable
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         KeyboardConsumed = PointerConsumed = false;
+        foreach (var element in elements)
+            Focus.SetVisible(element.Path, element.Bounds.Width > 0 && element.Bounds.Height > 0);
         if (!active)
         {
             editing?.Session?.Blur(); editing = null; Focus.Deactivate();
@@ -251,6 +254,7 @@ public sealed class DesktopUi : IDisposable
         {
             foreach (var e in elements)
             {
+                if (e.Bounds.Width <= 0 || e.Bounds.Height <= 0) continue;
                 var theme = e.Theme ?? Theme;
                 var bounds = RectangleOf(Viewport.ToWindow(e.Bounds));
                 graphics.ScissorRectangle = Rectangle.Intersect(bounds, graphics.Viewport.Bounds);
