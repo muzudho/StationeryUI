@@ -22,6 +22,7 @@ internal sealed class InspectorGame : Game
     private WindowsTextInputService? input;
     private StationeryDeveloperView? view;
     private long showSequence = -1;
+    private long captureSequence;
     private bool shown = true;
     private bool waitForCloseKeyRelease = true;
     private KeyboardState previous;
@@ -76,6 +77,11 @@ internal sealed class InspectorGame : Game
         {
             view!.Refresh(packet.Message.Entries);
             if (showSequence < 0) view.Restore(packet.Message.RestoreState);
+            if (packet.Message.CaptureSequence != captureSequence)
+            {
+                if (packet.Message.CapturePath is { } path) view.SelectCaptured(path);
+                captureSequence = packet.Message.CaptureSequence;
+            }
             if (packet.Message.ShowSequence != showSequence)
             {
                 shown = true;
@@ -112,7 +118,7 @@ internal sealed class InspectorGame : Game
             Directory.CreateDirectory(testOutput);
             var report = new { ProcessId = Environment.ProcessId, IsActive, InputSequence = testInput?.Sequence ?? 0, view.FocusedPath,
                 CopiedPath = view.LastCopiedPath is null ? null : input!.ReadClipboard(), State = view.Capture(shown), view.Model.Details,
-                view.TreeBounds, view.SplitBounds, view.CopyBounds, view.DetailsBounds, view.DetailsScroll,
+                view.TreeBounds, view.SplitBounds, view.CopyBounds, view.CaptureBounds, view.DetailsBounds, view.DetailsScroll,
                 Rows = view.Model.Tree.VisibleRows().Select(row => new { Path = view.Model.PathFor(row.Item), row.Depth, row.Item.IsExpanded }) };
             File.WriteAllText(Path.Combine(testOutput, "report.tmp"), JsonSerializer.Serialize(report));
             File.Move(Path.Combine(testOutput, "report.tmp"), Path.Combine(testOutput, "report.json"), true);

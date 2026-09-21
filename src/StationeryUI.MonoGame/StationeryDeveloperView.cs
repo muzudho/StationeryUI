@@ -15,7 +15,9 @@ public sealed class StationeryDeveloperView : IDisposable
 {
     private readonly StationeryUiHost ui;
     private readonly ITextInputService input;
-    private readonly StationeryUiHost.Element header, split, tree, details, copy;
+    private readonly StationeryUiHost.Element header, split, tree, details, copy, capture;
+    public bool CaptureEnabled { get; private set; }
+    public ScreenRectangle CaptureBounds => capture.Bounds;
     public StationeryDeveloperStyle Style { get; }
     public DeveloperInspectionModel Model { get; } = new();
     public StationeryTheme Theme { get => ui.Theme; set => ui.Theme = value; }
@@ -42,6 +44,9 @@ public sealed class StationeryDeveloperView : IDisposable
         tree = ui.AddTree(treeNode, new(), "文房具の階層", Model.Tree);
         details = ui.AddTextBlock(detailsNode, new(), Model.Details);
         copy = ui.AddButton(root.Resolve("/developerWindow/copyPath")!, new(), "パスをコピー", CopySelectedPath);
+        var captureNode = root.Resolve("/developerWindow/capture") ?? root.AddChild("capture", "button");
+        capture = ui.AddButton(captureNode, new(), "キャプチャー", () => CaptureEnabled = !CaptureEnabled);
+        capture.ToolHint = "キャプチャー：画面上の文房具を選択。もう一度押すと解除。";
         ui.BindSplitContent(split, tree, details);
         ui.Focus.Focus(tree.Path);
     }
@@ -52,12 +57,21 @@ public sealed class StationeryDeveloperView : IDisposable
         if (previousTree != Model.Tree) RevealSelection();
         details.Label = Model.Details;
     }
-    public DeveloperViewState Capture(bool visible = true) => Model.Capture(SplitRatio, visible);
+    public DeveloperViewState Capture(bool visible = true) => Model.Capture(SplitRatio, visible) with { CaptureEnabled = CaptureEnabled };
     public void Restore(DeveloperViewState? state)
     {
         Model.Restore(state);
+        CaptureEnabled = state?.CaptureEnabled ?? false;
         RevealSelection();
         if (state is not null && double.IsFinite(state.SplitRatio)) split.Split!.SetRatio(state.SplitRatio);
+    }
+    public void SelectCaptured(string path)
+    {
+        if (!Model.Select(path)) return;
+        RevealSelection();
+        ui.Focus.Focus(tree.Path);
+        details.Scroll = 0;
+        details.Label = Model.Details;
     }
     private void RevealSelection()
     {
@@ -76,11 +90,16 @@ public sealed class StationeryDeveloperView : IDisposable
         var layout = StationeryLayoutEngine.Arrange(Style.Settings, width, height);
         latestLayout = layout;
         header.Bounds = layout.ContentBounds[header.Path];
+        capture.Bounds = new(header.Bounds.X, header.Bounds.Y, 48, 48);
+        header.Bounds = new(header.Bounds.X + 56, header.Bounds.Y, Math.Max(0, header.Bounds.Width - 56), header.Bounds.Height);
         split.Bounds = layout.ContentBounds[split.Path];
         copy.Bounds = layout.ContentBounds[copy.Path];
         ui.Focus.SetEnabled(copy.Path, Model.SelectedPath is not null);
         var before = Model.SelectedPath;
         ui.Update(time, active, keyboard, mouse);
+        header.Label = "F12 開発者ウィンドウ\n" + (CaptureEnabled
+            ? "キャプチャー中：画面上の文房具をクリック。手のボタンで解除。"
+            : "手のボタンでキャプチャー。F12 / Esc で閉じる。");
         if (before != Model.SelectedPath) { details.Scroll = 0; copy.Label = "パスをコピー"; }
         details.Label = Model.Details;
     }
@@ -88,6 +107,7 @@ public sealed class StationeryDeveloperView : IDisposable
     public void Draw()
     {
         ui.Draw();
+        ui.DrawCaptureIcon(capture.Bounds, CaptureEnabled, ui.Focus.FocusedId == capture.Path);
         if (latestLayout is not null) ui.DrawPanelBorders(latestLayout);
     }
     public void Dispose() => ui.Dispose();

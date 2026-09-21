@@ -26,6 +26,19 @@ internal static class DeveloperInspectionTests
         Check(model.SelectedPath == "/demo", "deleted selection falls back to root");
         model.Restore(state);
         Check(model.SelectedPath == "/demo/left", "reopened state restored");
+        model.Select("/demo/left/name");
+        Check(model.Tree.TargetItem == model.Tree.SelectedItem && model.Tree.VisibleRows().Any(r => r.Item == model.Tree.SelectedItem),
+            "captured node becomes selected and targeted and expands its ancestors");
+        Check(model.IdPath == "demo.left.name" && model.Details.Contains("demo.left.name"), "dot separated ID path");
+        Check(DeveloperCapture.HitTest(source, 2, 3)?.Path == "/demo/left/name", "deepest visible component wins over root");
+        Check(DeveloperCapture.HitTest(source, 6, 7)?.Path == "/demo", "hidden component is excluded");
+        Check(DeveloperCapture.HitTest(source, 4, 3)?.Path == "/demo", "right edge excluded");
+        Check(DeveloperCapture.HitTest(source, -1, 3) is null, "outside has no hit");
+        Check(DeveloperCapture.HitTest(source, 2, 3, "/demo/right") is null, "modal scope excludes background");
+        var packet = new DeveloperInspectionMessage(source, 1, model.Capture() with { CaptureEnabled = true }, "/demo/left/name", 2);
+        var roundtrip = System.Text.Json.JsonSerializer.Deserialize<DeveloperInspectionMessage>(System.Text.Json.JsonSerializer.Serialize(packet))!;
+        Check(roundtrip.CaptureSequence == 2 && roundtrip.CapturePath == model.SelectedPath && roundtrip.RestoreState!.CaptureEnabled,
+            "capture command and toggle survive pipe serialization");
         model.Refresh([]); Check(model.SelectedEntry is null && model.Details.Contains("選択"), "empty snapshot");
     }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }

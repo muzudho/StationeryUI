@@ -48,6 +48,7 @@ internal sealed partial class Demo : Game
     private DemoModelBinding modelBinding = null!;
     private StationeryStyleSettings? appliedStyle;
     private readonly StationeryDeveloperWindow developerWindow = new();
+    private bool captureMouseDown;
     private bool previousDeveloperKey;
     private double inspectionElapsed;
     public Demo()
@@ -191,6 +192,23 @@ internal sealed partial class Demo : Game
             developerWindow.Update(InspectStationery());
             inspectionElapsed = 0;
         }
+        var captureDown = mouse.LeftButton == ButtonState.Pressed;
+        if (developerWindow.CaptureEnabled && IsActive)
+        {
+            if (captureDown && !captureMouseDown)
+            {
+                var hit = DeveloperCapture.HitTest(InspectStationery(), mouse.X, mouse.Y,
+                    popupOpen ? modelBinding.Dialog.Path : null);
+                if (hit is not null) developerWindow.SelectCaptured(hit.Path);
+            }
+            captureMouseDown = captureDown;
+            ui?.Update(gameTime, false, keyboard, mouse);
+            popupUi?.Update(gameTime, false, keyboard, mouse);
+            splitUi?.Update(gameTime, false, keyboard, mouse);
+            base.Update(gameTime);
+            return;
+        }
+        captureMouseDown = captureDown;
         var smokeCase = Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_CASE");
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
         updateFrames++;
@@ -304,6 +322,11 @@ internal sealed partial class Demo : Game
                 badges.Draw(ui, popupLink!, "POPUP", pointer, IsActive || smoke);
             }
         }
+        if (developerWindow.IsOpen && developerWindow.SelectedPath is { } selected)
+        {
+            var entry = InspectStationery().FirstOrDefault(e => e.Path == selected && e.Visible);
+            if (entry?.WindowBounds is { } bounds) ui?.DrawInspectionOutline(bounds);
+        }
         var screenshot = Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG");
         if (!string.IsNullOrEmpty(screenshot) && ++smokeFrames == 8)
         {
@@ -351,6 +374,10 @@ internal sealed partial class Demo : Game
         var entries = ui!.Inspect(hasContentArea && activePage == "topDemoPage").ToDictionary(entry => entry.Path, StringComparer.Ordinal);
         foreach (var entry in splitUi!.Inspect(hasContentArea && activePage == "splitPaneDemoPage")) entries[entry.Path] = entry;
         foreach (var entry in popupUi!.Inspect(hasContentArea && popupOpen && activePage == "topDemoPage")) entries[entry.Path] = entry;
+        if (latestLayout is not null)
+            foreach (var (path, entry) in entries.ToArray())
+                if (entry.WindowBounds is null && latestLayout.Bounds.TryGetValue(path, out var bounds))
+                    entries[path] = entry with { WindowBounds = bounds };
         var root = modelBinding.Root;
         entries[root.Path] = new(root.Id, root.Path, null, root.Kind, "デモ画面", true,
             new ScreenRectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));

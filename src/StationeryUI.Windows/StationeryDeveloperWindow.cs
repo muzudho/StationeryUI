@@ -17,7 +17,14 @@ public sealed class StationeryDeveloperWindow : IDisposable
     private Task? worker;
     private Process? process;
     private bool visible, requested, disposed;
-    private long showSequence;
+    private long showSequence, captureSequence;
+    private string? capturePath;
+    public bool CaptureEnabled { get { lock (gate) return visible && viewState?.CaptureEnabled == true; } }
+    public string? SelectedPath { get { lock (gate) return capturePath ?? viewState?.SelectedPath; } }
+    public void SelectCaptured(string path)
+    {
+        lock (gate) { capturePath = path; captureSequence++; }
+    }
     public bool IsOpen { get { lock (gate) return visible || requested; } }
     public string? LastError { get; private set; }
 
@@ -65,14 +72,14 @@ public sealed class StationeryDeveloperWindow : IDisposable
             while (!stopping.IsCancellationRequested)
             {
                 DeveloperInspectionMessage message;
-                lock (gate) message = new(snapshot, showSequence, viewState);
+                lock (gate) message = new(snapshot, showSequence, viewState, capturePath, captureSequence);
                 await writer.WriteLineAsync(JsonSerializer.Serialize(message).AsMemory(), stopping.Token);
                 var response = await reader.ReadLineAsync(stopping.Token).AsTask().WaitAsync(TimeSpan.FromSeconds(10), stopping.Token);
                 if (response is null) break;
                 var state = JsonSerializer.Deserialize<DeveloperViewState>(response);
                 lock (gate)
                 {
-                    if (state is not null) { viewState = state; visible = state.Visible; }
+                    if (state is not null) { viewState = state; visible = state.Visible; if (captureSequence == message.CaptureSequence) capturePath = null; }
                     if (showSequence == message.ShowSequence) requested = false;
                 }
                 await Task.Delay(150, stopping.Token);
