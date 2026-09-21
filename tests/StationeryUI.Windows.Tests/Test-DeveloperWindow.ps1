@@ -62,7 +62,7 @@ try {
  if($fields.Count -ne 2){throw 'Expected two nameField nodes'}
  $textCondition=New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty,[System.Windows.Automation.ControlType]::Edit)
  $details=$automation.FindFirst([System.Windows.Automation.TreeScope]::Descendants,$textCondition)
- $paths=@('/demo/nameField','/demo/editDialog/nameField')
+ $paths=@('/demo/topDemoPage/nameField','/demo/topDemoPage/editDialog/nameField')
  for($i=0;$i -lt 2;$i++) {
   $fields[$i].GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
   Start-Sleep -Milliseconds 250

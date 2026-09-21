@@ -5,48 +5,96 @@
             "type": "viewport",
             "children": [
                 {
-                    "id": "nameField",
-                    "type": "textBox"
-                },
-                {
-                    "id": "memoField",
-                    "type": "textBox"
-                },
-                {
-                    "id": "themeButton",
-                    "type": "button"
-                },
-                {
-                    "id": "scaleButton",
-                    "type": "button"
-                },
-                {
-                    "id": "applyTitleButton",
-                    "type": "button"
-                },
-                {
-                    "id": "openDialogButton",
-                    "type": "button"
-                },
-                {
-                    "id": "sampleTree",
-                    "type": "tree"
-                },
-                {
-                    "id": "editDialog",
-                    "type": "dialog",
+                    "id": "topDemoPage",
+                    "type": "page",
                     "children": [
                         {
                             "id": "nameField",
                             "type": "textBox"
                         },
                         {
-                            "id": "cancelButton",
+                            "id": "memoField",
+                            "type": "textBox"
+                        },
+                        {
+                            "id": "themeButton",
                             "type": "button"
                         },
                         {
-                            "id": "saveButton",
+                            "id": "scaleButton",
                             "type": "button"
+                        },
+                        {
+                            "id": "applyTitleButton",
+                            "type": "button"
+                        },
+                        {
+                            "id": "openDialogButton",
+                            "type": "button"
+                        },
+                        {
+                            "id": "sampleTree",
+                            "type": "tree"
+                        },
+                        {
+                            "id": "editDialog",
+                            "type": "dialog",
+                            "children": [
+                                {
+                                    "id": "nameField",
+                                    "type": "textBox"
+                                },
+                                {
+                                    "id": "cancelButton",
+                                    "type": "button"
+                                },
+                                {
+                                    "id": "saveButton",
+                                    "type": "button"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "splitPaneDemoLink",
+                            "type": "link"
+                        }
+                    ]
+                },
+                {
+                    "id": "splitPaneDemoPage",
+                    "type": "page",
+                    "children": [
+                        {
+                            "id": "topDemoLink",
+                            "type": "link"
+                        },
+                        {
+                            "id": "verticalSplit",
+                            "type": "splitPane",
+                            "children": [
+                                {
+                                    "id": "leftPane",
+                                    "type": "textBox"
+                                },
+                                {
+                                    "id": "rightPane",
+                                    "type": "textBox"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "horizontalSplit",
+                            "type": "splitPane",
+                            "children": [
+                                {
+                                    "id": "topPane",
+                                    "type": "textBox"
+                                },
+                                {
+                                    "id": "bottomPane",
+                                    "type": "textBox"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -65,10 +113,47 @@
             }
         },
         {
-            "id": "demoPage",
+            "id": "topDemoLayout",
             "type": "floating-layout",
-            "row-definitions": [ "1rate", "1rate", "1rate", "1rate", "1rate" ],
-            "column-definitions": [ "1rate", "1rate" ]
+            "row-definitions": [
+                "1rate",
+                "1rate",
+                "1rate",
+                "1rate",
+                "1rate"
+            ],
+            "column-definitions": [
+                "1rate",
+                "1rate"
+            ]
+        },
+        {
+            "id": "splitDemoLayout",
+            "type": "floating-layout",
+            "row-definitions": [
+                "64px",
+                "1rate",
+                "1rate"
+            ],
+            "column-definitions": [
+                "1rate"
+            ]
+        },
+        {
+            "id": "verticalSplitLayout",
+            "type": "split-pane",
+            "orientation": "vertical",
+            "ratio": 0.5,
+            "dividerWidth": "10px",
+            "minimumPaneSize": "80px"
+        },
+        {
+            "id": "horizontalSplitLayout",
+            "type": "split-pane",
+            "orientation": "horizontal",
+            "ratio": 0.5,
+            "dividerWidth": "10px",
+            "minimumPaneSize": "60px"
         }
     ],
     "bindings": [
@@ -77,8 +162,8 @@
             "model": "demo"
         },
         {
-            "layout": "demoPage",
-            "parentModel": "demo",
+            "layout": "topDemoLayout",
+            "parentModel": "demo/topDemoPage",
             "childrenModel": [
                 {
                     "model": "nameField",
@@ -114,8 +199,46 @@
                     "model": "sampleTree",
                     "row": 0,
                     "column": 1
+                },
+                {
+                    "model": "splitPaneDemoLink",
+                    "row": 4,
+                    "column": 1
                 }
             ]
+        },
+        {
+            "layout": "splitDemoLayout",
+            "parentModel": "demo/splitPaneDemoPage",
+            "childrenModel": [
+                {
+                    "model": "topDemoLink",
+                    "row": 0,
+                    "column": 0
+                },
+                {
+                    "model": "verticalSplit",
+                    "row": 1,
+                    "column": 0
+                },
+                {
+                    "model": "horizontalSplit",
+                    "row": 2,
+                    "column": 0
+                }
+            ]
+        },
+        {
+            "layout": "verticalSplitLayout",
+            "model": "demo/splitPaneDemoPage/verticalSplit",
+            "firstModel": "leftPane",
+            "secondModel": "rightPane"
+        },
+        {
+            "layout": "horizontalSplitLayout",
+            "model": "demo/splitPaneDemoPage/horizontalSplit",
+            "firstModel": "topPane",
+            "secondModel": "bottomPane"
         }
-    ]  
+    ]
 }

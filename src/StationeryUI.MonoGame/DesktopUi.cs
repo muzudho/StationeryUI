@@ -48,6 +48,10 @@ public sealed partial class DesktopUi : IDisposable
         public StationeryTheme? Theme { get; set; }
         public UnderlineTextEditor? Editor { get; internal set; }
         public TreeView? Tree { get; internal set; }
+        public SplitPane? Split { get; internal set; }
+        internal Element? FirstPane, SecondPane;
+        internal bool DraggingSplit;
+        internal double SplitGrab;
         internal double TreeScroll;
         internal TreeItem? PressedTreeItem;
         internal bool PressedTreeToggle;
@@ -115,6 +119,7 @@ public sealed partial class DesktopUi : IDisposable
         {
             binding.Element.Node = binding.Node;
             binding.Element.DraggingTreeScroll = false;
+            binding.Element.DraggingSplit = false;
             binding.Element.PressedTreeItem = null;
         }
         Focus = nextFocus;
@@ -131,6 +136,7 @@ public sealed partial class DesktopUi : IDisposable
     /// <summary>Take a snapshot on the game thread; inspectors never read mutable UI elements directly.</summary>
     public IReadOnlyList<StationeryInspectionEntry> Inspect(bool visible = true)
     {
+        ArrangeSplitPanes();
         var result = new List<StationeryInspectionEntry>();
         var byNode = elements.ToDictionary(element => element.Node);
         void Visit(StationeryNode node)
@@ -149,6 +155,7 @@ public sealed partial class DesktopUi : IDisposable
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         KeyboardConsumed = PointerConsumed = false;
+        ArrangeSplitPanes();
         foreach (var element in elements)
             Focus.SetVisible(element.Path, element.Bounds.Width > 0 && element.Bounds.Height > 0);
         if (!active)
@@ -157,6 +164,7 @@ public sealed partial class DesktopUi : IDisposable
             {
                 element.PressedTreeItem = null;
                 element.DraggingTreeScroll = false;
+                element.DraggingSplit = false;
             }
             editing?.Session?.Blur(); editing = null; Focus.Deactivate();
             repeats.Clear();
@@ -186,6 +194,9 @@ public sealed partial class DesktopUi : IDisposable
         }
         else if (pressedMouse && !Focus.HasModal) Focus.ClearFocus();
         if (Pressed(Keys.Tab) && (editing?.Session?.Composition.Text.Length ?? 0) == 0) Focus.Move(shift);
+        foreach (var element in elements.Where(e => e.Split is not null))
+            UpdateSplit(element, pointer, pressedMouse, mouse.LeftButton == ButtonState.Pressed, Repeated);
+        ArrangeSplitPanes();
         var next = elements.FirstOrDefault(e => e.Path == Focus.FocusedId && e.Editor is not null);
         if (next != editing)
         {
@@ -271,6 +282,7 @@ public sealed partial class DesktopUi : IDisposable
     public void Draw()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
+        ArrangeSplitPanes();
         var oldScissor = graphics.ScissorRectangle;
         try
         {
@@ -290,6 +302,23 @@ public sealed partial class DesktopUi : IDisposable
                 }
                 var focused = e.Path == Focus.FocusedId;
                 var hovered = Contains(e.Bounds, Viewport.ToLogical(new(previousMouse.X, previousMouse.Y)));
+                if (e.Split is not null)
+                {
+                    var divider = FromWindow(e.Split.Arrange(Viewport.ToWindow(e.Bounds)).Divider);
+                    Fill(divider, focused || e.DraggingSplit ? theme.Accent : theme.Border);
+                    sprites.End();
+                    continue;
+                }
+                if (e.Node.Kind == "link")
+                {
+                    Fill(e.Bounds, theme.Background);
+                    var x = e.Bounds.X + theme.Padding;
+                    var y = e.Bounds.Y + Math.Min(theme.Padding, Math.Max(0, (e.Bounds.Height - theme.FontSize * 1.5 - 2) / 2));
+                    DrawText(e.Label, x, y, theme, theme.Accent);
+                    Fill(new(x, y + theme.FontSize * 1.5, Math.Max(1, Measure(e.Label, theme)), focused || hovered ? 2 : 1), theme.Accent);
+                    sprites.End();
+                    continue;
+                }
                 Fill(e.Bounds, e.Editor is null ? theme.ButtonFill(true, Focus.CapturedId == e.Path, false, hovered) : theme.Surface);
                 var line = focused ? theme.Accent : theme.Border;
                 Fill(new(e.Bounds.X, e.Bounds.Y + e.Bounds.Height - theme.BorderWidth, e.Bounds.Width, theme.BorderWidth), line);

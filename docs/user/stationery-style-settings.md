@@ -68,9 +68,9 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
 | bindings | どのモデルに、どのレイアウトを適用するかの対応付け |
 
 旧トップレベルの viewport / model / layout は廃止。旧形式との混在もエラー。
-モデルの type: viewport は継続するが、レイアウトの型は panel または floating-layout を使う。
+モデルの type: viewport は継続するが、レイアウトの型は panel / floating-layout / split-pane を使う。
 
-以下は形式を説明する小さな例。実際のデモでは原本の 7 部品とダイアログも必要。
+以下は形式を説明する小さな例。実際のデモでは原本の二つのページと、その中の文房具も必要。
 
 ```json
 {
@@ -177,8 +177,9 @@ px との混在にも対応する。例えば ["120px", "1rate", "2rate"] は、
 セル間の gap、複数セルにまたがる span、自動折り返し、内容に応じた行の高さは未対応。
 CSS の float や Grid の互換実装ではなく、この JSON で指定した行・列と対応付けを使う独自の配置方式。
 
-原本のデモは 5 行 × 2 列。themeButton と scaleButton が同じ行の左右に並び、
-名前欄の右側には sampleTree を配置する。メモ欄などの右側は空きセルになる。
+原本のトップデモページは 5 行 × 2 列。themeButton と scaleButton が同じ行の左右に並び、
+名前欄の右側には sampleTree、右下には splitPaneDemoLink を配置する。メモ欄などの右側は空きセルになる。
+ページ間の移動ともう一つのデモは [スプリットペーン](split-pane.md) を参照。
 
 ## panel のパディング
 
@@ -197,14 +198,17 @@ F5 と自動リロードは継続する。
 
 ## デモの文房具とコードの役割
 
-原本の models には、メインの 7 部品と editDialog を定義する。
+原本の models は、demo ルートの下に topDemoPage と splitPaneDemoPage を持つ。
+topDemoPage には 8 部品と editDialog を定義する。
 Id はコードの動作との接続にも使う固定名で、AI コーディング時に models と C# を合わせて生成・保守する。
 表示文字列、入力処理、保存などの動作は C# が担当する。
 JSON の type だけから任意の新しいコントロールを生成するわけではない。
 
 メインには nameField / memoField（textBox）、
-themeButton / scaleButton / applyTitleButton / openDialogButton（button）、sampleTree（tree）が各 1 個必要。
-**メインの 7 部品すべてに floating-layout のセルへの binding が必要。**
+themeButton / scaleButton / applyTitleButton / openDialogButton（button）、sampleTree（tree）、splitPaneDemoLink（link）が各 1 個必要。
+**トップページの 8 部品すべてに floating-layout のセルへの binding が必要。**
+splitPaneDemoPage には topDemoLink、verticalSplit、horizontalSplit と、それぞれの子のテキスト欄を定義する。
+スプリットペーンの子は split-pane の firstModel / secondModel で配置する。
 ツリーの項目と開閉操作は [ツリーの使い方](tree.md) を参照。
 ダイアログには nameField（textBox）、cancelButton / saveButton（button）が各 1 個必要。
 ダイアログの配置は現時点では C# が担当するため、ダイアログやその子への binding はデモではエラーにする。
@@ -229,7 +233,7 @@ Update からファイルの Update を呼び、Current と現在の描画領域
 styles.Update(gameTime.ElapsedGameTime);
 var arranged = StationeryLayoutEngine.Arrange(
     styles.Current, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-var nameBounds = arranged.Bounds["/demo/nameField"];
+var nameBounds = arranged.Bounds["/demo/topDemoPage/nameField"];
 var innerBounds = arranged.ContentBounds["/demo"];
 ```
 

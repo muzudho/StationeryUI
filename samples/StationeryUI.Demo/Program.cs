@@ -15,7 +15,7 @@ internal static class Program
     private static void Main() { using var game = new Demo(); game.Run(); }
 }
 
-internal sealed class Demo : Game
+internal sealed partial class Demo : Game
 {
     private int smokeFrames;
     private readonly GraphicsDeviceManager manager;
@@ -77,7 +77,7 @@ internal sealed class Demo : Game
             cache.EndFrame();
         }
         input = new(Window.Handle);
-        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), modelBinding.Root);
+        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), modelBinding.TopPage);
         badges = new(GraphicsDevice);
         popupUi = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), modelBinding.Dialog);
         popupText = popupUi.AddTextBox(modelBinding.DialogControls["nameField"], new(32, 70, 736, 64), "ダイアログのテキスト");
@@ -114,6 +114,7 @@ internal sealed class Demo : Game
         tree.AddNode("stickyNote", "付箋", paper);
         sampleTree = ui.AddTree(modelBinding.Main["sampleTree"], new(0, 0, 400, 160), "文房具のツリー", tree);
         styledElements.AddRange(new[] { name, memo, themeButton, scaleButton, acceptButton, popupLink, sampleTree });
+        CreatePages();
         ApplyStyles();
         // 起動時は未編集にして、名前・メモのホバーバッジを試せるようにする。
     }
@@ -125,8 +126,9 @@ internal sealed class Demo : Game
             var next = DemoModelBinding.Create(styles.Current);
             if (next.Signature != modelBinding.Signature)
             {
-                ui!.RebindModel(next.Root, element => next.Main[element.Id]);
+                ui!.RebindModel(next.TopPage, element => next.Main[element.Id]);
                 popupUi!.RebindModel(next.Dialog, element => next.DialogControls[element.Id]);
+                splitUi!.RebindModel(next.SplitPage, element => next.SplitControls[element.Id]);
                 modelBinding = next;
             }
             appliedStyle = styles.Current;
@@ -144,6 +146,7 @@ internal sealed class Demo : Game
             element.Bounds = new(bounds.X / requestedScale, bounds.Y / requestedScale,
                 bounds.Width / requestedScale, bounds.Height / requestedScale);
         }
+        ApplySplitStyles(arranged);
         popupUi!.Viewport.Scale = Math.Min(1, Math.Min(content.Width / 800, content.Height / 320));
         popupUi.Viewport.Offset = new(content.X + (content.Width - 800 * popupUi.Viewport.Scale) / 2,
             content.Y + (content.Height - 320 * popupUi.Viewport.Scale) / 2);
@@ -181,6 +184,7 @@ internal sealed class Demo : Game
             {
                 ui.Update(gameTime, false, keyboard, mouse);
                 popupUi.Update(gameTime, false, keyboard, mouse);
+                splitUi!.Update(gameTime, false, keyboard, mouse);
                 base.Update(gameTime);
                 return;
             }
@@ -237,17 +241,26 @@ internal sealed class Demo : Game
                         ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
                 }
             }
+            PreparePageSmoke(smokeCase, smoke, ref keyboard, ref mouse);
             pointer = mouse.Position;
-            if (popupOpen)
+            if (activePage == "splitPaneDemoPage")
+            {
+                ui.Update(gameTime, false, keyboard, mouse);
+                popupUi.Update(gameTime, false, keyboard, mouse);
+                splitUi!.Update(gameTime, IsActive || smoke, keyboard, mouse);
+                if (activePage != "splitPaneDemoPage") splitUi.Update(gameTime, false, keyboard, mouse);
+            }
+            else if (popupOpen)
             {
                 popupUi.Update(gameTime, IsActive || smoke, keyboard, mouse);
                 if (!popupOpen) popupUi.Update(gameTime, false, keyboard, mouse);
             }
             else
             {
+                splitUi!.Update(gameTime, false, keyboard, mouse);
                 ui.Update(gameTime, IsActive || smoke, keyboard, mouse);
                 // モーダルへ入力の所有権を渡す前に、元のテキスト入力を終了する。
-                if (popupOpen) ui.Update(gameTime, false, keyboard, mouse);
+                if (popupOpen || activePage != "topDemoPage") ui.Update(gameTime, false, keyboard, mouse);
             }
         }
         base.Update(gameTime);
@@ -256,7 +269,8 @@ internal sealed class Demo : Game
     {
         GraphicsDevice.Clear(DesktopUi.Convert(ui?.Theme.Background ?? StationeryTheme.Dark.Background));
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
-        if (hasContentArea && popupOpen)
+        if (hasContentArea && activePage == "splitPaneDemoPage") splitUi?.Draw();
+        else if (hasContentArea && popupOpen)
         {
             ui?.Draw();
             badges?.DrawDialogBackground(popupUi!);
@@ -276,6 +290,7 @@ internal sealed class Demo : Game
         if (!string.IsNullOrEmpty(screenshot) && ++smokeFrames == 8)
         {
             var smokeCase = Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_CASE");
+            ValidatePageSmoke(smokeCase);
             if (smokeCase is not null && smokeCase.StartsWith("tree-", StringComparison.Ordinal))
             {
                 var collapsed = smokeCase is "tree-close" or "tree-keyboard";
@@ -315,8 +330,9 @@ internal sealed class Demo : Game
     }
     private IReadOnlyList<StationeryInspectionEntry> InspectStationery()
     {
-        var entries = ui!.Inspect(hasContentArea).ToDictionary(entry => entry.Path, StringComparer.Ordinal);
-        foreach (var entry in popupUi!.Inspect(hasContentArea && popupOpen)) entries[entry.Path] = entry;
+        var entries = ui!.Inspect(hasContentArea && activePage == "topDemoPage").ToDictionary(entry => entry.Path, StringComparer.Ordinal);
+        foreach (var entry in splitUi!.Inspect(hasContentArea && activePage == "splitPaneDemoPage")) entries[entry.Path] = entry;
+        foreach (var entry in popupUi!.Inspect(hasContentArea && popupOpen && activePage == "topDemoPage")) entries[entry.Path] = entry;
         var root = modelBinding.Root;
         entries[root.Path] = new(root.Id, root.Path, null, root.Kind, "デモ画面", true,
             new ScreenRectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
@@ -329,5 +345,5 @@ internal sealed class Demo : Game
         base.Dispose(disposing);
     }
 
-    protected override void UnloadContent() { popupUi?.Dispose(); badges?.Dispose(); ui?.Dispose(); input?.Dispose(); base.UnloadContent(); }
+    protected override void UnloadContent() { splitUi?.Dispose(); popupUi?.Dispose(); badges?.Dispose(); ui?.Dispose(); input?.Dispose(); base.UnloadContent(); }
 }

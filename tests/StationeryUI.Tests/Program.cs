@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 
 var tests = new (string Name, Action Run)[]
 {
+    ("split panes arrange, clamp, preserve state and validate style bindings", SplitPaneTests.Run),
     ("tree expansion, selection, keyboard navigation and scoped IDs", TreeViewTests.Run),
     ("floating layout rates, pixels, scoped bindings and reusable definitions", FloatingLayoutTests.Run),
     ("model hierarchy, layout reference and semantic reload validation", ModelLayoutTests.Run),

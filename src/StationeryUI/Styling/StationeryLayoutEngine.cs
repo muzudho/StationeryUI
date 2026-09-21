@@ -3,6 +3,7 @@ namespace StationeryUI.Styling;
 using System.Collections.ObjectModel;
 using StationeryUI.Canvas;
 using StationeryUI.Inspection;
+using StationeryUI.Controls;
 
 public sealed record StationeryLayoutResult(IReadOnlyDictionary<string, ScreenRectangle> Bounds,
     IReadOnlyDictionary<string, ScreenRectangle> ContentBounds);
@@ -20,6 +21,7 @@ public static class StationeryLayoutEngine
         var grids = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "floating-layout")
             .ToDictionary(binding => binding.ModelPath, StringComparer.Ordinal);
         var positions = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var splits = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "split-pane").ToDictionary(binding => binding.ModelPath);
         var bounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var contents = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
 
@@ -34,6 +36,13 @@ public static class StationeryLayoutEngine
                 content = inset with { X = outer.X + inset.X, Y = outer.Y + inset.Y };
             }
             contents.Add(node.Path, content);
+            if (splits.TryGetValue(node.Path, out var splitBinding))
+            {
+                var state = new SplitPane(); state.Configure(layouts[splitBinding.Layout].Split!);
+                var splitBounds = state.Arrange(content);
+                positions.Add(splitBinding.FirstModel!, splitBounds.First);
+                positions.Add(splitBinding.SecondModel!, splitBounds.Second);
+            }
             if (grids.TryGetValue(node.Path, out var binding))
             {
                 var layout = layouts[binding.Layout];

@@ -45,7 +45,7 @@ VisibleRows() は表示対象のノードと深さを返す。描画領域外ま
 
 Id はコードで付ける識別名、Label は画面上のノード名。同じ親の下の Id は一意にする。
 別の親の下では同じ Id を使える。Id の許可文字はほかの文房具と同じ英字・数字・アンダースコア。
-F12 では /demo/sampleTree/stationery/writing/pencil のような完全パスで確認できる。
+F12 では /demo/topDemoPage/sampleTree/stationery/writing/pencil のような完全パスで確認できる。
 閉じた子やスクロール領域外の子は、F12 で非表示として確認できる。
 
 ## スタイルとの関係

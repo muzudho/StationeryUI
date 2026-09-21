@@ -89,6 +89,16 @@
 - 保存画像の画素を比較し、両倍率のつまみ幅が 17px であることを確認。画像は artifacts/tree-smoke/tree-drag-1.png と tree-drag-1.5.png。
 - コア 22/22 成功。Release ソリューション／Debug デモのビルド成功（警告・エラー 0）。操作検証は MouseState / KeyboardState の注入で行い、物理マウスでの手動検証は未実施。
 
+## 2026-09-21 デモページ遷移とスプリットペーン
+
+- demo の下を topDemoPage / splitPaneDemoPage に分け、下線付きリンクで往復するよう変更。split-pane の向き・比率・仕切り幅・最小サイズと、二つの子への binding をスタイルに追加。
+- コア 23/23 成功。左右／上下の矩形、最小サイズ、小さい領域、ドラッグ比率の保持、参照の検査、正常比率のリロードと不正比率での状態維持を検証。
+- Release ソリューション／Debug デモのビルド成功（警告・エラー 0）。Release publish 成功。Debug と publish のスタイル・読み込み設定ファイルが原本とハッシュ一致。
+- 通常／150% で、リンク往復、入力・ツリー状態の保持、Enter による往復、両方向のドラッグ、仕切りの矢印キー操作を検証。Test-DemoPages.ps1 の 12 シナリオ成功。MouseState / KeyboardState を注入し、実際の MonoGame 描画環境で実行した。
+- 既存ツリーとダイアログ保存の 20 シナリオも成功。F12 の新しいページツリー、名前欄の完全パス、開閉、再表示、開いたままの終了を Windows UI Automation で確認。
+- artifacts/page-smoke/ の画像で両方向の分割、リンクと戻る画面を目視確認。150% でリンク下線が領域内に収まるよう調整後、該当描画スモークも再確認。
+- 実 IME・物理入力の手動操作と、実ウィンドウのリサイズ操作は今回未実施。新しい使い方は docs/user/split-pane.md。
+
 ## 手動確認の手順
 
 ### models / layouts の配列化（2026-09-21）

@@ -8,7 +8,7 @@ internal static class ModelLayoutTests
     {
         var shippedText = File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
         var shipped = StationeryStyleSettings.Parse(shippedText);
-        Require(shipped.Models.Count == 1 && shipped.Layouts.Count == 2 && shipped.Bindings.Count == 2, "shipped independent arrays");
+        Require(shipped.Models.Count == 1 && shipped.Layouts.Count == 5 && shipped.Bindings.Count == 5, "shipped independent arrays");
         Require(DemoModelBinding.Create(shipped).Main["nameField"].Kind == "textBox", "shipped code binding");
         var source = """
             {"models":[{"id":"demo","type":"viewport","children":[
@@ -38,10 +38,10 @@ internal static class ModelLayoutTests
             Reject(() => StationeryStyleSettings.Parse("{\"models\":" + invalidModel + ",\"layouts\":[],\"bindings\":[]}"));
 
         var binding = DemoModelBinding.Create(DemoModelBinding.Fallback);
-        Require(binding.Main["nameField"].Path == "/demo/nameField", "flat model binding");
-        Require(binding.DialogControls["nameField"].Path == "/demo/editDialog/nameField", "dialog binding");
+        Require(binding.Main["nameField"].Path == "/demo/topDemoPage/nameField", "flat model binding");
+        Require(binding.DialogControls["nameField"].Path == "/demo/topDemoPage/editDialog/nameField", "dialog binding");
         var wrapped = JsonNode.Parse(shippedText)!;
-        var children = wrapped["models"]![0]!["children"]!.AsArray();
+        var children = wrapped["models"]![0]!["children"]![0]!["children"]!.AsArray();
         var name = children[0]!;
         children.RemoveAt(0);
         children.Insert(0, new JsonObject { ["id"] = "inputs", ["type"] = "container", ["children"] = new JsonArray(name) });
@@ -49,7 +49,7 @@ internal static class ModelLayoutTests
         var layoutBefore = wrapped["layouts"]!.ToJsonString();
         wrapped["bindings"]![1]!["childrenModel"]![0]!["model"] = "inputs/nameField";
         var wrappedSettings = StationeryStyleSettings.Parse(wrapped.ToJsonString());
-        Require(DemoModelBinding.Create(wrappedSettings).Main["nameField"].Path == "/demo/inputs/nameField", "scoped child path");
+        Require(DemoModelBinding.Create(wrappedSettings).Main["nameField"].Path == "/demo/topDemoPage/inputs/nameField", "scoped child path");
         Require(layoutBefore == wrapped["layouts"]!.ToJsonString(), "layout definitions are independent");
         Reject(() => DemoModelBinding.Create(settings));
         name["type"] = "button";
@@ -68,7 +68,7 @@ internal static class ModelLayoutTests
             name["type"] = "textBox";
             File.WriteAllText(style, wrapped.ToJsonString());
             file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Require(DemoModelBinding.Create(file.Current).Main["nameField"].Path == "/demo/inputs/nameField" && file.LastError is null, "recovery");
+            Require(DemoModelBinding.Create(file.Current).Main["nameField"].Path == "/demo/topDemoPage/inputs/nameField" && file.LastError is null, "recovery");
             var good = file.Current;
             wrapped["layouts"]![1]!["row-definitions"]![0] = "-1rate";
             File.WriteAllText(style, wrapped.ToJsonString());
@@ -78,6 +78,15 @@ internal static class ModelLayoutTests
             File.WriteAllText(style, wrapped.ToJsonString());
             file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
             Require(file.LastError is null && file.Current.Layouts[1].Rows[0].Value == 1.5, "fractional rate reload");
+            wrapped["layouts"]![3]!["ratio"] = .65;
+            File.WriteAllText(style, wrapped.ToJsonString());
+            file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
+            Require(file.LastError is null && file.Current.Layouts[3].Split!.Ratio == .65, "split ratio reload");
+            var goodSplit = file.Current;
+            wrapped["layouts"]![3]!["ratio"] = 2;
+            File.WriteAllText(style, wrapped.ToJsonString());
+            file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
+            Require(ReferenceEquals(goodSplit, file.Current) && file.LastError is not null, "invalid split ratio preserves snapshot");
         }
         finally { Directory.Delete(directory, true); }
     }

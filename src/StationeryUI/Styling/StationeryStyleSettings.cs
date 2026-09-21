@@ -3,6 +3,7 @@ namespace StationeryUI.Styling;
 using System.Globalization;
 using System.Text.Json;
 using StationeryUI.Canvas;
+using StationeryUI.Controls;
 
 /// <summary>Viewport padding in window pixels, independent of the UI zoom.</summary>
 public readonly record struct ViewportPadding(double Top, double Right, double Bottom, double Left)
@@ -34,10 +35,11 @@ public readonly record struct LayoutTrack(double Value, bool IsRate);
 
 /// <summary>A reusable layout definition. It has no reference to model identities.</summary>
 public sealed record StationeryLayoutNode(string Id, string Type, ViewportPadding Padding,
-    IReadOnlyList<LayoutTrack> Rows, IReadOnlyList<LayoutTrack> Columns);
+    IReadOnlyList<LayoutTrack> Rows, IReadOnlyList<LayoutTrack> Columns, SplitPaneOptions? Split = null);
 public sealed record StationeryCellBinding(string ModelPath, int Row, int Column);
 /// <summary>References are resolved to canonical model paths when a complete settings snapshot is parsed.</summary>
-public sealed record StationeryLayoutBinding(string Layout, string ModelPath, IReadOnlyList<StationeryCellBinding> Children);
+public sealed record StationeryLayoutBinding(string Layout, string ModelPath, IReadOnlyList<StationeryCellBinding> Children,
+    string? FirstModel = null, string? SecondModel = null);
 
 public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> Models,
     IReadOnlyList<StationeryLayoutNode> Layouts, IReadOnlyList<StationeryLayoutBinding> Bindings)
@@ -81,11 +83,12 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             ValidateId(id, path);
             if (!layoutIds.Add(id)) throw new JsonException($"Duplicate layout Id '{id}'.");
             var type = ReadString(item, "type", path);
-            if (type is not ("panel" or "floating-layout")) throw new JsonException($"{path}.type must be panel or floating-layout.");
+            if (type is not ("panel" or "floating-layout" or "split-pane")) throw new JsonException($"{path}.type must be panel, floating-layout or split-pane.");
             if (item.TryGetProperty("children", out _) || item.TryGetProperty("contents", out _) ||
                 item.TryGetProperty("model", out _) || item.TryGetProperty("parentModel", out _))
                 throw new JsonException($"{path}: model references and placement belong in bindings.");
             var padding = default(ViewportPadding);
+            SplitPaneOptions? split = null;
             IReadOnlyList<LayoutTrack> rows = Array.Empty<LayoutTrack>(), columns = Array.Empty<LayoutTrack>();
             if (type == "panel")
             {
@@ -99,18 +102,33 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                         ReadPixels(value, "bottom", path), ReadPixels(value, "left", path));
                 }
             }
+            else if (type == "split-pane")
+            {
+                var orientation = ReadString(item, "orientation", path);
+                if (orientation is not ("horizontal" or "vertical")) throw new JsonException("orientation must be horizontal or vertical.");
+                var ratio = .5;
+                if (item.TryGetProperty("ratio", out var ratioJson) &&
+                    (ratioJson.ValueKind != JsonValueKind.Number || !ratioJson.TryGetDouble(out ratio))) throw new JsonException("ratio must be a number.");
+                var divider = item.TryGetProperty("dividerWidth", out var d) ? ReadLength(d, path + ".dividerWidth", false).Value : 8;
+                var minimum = item.TryGetProperty("minimumPaneSize", out var m) ? ReadLength(m, path + ".minimumPaneSize", false).Value : 40;
+                split = new(orientation == "horizontal", ratio, divider, minimum);
+                try { new SplitPane().Configure(split); } catch (ArgumentException ex) { throw new JsonException("Invalid split-pane options.", ex); }
+                if (item.TryGetProperty("padding", out _) || item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
+                    throw new JsonException("split-pane cannot contain padding or track definitions.");
+            }
             else
             {
                 if (item.TryGetProperty("padding", out _)) throw new JsonException($"{path}: put padding in a separate panel layout.");
                 rows = ReadTracks(item, "row-definitions", path);
                 columns = ReadTracks(item, "column-definitions", path);
             }
-            layouts.Add(new(id, type, padding, rows, columns));
+            layouts.Add(new(id, type, padding, rows, columns, split));
         }
         var bindings = new List<StationeryLayoutBinding>();
         var panels = new HashSet<string>(StringComparer.Ordinal);
         var grids = new HashSet<string>(StringComparer.Ordinal);
         var placedModels = new HashSet<string>(StringComparer.Ordinal);
+        var splits = new HashSet<string>(StringComparer.Ordinal);
         foreach (var item in ReadArray(root, "bindings", "root").EnumerateArray())
         {
             var path = $"bindings[{bindings.Count}]";
@@ -118,6 +136,18 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             var layoutId = ReadString(item, "layout", path);
             var layout = layouts.FirstOrDefault(layout => layout.Id == layoutId)
                 ?? throw new JsonException($"{path}: unknown layout '{layoutId}'.");
+            if (layout.Type == "split-pane")
+            {
+                var node = ResolveModel(modelTree, ReadString(item, "model", path), null);
+                var first = ResolveModel(modelTree, ReadString(item, "firstModel", path), node);
+                var second = ResolveModel(modelTree, ReadString(item, "secondModel", path), node);
+                if (node.Kind != "splitPane" || first.Parent != node || second.Parent != node || first == second || node.Children.Count != 2 ||
+                    !splits.Add(node.Path) || !placedModels.Add(first.Path) || !placedModels.Add(second.Path))
+                    throw new JsonException("split-pane requires one splitPane model and two distinct direct children, each placed once.");
+                if (item.TryGetProperty("parentModel", out _) || item.TryGetProperty("childrenModel", out _)) throw new JsonException("split-pane uses model, firstModel and secondModel.");
+                bindings.Add(new(layoutId, node.Path, Array.Empty<StationeryCellBinding>(), first.Path, second.Path));
+                continue;
+            }
             if (layout.Type == "panel")
             {
                 if (item.TryGetProperty("parentModel", out _) || item.TryGetProperty("childrenModel", out _))

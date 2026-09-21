@@ -44,8 +44,8 @@ Id の重複や禁止文字は登録時にエラーにする。自動で連番�
 
 ```json
 [
-    "/demo/nameField",
-    "/demo/editDialog/nameField"
+    "/demo/topDemoPage/nameField",
+    "/demo/topDemoPage/editDialog/nameField"
 ]
 ```
 
@@ -80,4 +80,4 @@ ui.Focus.Focus(name.Path);
 現時点で自動登録の対象は `DesktopUi` で生成したコントロール。
 描画ヘルパーや個別の MonoGame コントロールは、利用アプリ側で対応する `StationeryNode` とスナップショットを登録する。
 
-デモの F12 は、読み込んだ `models` の階層を表示する。コードだけで作る上の例とは異なり、デモの原本には `mainPage` コンテナーを置かず、名前欄は `/demo/nameField` になる。models と layouts の役割は [スタイル設定ガイド](stationery-style-settings.md) を参照。
+デモの F12 は、読み込んだ `models` の階層を表示する。デモの原本には `topDemoPage` と `splitPaneDemoPage` を置き、名前欄は `/demo/topDemoPage/nameField` になる。models と layouts の役割は [スタイル設定ガイド](stationery-style-settings.md) を参照。
