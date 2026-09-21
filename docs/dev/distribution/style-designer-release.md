@@ -52,7 +52,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windo
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StyleDesigner.ps1 -Executable $extractedExe -Existing -NativeDialog -CancelDialog
 ```
 
-各コマンドが成功してから次へ進みます。新規作成、JSON 出力、既存編集、モデル・bindings の保持、元ファイルが変更されないこと、OS のファイル選択とキャンセルを確認します。日本語、ボタン、明暗テーマも画像または実画面で確認します。
+各コマンドが成功してから次へ進みます。新規作成、JSON 出力、既存編集、モデル・bindings の保持、OS のファイル選択とキャンセルを確認します。v0.2.0 以降はテスト用コピーを使い、元内容の .bak 退避と元パスへのオートセーブを検証します。`-SavePoints` でタイマー保存と復元、`-LayoutEditing panel` などで要素編集も確認します。日本語、ボタン、明暗テーマも画像または実画面で確認します。
 
 修正でソースが変わったらコミットと発行からやり直します。検査後のフォルダーを不用意に再圧縮してテスト出力を混入させないでください。
 

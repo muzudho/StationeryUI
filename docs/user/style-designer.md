@@ -104,7 +104,7 @@ Tab で入力欄やボタンへ移動し、Enter／Space でボタンを操作�
 
 GitHub Release の Windows x64 ZIP は .NET ランタイム同梱版。ZIP を新しいフォルダーへすべて展開し、その中の `StationeryUI.StyleDesigner.exe` を起動する。別途 .NET をインストールする必要はない。EXE だけを取り出さず、DLL・licenses などを含むフォルダー全体を使う。
 
-v0.1.0 の設計ツールは未署名で配布する。Windows の保護機能によって起動可否が異なる場合がある。
+v0.2.0 の設計ツールは未署名で配布する。Windows の保護機能によって起動可否が異なる場合がある。
 
 ソースからの起動：
 

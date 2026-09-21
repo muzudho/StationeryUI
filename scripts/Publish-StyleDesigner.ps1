@@ -1,4 +1,4 @@
-param([string]$Version = '0.1.0', [string]$RuntimeVersion = '8.0.30')
+param([string]$Version = '0.2.0', [string]$RuntimeVersion = '8.0.31')
 $ErrorActionPreference = 'Stop'
 $workspace = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Push-Location $workspace
