@@ -4,7 +4,7 @@ StationeryUI自体の開発・保守を行う方向けの資料です。ライ�
 
 - [設計と境界](architecture.md)
 - [コントロールのプログラム解説](control-guide.md)
-- [アンダーラインのアクションバッジ](action-badges.md)
+- [アンダーラインの表示規約とアクションバッジ](action-badges.md)：`Edit` / `Popup` / `Move`、文字色と下線色、ホバー表示。
 - [抽出元一覧](extraction-inventory.md)
 - [実装・引き継ぎ計画](implementation-plan.md)
 - [検証記録](validation.md)

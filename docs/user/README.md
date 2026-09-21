@@ -76,6 +76,8 @@ dotnet run --project samples/StationeryUI.Demo -c Release --no-build
 - 下の「ダイアログで編集するテキスト」にマウスを合わせると `POPUP` バッジが出ます。クリックして開いたダイアログでは、日本語入力後に「保存して閉じる」で反映、「キャンセル」で変更を破棄できます。Tabで選び、Enter/Spaceでも開けます。
 - `POPUP` は任意のバッジ名を指定するデモです。元のきふわらべでは、数値編集ダイアログを開く項目にも `EDIT` を使用しています。
 
+標準の表示ガイドラインは [下線付きテキストの見分け方](underline-guide.md) を参照してください。
+`Edit` / `Popup` / `Move` の三種類と文字色で操作を区別する方針です。上記は現在のデモの実装状態です。
 バッジの接続方法は [アクションバッジの解説](../dev/action-badges.md) を参照してください。
 
 ## MonoGameへの組み込み
@@ -153,6 +155,7 @@ ui.Viewport.Scale = 1.5;
 
 ## 関連資料
 
+- [下線付きテキストの見分け方](underline-guide.md)
 - [リストUI設計の目安](list-ui-guidelines.md)
 - [配布パッケージのチェックサム](package-checksums.txt)
 - [抽出元のライセンス](CircleSpaceCoordinator-LICENSE.txt)
