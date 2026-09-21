@@ -13,7 +13,7 @@ using StationeryUI.Theming;
 using StationeryUI.Inspection;
 
 /// <summary>A single-window desktop UI host. Call Update before game input and Draw after the game.</summary>
-public sealed class DesktopUi : IDisposable
+public sealed partial class DesktopUi : IDisposable
 {
     private readonly GraphicsDevice graphics;
     private readonly ITextInputService input;
@@ -47,6 +47,10 @@ public sealed class DesktopUi : IDisposable
         public string AccessibleName => Label;
         public StationeryTheme? Theme { get; set; }
         public UnderlineTextEditor? Editor { get; internal set; }
+        public TreeView? Tree { get; internal set; }
+        internal double TreeScroll;
+        internal TreeItem? PressedTreeItem;
+        internal bool PressedTreeToggle;
         internal TextInputSession? Session;
         internal Action? Click;
         internal double Scroll;
@@ -128,6 +132,7 @@ public sealed class DesktopUi : IDisposable
             result.Add(new(node.Id, node.Path, node.Parent?.Path, node.Kind, element?.AccessibleName ?? node.Id,
                 visible && (element is null || element.Bounds.Width > 0 && element.Bounds.Height > 0),
                 element is null ? null : Viewport.ToWindow(element.Bounds)));
+            if (element?.Tree is not null) InspectTree(element, visible, result);
             foreach (var child in node.Children) Visit(child);
         }
         Visit(Root);
@@ -141,6 +146,7 @@ public sealed class DesktopUi : IDisposable
             Focus.SetVisible(element.Path, element.Bounds.Width > 0 && element.Bounds.Height > 0);
         if (!active)
         {
+            foreach (var element in elements) element.PressedTreeItem = null;
             editing?.Session?.Blur(); editing = null; Focus.Deactivate();
             repeats.Clear();
             previousKeyboard = keyboard; previousMouse = mouse; wasActive = false;
@@ -212,9 +218,14 @@ public sealed class DesktopUi : IDisposable
         if (release)
         {
             var captured = Focus.CapturedId;
+            foreach (var element in elements.Where(e => e.Tree is not null))
+                ReleaseTree(element, pointer, hit == element && captured == element.Path);
             Focus.ReleasePointer();
             if (hit?.Path == captured) hit?.Click?.Invoke();
         }
+        foreach (var element in elements.Where(e => e.Tree is not null))
+            UpdateTree(element, pointer, hit == element, pressedMouse, mouse.ScrollWheelValue - previousMouse.ScrollWheelValue,
+                Pressed, Repeated);
         if ((Pressed(Keys.Enter) || Pressed(Keys.Space)) && editing is null)
             elements.FirstOrDefault(e => e.Path == Focus.FocusedId)?.Click?.Invoke();
         KeyboardConsumed = Focus.ConsumesKeyboard;
@@ -260,6 +271,12 @@ public sealed class DesktopUi : IDisposable
                 graphics.ScissorRectangle = Rectangle.Intersect(bounds, graphics.Viewport.Bounds);
                 if (graphics.ScissorRectangle.Width <= 0 || graphics.ScissorRectangle.Height <= 0) continue;
                 sprites.Begin(blendState: BlendState.NonPremultiplied, samplerState: SamplerState.LinearClamp, rasterizerState: clipState);
+                if (e.Tree is not null)
+                {
+                    DrawTree(e, theme);
+                    sprites.End();
+                    continue;
+                }
                 var focused = e.Path == Focus.FocusedId;
                 var hovered = Contains(e.Bounds, Viewport.ToLogical(new(previousMouse.X, previousMouse.Y)));
                 Fill(e.Bounds, e.Editor is null ? theme.ButtonFill(true, Focus.CapturedId == e.Path, false, hovered) : theme.Surface);

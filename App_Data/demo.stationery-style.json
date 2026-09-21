@@ -29,6 +29,10 @@
                     "type": "button"
                 },
                 {
+                    "id": "sampleTree",
+                    "type": "tree"
+                },
+                {
                     "id": "editDialog",
                     "type": "dialog",
                     "children": [
@@ -105,6 +109,11 @@
                     "model": "openDialogButton",
                     "row": 4,
                     "column": 0
+                },
+                {
+                    "model": "sampleTree",
+                    "row": 0,
+                    "column": 1
                 }
             ]
         }

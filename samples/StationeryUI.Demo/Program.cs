@@ -7,6 +7,7 @@ using StationeryUI.Windows;
 using StationeryUI.Styling;
 using System.Reflection;
 using StationeryUI.Inspection;
+using StationeryUI.Controls;
 
 internal static class Program
 {
@@ -22,6 +23,7 @@ internal sealed class Demo : Game
     private DesktopUi? ui;
     private DesktopUi.Element? name;
     private DesktopUi.Element? memo;
+    private DesktopUi.Element? sampleTree;
     private DesktopUi.Element? popupLink;
     private DesktopUi? popupUi;
     private DesktopUi.Element? popupText;
@@ -102,7 +104,16 @@ internal sealed class Demo : Game
             popupUi.Focus.Focus(popupText.Path);
             popupOpen = true;
         });
-        styledElements.AddRange(new[] { name, memo, themeButton, scaleButton, acceptButton, popupLink });
+        var tree = new TreeView();
+        var stationery = tree.AddNode("stationery", "文房具");
+        var writing = tree.AddNode("writing", "筆記用具", stationery);
+        tree.AddNode("pencil", "鉛筆", writing);
+        tree.AddNode("pen", "ボールペン", writing);
+        var paper = tree.AddNode("paper", "紙製品", stationery, expanded: false);
+        tree.AddNode("notebook", "ノート", paper);
+        tree.AddNode("stickyNote", "付箋", paper);
+        sampleTree = ui.AddTree(modelBinding.Main["sampleTree"], new(0, 0, 400, 160), "文房具のツリー", tree);
+        styledElements.AddRange(new[] { name, memo, themeButton, scaleButton, acceptButton, popupLink, sampleTree });
         ApplyStyles();
         // 起動時は未編集にして、名前・メモのホバーバッジを試せるようにする。
     }
@@ -175,22 +186,42 @@ internal sealed class Demo : Game
             }
             if (smoke && smokeCase is not null)
             {
-                var target = smokeCase == "edit-hover" ? name! : popupLink!;
-                var bounds = ui.Viewport.ToWindow(target.Bounds);
-                var dialogCase = smokeCase is "popup-open" or "popup-save" or "popup-cancel";
-                if (smokeCase is "popup-save" or "popup-cancel" && updateFrames >= 4)
+                if (smokeCase.StartsWith("tree-", StringComparison.Ordinal))
                 {
-                    bounds = popupUi.Viewport.ToWindow(new(smokeCase == "popup-save" ? 380 : 32, 180, 300, 64));
-                    if (updateFrames == 4)
+                    var bounds = ui.Viewport.ToWindow(sampleTree!.Bounds);
+                    var outside = smokeCase == "tree-cancel" && updateFrames >= 3;
+                    var down = smokeCase is not ("tree-scroll" or "tree-end") &&
+                        (updateFrames == 2 || smokeCase == "tree-reopen" && updateFrames == 4);
+                    mouse = new MouseState((int)(outside ? bounds.X - 10 : bounds.X + 20 * ui.Viewport.Scale),
+                        (int)(bounds.Y + 16 * ui.Viewport.Scale), smokeCase == "tree-scroll" && updateFrames >= 2 ? -120 : 0,
+                        down ? ButtonState.Pressed : ButtonState.Released,
+                        ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+                    if (smokeCase is "tree-keyboard" or "tree-end")
                     {
-                        popupText!.Editor!.SelectAll();
-                        popupText.Editor.Insert("保存とキャンセルの検証");
+                        ui.Focus.Focus(sampleTree.Path);
+                        mouse = new MouseState();
+                        keyboard = updateFrames == 2 ? new KeyboardState(smokeCase == "tree-end" ? Keys.End : Keys.Left) : new KeyboardState();
                     }
                 }
-                mouse = new MouseState((int)(bounds.X + 40), (int)(bounds.Y + 25), 0,
-                    dialogCase && updateFrames == 2 || smokeCase is "popup-save" or "popup-cancel" && updateFrames == 5
-                        ? ButtonState.Pressed : ButtonState.Released,
-                    ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+                else
+                {
+                    var target = smokeCase == "edit-hover" ? name! : popupLink!;
+                    var bounds = ui.Viewport.ToWindow(target.Bounds);
+                    var dialogCase = smokeCase is "popup-open" or "popup-save" or "popup-cancel";
+                    if (smokeCase is "popup-save" or "popup-cancel" && updateFrames >= 4)
+                    {
+                        bounds = popupUi.Viewport.ToWindow(new(smokeCase == "popup-save" ? 380 : 32, 180, 300, 64));
+                        if (updateFrames == 4)
+                        {
+                            popupText!.Editor!.SelectAll();
+                            popupText.Editor.Insert("保存とキャンセルの検証");
+                        }
+                    }
+                    mouse = new MouseState((int)(bounds.X + 40), (int)(bounds.Y + 25), 0,
+                        dialogCase && updateFrames == 2 || smokeCase is "popup-save" or "popup-cancel" && updateFrames == 5
+                            ? ButtonState.Pressed : ButtonState.Released,
+                        ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+                }
             }
             pointer = mouse.Position;
             if (popupOpen)
@@ -231,6 +262,21 @@ internal sealed class Demo : Game
         if (!string.IsNullOrEmpty(screenshot) && ++smokeFrames == 8)
         {
             var smokeCase = Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_CASE");
+            if (smokeCase is not null && smokeCase.StartsWith("tree-", StringComparison.Ordinal))
+            {
+                var collapsed = smokeCase is "tree-close" or "tree-keyboard";
+                if (sampleTree!.Tree!.Roots[0].IsExpanded == collapsed ||
+                    sampleTree.Tree.VisibleRows().Count != (collapsed ? 1 : 5))
+                    throw new InvalidOperationException($"Failed tree smoke scenario: {smokeCase}");
+                var leaf = ui!.Inspect().Single(entry => entry.Path.EndsWith("/stationery/writing/pencil", StringComparison.Ordinal));
+                if (collapsed && leaf.Visible) throw new InvalidOperationException("Collapsed tree descendant remained visible in inspector.");
+                if (smokeCase is "tree-scroll" or "tree-end")
+                {
+                    var last = ui.Inspect().Single(entry => entry.Path.EndsWith("/stationery/paper", StringComparison.Ordinal));
+                    if (!last.Visible || smokeCase == "tree-end" && sampleTree.Tree.SelectedItem?.Id != "paper")
+                        throw new InvalidOperationException("Tree scrolling failed to reveal the last node.");
+                }
+            }
             if (smokeCase == "popup-open" && !popupOpen
                 || smokeCase == "popup-save" && (popupOpen || popupValue != "保存とキャンセルの検証")
                 || smokeCase == "popup-cancel" && (popupOpen || popupValue != "ダイアログで編集するテキスト"))

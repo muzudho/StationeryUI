@@ -12,6 +12,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode Dial
             {"id":"nameField","type":"textBox"}, {"id":"memoField","type":"textBox"},
             {"id":"themeButton","type":"button"}, {"id":"scaleButton","type":"button"},
             {"id":"applyTitleButton","type":"button"}, {"id":"openDialogButton","type":"button"},
+            {"id":"sampleTree","type":"tree"},
             {"id":"editDialog","type":"dialog","children":[
               {"id":"nameField","type":"textBox"}, {"id":"cancelButton","type":"button"}, {"id":"saveButton","type":"button"}
             ]}
@@ -25,7 +26,8 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode Dial
             {"layout":"demoPage","parentModel":"demo","childrenModel":[
               {"model":"nameField","row":0,"column":0}, {"model":"memoField","row":1,"column":0},
               {"model":"themeButton","row":2,"column":0}, {"model":"scaleButton","row":2,"column":1},
-              {"model":"applyTitleButton","row":3,"column":0}, {"model":"openDialogButton","row":4,"column":0}
+              {"model":"applyTitleButton","row":3,"column":0}, {"model":"openDialogButton","row":4,"column":0},
+              {"model":"sampleTree","row":0,"column":1}
             ]}
           ]
         }
@@ -41,7 +43,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode Dial
         var main = Bind(all.Where(node => !node.IsWithin(dialog)), new Dictionary<string, string>
         {
             ["nameField"] = "textBox", ["memoField"] = "textBox", ["themeButton"] = "button",
-            ["scaleButton"] = "button", ["applyTitleButton"] = "button", ["openDialogButton"] = "button"
+            ["scaleButton"] = "button", ["applyTitleButton"] = "button", ["openDialogButton"] = "button", ["sampleTree"] = "tree"
         });
         var dialogControls = Bind(all.Where(node => node.IsWithin(dialog)), new Dictionary<string, string>
         {
