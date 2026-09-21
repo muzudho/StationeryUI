@@ -125,6 +125,7 @@ internal sealed partial class DesignerGame
             try
             {
                 blueprint = saveSession!.Restore(choice);
+                revealLayout = blueprint.SelectedLayoutId;
                 saveError = null; invalidDraft = false; selectedRow = selectedColumn = 0;
                 outputPath = saveSession.FilePath;
                 treeJson = lastValidTreeJson = null; lastTreeSelection = null;

@@ -96,15 +96,19 @@ internal sealed partial class DesignerGame : Game
     {
         if (editingPage && blueprint.CanEditPanel)
             foreach (var (field, key) in panelFields) blueprint.PanelEdges[key].Number = field.Editor!.Text;
-        if (!editingPage || !blueprint.CanEditGrid) return;
+        if (!editingPage || !gridEditorVisible) return;
         foreach (var (field, _, track) in tracks) track.Number = field.Editor!.Text;
     }
     private void BuildUi()
     {
         ui?.Dispose(); tracks.Clear(); panelFields.Clear(); ResetLivePreview();
         ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
+        gridEditorVisible = false;
+        BuildSidebar();
+        if (!HasLayoutTarget) return;
         if (blueprint.CanEditPanel) { BuildPanelEditor(); return; }
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
+        gridEditorVisible = true;
         Text("columnTracksTitle", new(12, 8, 252, 36), "列の幅");
         Text("rowTracksTitle", new(280, 8, 256, 36), "行の高さ");
         Text("columnsLabel", new(12, 48, 88, 44), "列数");
@@ -164,7 +168,7 @@ internal sealed partial class DesignerGame : Game
         if (pendingPage is not null) { var action = pendingPage; pendingPage = null; action(); return; }
         if (!editingPage) { status.Label = message; base.Update(gameTime); return; }
         if (rebuild) { rebuild = false; BuildUi(); ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, BodyTop); }
-        if (!blueprint.CanEditGrid)
+        if (!gridEditorVisible)
         {
             Capture();
             try { var json = blueprint.BuildJson(); AutoSave(json, gameTime); RefreshTree(json); UpdateLivePreview(json, mouse); status.Label = message; }
@@ -211,6 +215,7 @@ internal sealed partial class DesignerGame : Game
             texture.SetData(data);
             using var file = File.Create(Path.Combine(smokeOutput, "designer.png")); texture.SaveAsPng(file, texture.Width, texture.Height);
             ValidateDesignerSmoke();
+            VerifyUntargetedSmoke();
             if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") != "1") blueprint.Export(Path.Combine(smokeOutput, "plan.stationery-style.json"));
             Exit();
         }

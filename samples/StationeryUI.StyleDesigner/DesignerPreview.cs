@@ -28,6 +28,7 @@ internal sealed partial class DesignerGame
 
     private void UpdateLivePreview(string json, MouseState mouse)
     {
+        if (!HasLayoutTarget) { ResetLivePreview(); return; }
         var origin = ui.Viewport.ToWindow(new ScreenRectangle(560, 48, 1, 1));
         previewWindow = new(origin.X, origin.Y,
             Math.Max(1, GraphicsDevice.Viewport.Width - origin.X - 8),
@@ -115,7 +116,7 @@ internal sealed partial class DesignerGame
             previewKey = key;
         }
         livePreview!.Viewport.Offset = new(previewWindow.X, previewWindow.Y);
-        livePreviewTitle!.Label = $"編集プレビュー {width}×{height}px" + (previewSnapshot!.Standalone ? "（未割り当ての定義）" : "");
+        livePreviewTitle!.Label = $"{TargetLayoutId} — プレビュー {width}×{height}px" + (previewSnapshot!.Standalone ? "（未割り当ての定義）" : "");
         var down = mouse.LeftButton == ButtonState.Pressed;
         if (down && !previewMouseDown && blueprint.CanEditGrid)
         {

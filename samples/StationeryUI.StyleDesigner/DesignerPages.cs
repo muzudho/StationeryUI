@@ -18,6 +18,18 @@ internal sealed partial class DesignerGame
     private string? lastValidTreeJson;
     private readonly Dictionary<string, string> treeLayouts = [];
     private string? lastTreeSelection;
+    private bool gridEditorVisible;
+    private string? TargetLayoutId
+    {
+        get
+        {
+            for (var item = styleTree?.Tree?.TargetItem; item is not null; item = item.Parent)
+                if (treeLayouts.TryGetValue(item.Id, out var id)) return id;
+            return null;
+        }
+    }
+    private bool HasLayoutTarget => TargetLayoutId is { } id
+        && id == (blueprint.IsImported ? blueprint.SelectedLayoutId : "mainGrid");
     private readonly string? smokeInput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_INPUT");
 
     private void BuildWelcome()
@@ -60,6 +72,7 @@ internal sealed partial class DesignerGame
     {
         editingPage = hasDraft = true; sidebarActive = false; applicationBarActive = false; rebuild = false;
         message = text; treeJson = null; lastTreeSelection = null;
+        revealLayout = blueprint.IsImported ? blueprint.SelectedLayoutId : "mainGrid";
         if (!string.IsNullOrEmpty(smokeOutput) && saveSession is null) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-style.json");
         BuildUi();
         var scale = BodyScale;
@@ -138,13 +151,19 @@ internal sealed partial class DesignerGame
         UpdateTreeActions();
         if (selected == lastTreeSelection) return;
         lastTreeSelection = selected;
-        if (selected is null || !treeLayouts.TryGetValue(selected, out var layoutId)) return;
-        if (!blueprint.IsImported) return;
+        var layoutId = TargetLayoutId;
+        if (layoutId is null)
+        {
+            Capture(); rebuild = true;
+            message = "layouts 内のレイアウトを操作対象にすると、設定とプレビューを表示します。";
+            return;
+        }
+        if (!blueprint.IsImported) { Capture(); rebuild = true; return; }
         Guard(() =>
         {
             Capture();
             var layoutType = (string?)JsonNode.Parse(blueprint.BuildJson())!["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == layoutId)?["type"];
-            if (layoutType is not ("panel" or "floating-layout")) return;
+            if (layoutType is not ("panel" or "floating-layout")) { rebuild = true; return; }
             blueprint.SelectLayout(layoutId);
             selectedRow = selectedColumn = 0; rebuild = true;
             message = blueprint.CanEditPanel ? $"編集中：{layoutId}。四辺の margin・padding・border を指定できます。"
@@ -170,6 +189,8 @@ internal sealed partial class DesignerGame
             return;
         }
         if (PrepareLayoutEditingSmoke(ref mouse)) return;
+        if (frames == 3 && blueprint.CanEditGrid && (!HasLayoutTarget || styleTree?.Tree?.TargetItem is null))
+            throw new InvalidOperationException("Initial layout must have a visible tree target.");
         if (PrepareSaveSmoke(ref mouse)) return;
         var editFrame = frames - 3;
         if (!string.IsNullOrEmpty(smokeInput))
@@ -259,5 +280,20 @@ internal sealed partial class DesignerGame
         if (!File.Exists(created) || File.ReadAllText(System.IO.Path.Combine(smokeOutput!, "my-plan.stationery-style.json")) != "existing file")
             throw new InvalidOperationException("New file creation or collision handling failed.");
         outputPath = System.IO.Path.Combine(smokeOutput!, "plan.stationery-style.json");
+    }
+
+    private void VerifyUntargetedSmoke()
+    {
+        if (!editingPage) return;
+        Capture();
+        var before = blueprint.BuildJson();
+        styleTree!.Tree!.ClearTarget();
+        lastTreeSelection = "previousTarget";
+        HandleTreeSelection();
+        BuildUi();
+        UpdateLivePreview(before, new());
+        if (livePreview is not null || gridEditorVisible || tracks.Count != 0 || panelFields.Count != 0
+            || ui.Inspect().Count != 1 || blueprint.BuildJson() != before)
+            throw new InvalidOperationException("No target must leave an empty editor and preview without changing the document.");
     }
 }

@@ -4,7 +4,7 @@ internal sealed partial class DesignerGame
 {
     private void ValidateGridCounts()
     {
-        if (!editingPage || !blueprint.CanEditGrid) return;
+        if (!editingPage || !gridEditorVisible) return;
         if (!int.TryParse(columns.Editor!.Text, out var c) || !int.TryParse(rows.Editor!.Text, out var r)
             || c is < 1 or > 8 || r is < 1 or > 8)
             throw new JsonException("列数・行数は1～8の整数を入力してください。");
