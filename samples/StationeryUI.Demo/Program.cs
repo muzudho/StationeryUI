@@ -4,6 +4,8 @@ using StationeryUI.Canvas;
 using StationeryUI.MonoGame;
 using StationeryUI.Theming;
 using StationeryUI.Windows;
+using StationeryUI.Styling;
+using System.Reflection;
 
 internal static class Program
 {
@@ -27,6 +29,12 @@ internal sealed class Demo : Game
     private string popupValue = "ダイアログで編集するテキスト";
     private Point pointer;
     private int updateFrames;
+    private StationeryStyleFile styles = null!;
+    private readonly List<(DesktopUi.Element Element, ScreenRectangle Bounds)> styledElements = [];
+    private double requestedScale = 1;
+    private bool previousReloadKey;
+    private bool hasContentArea;
+    private string? reportedStyleError;
     public Demo()
     {
         manager = new(this) { PreferredBackBufferWidth = 1000, PreferredBackBufferHeight = 780 };
@@ -36,6 +44,14 @@ internal sealed class Demo : Game
     }
     protected override void LoadContent()
     {
+        var source = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(attribute => attribute.Key == "StationeryStyleSource")?.Value;
+        var stylePath = Environment.GetEnvironmentVariable("STATIONERYUI_STYLE_PATH");
+        if (string.IsNullOrWhiteSpace(stylePath))
+            stylePath = source is not null && Directory.Exists(Path.GetDirectoryName(source))
+                ? source : Path.Combine(AppContext.BaseDirectory, "App_Data", "demo.stationery-style.json");
+        styles = new(stylePath);
+        System.Diagnostics.Trace.WriteLine($"StationeryUI style: {styles.FilePath}");
         if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG")))
         {
             using var batch = new Microsoft.Xna.Framework.Graphics.SpriteBatch(GraphicsDevice);
@@ -59,12 +75,13 @@ internal sealed class Demo : Game
         });
         if (Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_THEME") == "light") ui.Theme = StationeryTheme.Light;
         if (double.TryParse(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_SCALE"),
-            System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var smokeScale)) ui.Viewport.Scale = smokeScale;
+            System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var smokeScale)
+            && double.IsFinite(smokeScale) && smokeScale > 0) requestedScale = smokeScale;
         name = ui.AddTextBox("name", new(32, 40, 700, 64), "名前", "文房具UIへようこそ");
         memo = ui.AddTextBox("memo", new(32, 130, 700, 64), "メモ", "日本語・結合文字 e\u0301 を編集できます");
-        ui.AddButton("theme", new(32, 230, 300, 64), "明るい／暗いテーマ", () => ui.Theme = ui.Theme == StationeryTheme.Dark ? StationeryTheme.Light : StationeryTheme.Dark);
-        ui.AddButton("scale", new(360, 230, 270, 64), "拡大率を変える", () => ui.Viewport.Scale = ui.Viewport.Scale >= 1.5 ? 1 : ui.Viewport.Scale + .25);
-        ui.AddButton("accept", new(32, 330, 600, 64), "入力内容をタイトルに反映", () => Window.Title = name.Editor!.Text);
+        var themeButton = ui.AddButton("theme", new(32, 230, 300, 64), "明るい／暗いテーマ", () => ui.Theme = ui.Theme == StationeryTheme.Dark ? StationeryTheme.Light : StationeryTheme.Dark);
+        var scaleButton = ui.AddButton("scale", new(360, 230, 270, 64), "拡大率を変える", () => requestedScale = requestedScale >= 1.5 ? 1 : requestedScale + .25);
+        var acceptButton = ui.AddButton("accept", new(32, 330, 600, 64), "入力内容をタイトルに反映", () => Window.Title = name.Editor!.Text);
         popupLink = ui.AddButton("popup", new(32, 420, 700, 64), popupValue, () =>
         {
             popupText.Editor!.SelectAll();
@@ -72,23 +89,54 @@ internal sealed class Demo : Game
             popupUi.Focus.Focus("popup-text");
             popupOpen = true;
         });
+        foreach (var element in new[] { name, memo, themeButton, scaleButton, acceptButton, popupLink })
+            styledElements.Add((element, element.Bounds with { X = element.Bounds.X - 32, Y = element.Bounds.Y - 40 }));
+        ApplyStyles();
         // 起動時は未編集にして、名前・メモのホバーバッジを試せるようにする。
+    }
+
+    private void ApplyStyles()
+    {
+        var content = styles.Current.Padding.GetContentBounds(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        hasContentArea = content.Width >= 1 && content.Height >= 1;
+        if (!hasContentArea) return;
+        // Fit the demo's fixed rows inside all four padding edges, using the same transform for input and drawing.
+        ui!.Viewport.Scale = Math.Min(requestedScale, Math.Min(content.Width / 600, content.Height / 444));
+        ui.Viewport.Offset = new(content.X, content.Y);
+        foreach (var (element, bounds) in styledElements)
+            element.Bounds = element == name || element == memo || element == popupLink
+                ? bounds with { Width = content.Width / ui.Viewport.Scale } : bounds;
+        popupUi!.Viewport.Scale = Math.Min(1, Math.Min(content.Width / 800, content.Height / 320));
+        popupUi.Viewport.Offset = new(content.X + (content.Width - 800 * popupUi.Viewport.Scale) / 2,
+            content.Y + (content.Height - 320 * popupUi.Viewport.Scale) / 2);
     }
     protected override void Update(GameTime gameTime)
     {
         var keyboard = Keyboard.GetState(); var mouse = Mouse.GetState();
+        var reloadKey = keyboard.IsKeyDown(Keys.F5);
+        if (IsActive && reloadKey && !previousReloadKey) styles.Reload();
+        else styles.Update(gameTime.ElapsedGameTime);
+        previousReloadKey = reloadKey;
+        if (styles.LastError != reportedStyleError)
+        {
+            reportedStyleError = styles.LastError;
+            System.Diagnostics.Trace.WriteLine(reportedStyleError ?? "StationeryUI style reload succeeded.");
+            Window.Title = reportedStyleError is null ? "StationeryUI — スタイル読み込み成功" : "StationeryUI — スタイル読み込み失敗（F5 で再試行）";
+        }
+        ApplyStyles();
         var smokeCase = Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_CASE");
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
         updateFrames++;
         if (ui is not null)
         {
-            if (name is not null) name.Bounds = name.Bounds with { Width = Math.Max(160, GraphicsDevice.Viewport.Width / ui.Viewport.Scale - 64) };
-            if (memo is not null) memo.Bounds = memo.Bounds with { Width = Math.Max(160, GraphicsDevice.Viewport.Width / ui.Viewport.Scale - 64) };
-            if (popupLink is not null) popupLink.Bounds = popupLink.Bounds with { Width = Math.Max(160, GraphicsDevice.Viewport.Width / ui.Viewport.Scale - 64) };
             popupUi!.Theme = ui.Theme;
-            popupUi.Viewport.Scale = Math.Min(1.0, Math.Min(GraphicsDevice.Viewport.Width / 800.0, GraphicsDevice.Viewport.Height / 320.0));
-            popupUi.Viewport.Offset = new((GraphicsDevice.Viewport.Width - 800 * popupUi.Viewport.Scale) / 2,
-                (GraphicsDevice.Viewport.Height - 320 * popupUi.Viewport.Scale) / 2);
+            if (!hasContentArea)
+            {
+                ui.Update(gameTime, false, keyboard, mouse);
+                popupUi.Update(gameTime, false, keyboard, mouse);
+                base.Update(gameTime);
+                return;
+            }
             if (smoke && smokeCase is not null)
             {
                 var target = smokeCase == "edit-hover" ? name! : popupLink!;
@@ -127,13 +175,13 @@ internal sealed class Demo : Game
     {
         GraphicsDevice.Clear(DesktopUi.Convert(ui?.Theme.Background ?? StationeryTheme.Dark.Background));
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
-        if (popupOpen)
+        if (hasContentArea && popupOpen)
         {
             ui?.Draw();
             badges?.DrawDialogBackground(popupUi!);
             popupUi?.Draw();
         }
-        else
+        else if (hasContentArea)
         {
             ui?.Draw();
             if (ui is not null && badges is not null)

@@ -4,4 +4,8 @@
     <ProjectReference Include="../../src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj" />
     <ProjectReference Include="../../src/StationeryUI.Windows/StationeryUI.Windows.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="../../App_Data/demo.stationery-style.json" Link="App_Data/demo.stationery-style.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <AssemblyMetadata Include="StationeryStyleSource" Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../App_Data/demo.stationery-style.json'))" Condition="'$(Configuration)' == 'Debug'" />
+  </ItemGroup>
 </Project>
