@@ -34,6 +34,8 @@
 
 ### 資料
 
+コア自動テスト28件、Windowsの入力・文字描画検査10件を実施。ランタイム同梱ZIPを別フォルダーに展開し、新規作成、既存編集、OSのファイル選択／キャンセル、タイマー保存と復元を検証しています。
+
 - [使い方](https://github.com/muzudho/StationeryUI/blob/style-designer-v0.2.0/docs/user/style-designer.md)
 - [開発日誌](https://github.com/muzudho/StationeryUI/blob/style-designer-v0.2.0/docs/dev/log/2026/09.md)
 - [SHA-256](https://github.com/muzudho/StationeryUI/releases/download/style-designer-v0.2.0/SHA256SUMS.txt)

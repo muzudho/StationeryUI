@@ -170,7 +170,8 @@ internal sealed partial class DesignerGame
             mouse = SmokeMouse(sidebar!, 200, 730, frames == 14);
         if (layoutSmoke == "rename" && frames is >= 14 and <= 15)
             mouse = SmokeMouse(sidebar!, 100, 780, frames == 14);
-        if (frames is 19 or 20) mouse = SmokeMouse(applicationBar, 570, 20, frames == 19);
+        // Let the background hosts resume for a frame after closing the rename modal.
+        if (frames is >= 19 and <= 21) mouse = SmokeMouse(applicationBar, 570, 20, frames == 20);
         return true;
     }
 
