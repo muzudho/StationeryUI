@@ -7,10 +7,10 @@ using StationeryUI.Canvas;
 internal sealed partial class Demo
 {
     private string activePage = "topDemoPage";
-    private DesktopUi? splitUi;
-    private DesktopUi.Element forwardLink = null!, backLink = null!, verticalSplit = null!, horizontalSplit = null!;
-    private DesktopUi.Element topToolHint = null!, splitToolHint = null!;
-    private readonly List<DesktopUi.Element> splitElements = [];
+    private StationeryUiHost? splitUi;
+    private StationeryUiHost.Element forwardLink = null!, backLink = null!, verticalSplit = null!, horizontalSplit = null!;
+    private StationeryUiHost.Element topToolHint = null!, splitToolHint = null!;
+    private readonly List<StationeryUiHost.Element> splitElements = [];
 
     private void Navigate(string page)
     {

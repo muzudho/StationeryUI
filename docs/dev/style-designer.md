@@ -15,11 +15,11 @@ StyleBlueprint など設計・出力専用のコードは設計ツールのプ�
 
 ## ２ページ構成と既存ファイル
 
-DesignerPages が開始ページと編集ページの移動、左側の JSON ツリー、レイアウト選択を担当する。右側の編集画面と左ツリーは別の DesktopUi を持ち、ポインター座標をそれぞれ変換する。キーボード入力は最後にクリックした側へ渡す。
+DesignerPages が開始ページと編集ページの移動、左側の JSON ツリー、レイアウト選択を担当する。右側の編集画面と左ツリーは別の StationeryUiHost を持ち、ポインター座標をそれぞれ変換する。キーボード入力は最後にクリックした側へ渡す。
 StyleBlueprint.Parse/Open は読み込んだ JsonObject 全体を保持する。既存ファイルの編集では、選択した floating-layout の row-definitions と column-definitions だけを変更する。レイアウトを切り替える前に現在の変更を検証・保持する。
 モデルの階層や種類、bindings、未編集のレイアウト、未知の追加プロパティを再構築しない。読み込み元への保存 API は設けず、従来の新規エクスポートを使う。
 8×8 を超える表や他のレイアウト種類もツリーへ表示するが、この版の表編集の対象外。編集可能な表がない文書には確認・別名出力の画面を表示する。
-DesktopUi.ReplaceTree は UI の要素 Id とスクロール位置を保ってツリーのスナップショットを交換する。交換時には旧ノードへのポインターキャプチャを解除する。設計ツール側は展開状態と選択を引き継ぐ。
+StationeryUiHost.ReplaceTree は UI の要素 Id とスクロール位置を保ってツリーのスナップショットを交換する。交換時には旧ノードへのポインターキャプチャを解除する。設計ツール側は展開状態と選択を引き継ぐ。
 
 ## 検証
 
@@ -35,7 +35,7 @@ GUI 検査は専用環境変数を指定してテスト用入力を与え、セ�
 
 ## ボタンとネイティブファイル選択
 
-デザイナーの DesktopUi は `UseStationeryButtons = true` を指定し、既存の StationeryButtonRenderer を使ってボタンを描く。四辺の枠、押下時の移動、ホバー・フォーカス・無効状態のテーマ色を共通化する。テキスト入力とリンクの描画には影響しない。他のホストはこの設定を有効にしない限り従来どおり。
+デザイナーの StationeryUiHost は `UseStationeryButtons = true` を指定し、既存の StationeryButtonRenderer を使ってボタンを描く。四辺の枠、押下時の移動、ホバー・フォーカス・無効状態のテーマ色を共通化する。テキスト入力とリンクの描画には影響しない。他のホストはこの設定を有効にしない限り従来どおり。
 WindowsStyleFileDialog は Windows の OpenFileDialog を開き、スタイル JSON／JSON のフィルター、単一ファイル選択、存在確認を行う。キャンセル時は null を返す。
 所有者にはゲームスレッドの GetActiveWindow が返す Win32 HWND を使う。MonoGame の GameWindow.Handle は SDL_Window* のため渡さない。ダイアログを呼ぶエントリーポイントは STAThread を維持する。
 画面本体は文房具 UI のままで、ファイルの選択部分だけ Windows に委譲する。

@@ -6,7 +6,7 @@ using StationeryUI.Controls;
 using StationeryUI.Inspection;
 using StationeryUI.Theming;
 
-public sealed partial class DesktopUi
+public sealed partial class StationeryUiHost
 {
     public Element AddTree(string id, ScreenRectangle bounds, string accessibleName, TreeView tree, StationeryNode? parent = null)
         => AddTree(AddNode(id, "tree", parent), bounds, accessibleName, tree);

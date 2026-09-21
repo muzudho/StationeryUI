@@ -27,20 +27,20 @@ internal sealed partial class Demo : Game
     private int smokeFrames;
     private readonly GraphicsDeviceManager manager;
     private WindowsTextInputService? input;
-    private DesktopUi? ui;
-    private DesktopUi.Element? name;
-    private DesktopUi.Element? memo;
-    private DesktopUi.Element? sampleTree;
-    private DesktopUi.Element? popupLink;
-    private DesktopUi? popupUi;
-    private DesktopUi.Element? popupText;
+    private StationeryUiHost? ui;
+    private StationeryUiHost.Element? name;
+    private StationeryUiHost.Element? memo;
+    private StationeryUiHost.Element? sampleTree;
+    private StationeryUiHost.Element? popupLink;
+    private StationeryUiHost? popupUi;
+    private StationeryUiHost.Element? popupText;
     private ActionBadgeOverlay? badges;
     private bool popupOpen;
     private string popupValue = "ダイアログで編集するテキスト";
     private Point pointer;
     private int updateFrames;
     private StationeryStyleFile styles = null!;
-    private readonly List<DesktopUi.Element> styledElements = [];
+    private readonly List<StationeryUiHost.Element> styledElements = [];
     private double requestedScale = 1;
     private bool previousReloadKey;
     private bool hasContentArea;
@@ -275,7 +275,7 @@ internal sealed partial class Demo : Game
     }
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(DesktopUi.Convert(ui?.Theme.Background ?? StationeryTheme.Dark.Background));
+        GraphicsDevice.Clear(StationeryUiHost.Convert(ui?.Theme.Background ?? StationeryTheme.Dark.Background));
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
         if (hasContentArea && activePage == "splitPaneDemoPage") splitUi?.Draw();
         else if (hasContentArea && popupOpen)

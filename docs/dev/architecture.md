@@ -11,7 +11,7 @@
 - `ITextCompositionService`: サークル側の既存DesktopApplication契約との互換用。新規ホストには `ITextInputService` を使用する。
 - `FocusManager`: rootとモーダル範囲内のTab順、無効化、ポインター保持。描画やネイティブフォーカスはホスト側で接続する。
 - `StationeryTheme`: 不変な設定。個別指定→アプリテーマ→標準テーマの順。個々の描画方式で未対応の装飾はREADMEへ明記する。
-- `DesktopUi`: 単一行入力・ボタンの小さなMonoGameホスト。描画をクリップし、長い入力欄を水平スクロールする。より複雑なアプリは共通モデルを直接接続できる。
+- `StationeryUiHost`: 単一行入力・ボタンの小さなMonoGameホスト。描画をクリップし、長い入力欄を水平スクロールする。より複雑なアプリは共通モデルを直接接続できる。
 - `ScreenCanvas` / `StationeryDrawingTools` / `Controls`: 既存画面の移行向けAPI。1920×1080仮想画面とSpriteFontを使用する経路を維持する。任意のSpriteFontを注入可能。
 - `RasterTextRenderer`: ホストのSpriteBatchを使う動的文字描画。最大128項目の再利用キャッシュを持ち、追い出したテクスチャは `EndFrame()` で破棄する。必ず `SpriteBatch.End()` 後に呼び、まだ描画キューが参照しているテクスチャを破棄しない。
 
@@ -34,3 +34,6 @@
 文字要素としての編集とフォントの表示能力は別である。Windowsラスタライザーは同じGDI+フォント設定で測定・描画する。全スクリプトの高度な組版、カラー絵文字、フォント自動フォールバックは初期版の保証対象に含めない。
 
 既存 `TextBoxController` はMonoGameのキーリピート・複数行編集契約を維持する移行用コントローラー。新規モデルと独立した履歴を持つが、共通パッケージ内の一箇所で管理する。両者の公開API統合は互換性を確認してから行う。
+# UI ホスト名の変更
+
+MonoGame の UI ホストは `StationeryUI.MonoGame.StationeryUiHost`。旧 `DesktopUi` からクラス名とファイル名を変更した。利用側の型名、`new DesktopUi(...)`、`DesktopUi.Element` などは、それぞれ `StationeryUiHost` に置き換えて再ビルドする。描画・入力の動作は変更していない。

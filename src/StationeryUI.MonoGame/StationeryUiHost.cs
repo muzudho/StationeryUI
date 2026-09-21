@@ -13,7 +13,7 @@ using StationeryUI.Theming;
 using StationeryUI.Inspection;
 
 /// <summary>A single-window desktop UI host. Call Update before game input and Draw after the game.</summary>
-public sealed partial class DesktopUi : IDisposable
+public sealed partial class StationeryUiHost : IDisposable
 {
     private readonly GraphicsDevice graphics;
     private readonly ITextInputService input;
@@ -71,7 +71,7 @@ public sealed partial class DesktopUi : IDisposable
         internal StationeryTheme? WrapTheme;
         internal List<string> WrappedLines = [];
     }
-    public DesktopUi(GraphicsDevice graphics, ITextInputService input, Func<string, ITextRasterizer> rasterizerFactory,
+    public StationeryUiHost(GraphicsDevice graphics, ITextInputService input, Func<string, ITextRasterizer> rasterizerFactory,
         StationeryNode? root = null)
     {
         this.graphics = graphics;

@@ -5,7 +5,7 @@ using StationeryUI.Canvas;
 using StationeryUI.Controls;
 using StationeryUI.Inspection;
 
-public sealed partial class DesktopUi
+public sealed partial class StationeryUiHost
 {
     public Element AddLink(StationeryNode node, ScreenRectangle bounds, string label, Action clicked)
     {

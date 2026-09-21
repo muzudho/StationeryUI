@@ -20,11 +20,11 @@ internal sealed partial class DesignerGame : Game
     private readonly GraphicsDeviceManager manager;
     private StyleBlueprint blueprint = new();
     private WindowsTextInputService input = null!;
-    private DesktopUi ui = null!;
-    private DesktopUi.Element columns = null!, rows = null!, label = null!, kind = null!, status = null!, output = null!;
-    private readonly List<(DesktopUi.Element Field, DesktopUi.Element Unit, StyleBlueprint.Track Track)> tracks = [];
-    private readonly List<(DesktopUi.Element Element, int Row, int Column)> cells = [];
-    private readonly List<(DesktopUi.Element Element, int Row, int Column)> preview = [];
+    private StationeryUiHost ui = null!;
+    private StationeryUiHost.Element columns = null!, rows = null!, label = null!, kind = null!, status = null!, output = null!;
+    private readonly List<(StationeryUiHost.Element Field, StationeryUiHost.Element Unit, StyleBlueprint.Track Track)> tracks = [];
+    private readonly List<(StationeryUiHost.Element Element, int Row, int Column)> cells = [];
+    private readonly List<(StationeryUiHost.Element Element, int Row, int Column)> preview = [];
     private int selectedRow, selectedColumn;
     private bool rebuild;
     private (int Columns, int Rows)? pendingShrink;
@@ -49,9 +49,9 @@ internal sealed partial class DesignerGame : Game
             theme = StationeryTheme.Dark with { FontSize = 16, Padding = 4 };
         BuildWelcome();
     }
-    private DesktopUi.Element Text(string id, ScreenRectangle bounds, string text) =>
+    private StationeryUiHost.Element Text(string id, ScreenRectangle bounds, string text) =>
         ui.AddTextBlock(ui.Root.AddChild(id, "textBlock"), bounds, text);
-    private void SetText(DesktopUi.Element field, string text) { field.Editor!.SelectAll(); field.Editor.Insert(text); }
+    private void SetText(StationeryUiHost.Element field, string text) { field.Editor!.SelectAll(); field.Editor.Insert(text); }
     private void Guard(Action action)
     {
         try { action(); }
@@ -141,7 +141,7 @@ internal sealed partial class DesignerGame : Game
     private void AddTrack(StyleBlueprint.Track track, string id, ScreenRectangle bounds, string name)
     {
         var field = ui.AddTextBox(id, bounds with { Width = bounds.Width - 60 }, name, track.Number, 24);
-        DesktopUi.Element? unit = null;
+        StationeryUiHost.Element? unit = null;
         unit = ui.AddButton(id + "Unit", new(bounds.X + bounds.Width - 58, bounds.Y, 58, bounds.Height), track.IsRate ? "rate" : "px", () =>
         { track.IsRate = !track.IsRate; unit!.Label = track.IsRate ? "rate" : "px"; });
         tracks.Add((field, unit, track));
@@ -197,7 +197,7 @@ internal sealed partial class DesignerGame : Game
     }
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(DesktopUi.Convert(ui.Theme.Background)); ui.Draw();
+        GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background)); ui.Draw();
         if (editingPage) sidebar?.Draw();
         CaptureWelcomeSmoke();
         if (!string.IsNullOrEmpty(smokeOutput) && ++frames == 19)

@@ -4,7 +4,7 @@ using StationeryUI.MonoGame;
 using StationeryUI.MonoGame.Controls.ActionBadge;
 using StationeryUI.Windows;
 
-/// <summary>移植済みバッジを、DesktopUi のウィンドウ座標へ重ねるデモ用アダプター。</summary>
+/// <summary>移植済みバッジを、StationeryUiHost のウィンドウ座標へ重ねるデモ用アダプター。</summary>
 internal sealed class ActionBadgeOverlay : IDisposable
 {
     private readonly Texture2D fontTexture;
@@ -49,7 +49,7 @@ internal sealed class ActionBadgeOverlay : IDisposable
         drawing = new(canvas, rasterizer);
     }
 
-    public void Draw(DesktopUi ui, DesktopUi.Element element, string label, Point pointer, bool active)
+    public void Draw(StationeryUiHost ui, StationeryUiHost.Element element, string label, Point pointer, bool active)
     {
         var bounds = ui.Viewport.ToWindow(element.Bounds);
         var hovered = active && pointer.X >= bounds.X && pointer.X < bounds.X + bounds.Width
@@ -60,7 +60,7 @@ internal sealed class ActionBadgeOverlay : IDisposable
         badge.SetAnchorBounds(new((int)logical.X, (int)logical.Y, (int)logical.Width, (int)logical.Height));
         if (hovered && (element.Editor is null || ui.Focus.FocusedId != element.Path)) badge.Show();
         else badge.Hide();
-        // DesktopUi と同じ倍率・オフセットで描き、バッジも拡大率に追従させる。
+        // StationeryUiHost と同じ倍率・オフセットで描き、バッジも拡大率に追従させる。
         canvas.SpriteBatch.Begin(samplerState: SamplerState.LinearClamp,
             transformMatrix: Matrix.CreateScale((float)ui.Viewport.Scale)
                 * Matrix.CreateTranslation((float)ui.Viewport.Offset.X, (float)ui.Viewport.Offset.Y, 0));
@@ -68,7 +68,7 @@ internal sealed class ActionBadgeOverlay : IDisposable
         drawing.End();
     }
 
-    public void DrawDialogBackground(DesktopUi popup)
+    public void DrawDialogBackground(StationeryUiHost popup)
     {
         var bounds = popup.Viewport.ToWindow(new(0, 0, 800, 320));
         var topLeft = canvas.ToVirtualPoint(new((int)bounds.X, (int)bounds.Y));
@@ -76,7 +76,7 @@ internal sealed class ActionBadgeOverlay : IDisposable
         drawing.Begin();
         drawing.FillRectangle(new(0, 0, VirtualScreen.Width, VirtualScreen.Height), new Color(0, 0, 0, 180));
         drawing.FillRoundedRectangle(new(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y),
-            12, DesktopUi.Convert(popup.Theme.Background));
+            12, StationeryUiHost.Convert(popup.Theme.Background));
         drawing.End();
     }
 

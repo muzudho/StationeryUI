@@ -11,8 +11,8 @@ internal sealed partial class DesignerGame
 {
     private bool editingPage, hasDraft, sidebarActive;
     private Action? pendingPage;
-    private DesktopUi? sidebar;
-    private DesktopUi.Element? styleTree;
+    private StationeryUiHost? sidebar;
+    private StationeryUiHost.Element? styleTree;
     private string sourceFile = "";
     private string? treeJson;
     private string? lastValidTreeJson;

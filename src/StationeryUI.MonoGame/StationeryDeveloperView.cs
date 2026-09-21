@@ -13,9 +13,9 @@ using StationeryUI.Styling;
 /// <summary>StationeryUI-only inspector surface. The host supplies a graphics device, snapshots and clipboard service.</summary>
 public sealed class StationeryDeveloperView : IDisposable
 {
-    private readonly DesktopUi ui;
+    private readonly StationeryUiHost ui;
     private readonly ITextInputService input;
-    private readonly DesktopUi.Element header, split, tree, details, copy;
+    private readonly StationeryUiHost.Element header, split, tree, details, copy;
     public StationeryDeveloperStyle Style { get; }
     public DeveloperInspectionModel Model { get; } = new();
     public StationeryTheme Theme { get => ui.Theme; set => ui.Theme = value; }

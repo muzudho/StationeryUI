@@ -13,7 +13,7 @@ MonoGameでPC向けの設定画面・編集画面を作るための、文房具�
 - 日本語・サロゲートペア・結合文字を考慮した編集モデル。
 - 通常・ホバー・押下・選択・無効・フォーカスの配色、明暗テーマ、個別上書き。
 - フォーカス順序、モーダル範囲、ポインター保持を扱う共通モデル。
-- MonoGameの `Update` / `Draw` に組み込める `DesktopUi` サンプル用ホスト。
+- MonoGameの `Update` / `Draw` に組み込める `StationeryUiHost` サンプル用ホスト。
 - ボタン、見出し、下線、数値・時間ポップアップ等の既存MonoGameコントロール。
 - Windowsのテキスト描画・クリップボード・DesktopGLのIME入力接続。
 
@@ -89,12 +89,12 @@ using StationeryUI.MonoGame;
 using StationeryUI.Windows;
 
 private WindowsTextInputService input = null!;
-private DesktopUi ui = null!;
+private StationeryUiHost ui = null!;
 
 protected override void LoadContent()
 {
     input = new WindowsTextInputService(Window.Handle);
-    ui = new DesktopUi(GraphicsDevice, input,
+    ui = new StationeryUiHost(GraphicsDevice, input,
         family => new WindowsTextRasterizer(family));
     var name = ui.AddTextBox("name", new(24, 24, 600, 64), "名前", "こんにちは");
     ui.AddButton("apply", new(24, 120, 320, 64), "名前を反映",
@@ -111,7 +111,7 @@ protected override void Update(GameTime gameTime)
 
 protected override void Draw(GameTime gameTime)
 {
-    GraphicsDevice.Clear(DesktopUi.Convert(ui.Theme.Background));
+    GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background));
     ui.Draw();
     base.Draw(gameTime);
 }
@@ -139,7 +139,7 @@ ui.Theme = StationeryUI.Theming.StationeryTheme.Light with
 ui.Viewport.Scale = 1.5;
 ```
 
-個別の `Element.Theme`、`IconButtonModel.Theme`、MonoGameの `Button.Theme` で上書きできます。既存の `StationeryDrawingTools` にも `Theme` があります。テーマ項目のうち角丸・影は描画方式ごとの対応です。`DesktopUi` の入力欄・ボタンは下線主体の表示で、角丸・影を描画しません。
+個別の `Element.Theme`、`IconButtonModel.Theme`、MonoGameの `Button.Theme` で上書きできます。既存の `StationeryDrawingTools` にも `Theme` があります。テーマ項目のうち角丸・影は描画方式ごとの対応です。`StationeryUiHost` の入力欄・ボタンは下線主体の表示で、角丸・影を描画しません。
 
 ## 入力の所有権と対応範囲
 

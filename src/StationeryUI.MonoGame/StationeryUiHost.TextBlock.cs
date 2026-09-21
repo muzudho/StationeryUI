@@ -6,7 +6,7 @@ using StationeryUI.Theming;
 using Microsoft.Xna.Framework.Input;
 using System.Globalization;
 
-public sealed partial class DesktopUi
+public sealed partial class StationeryUiHost
 {
     /// <summary>Read-only, wrapping text with wheel/keyboard scrolling and Ctrl+C to copy its contents.</summary>
     public Element AddTextBlock(StationeryNode node, ScreenRectangle bounds, string text)

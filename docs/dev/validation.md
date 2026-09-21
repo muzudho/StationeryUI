@@ -75,7 +75,7 @@
 - リサイズ時の計算はコア検査で確認。実 IME の手動操作は今回の対象外。
 ## 2026-09-21 ツリー部品
 
-- コアの TreeView にノード・選択・開閉状態を追加し、DesktopUi.AddTree で MonoGame に描画。デモの右上セルに sampleTree を配置。
+- コアの TreeView にノード・選択・開閉状態を追加し、StationeryUiHost.AddTree で MonoGame に描画。デモの右上セルに sampleTree を配置。
 - コア 22/22 成功。閉じた子孫の除外、枝の状態保持、選択の親への移動、矢印・先頭末尾操作、兄弟 Id の重複拒否と別の親での再利用を確認。
 - Release ソリューション／Debug デモのビルド成功（警告・エラー 0）。
 - 実際の MonoGame 描画環境で MouseState / KeyboardState を注入し、閉じる・開き直す・外で離して取消し・左キーで閉じる・ホイール・End キーで末尾表示・既存ダイアログ保存を通常倍率と 150% で検証。計 14 シナリオ成功。

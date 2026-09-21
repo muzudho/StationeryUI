@@ -124,7 +124,7 @@ internal sealed class InspectorGame : Game
     {
         if (shown)
         {
-            GraphicsDevice.Clear(DesktopUi.Convert(view!.Theme.Background));
+            GraphicsDevice.Clear(StationeryUiHost.Convert(view!.Theme.Background));
             view.Draw();
             if (!string.IsNullOrEmpty(testOutput) && File.Exists(Path.Combine(testOutput, "capture.request")))
             {
