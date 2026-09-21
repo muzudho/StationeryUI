@@ -51,7 +51,7 @@ try {
         if (($original.bindings | ConvertTo-Json -Depth 100 -Compress) -ne ($json.bindings | ConvertTo-Json -Depth 100 -Compress)) { throw 'Bindings changed.' }
     } else {
         if ($json.layouts[0].'column-definitions'[0] -ne '1.5rate' -or $json.layouts[0].'column-definitions'[1] -ne '120px') { throw 'Track export mismatch.' }
-        if ($json.models[0].children[0].children[0].type -ne 'button') { throw 'Cell type mismatch.' }
+        if ($json.models[0].children[0].children[0].type -ne 'container') { throw 'Layout-only editor changed model type.' }
     }
     if (!(Test-Path -LiteralPath (Join-Path $testDirectory 'welcome.png'))) { throw 'Welcome screenshot missing.' }
     if (!(Test-Path -LiteralPath (Join-Path $testDirectory 'designer.png'))) { throw 'Screenshot missing.' }

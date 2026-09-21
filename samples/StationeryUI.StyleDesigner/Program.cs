@@ -33,7 +33,7 @@ internal sealed partial class DesignerGame : Game
     private StyleBlueprint blueprint = new();
     private WindowsTextInputService input = null!;
     private StationeryUiHost ui = null!;
-    private StationeryUiHost.Element columns = null!, rows = null!, label = null!, kind = null!, status = null!, output = null!;
+    private StationeryUiHost.Element columns = null!, rows = null!, status = null!, output = null!;
     private readonly List<(StationeryUiHost.Element Field, StationeryUiHost.Element Unit, StyleBlueprint.Track Track)> tracks = [];
     private int selectedRow, selectedColumn;
     private bool rebuild;
@@ -42,7 +42,6 @@ internal sealed partial class DesignerGame : Game
     private StationeryTheme theme = StationeryTheme.Light with { FontSize = 16, Padding = 4 };
     private int frames;
     private readonly string? smokeOutput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_OUTPUT");
-    private bool smokeClicked;
 
     public DesignerGame()
     {
@@ -99,7 +98,6 @@ internal sealed partial class DesignerGame : Game
             foreach (var (field, key) in panelFields) blueprint.PanelEdges[key].Number = field.Editor!.Text;
         if (!editingPage || !blueprint.CanEditGrid) return;
         foreach (var (field, _, track) in tracks) track.Number = field.Editor!.Text;
-        if (!blueprint.IsImported) blueprint.At(selectedRow, selectedColumn).Label = label.Editor!.Text;
     }
     private void BuildUi()
     {
@@ -123,23 +121,9 @@ internal sealed partial class DesignerGame : Game
             Text($"rowIndex{r}", new(280, 100 + r * 44, 36, 40), (r + 1).ToString());
             AddTrack(blueprint.Rows[r], $"row{r}", new(372, 100 + r * 44, 164, 40), $"行 {r + 1} の高さ");
         }
-        Text("selected", new(12, 512, 180, 44), "選択セルの文房具：");
-        kind = ui.AddButton("kind", new(196, 512, 340, 44), blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(selectedRow, selectedColumn).Kind), () =>
-        {
-            if (blueprint.IsImported) return;
-            var cell = blueprint.At(selectedRow, selectedColumn);
-            var index = StyleBlueprint.Kinds.ToList().IndexOf(cell.Kind);
-            cell.Kind = StyleBlueprint.Kinds[(index + 1) % StyleBlueprint.Kinds.Count]; kind.Label = KindLabel(cell.Kind);
-        });
-        Text("labelTitle", new(12, 572, 100, 36), blueprint.IsImported ? "モデル：" : "表示名：");
-        label = ui.AddTextBox("label", new(12, 616, 524, 44), "選択セルの表示名", blueprint.IsImported ? ImportedCellDescription(selectedRow, selectedColumn) : blueprint.At(selectedRow, selectedColumn).Label);
-        ui.Focus.SetEnabled(label.Path, !blueprint.IsImported);
-        ui.Focus.SetEnabled(kind.Path, !blueprint.IsImported);
         BuildLivePreviewHeader();
         BuildSidebar();
     }
-    private static string KindLabel(string kind) => kind switch
-    { "container" => "未指定（空き領域）", "button" => "ボタン", "textBox" => "テキスト入力", "textBlock" => "説明テキスト", "link" => "ページリンク", "tree" => "ツリー", _ => kind };
     private void AddTrack(StyleBlueprint.Track track, string id, ScreenRectangle bounds, string name)
     {
         var field = ui.AddTextBox(id, bounds with { Width = bounds.Width - 60 }, name, track.Number, 24);

@@ -193,9 +193,7 @@ internal sealed partial class DesignerGame
             return;
         }
         if (frames is >= 17 and <= 19) { mouse = SmokeMouse(applicationBar, 570, 20, frames == 18); return; }
-        var point = ui.Viewport.ToWindow(kind.Bounds);
-        mouse = SmokeMouse((int)point.X + 10, (int)point.Y + 10, editFrame == 1);
-        if (editFrame == 3 && !smokeClicked) { SetText(label, "開始ボタン"); smokeClicked = true; }
+        mouse = new();
     }
     private void CaptureWelcomeSmoke()
     {
@@ -208,6 +206,23 @@ internal sealed partial class DesignerGame
     }
     private void ValidateDesignerSmoke()
     {
+        if (editingPage && styleTree?.Tree is { } tree)
+        {
+            var previous = tree.TargetItem;
+            foreach (var root in tree.Roots.Where(n => treePaths.GetValueOrDefault(n.Id) is ["models"] or ["bindings"]))
+            {
+                tree.SetTarget(root.Children.FirstOrDefault() ?? root);
+                UpdateTreeActions();
+                if (sidebar!.Focus.IsEnabled(deleteNode!.Path) || sidebar.Focus.IsEnabled(renameId!.Path))
+                    throw new InvalidOperationException("Models and bindings must be read-only.");
+            }
+            if (previous is not null) tree.SetTarget(previous); else tree.ClearTarget();
+            UpdateTreeActions();
+            if (ui.Inspect().Any(e => e.Id is "kind" or "label")) throw new InvalidOperationException("Model editor is still visible.");
+            if (livePreview is not null && (Math.Abs(previewWindow.X + previewWindow.Width - (GraphicsDevice.Viewport.Width - 8)) > 1
+                || Math.Abs(previewWindow.Y + previewWindow.Height - (GraphicsDevice.Viewport.Height - InspectorHeight - 8)) > 1))
+                throw new InvalidOperationException("Preview must fill the available right-hand area.");
+        }
         if (SaveSmoke)
         {
             if (restoreDialog is not null || saveSession is null || saveSession.IsDirty || saveError is not null
@@ -233,7 +248,6 @@ internal sealed partial class DesignerGame
             if (blueprint.EditableLayouts.Count > 1 && blueprint.SelectedLayoutId != blueprint.EditableLayouts[1]) throw new InvalidOperationException("Tree layout selection failed.");
             return;
         }
-        if (blueprint.At(0, 0).Kind != "button" || blueprint.At(0, 0).Label != "開始ボタン") throw new InvalidOperationException("Designer cell editing failed.");
         if (blueprint.Columns.Count != 2 || blueprint.Rows.Count != 1) throw new InvalidOperationException("Designer resize/confirmation failed.");
         if (selectedColumn != 1 || selectedRow != 0) throw new InvalidOperationException("Preview cell selection failed.");
         if (blueprint.At(0, 1).Label != "") throw new InvalidOperationException("Selecting an empty cell copied the previous label.");

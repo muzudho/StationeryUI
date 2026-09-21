@@ -15,7 +15,6 @@ internal sealed partial class DesignerGame
     private string? previewKey;
     private bool previewMouseDown;
     private ScreenRectangle previewWindow;
-    private readonly ScreenRectangle previewArea = new(560, 144, 708, 600);
 
     private void ResetLivePreview()
     {
@@ -24,12 +23,16 @@ internal sealed partial class DesignerGame
 
     private void BuildLivePreviewHeader()
     {
-        livePreviewTitle = Text("livePreviewTitle", new(560, 104, 708, 36), "編集プレビュー");
+        livePreviewTitle = Text("livePreviewTitle", new(560, 8, 708, 36), "編集プレビュー");
     }
 
     private void UpdateLivePreview(string json, MouseState mouse)
     {
-        previewWindow = ui.Viewport.ToWindow(previewArea);
+        var origin = ui.Viewport.ToWindow(new ScreenRectangle(560, 48, 1, 1));
+        previewWindow = new(origin.X, origin.Y,
+            Math.Max(1, GraphicsDevice.Viewport.Width - origin.X - 8),
+            Math.Max(1, GraphicsDevice.Viewport.Height - InspectorHeight - origin.Y - 8));
+        livePreviewTitle!.Bounds = new(560, 8, previewWindow.Width / BodyScale, 36);
         var width = Math.Max(1, (int)previewWindow.Width);
         var height = Math.Max(1, (int)previewWindow.Height);
         var key = json + $"|{width}|{height}|{blueprint.SelectedLayoutId}|{selectedRow}|{selectedColumn}|{theme.Background}";
@@ -122,8 +125,6 @@ internal sealed partial class DesignerGame
                     if (x >= cell.Bounds.X && y >= cell.Bounds.Y && x < cell.Bounds.X + cell.Bounds.Width && y < cell.Bounds.Y + cell.Bounds.Height)
                     {
                         selectedRow = cell.Row; selectedColumn = cell.Column;
-                        SetText(label, blueprint.IsImported ? ImportedCellDescription(cell.Row, cell.Column) : blueprint.At(cell.Row, cell.Column).Label);
-                        kind.Label = blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(cell.Row, cell.Column).Kind);
                         break;
                     }
         }

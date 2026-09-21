@@ -19,7 +19,7 @@ internal sealed partial class DesignerGame
         deleteNode = sidebar.AddButton("deleteNode", new(164, 708, 144, 44), "削除", () => Guard(() =>
         {
             var target = styleTree?.Tree?.TargetItem;
-            if (target is null || !treePaths.TryGetValue(target.Id, out var path) || path.Length < 2) return;
+            if (target is null || !treePaths.TryGetValue(target.Id, out var path) || !IsEditableLayoutPath(path)) return;
             Capture(); blueprint.DeleteNode(path);
             styleTree!.Tree!.ClearTarget();
             treeJson = null; lastTreeSelection = null;
@@ -29,7 +29,7 @@ internal sealed partial class DesignerGame
         {
             Capture();
             var target = styleTree?.Tree?.TargetItem;
-            if (target is null || !treePaths.TryGetValue(target.Id, out var path)) return;
+            if (target is null || !treePaths.TryGetValue(target.Id, out var path) || !IsEditableLayoutPath(path)) return;
             var id = blueprint.NodeId(path);
             if (id is null) return;
             OpenIdDialog(path, id);
@@ -43,15 +43,17 @@ internal sealed partial class DesignerGame
         var target = styleTree?.Tree?.TargetItem;
         var path = target is not null ? treePaths.GetValueOrDefault(target.Id) : null;
         sidebar.Focus.SetEnabled(addChild.Path, path is ["layouts"]);
-        sidebar.Focus.SetEnabled(deleteNode.Path, path is { Length: > 1 });
+        sidebar.Focus.SetEnabled(deleteNode.Path, IsEditableLayoutPath(path));
         if (renameId is not null)
         {
             var enabled = false;
-            try { enabled = path is not null && blueprint.NodeId(path) is not null; }
+            try { enabled = IsEditableLayoutPath(path) && blueprint.NodeId(path!) is not null; }
             catch (System.Text.Json.JsonException) { }
             sidebar.Focus.SetEnabled(renameId.Path, enabled);
         }
     }
+
+    private static bool IsEditableLayoutPath(string[]? path) => path is { Length: > 1 } && path[0] == "layouts";
 
     private void OpenLayoutDialog()
         => Guard(() =>
