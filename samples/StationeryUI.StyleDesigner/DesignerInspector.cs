@@ -25,7 +25,7 @@ internal sealed partial class DesignerGame
     private string? DesignerToolHint(StationeryUiHost.Element element) => element.Id switch
     {
         "new" => "新しい設計を始めます。現在のプランは置き換わるため、必要な内容は先にエクスポートしてください。",
-        "resume" => "メモリー上に残っているプランの編集を再開します。",
+        "resume" => hasDraft ? "メモリー上に残っているプランの編集を再開します。" : "再開できる編集がありません。新規作成か既存ファイルの選択から始めてください。",
         "open" or "chooseFile" => "JSON を開き、連番の .bak を作成します。変更は最後の入力から1.5秒後に元ファイルへ自動保存します。",
         "back" => "1ページ目へ戻ります。現在のプランは「現在の編集を再開」で続けられます。",
         "columns" or "columnsLabel" => "列数（1～8）を入力すると自動反映します。縮小するときは確認画面が開きます。",

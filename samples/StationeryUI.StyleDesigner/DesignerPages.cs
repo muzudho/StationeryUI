@@ -26,8 +26,11 @@ internal sealed partial class DesignerGame
         editingPage = false; sidebarActive = false; applicationBarActive = false;
         ui?.Dispose(); sidebar?.Dispose(); sidebar = null;
         ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
-        Text("welcomeTitle", new(180, 100, 1240, 64), "1 / 2 — スタイル設計を始める");
-        ui.AddButton("new", new(180, 310, 520, 64), hasDraft ? "新規作成（現在のプランを置換）" : "新規作成", () =>
+        const string title = "スタイル設定ファイル選択";
+        var titleWidth = new WindowsTextRasterizer(theme.FontFamily).MeasureTextWidth(title, theme.FontSize, false);
+        Text("welcomeTitle", new(800 - titleWidth / 2 - theme.Padding, 261, titleWidth + 48, 64), title)
+            .Theme = theme with { Surface = theme.Background };
+        ui.AddButton("new", new(540, 349, 520, 64), "新規作成", () =>
         {
             pendingPage = () =>
             {
@@ -43,13 +46,14 @@ internal sealed partial class DesignerGame
                 BeginEditing("新しいプランを作成しました。");
             };
         });
-        ui.AddButton("open", new(180, 548, 520, 64), "既存のファイルを編集する", () => Guard(() =>
+        var resume = ui.AddButton("resume", new(540, 437, 520, 64), "現在の編集を再開", () => pendingPage = () => BeginEditing("編集を再開しました。"));
+        ui.Focus.SetEnabled(resume.Path, hasDraft);
+        ui.AddButton("open", new(540, 525, 520, 64), "既存のファイルを編集する", () => Guard(() =>
         {
             var path = ChooseStyleFile();
             if (path is null) { message = "ファイルの選択をキャンセルしました。"; return; }
             OpenStyle(path);
         }));
-        if (hasDraft) ui.AddButton("resume", new(740, 310, 520, 64), "現在の編集を再開", () => pendingPage = () => BeginEditing("編集を再開しました。"));
     }
 
     private void BeginEditing(string text)
@@ -160,7 +164,7 @@ internal sealed partial class DesignerGame
         keyboard = new();
         if (!editingPage)
         {
-            var area = ui.Viewport.ToWindow(new(180, string.IsNullOrEmpty(smokeInput) ? 310 : 548, 520, 64));
+            var area = ui.Viewport.ToWindow(new(540, string.IsNullOrEmpty(smokeInput) ? 349 : 525, 520, 64));
             mouse = new((int)area.X + 10, (int)area.Y + 10, 0, frames == 1 ? ButtonState.Pressed : ButtonState.Released,
                 ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             return;

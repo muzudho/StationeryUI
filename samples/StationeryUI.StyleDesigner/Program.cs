@@ -139,7 +139,9 @@ internal sealed partial class DesignerGame : Game
         if (restoreDialog is not null) { UpdateRestoreDialog(gameTime); base.Update(gameTime); return; }
         if (layoutDialog is not null) { UpdateLayoutDialog(gameTime, scale); base.Update(gameTime); return; }
         ui.Viewport.Scale = scale;
-        ui.Viewport.Offset = new(editingPage ? 320 * scale : 0, BodyTop);
+        ui.Viewport.Offset = editingPage ? new(320 * scale, BodyTop)
+            : new((GraphicsDevice.Viewport.Width - 1600 * scale) / 2,
+                (GraphicsDevice.Viewport.Height - InspectorHeight - 850 * scale) / 2);
         if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Viewport.Offset = new(0, BodyTop); sidebar.Theme = theme; }
         var mouse = Mouse.GetState(); var keyboard = Keyboard.GetState();
         PrepareDesignerSmoke(ref mouse, ref keyboard);
