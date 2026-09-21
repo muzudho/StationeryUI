@@ -2,6 +2,8 @@
 
 [目次](README.md)
 
+このページはスタイルの読み込みと配置の接続例です。**F12 開発者ウィンドウを含む導入全体は、[一式の取り込み手順](full-integration.md)を参照してください。** 以下の最小例へ、同手順の InspectorGame・起動分岐・F12 とスナップショット更新・Dispose を追加すると、実画面のパスと座標も調べられます。
+
 ## 利用するプロジェクト
 
 配置計算だけなら `StationeryUI`、MonoGame の描画・入力接続には `StationeryUI.MonoGame`、現在の Windows の文字描画・IME 接続には `StationeryUI.Windows` を使います。コアの配置計算は OS 非依存ですが、このページの実行例は **Windows + DesktopGL** 用です。
