@@ -40,7 +40,5 @@ internal sealed partial class DesignerGame
             ExportAndTrack(path);
         }));
         ui.Focus.SetEnabled(create.Path, selectedOutputFolder is not null);
-        var restore = ui.AddButton("restore", new(864, y + 44, 404, 38), "セーブポイントに戻す", () => pendingPage = () => Guard(OpenRestoreDialog));
-        ui.Focus.SetEnabled(restore.Path, saveSession is not null);
     }
 }

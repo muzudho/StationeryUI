@@ -75,6 +75,7 @@ internal sealed partial class DesignerGame : Game
         Window.Title = $"文房具 UI — スタイル設計ツール v{AppVersion}";
         input = new(Window.Handle);
         BuildInspector();
+        BuildApplicationBar();
         if (!string.IsNullOrEmpty(smokeOutput) && Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_DARK") == "1")
             theme = StationeryTheme.Dark with { FontSize = 16, Padding = 4 };
         BuildWelcome();
@@ -109,13 +110,13 @@ internal sealed partial class DesignerGame : Game
         ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
         if (blueprint.CanEditPanel) { BuildPanelEditor(); return; }
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
-        Text("title", new(12, 8, 1256, 42), blueprint.IsImported ? $"2 / 2 — 編集中：{blueprint.SelectedLayoutId}（既存モデルと bindings は保持）" : "2 / 2 — 新規スタイル設計（横・縦とも 1～8 セル）");
-        ui.AddButton("back", new(1070, 54, 198, 44), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
-        Text("columnsLabel", new(12, 54, 140, 44), "横のセル数");
-        columns = ui.AddTextBox("columns", new(154, 54, 80, 44), "横のセル数", blueprint.Columns.Count.ToString());
-        Text("rowsLabel", new(246, 54, 140, 44), "縦のセル数");
-        rows = ui.AddTextBox("rows", new(388, 54, 80, 44), "縦のセル数", blueprint.Rows.Count.ToString());
-        ui.AddButton("resize", new(484, 54, 220, 44), "表を作る／更新", () => Guard(() =>
+        Text("columnTracksTitle", new(12, 8, 252, 36), "列の幅");
+        Text("rowTracksTitle", new(280, 8, 256, 36), "行の高さ");
+        Text("columnsLabel", new(12, 48, 40, 44), "列数");
+        columns = ui.AddTextBox("columns", new(56, 48, 208, 44), "列数", blueprint.Columns.Count.ToString());
+        Text("rowsLabel", new(280, 48, 40, 44), "行数");
+        rows = ui.AddTextBox("rows", new(324, 48, 212, 44), "行数", blueprint.Rows.Count.ToString());
+        ui.AddButton("resize", new(560, 48, 220, 44), "表を作る／更新", () => Guard(() =>
         {
             Capture();
             if (!int.TryParse(columns.Editor!.Text, out var c) || !int.TryParse(rows.Editor!.Text, out var r))
@@ -130,19 +131,15 @@ internal sealed partial class DesignerGame : Game
             selectedRow = Math.Min(selectedRow, r - 1); selectedColumn = Math.Min(selectedColumn, c - 1);
             rebuild = true; message = "表を更新しました。サイズの数値を入力し、単位ボタンで rate／px を選んでください。";
         }));
-        ui.AddButton("theme", new(720, 54, 180, 44), "明るい／暗い", () =>
-        { theme = theme.Background == StationeryTheme.Light.Background ? StationeryTheme.Dark with { FontSize = 16, Padding = 4 } : StationeryTheme.Light with { FontSize = 16, Padding = 4 }; ui.Theme = theme; });
-        Text("columnTracksTitle", new(12, 104, 252, 36), "列の幅（数値 / 単位）");
-        Text("rowTracksTitle", new(280, 104, 256, 36), "行の高さ（数値 / 単位）");
         for (var c = 0; c < blueprint.Columns.Count; c++)
         {
-            Text($"columnIndex{c}", new(12, 146 + c * 44, 36, 40), (c + 1).ToString());
-            AddTrack(blueprint.Columns[c], $"column{c}", new(52, 146 + c * 44, 212, 40), $"列 {c + 1} の幅");
+            Text($"columnIndex{c}", new(12, 100 + c * 44, 36, 40), (c + 1).ToString());
+            AddTrack(blueprint.Columns[c], $"column{c}", new(56, 100 + c * 44, 208, 40), $"列 {c + 1} の幅");
         }
         for (var r = 0; r < blueprint.Rows.Count; r++)
         {
-            Text($"rowIndex{r}", new(280, 146 + r * 44, 36, 40), (r + 1).ToString());
-            AddTrack(blueprint.Rows[r], $"row{r}", new(320, 146 + r * 44, 216, 40), $"行 {r + 1} の高さ");
+            Text($"rowIndex{r}", new(280, 100 + r * 44, 36, 40), (r + 1).ToString());
+            AddTrack(blueprint.Rows[r], $"row{r}", new(324, 100 + r * 44, 212, 40), $"行 {r + 1} の高さ");
         }
         Text("selected", new(12, 512, 180, 44), "選択セルの文房具：");
         kind = ui.AddButton("kind", new(196, 512, 340, 44), blueprint.IsImported ? "既存の定義を保持" : KindLabel(blueprint.At(selectedRow, selectedColumn).Kind), () =>
@@ -176,23 +173,29 @@ internal sealed partial class DesignerGame : Game
         if (restoreDialog is not null) { UpdateRestoreDialog(gameTime); base.Update(gameTime); return; }
         if (layoutDialog is not null) { UpdateLayoutDialog(gameTime, scale); base.Update(gameTime); return; }
         ui.Viewport.Scale = scale;
-        ui.Viewport.Offset = new(editingPage ? 320 * scale : 0, 0);
-        if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Theme = theme; }
+        ui.Viewport.Offset = new(editingPage ? 320 * scale : 0, BodyTop);
+        if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Viewport.Offset = new(0, BodyTop); sidebar.Theme = theme; }
         var mouse = Mouse.GetState(); var keyboard = Keyboard.GetState();
         PrepareDesignerSmoke(ref mouse, ref keyboard);
         inspectorMouse = mouse;
         inspector.Update(gameTime, IsActive || !string.IsNullOrEmpty(smokeOutput), new(), mouse);
         if (editingPage && mouse.LeftButton == ButtonState.Pressed) sidebarActive = mouse.X < 320 * scale;
         var active = IsActive || !string.IsNullOrEmpty(smokeOutput);
+        if (editingPage)
+        {
+            ArrangeApplicationBar();
+            if (mouse.LeftButton == ButtonState.Pressed) applicationBarActive = mouse.Y < ApplicationBarHeight;
+            applicationBar.Update(gameTime, active, applicationBarActive ? keyboard : new(), mouse);
+        }
         if (editingPage && sidebar is not null)
         {
-            sidebar.Update(gameTime, active, sidebarActive ? keyboard : new(), mouse);
+            sidebar.Update(gameTime, active, sidebarActive && !applicationBarActive ? keyboard : new(), mouse);
             HandleTreeSelection();
         }
-        ui.Update(gameTime, active, !editingPage || !sidebarActive ? keyboard : new(), mouse);
+        ui.Update(gameTime, active, !editingPage || (!sidebarActive && !applicationBarActive) ? keyboard : new(), mouse);
         if (pendingPage is not null) { var action = pendingPage; pendingPage = null; action(); return; }
         if (!editingPage) { status.Label = message; base.Update(gameTime); return; }
-        if (rebuild) { rebuild = false; BuildUi(); ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, 0); }
+        if (rebuild) { rebuild = false; BuildUi(); ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, BodyTop); }
         if (!blueprint.CanEditGrid)
         {
             Capture();
@@ -222,6 +225,7 @@ internal sealed partial class DesignerGame : Game
     {
         GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background)); ui.Draw();
         if (editingPage) { sidebar?.Draw(); DrawLivePreview(); }
+        if (editingPage) { ArrangeApplicationBar(); applicationBar.Draw(); }
         layoutDialog?.Draw();
         restoreDialog?.Draw();
         DrawInspector();
@@ -241,5 +245,5 @@ internal sealed partial class DesignerGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }

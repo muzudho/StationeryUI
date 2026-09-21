@@ -152,7 +152,7 @@ internal sealed partial class DesignerGame
         {
             var rows = styleTree!.Tree!.VisibleRows();
             var index = rows.ToList().FindIndex(r => treePaths.GetValueOrDefault(r.Item.Id) is ["layouts"]);
-            mouse = SmokeMouse(sidebar!, 80, 92 + index * 32 + 16, frames == 4);
+            mouse = SmokeMouse(sidebar!, 80, styleTree.Bounds.Y + index * 32 + 16, frames == 4);
         }
         else if (frames <= 7)
         {
@@ -198,8 +198,6 @@ internal sealed partial class DesignerGame
 
     private void BuildPanelEditor()
     {
-        Text("panelTitle", new(12, 12, 1256, 50), $"2 / 2 — panel：{blueprint.SelectedLayoutId}");
-        ui.AddButton("back", new(12, 76, 268, 44), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
         var sides = new[] { "top", "right", "bottom", "left" };
         var sideLabels = new[] { "上", "右", "下", "左" };
         for (var c = 0; c < sides.Length; c++) Text("side" + c, new(120 + c * 104, 136, 100, 40), sideLabels[c] + " (px)");

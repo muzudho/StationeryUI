@@ -14,8 +14,8 @@ internal sealed partial class DesignerGame
             throw new InvalidOperationException("Timed autosave did not write the edited source.");
         if (frames is 124 or 125)
         {
-            var point = ui.Viewport.ToWindow(new StationeryUI.Canvas.ScreenRectangle(870, 812, 1, 1));
-            mouse = SmokeMouse((int)point.X, (int)point.Y, frames == 124);
+            var point = applicationBar.Viewport.ToWindow(restoreButton.Bounds);
+            mouse = SmokeMouse((int)point.X + 10, (int)point.Y + 10, frames == 124);
         }
         return true;
     }

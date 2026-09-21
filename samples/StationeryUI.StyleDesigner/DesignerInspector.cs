@@ -10,7 +10,7 @@ internal sealed partial class DesignerGame
     private MouseState inspectorMouse;
     private const int InspectorHeight = 80;
     private double BodyScale => Math.Max(.1, Math.Min(GraphicsDevice.Viewport.Width / 1600.0,
-        Math.Max(1, GraphicsDevice.Viewport.Height - InspectorHeight) / 850.0));
+        Math.Max(1, GraphicsDevice.Viewport.Height - InspectorHeight - BodyTop) / 850.0));
 
     private void BuildInspector()
     {
@@ -31,6 +31,8 @@ internal sealed partial class DesignerGame
         "columns" => "横のセル数（1～8）を入力し、「表を作る／更新」で反映します。",
         "rows" => "縦のセル数（1～8）を入力し、「表を作る／更新」で反映します。",
         "resize" => "行列数を反映します。表を縮めてセルが消える場合は、もう一度押すと確定します。",
+        "columnTracksTitle" => "列ごとの幅を数値と単位で指定します。px は固定幅、rate は残りの幅の配分比です。",
+        "rowTracksTitle" => "行ごとの高さを数値と単位で指定します。px は固定高さ、rate は残りの高さの配分比です。",
         "theme" => "明るいテーマと暗いテーマを切り替えます。",
         "kind" => blueprint.IsImported ? "既存モデルの種類は保持します。" : "プレビューで選んだセルの文房具の種類を切り替えます。",
         "label" => blueprint.IsImported ? "このセルに配置されたモデルを表示しています。" : "選択したセルの表示名を入力します。右のプレビューへ反映されます。",
@@ -75,6 +77,7 @@ internal sealed partial class DesignerGame
         {
             if (restoreDialog is not null) hint = restoreDialog.HoveredToolHint;
             else if (layoutDialog is not null) hint = layoutDialog.HoveredToolHint;
+            else if (editingPage && inspectorMouse.Y < ApplicationBarHeight) hint = applicationBar.HoveredToolHint;
             else if (editingPage && livePreview is not null && inspectorMouse.X >= previewWindow.X && inspectorMouse.X < previewWindow.X + previewWindow.Width
                 && inspectorMouse.Y >= previewWindow.Y && inspectorMouse.Y < previewWindow.Y + previewWindow.Height)
                 hint = "配置プレビュー：セルをクリックして編集対象を選びます。プレビュー領域をビューポートとして px と rate を計算します。";

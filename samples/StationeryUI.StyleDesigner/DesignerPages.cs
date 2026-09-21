@@ -23,7 +23,7 @@ internal sealed partial class DesignerGame
     private void BuildWelcome()
     {
         if (!FlushAutoSave()) return;
-        editingPage = false; sidebarActive = false;
+        editingPage = false; sidebarActive = false; applicationBarActive = false;
         ui?.Dispose(); sidebar?.Dispose(); sidebar = null;
         ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
         Text("welcomeTitle", new(180, 100, 1240, 64), "1 / 2 — スタイル設計を始める");
@@ -54,19 +54,17 @@ internal sealed partial class DesignerGame
 
     private void BeginEditing(string text)
     {
-        editingPage = hasDraft = true; pendingShrink = null; sidebarActive = false; rebuild = false;
+        editingPage = hasDraft = true; pendingShrink = null; sidebarActive = false; applicationBarActive = false; rebuild = false;
         message = text; treeJson = null; lastTreeSelection = null;
         if (!string.IsNullOrEmpty(smokeOutput) && saveSession is null) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-style.json");
         BuildUi();
         var scale = BodyScale;
-        ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, 0);
-        if (sidebar is not null) sidebar.Viewport.Scale = scale;
+        ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, BodyTop);
+        if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Viewport.Offset = new(0, BodyTop); }
     }
 
     private void BuildReadOnly()
     {
-        Text("readOnlyTitle", new(12, 12, 1256, 64), "2 / 2 — スタイルの確認");
-        ui.AddButton("back", new(12, 280, 300, 52), "1 ページ目へ戻る", () => pendingPage = BuildWelcome);
         BuildLivePreviewHeader();
         BuildOutputControls(762);
         BuildSidebar();
@@ -82,8 +80,8 @@ internal sealed partial class DesignerGame
         }
         sidebar?.Dispose();
         sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
-        sidebar.AddTextBlock(sidebar.Root.AddChild("heading", "textBlock"), new(8, 8, 300, 76), "2 / 2 — スタイルツリー\nmodels / layouts / bindings");
-        styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 92, 300, 600), "スタイルの構造", new());
+        sidebar.AddTextBlock(sidebar.Root.AddChild("heading", "textBlock"), new(8, 8, 300, 36), "スタイルツリー");
+        styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 48, 300, 644), "スタイルの構造", new());
         BuildTreeActions();
         treeJson = null;
         try { RefreshTree(blueprint.BuildJson()); }
@@ -180,7 +178,7 @@ internal sealed partial class DesignerGame
                 var visible = styleTree!.Tree!.VisibleRows();
                 var index = visible.ToList().FindIndex(r => treeLayouts.GetValueOrDefault(r.Item.Id) == target);
                 if (index < 0) throw new InvalidOperationException("Layout missing from style tree.");
-                var treePoint = sidebar!.Viewport.ToWindow(new StationeryUI.Canvas.ScreenRectangle(60, 92 + index * 32 + 16, 1, 1));
+                var treePoint = sidebar!.Viewport.ToWindow(new StationeryUI.Canvas.ScreenRectangle(60, styleTree.Bounds.Y + index * 32 + 16, 1, 1));
                 mouse = new((int)treePoint.X, (int)treePoint.Y, 0, editFrame == 5 ? ButtonState.Pressed : ButtonState.Released,
                     ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
                 return;
@@ -211,7 +209,7 @@ internal sealed partial class DesignerGame
                 ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             return;
         }
-        var point = ui.Viewport.ToWindow(editFrame >= 4 ? new(484, 54, 220, 44) : kind.Bounds);
+        var point = ui.Viewport.ToWindow(editFrame >= 4 ? new(560, 48, 220, 44) : kind.Bounds);
         mouse = new((int)point.X + 10, (int)point.Y + 10, 0, editFrame is 1 or 5 or 9 or 11 ? ButtonState.Pressed : ButtonState.Released,
             ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
         if (editFrame == 3 && !smokeClicked) { SetText(label, "開始ボタン"); smokeClicked = true; }
