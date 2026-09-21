@@ -18,6 +18,7 @@ public sealed class FocusManager
     private bool Eligible((string Id, string Scope, bool Enabled, bool Visible) c) =>
         c.Enabled && c.Visible && c.Scope == (HasModal ? modals.Peek().Scope : "root");
     public void ClearFocus() => FocusedId = null;
+    public bool IsEnabled(string id) => controls.Any(c => c.Id == id && c.Enabled);
     public bool Focus(string id)
     {
         if (!controls.Any(c => c.Id == id && Eligible(c))) return false;

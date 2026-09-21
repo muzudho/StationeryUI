@@ -33,4 +33,20 @@ StyleBlueprintTests は設計ツールのモデルだけをソースリンクし
 GUI 検査は専用環境変数を指定してテスト用入力を与え、セルの種類と表示名、JSON 出力、スクリーンショットを確認する。通常起動では自動入力を行わない。
 既存ファイルの検査では、開始ページからファイルを開き、サイズを編集し、ツリーの別レイアウトをクリックする。出力したモデル・bindings と元ファイルのハッシュが変わらないことも確認する。
 
+## ボタンとネイティブファイル選択
+
+デザイナーの DesktopUi は `UseStationeryButtons = true` を指定し、既存の StationeryButtonRenderer を使ってボタンを描く。四辺の枠、押下時の移動、ホバー・フォーカス・無効状態のテーマ色を共通化する。テキスト入力とリンクの描画には影響しない。他のホストはこの設定を有効にしない限り従来どおり。
+WindowsStyleFileDialog は Windows の OpenFileDialog を開き、スタイル JSON／JSON のフィルター、単一ファイル選択、存在確認を行う。キャンセル時は null を返す。
+所有者にはゲームスレッドの GetActiveWindow が返す Win32 HWND を使う。MonoGame の GameWindow.Handle は SDL_Window* のため渡さない。ダイアログを呼ぶエントリーポイントは STAThread を維持する。
+画面本体は文房具 UI のままで、ファイルの選択部分だけ Windows に委譲する。
+
+実際の OS ダイアログを使う検査：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StyleDesigner.ps1 -Existing -NativeDialog -Dark
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StyleDesigner.ps1 -Existing -NativeDialog -CancelDialog
+```
+
+ネイティブダイアログの自動操作は専用テスト環境変数が指定された場合だけ有効。同じプロセスのダイアログを確認してから、テスト用に選択済みのファイルを確定またはキャンセルする。通常起動では自動操作しない。
+
 操作方法と対象範囲は [ユーザー向けガイド](../user/style-designer.md) を参照。

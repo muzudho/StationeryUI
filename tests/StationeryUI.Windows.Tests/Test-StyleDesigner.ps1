@@ -1,14 +1,20 @@
-param([string]$Executable = 'samples/StationeryUI.StyleDesigner/bin/Release/net8.0-windows/StationeryUI.StyleDesigner.exe', [switch]$Existing)
+param([string]$Executable = 'samples/StationeryUI.StyleDesigner/bin/Release/net8.0-windows/StationeryUI.StyleDesigner.exe', [switch]$Existing, [switch]$NativeDialog, [switch]$CancelDialog, [switch]$Dark)
 $ErrorActionPreference = 'Stop'
 $workspace = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $testDirectory = Join-Path $workspace ('artifacts/style-designer-test/' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $testDirectory -Force | Out-Null
 $previousOutput = $env:STATIONERYUI_DESIGNER_TEST_OUTPUT
 $previousInput = $env:STATIONERYUI_DESIGNER_TEST_INPUT
+$previousNative = $env:STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG
+$previousCancel = $env:STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG
+$previousDark = $env:STATIONERYUI_DESIGNER_TEST_DARK
 $process = $null
 try {
     $env:STATIONERYUI_DESIGNER_TEST_OUTPUT = $testDirectory
     $env:STATIONERYUI_DESIGNER_TEST_INPUT = ''
+    $env:STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG = if ($NativeDialog) { '1' } else { '' }
+    $env:STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG = if ($CancelDialog) { '1' } else { '' }
+    $env:STATIONERYUI_DESIGNER_TEST_DARK = if ($Dark) { '1' } else { '' }
     if ($Existing) {
         $source = Join-Path $workspace 'App_Data/demo.stationery-style.json'
         $sourceHash = (Get-FileHash -LiteralPath $source).Hash
@@ -17,6 +23,11 @@ try {
     $process = Start-Process -FilePath (Join-Path $workspace $Executable) -WindowStyle Hidden -PassThru
     if (!$process.WaitForExit(30000)) { throw 'Style designer test timed out.' }
     if ($process.ExitCode -ne 0) { throw "Style designer failed: $($process.ExitCode)" }
+    if ($CancelDialog) {
+        if (Test-Path -LiteralPath (Join-Path $testDirectory 'plan.stationery-style.json')) { throw 'Cancel exported a file.' }
+        Write-Output "PASS native dialog cancellation stays on first page: $testDirectory"
+        return
+    }
     $json = Get-Content -LiteralPath (Join-Path $testDirectory 'plan.stationery-style.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($Existing) {
         $layout = $json.layouts | Where-Object id -eq 'topDemoLayout'
@@ -36,4 +47,7 @@ try {
     if ($process -and !$process.HasExited) { $process.Kill(); $process.WaitForExit() }
     $env:STATIONERYUI_DESIGNER_TEST_OUTPUT = $previousOutput
     $env:STATIONERYUI_DESIGNER_TEST_INPUT = $previousInput
+    $env:STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG = $previousNative
+    $env:STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG = $previousCancel
+    $env:STATIONERYUI_DESIGNER_TEST_DARK = $previousDark
 }

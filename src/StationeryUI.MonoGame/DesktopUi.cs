@@ -30,6 +30,8 @@ public sealed partial class DesktopUi : IDisposable
     private bool wasActive;
     private bool disposed;
     public StationeryTheme Theme { get; set; } = StationeryTheme.Dark;
+    /// <summary>Use the shared framed stationery button renderer instead of underline-style actions.</summary>
+    public bool UseStationeryButtons { get; set; }
     public UiViewport Viewport { get; } = new();
     public FocusManager Focus { get; private set; } = new();
     public bool KeyboardConsumed { get; private set; }
@@ -340,6 +342,22 @@ public sealed partial class DesktopUi : IDisposable
                     sprites.End();
                     continue;
                 }
+                if (e.Node.Kind == "button" && UseStationeryButtons)
+                {
+                    var model = new IconButtonModel(e.Bounds, string.IsNullOrWhiteSpace(e.Label) ? e.Id : e.Label)
+                    { IsEnabled = Focus.IsEnabled(e.Path), IsFocused = focused };
+                    var pointer = Viewport.ToLogical(new(previousMouse.X, previousMouse.Y));
+                    model.UpdatePointer(pointer);
+                    if (Focus.CapturedId == e.Path && previousMouse.LeftButton == ButtonState.Pressed) model.Press(pointer);
+                    StationeryButtonRenderer.Draw(model, Fill, DrawButtonOutline, (bounds, color) =>
+                    {
+                        var x = bounds.X + Math.Max(theme.Padding, (bounds.Width - Measure(e.Label, theme)) / 2);
+                        var y = bounds.Y + Math.Max(0, (bounds.Height - theme.FontSize * 1.5) / 2);
+                        DrawText(e.Label, x, y, theme, color);
+                    }, theme);
+                    sprites.End();
+                    continue;
+                }
                 Fill(e.Bounds, e.Editor is null ? theme.ButtonFill(true, Focus.CapturedId == e.Path, false, hovered) : theme.Surface);
                 var line = focused ? theme.Accent : theme.Border;
                 Fill(new(e.Bounds.X, e.Bounds.Y + e.Bounds.Height - theme.BorderWidth, e.Bounds.Width, theme.BorderWidth), line);
@@ -390,6 +408,15 @@ public sealed partial class DesktopUi : IDisposable
         sprites.Draw(texture, RectangleOf(Viewport.ToWindow(new(x, y, texture.Width, texture.Height))), Convert(color));
     }
     private void Fill(ScreenRectangle rect, ButtonColor color) => sprites.Draw(pixel, RectangleOf(Viewport.ToWindow(rect)), Convert(color));
+    private void DrawButtonOutline(ScreenRectangle bounds, double width, ButtonColor color)
+    {
+        width = Math.Min(width, Math.Min(bounds.Width, bounds.Height) / 2);
+        if (width <= 0) return;
+        Fill(new(bounds.X, bounds.Y, bounds.Width, width), color);
+        Fill(new(bounds.X, bounds.Y + bounds.Height - width, bounds.Width, width), color);
+        Fill(new(bounds.X, bounds.Y, width, bounds.Height), color);
+        Fill(new(bounds.X + bounds.Width - width, bounds.Y, width, bounds.Height), color);
+    }
     private static Rectangle RectangleOf(ScreenRectangle b) => new((int)Math.Round(b.X), (int)Math.Round(b.Y), Math.Max(1, (int)Math.Round(b.Width)), Math.Max(1, (int)Math.Round(b.Height)));
     public static Color Convert(ButtonColor c) => new(c.R, c.G, c.B, c.A);
     private static bool Contains(ScreenRectangle b, ScreenPoint p) => p.X >= b.X && p.Y >= b.Y && p.X < b.X + b.Width && p.Y < b.Y + b.Height;

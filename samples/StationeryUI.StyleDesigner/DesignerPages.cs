@@ -13,7 +13,6 @@ internal sealed partial class DesignerGame
     private Action? pendingPage;
     private DesktopUi? sidebar;
     private DesktopUi.Element? styleTree;
-    private DesktopUi.Element sourcePath = null!;
     private string sourceFile = "";
     private string? treeJson;
     private string? lastValidTreeJson;
@@ -25,7 +24,7 @@ internal sealed partial class DesignerGame
     {
         editingPage = false; sidebarActive = false;
         ui?.Dispose(); sidebar?.Dispose(); sidebar = null;
-        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme };
+        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
         Text("welcomeTitle", new(180, 100, 1240, 64), "1 / 2 — スタイル設計を始める");
         Text("welcomeHelp", new(180, 184, 1240, 96), "新しい設計を作るか、既存のスタイル設定ファイルを読み込むかを選んでください。\n編集結果は別の JSON ファイルへエクスポートします。元のファイルは変更しません。");
         ui.AddButton("new", new(180, 310, 520, 64), hasDraft ? "新規作成（現在のプランを置換）" : "新規作成", () =>
@@ -42,11 +41,11 @@ internal sealed partial class DesignerGame
                 BeginEditing("新しいプランを作成しました。");
             };
         });
-        Text("sourceLabel", new(180, 414, 1240, 42), "既存の *.stationery-style.json のパス（貼り付け可）");
-        sourcePath = ui.AddTextBox("source", new(180, 468, 1240, 52), "読み込むスタイルファイル", sourceFile, 4096);
-        ui.AddButton("open", new(180, 548, 520, 64), "既存ファイルを開いて編集", () => Guard(() =>
+        Text("sourceLabel", new(180, 414, 1240, 82), "下のボタンから Windows のファイル選択ダイアログを開きます。\n既存の *.stationery-style.json を選んでください。");
+        ui.AddButton("open", new(180, 548, 520, 64), "既存のファイルを編集する", () => Guard(() =>
         {
-            var path = sourcePath.Editor!.Text;
+            var path = ChooseStyleFile();
+            if (path is null) { message = "ファイルの選択をキャンセルしました。"; return; }
             var loaded = StyleBlueprint.Open(path);
             sourceFile = path;
             pendingPage = () =>
@@ -93,7 +92,7 @@ internal sealed partial class DesignerGame
             return;
         }
         sidebar?.Dispose();
-        sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme };
+        sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
         sidebar.AddTextBlock(sidebar.Root.AddChild("heading", "textBlock"), new(8, 8, 300, 76), "2 / 2 — スタイルツリー\nmodels / layouts / bindings");
         styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 92, 300, 680), "スタイルの構造", new());
         sidebar.AddTextBlock(sidebar.Root.AddChild("treeHelp", "textBlock"), new(8, 782, 300, 110), "＋／－で開閉。\nlayouts 内の表を選ぶと右側で編集できます。\n他の種類はツリーで確認できます。");
@@ -161,7 +160,6 @@ internal sealed partial class DesignerGame
         keyboard = new();
         if (!editingPage)
         {
-            if (!string.IsNullOrEmpty(smokeInput)) SetText(sourcePath, smokeInput);
             var area = ui.Viewport.ToWindow(new(180, string.IsNullOrEmpty(smokeInput) ? 310 : 548, 520, 64));
             mouse = new((int)area.X + 10, (int)area.Y + 10, 0, frames == 1 ? ButtonState.Pressed : ButtonState.Released,
                 ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
@@ -202,6 +200,13 @@ internal sealed partial class DesignerGame
     }
     private void ValidateDesignerSmoke()
     {
+        if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG") == "1" && !testedNativeDialog)
+            throw new InvalidOperationException("Native file dialog was not observed.");
+        if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") == "1")
+        {
+            if (editingPage) throw new InvalidOperationException("Cancel should stay on the first page.");
+            return;
+        }
         if (!editingPage || styleTree?.Tree?.Roots.Count < 3) throw new InvalidOperationException("Page navigation or style tree failed.");
         if (!string.IsNullOrEmpty(smokeInput))
         {

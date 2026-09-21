@@ -45,6 +45,8 @@ internal sealed partial class DesignerGame : Game
     {
         Window.Title = "文房具 UI — スタイル設計ツール";
         input = new(Window.Handle);
+        if (!string.IsNullOrEmpty(smokeOutput) && Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_DARK") == "1")
+            theme = StationeryTheme.Dark with { FontSize = 16, Padding = 4 };
         BuildWelcome();
     }
     private DesktopUi.Element Text(string id, ScreenRectangle bounds, string text) =>
@@ -66,7 +68,7 @@ internal sealed partial class DesignerGame : Game
     private void BuildUi()
     {
         ui?.Dispose(); tracks.Clear(); cells.Clear(); preview.Clear();
-        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme };
+        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
         Text("title", new(12, 8, 1256, 42), blueprint.IsImported ? $"2 / 2 — 編集中：{blueprint.SelectedLayoutId}（既存モデルと bindings は保持）" : "2 / 2 — 新規スタイル設計（横・縦とも 1～8 セル）");
         ui.AddButton("back", new(1070, 54, 198, 44), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
@@ -201,7 +203,7 @@ internal sealed partial class DesignerGame : Game
         if (!string.IsNullOrEmpty(smokeOutput) && ++frames == 19)
         {
             ValidateDesignerSmoke();
-            blueprint.Export(outputPath);
+            if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") != "1") blueprint.Export(outputPath);
             var data = new Microsoft.Xna.Framework.Color[GraphicsDevice.Viewport.Width * GraphicsDevice.Viewport.Height];
             GraphicsDevice.GetBackBufferData(data);
             using var texture = new Microsoft.Xna.Framework.Graphics.Texture2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
