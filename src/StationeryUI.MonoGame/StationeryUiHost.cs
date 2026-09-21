@@ -36,6 +36,7 @@ public sealed partial class StationeryUiHost : IDisposable
     public FocusManager Focus { get; private set; } = new();
     public bool KeyboardConsumed { get; private set; }
     public bool PointerConsumed { get; private set; }
+    public bool IsComposing => (editing?.Session?.Composition.Text.Length ?? 0) > 0;
     public StationeryNode Root { get; private set; }
 
     public string? HoveredToolHint { get; private set; }

@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 
 var tests = new (string Name, Action Run)[]
 {
+    ("style autosave debounce, exact savepoints, restore, retention and conflicts", StyleSaveSessionTests.Run),
     ("style blueprint exports new validated designs without overwriting files", StyleBlueprintTests.Run),
     ("page layouts reserve inspector, preserve identities and switch on reload", PageLayoutTests.Run),
     ("developer style external overrides and embedded distribution defaults", DeveloperStyleTests.Run),

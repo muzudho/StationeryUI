@@ -22,6 +22,7 @@ internal sealed partial class DesignerGame
 
     private void BuildWelcome()
     {
+        if (!FlushAutoSave()) return;
         editingPage = false; sidebarActive = false;
         ui?.Dispose(); sidebar?.Dispose(); sidebar = null;
         ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
@@ -30,6 +31,8 @@ internal sealed partial class DesignerGame
         {
             pendingPage = () =>
             {
+                if (!FlushAutoSave()) return;
+                saveSession = null; saveError = null; invalidDraft = false;
                 blueprint = new(); selectedRow = selectedColumn = 0;
                 outputPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "my-plan.stationery-style.json");
                 if (!string.IsNullOrEmpty(smokeOutput))
@@ -44,15 +47,7 @@ internal sealed partial class DesignerGame
         {
             var path = ChooseStyleFile();
             if (path is null) { message = "ファイルの選択をキャンセルしました。"; return; }
-            var loaded = StyleBlueprint.Open(path);
-            sourceFile = path;
-            pendingPage = () =>
-            {
-                blueprint = loaded; selectedRow = selectedColumn = 0;
-                var full = System.IO.Path.GetFullPath(path);
-                outputPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(full)!, System.IO.Path.GetFileNameWithoutExtension(full) + ".edited.stationery-style.json");
-                BeginEditing("既存ファイルを読み込みました。左の layouts から編集する表を選べます。モデルと bindings は保持します。");
-            };
+            OpenStyle(path);
         }));
         if (hasDraft) ui.AddButton("resume", new(740, 310, 520, 64), "現在の編集を再開", () => pendingPage = () => BeginEditing("編集を再開しました。"));
     }
@@ -61,7 +56,7 @@ internal sealed partial class DesignerGame
     {
         editingPage = hasDraft = true; pendingShrink = null; sidebarActive = false; rebuild = false;
         message = text; treeJson = null; lastTreeSelection = null;
-        if (!string.IsNullOrEmpty(smokeOutput)) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-style.json");
+        if (!string.IsNullOrEmpty(smokeOutput) && saveSession is null) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-style.json");
         BuildUi();
         var scale = BodyScale;
         ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, 0);
@@ -174,6 +169,7 @@ internal sealed partial class DesignerGame
             return;
         }
         if (PrepareLayoutEditingSmoke(ref mouse)) return;
+        if (PrepareSaveSmoke(ref mouse)) return;
         var editFrame = frames - 3;
         if (!string.IsNullOrEmpty(smokeInput))
         {
@@ -231,6 +227,14 @@ internal sealed partial class DesignerGame
     }
     private void ValidateDesignerSmoke()
     {
+        if (SaveSmoke)
+        {
+            if (restoreDialog is not null || saveSession is null || saveSession.IsDirty || saveError is not null
+                || !File.ReadAllBytes(saveSession.FilePath).SequenceEqual(File.ReadAllBytes(saveSession.FilePath + ".1.bak"))
+                || !File.ReadAllText(saveSession.FilePath + ".2.bak").Contains("2.5rate"))
+                throw new InvalidOperationException("Savepoint restore did not preserve the edited state and restore the source.");
+            return;
+        }
         if (toolHint.Bounds.Height + status.Bounds.Height != 80 || status.Bounds.Y + status.Bounds.Height != GraphicsDevice.Viewport.Height)
             throw new InvalidOperationException("Inspector must reserve exactly 80 viewport pixels.");
         if (ValidateLayoutEditingSmoke()) return;

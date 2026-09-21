@@ -6,6 +6,7 @@ internal sealed partial class DesignerGame
 {
     private StationeryUiHost inspector = null!;
     private StationeryUiHost.Element toolHint = null!;
+    private StationeryUiHost.Element saveLabel = null!, saveBar = null!, saveBarTrack = null!;
     private MouseState inspectorMouse;
     private const int InspectorHeight = 80;
     private double BodyScale => Math.Max(.1, Math.Min(GraphicsDevice.Viewport.Width / 1600.0,
@@ -16,13 +17,16 @@ internal sealed partial class DesignerGame
         inspector = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family));
         toolHint = inspector.AddTextBlock(inspector.Root.AddChild("toolHint", "textBlock"), new(), "");
         status = inspector.AddTextBlock(inspector.Root.AddChild("status", "textBlock"), new(), message);
+        saveLabel = inspector.AddTextBlock(inspector.Root.AddChild("autoSaveStatus", "textBlock"), new(), "");
+        saveBarTrack = inspector.AddTextBlock(inspector.Root.AddChild("autoSaveTrack", "textBlock"), new(), "");
+        saveBar = inspector.AddTextBlock(inspector.Root.AddChild("autoSaveTimer", "textBlock"), new(), "");
     }
 
     private string? DesignerToolHint(StationeryUiHost.Element element) => element.Id switch
     {
         "new" => "新しい設計を始めます。現在のプランは置き換わるため、必要な内容は先にエクスポートしてください。",
         "resume" => "メモリー上に残っているプランの編集を再開します。",
-        "open" or "chooseFile" => "Windows のファイル選択から既存の JSON を開きます。編集結果は別名で出力します。",
+        "open" or "chooseFile" => "JSON を開き、連番の .bak を作成します。変更は最後の入力から1.5秒後に元ファイルへ自動保存します。",
         "back" => "1ページ目へ戻ります。現在のプランは「現在の編集を再開」で続けられます。",
         "columns" => "横のセル数（1～8）を入力し、「表を作る／更新」で反映します。",
         "rows" => "縦のセル数（1～8）を入力し、「表を作る／更新」で反映します。",
@@ -31,7 +35,8 @@ internal sealed partial class DesignerGame
         "kind" => blueprint.IsImported ? "既存モデルの種類は保持します。" : "プレビューで選んだセルの文房具の種類を切り替えます。",
         "label" => blueprint.IsImported ? "このセルに配置されたモデルを表示しています。" : "選択したセルの表示名を入力します。右のプレビューへ反映されます。",
         "output" => "新しい JSON の出力先。末尾は .stationery-style.json にします。既存ファイルは上書きしません。",
-        "export" => "現在の設計を出力先の JSON にエクスポートします。AI へ実装を依頼する設計図として使えます。",
+        "export" => "現在の設計を出力し、そのファイルをオートセーブ先にします。編集中の元ファイルと同じパスなら即時保存します。",
+        "restore" => "バックアップのファイル名と変更日時を確認し、選んだセーブポイントへ戻します。最大20世代を保持します。",
         "chooseFolder" => "新規作成先のフォルダーを Windows のダイアログで選びます。",
         "createFile" => selectedOutputFolder is null ? "先にフォルダーを選択してください。" : "選択フォルダーへ現在の設計を作成します。同名があれば連番にして上書きを避けます。",
         "styleTree" => "＋／－で開閉。水色の枠が操作対象です。layouts 内の panel や表をクリックすると設定を編集できます。",
@@ -55,12 +60,21 @@ internal sealed partial class DesignerGame
         var y = GraphicsDevice.Viewport.Height - height;
         inspector.Theme = theme with { FontSize = 14, Padding = 2 };
         toolHint.Bounds = new(0, y, GraphicsDevice.Viewport.Width, Math.Min(56, height));
-        status.Bounds = new(0, y + Math.Min(56, height), GraphicsDevice.Viewport.Width, Math.Max(0, height - 56));
+        status.Bounds = new(0, y + Math.Min(56, height), GraphicsDevice.Viewport.Width * .5, Math.Max(0, height - 56));
         status.Theme = theme with { FontSize = 12, Padding = 1 };
+        var saveX = GraphicsDevice.Viewport.Width * .5;
+        saveLabel.Bounds = new(saveX, y + Math.Min(56, height), saveX, Math.Max(0, height - 62));
+        saveLabel.Label = SaveState;
+        saveLabel.Theme = status.Theme;
+        saveBarTrack.Bounds = new(saveX, GraphicsDevice.Viewport.Height - 6, saveX, 6);
+        saveBarTrack.Theme = theme with { Surface = theme.Border };
+        saveBar.Bounds = saveBarTrack.Bounds with { Width = saveX * (saveSession?.Progress ?? 0) };
+        saveBar.Theme = theme with { Surface = saveError is not null ? new(210, 65, 65) : invalidDraft ? new(210, 155, 45) : theme.Accent };
         string? hint = null;
         if (inspectorMouse.Y < y)
         {
-            if (layoutDialog is not null) hint = layoutDialog.HoveredToolHint;
+            if (restoreDialog is not null) hint = restoreDialog.HoveredToolHint;
+            else if (layoutDialog is not null) hint = layoutDialog.HoveredToolHint;
             else if (editingPage && livePreview is not null && inspectorMouse.X >= previewWindow.X && inspectorMouse.X < previewWindow.X + previewWindow.Width
                 && inspectorMouse.Y >= previewWindow.Y && inspectorMouse.Y < previewWindow.Y + previewWindow.Height)
                 hint = "配置プレビュー：セルをクリックして編集対象を選びます。プレビュー領域をビューポートとして px と rate を計算します。";

@@ -61,6 +61,7 @@ internal sealed partial class DesignerGame : Game
         };
         Window.Title = "StationeryUI Style Designer";
         Window.AllowUserResizing = true; IsMouseVisible = true;
+        Exiting += (_, args) => { if (layoutDialog is not null || restoreDialog is not null || !FlushAutoSave()) args.Cancel = true; };
     }
     protected override void Initialize()
     {
@@ -172,6 +173,7 @@ internal sealed partial class DesignerGame : Game
     protected override void Update(GameTime gameTime)
     {
         var scale = BodyScale;
+        if (restoreDialog is not null) { UpdateRestoreDialog(gameTime); base.Update(gameTime); return; }
         if (layoutDialog is not null) { UpdateLayoutDialog(gameTime, scale); base.Update(gameTime); return; }
         ui.Viewport.Scale = scale;
         ui.Viewport.Offset = new(editingPage ? 320 * scale : 0, 0);
@@ -194,20 +196,23 @@ internal sealed partial class DesignerGame : Game
         if (!blueprint.CanEditGrid)
         {
             Capture();
-            try { var json = blueprint.BuildJson(); RefreshTree(json); UpdateLivePreview(json, mouse); status.Label = message; }
-            catch (JsonException ex) { status.Label = "入力を確認してください：" + ex.Message; }
+            try { var json = blueprint.BuildJson(); AutoSave(json, gameTime); RefreshTree(json); UpdateLivePreview(json, mouse); status.Label = message; }
+            catch (JsonException ex) { invalidDraft = true; saveSession?.RestartTimer(); status.Label = "入力を確認してください：" + ex.Message; }
             base.Update(gameTime); return;
         }
         Capture();
         try
         {
             var json = blueprint.BuildJson();
+            AutoSave(json, gameTime);
             RefreshTree(json);
             UpdateLivePreview(json, mouse);
             status.Label = message;
         }
         catch (JsonException ex)
         {
+            invalidDraft = true;
+            saveSession?.RestartTimer();
             ResetLivePreview();
             status.Label = "入力を確認してください：" + ex.Message;
         }
@@ -218,9 +223,11 @@ internal sealed partial class DesignerGame : Game
         GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background)); ui.Draw();
         if (editingPage) { sidebar?.Draw(); DrawLivePreview(); }
         layoutDialog?.Draw();
+        restoreDialog?.Draw();
         DrawInspector();
         CaptureWelcomeSmoke();
-        if (!string.IsNullOrEmpty(smokeOutput) && ++frames == 22)
+        SavePickerScreenshot();
+        if (!string.IsNullOrEmpty(smokeOutput) && ++frames == (SaveSmoke ? 150 : 22))
         {
             var data = new Microsoft.Xna.Framework.Color[GraphicsDevice.Viewport.Width * GraphicsDevice.Viewport.Height];
             GraphicsDevice.GetBackBufferData(data);
@@ -228,11 +235,11 @@ internal sealed partial class DesignerGame : Game
             texture.SetData(data);
             using var file = File.Create(Path.Combine(smokeOutput, "designer.png")); texture.SaveAsPng(file, texture.Width, texture.Height);
             ValidateDesignerSmoke();
-            if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") != "1") blueprint.Export(outputPath);
+            if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") != "1") blueprint.Export(Path.Combine(smokeOutput, "plan.stationery-style.json"));
             Exit();
         }
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }
