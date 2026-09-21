@@ -42,6 +42,17 @@
 - Debug／Release ビルド成功（警告・エラー 0）。両方を起動して `GetWindowTextW` の結果が `StationeryUI — ホバーで EDIT / POPUP、クリックで編集` と完全一致することを確認。
 - 検証スクリプトと取得したタイトルは `artifacts/title-check/` に保存。ウィンドウは検証後に終了。
 
+## 2026-09-21 F12 開発者ウィンドウ
+
+- Release ソリューション／Debug デモのビルド成功（警告・エラー 0）。コア自動検査 19/19 成功。
+- 文房具 Id の許可文字、同一親の重複拒否、別ページの同名 Id、大小文字を区別する完全パスの解決と入力フォーカスの分離を検証。
+- Release デモに Win32 キーメッセージで F12 を送り、開発者ウィンドウの開閉・同じウィンドウの再表示・開いたままのデモ終了を確認。
+- Windows UI Automation で 2 つの `nameField` をそれぞれ選択し、詳細欄に `/demo/mainPage/nameField` と `/demo/editDialog/nameField` が表示されることを確認。
+- 再実行用スクリプトは `tests/StationeryUI.Windows.Tests/Test-DeveloperWindow.ps1`。Release デモをビルドしてから、Windows の対話セッションで実行する。
+- ツリーの日本語表示、非表示のダイアログ、完全パス、位置、コピー用ボタンを `artifacts/developer-window/inspector.png` で目視確認。
+- フォーカスを完全パスへ移行後、通常ホバー・非対称パディング・ダイアログを開く／保存／キャンセルの 5 描画スモークが成功。
+- 実 IME の手動入力、クリップボードの実コピー、他 OS での UI はこの検証の対象外。
+
 ## 手動確認の手順
 
 ### スタイル読み込み設定の分離（2026-09-21 追補）

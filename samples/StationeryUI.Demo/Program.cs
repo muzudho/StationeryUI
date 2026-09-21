@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 using StationeryUI.Windows;
 using StationeryUI.Styling;
 using System.Reflection;
+using StationeryUI.Inspection;
 
 internal static class Program
 {
@@ -35,6 +36,10 @@ internal sealed class Demo : Game
     private bool previousReloadKey;
     private bool hasContentArea;
     private string? reportedStyleError;
+    private readonly StationeryNode stationeryRoot = new("demo");
+    private readonly StationeryDeveloperWindow developerWindow = new();
+    private bool previousDeveloperKey;
+    private double inspectionElapsed;
     public Demo()
     {
         manager = new(this) { PreferredBackBufferWidth = 1000, PreferredBackBufferHeight = 780 };
@@ -67,12 +72,12 @@ internal sealed class Demo : Game
             cache.EndFrame();
         }
         input = new(Window.Handle);
-        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family));
+        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), stationeryRoot.AddChild("mainPage", "page"));
         badges = new(GraphicsDevice);
-        popupUi = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family));
-        popupText = popupUi.AddTextBox("popup-text", new(32, 70, 736, 64), "ダイアログのテキスト");
-        popupUi.AddButton("cancel", new(32, 180, 320, 64), "キャンセル", () => popupOpen = false);
-        popupUi.AddButton("save", new(380, 180, 388, 64), "保存して閉じる", () =>
+        popupUi = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), stationeryRoot.AddChild("editDialog", "dialog"));
+        popupText = popupUi.AddTextBox("nameField", new(32, 70, 736, 64), "ダイアログのテキスト");
+        popupUi.AddButton("cancelButton", new(32, 180, 320, 64), "キャンセル", () => popupOpen = false);
+        popupUi.AddButton("saveButton", new(380, 180, 388, 64), "保存して閉じる", () =>
         {
             popupValue = popupText.Editor!.Text;
             popupLink!.Label = popupValue;
@@ -82,16 +87,16 @@ internal sealed class Demo : Game
         if (double.TryParse(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_SCALE"),
             System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var smokeScale)
             && double.IsFinite(smokeScale) && smokeScale > 0) requestedScale = smokeScale;
-        name = ui.AddTextBox("name", new(32, 40, 700, 64), "名前", "文房具UIへようこそ");
-        memo = ui.AddTextBox("memo", new(32, 130, 700, 64), "メモ", "日本語・結合文字 e\u0301 を編集できます");
-        var themeButton = ui.AddButton("theme", new(32, 230, 300, 64), "明るい／暗いテーマ", () => ui.Theme = ui.Theme == StationeryTheme.Dark ? StationeryTheme.Light : StationeryTheme.Dark);
-        var scaleButton = ui.AddButton("scale", new(360, 230, 270, 64), "拡大率を変える", () => requestedScale = requestedScale >= 1.5 ? 1 : requestedScale + .25);
-        var acceptButton = ui.AddButton("accept", new(32, 330, 600, 64), "入力内容をタイトルに反映", () => Window.Title = name.Editor!.Text);
-        popupLink = ui.AddButton("popup", new(32, 420, 700, 64), popupValue, () =>
+        name = ui.AddTextBox("nameField", new(32, 40, 700, 64), "名前", "文房具UIへようこそ");
+        memo = ui.AddTextBox("memoField", new(32, 130, 700, 64), "メモ", "日本語・結合文字 e\u0301 を編集できます");
+        var themeButton = ui.AddButton("themeButton", new(32, 230, 300, 64), "明るい／暗いテーマ", () => ui.Theme = ui.Theme == StationeryTheme.Dark ? StationeryTheme.Light : StationeryTheme.Dark);
+        var scaleButton = ui.AddButton("scaleButton", new(360, 230, 270, 64), "拡大率を変える", () => requestedScale = requestedScale >= 1.5 ? 1 : requestedScale + .25);
+        var acceptButton = ui.AddButton("applyTitleButton", new(32, 330, 600, 64), "入力内容をタイトルに反映", () => Window.Title = name.Editor!.Text);
+        popupLink = ui.AddButton("openDialogButton", new(32, 420, 700, 64), popupValue, () =>
         {
             popupText.Editor!.SelectAll();
             popupText.Editor.Insert(popupValue);
-            popupUi.Focus.Focus("popup-text");
+            popupUi.Focus.Focus(popupText.Path);
             popupOpen = true;
         });
         foreach (var element in new[] { name, memo, themeButton, scaleButton, acceptButton, popupLink })
@@ -129,6 +134,15 @@ internal sealed class Demo : Game
             Window.Title = reportedStyleError is null ? "StationeryUI — スタイル読み込み成功" : "StationeryUI — スタイル読み込み失敗（F5 で再試行）";
         }
         ApplyStyles();
+        var developerKey = keyboard.IsKeyDown(Keys.F12);
+        if (IsActive && developerKey && !previousDeveloperKey) developerWindow.Show(InspectStationery());
+        previousDeveloperKey = developerKey;
+        inspectionElapsed += gameTime.ElapsedGameTime.TotalSeconds;
+        if (developerWindow.IsOpen && inspectionElapsed >= .25)
+        {
+            developerWindow.Update(InspectStationery());
+            inspectionElapsed = 0;
+        }
         var smokeCase = Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_CASE");
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
         updateFrames++;
@@ -216,5 +230,23 @@ internal sealed class Demo : Game
         }
         base.Draw(gameTime);
     }
+    private IReadOnlyList<StationeryInspectionEntry> InspectStationery()
+    {
+        var entries = new List<StationeryInspectionEntry>
+        {
+            new(stationeryRoot.Id, stationeryRoot.Path, null, stationeryRoot.Kind, "デモ画面", true,
+                new ScreenRectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height))
+        };
+        if (ui is not null) entries.AddRange(ui.Inspect(hasContentArea));
+        if (popupUi is not null) entries.AddRange(popupUi.Inspect(hasContentArea && popupOpen));
+        return entries;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) developerWindow.Dispose();
+        base.Dispose(disposing);
+    }
+
     protected override void UnloadContent() { popupUi?.Dispose(); badges?.Dispose(); ui?.Dispose(); input?.Dispose(); base.UnloadContent(); }
 }

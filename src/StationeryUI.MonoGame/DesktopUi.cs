@@ -10,6 +10,7 @@ using StationeryUI.Input;
 using StationeryUI.Platform;
 using StationeryUI.Text;
 using StationeryUI.Theming;
+using StationeryUI.Inspection;
 
 /// <summary>A single-window desktop UI host. Call Update before game input and Draw after the game.</summary>
 public sealed class DesktopUi : IDisposable
@@ -33,11 +34,14 @@ public sealed class DesktopUi : IDisposable
     public FocusManager Focus { get; } = new();
     public bool KeyboardConsumed { get; private set; }
     public bool PointerConsumed { get; private set; }
+    public StationeryNode Root { get; }
 
     public sealed class Element
     {
-        internal Element(string id, ScreenRectangle bounds, string label) { Id = id; Bounds = bounds; Label = label; }
-        public string Id { get; }
+        internal Element(StationeryNode node, ScreenRectangle bounds, string label) { Node = node; Bounds = bounds; Label = label; }
+        public StationeryNode Node { get; }
+        public string Id => Node.Id;
+        public string Path => Node.Path;
         public ScreenRectangle Bounds { get; set; }
         public string Label { get; set; }
         public string AccessibleName => Label;
@@ -47,29 +51,55 @@ public sealed class DesktopUi : IDisposable
         internal Action? Click;
         internal double Scroll;
     }
-    public DesktopUi(GraphicsDevice graphics, ITextInputService input, Func<string, ITextRasterizer> rasterizerFactory)
+    public DesktopUi(GraphicsDevice graphics, ITextInputService input, Func<string, ITextRasterizer> rasterizerFactory,
+        StationeryNode? root = null)
     {
         this.graphics = graphics;
         this.input = input;
         this.rasterizerFactory = rasterizerFactory;
+        Root = root ?? new StationeryNode("viewport");
         sprites = new(graphics);
         pixel = new(graphics, 1, 1);
         pixel.SetData(new[] { Color.White });
     }
-    public Element AddTextBox(string id, ScreenRectangle bounds, string accessibleName, string text = "", int maximumLength = 1024)
+    public Element AddTextBox(string id, ScreenRectangle bounds, string accessibleName, string text = "", int maximumLength = 1024,
+        StationeryNode? parent = null)
     {
-        var element = new Element(id, bounds, accessibleName) { Editor = new(text, maximumLength) };
+        var element = new Element(AddNode(id, "textBox", parent), bounds, accessibleName) { Editor = new(text, maximumLength) };
         element.Session = new(input, element.Editor);
-        Focus.Register(id);
+        Focus.Register(element.Path);
         elements.Add(element);
         return element;
     }
-    public Element AddButton(string id, ScreenRectangle bounds, string label, Action clicked)
+    public Element AddButton(string id, ScreenRectangle bounds, string label, Action clicked, StationeryNode? parent = null)
     {
-        var element = new Element(id, bounds, label) { Click = clicked };
-        Focus.Register(id);
+        var element = new Element(AddNode(id, "button", parent), bounds, label) { Click = clicked };
+        Focus.Register(element.Path);
         elements.Add(element);
         return element;
+    }
+    private StationeryNode AddNode(string id, string kind, StationeryNode? parent)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        parent ??= Root;
+        if (!parent.IsWithin(Root)) throw new ArgumentException("Parent must belong to this UI's subtree.", nameof(parent));
+        return parent.AddChild(id, kind);
+    }
+
+    /// <summary>Take a snapshot on the game thread; inspectors never read mutable UI elements directly.</summary>
+    public IReadOnlyList<StationeryInspectionEntry> Inspect(bool visible = true)
+    {
+        var result = new List<StationeryInspectionEntry>();
+        var byNode = elements.ToDictionary(element => element.Node);
+        void Visit(StationeryNode node)
+        {
+            byNode.TryGetValue(node, out var element);
+            result.Add(new(node.Id, node.Path, node.Parent?.Path, node.Kind, element?.AccessibleName ?? node.Id,
+                visible, element is null ? null : Viewport.ToWindow(element.Bounds)));
+            foreach (var child in node.Children) Visit(child);
+        }
+        Visit(Root);
+        return result;
     }
     public void Update(GameTime time, bool active, KeyboardState keyboard, MouseState mouse)
     {
@@ -100,12 +130,12 @@ public sealed class DesktopUi : IDisposable
         var pressedMouse = mouse.LeftButton == ButtonState.Pressed && previousMouse.LeftButton == ButtonState.Released;
         if (pressedMouse && hit is not null)
         {
-            Focus.Focus(hit.Id);
-            Focus.CapturePointer(hit.Id, 0);
+            Focus.Focus(hit.Path);
+            Focus.CapturePointer(hit.Path, 0);
         }
         else if (pressedMouse && !Focus.HasModal) Focus.ClearFocus();
         if (Pressed(Keys.Tab) && (editing?.Session?.Composition.Text.Length ?? 0) == 0) Focus.Move(shift);
-        var next = elements.FirstOrDefault(e => e.Id == Focus.FocusedId && e.Editor is not null);
+        var next = elements.FirstOrDefault(e => e.Path == Focus.FocusedId && e.Editor is not null);
         if (next != editing)
         {
             editing?.Session?.Blur(); editing = next; editing?.Session?.Focus();
@@ -117,7 +147,7 @@ public sealed class DesktopUi : IDisposable
             if (session.Composition.Text.Length == 0)
             {
                 if (pressedMouse && hit == field) editor.MoveTo(CaretAt(field, pointer.X), shift);
-                else if (Focus.CapturedId == field.Id && mouse.LeftButton == ButtonState.Pressed) editor.MoveTo(CaretAt(field, pointer.X), true);
+                else if (Focus.CapturedId == field.Path && mouse.LeftButton == ButtonState.Pressed) editor.MoveTo(CaretAt(field, pointer.X), true);
                 if (Repeated(Keys.Left)) editor.Move(-1, shift);
                 if (Repeated(Keys.Right)) editor.Move(1, shift);
                 if (Pressed(Keys.Home)) editor.MoveTo(0, shift);
@@ -149,10 +179,10 @@ public sealed class DesktopUi : IDisposable
         {
             var captured = Focus.CapturedId;
             Focus.ReleasePointer();
-            if (hit?.Id == captured) hit?.Click?.Invoke();
+            if (hit?.Path == captured) hit?.Click?.Invoke();
         }
         if ((Pressed(Keys.Enter) || Pressed(Keys.Space)) && editing is null)
-            elements.FirstOrDefault(e => e.Id == Focus.FocusedId)?.Click?.Invoke();
+            elements.FirstOrDefault(e => e.Path == Focus.FocusedId)?.Click?.Invoke();
         KeyboardConsumed = Focus.ConsumesKeyboard;
         previousKeyboard = keyboard; previousMouse = mouse;
     }
@@ -195,9 +225,9 @@ public sealed class DesktopUi : IDisposable
                 graphics.ScissorRectangle = Rectangle.Intersect(bounds, graphics.Viewport.Bounds);
                 if (graphics.ScissorRectangle.Width <= 0 || graphics.ScissorRectangle.Height <= 0) continue;
                 sprites.Begin(blendState: BlendState.NonPremultiplied, samplerState: SamplerState.LinearClamp, rasterizerState: clipState);
-                var focused = e.Id == Focus.FocusedId;
+                var focused = e.Path == Focus.FocusedId;
                 var hovered = Contains(e.Bounds, Viewport.ToLogical(new(previousMouse.X, previousMouse.Y)));
-                Fill(e.Bounds, e.Editor is null ? theme.ButtonFill(true, Focus.CapturedId == e.Id, false, hovered) : theme.Surface);
+                Fill(e.Bounds, e.Editor is null ? theme.ButtonFill(true, Focus.CapturedId == e.Path, false, hovered) : theme.Surface);
                 var line = focused ? theme.Accent : theme.Border;
                 Fill(new(e.Bounds.X, e.Bounds.Y + e.Bounds.Height - theme.BorderWidth, e.Bounds.Width, theme.BorderWidth), line);
                 if (e.Editor is { } editor)

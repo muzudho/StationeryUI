@@ -54,11 +54,11 @@ internal sealed class ActionBadgeOverlay : IDisposable
         var bounds = ui.Viewport.ToWindow(element.Bounds);
         var hovered = active && pointer.X >= bounds.X && pointer.X < bounds.X + bounds.Width
             && pointer.Y >= bounds.Y && pointer.Y < bounds.Y + bounds.Height;
-        if (!badges.TryGetValue(element.Id, out var badge))
-            badges[element.Id] = badge = ActionBadgeComponent.Create(label, Rectangle.Empty);
+        if (!badges.TryGetValue(element.Path, out var badge))
+            badges[element.Path] = badge = ActionBadgeComponent.Create(label, Rectangle.Empty);
         var logical = element.Bounds;
         badge.SetAnchorBounds(new((int)logical.X, (int)logical.Y, (int)logical.Width, (int)logical.Height));
-        if (hovered && (element.Editor is null || ui.Focus.FocusedId != element.Id)) badge.Show();
+        if (hovered && (element.Editor is null || ui.Focus.FocusedId != element.Path)) badge.Show();
         else badge.Hide();
         // DesktopUi と同じ倍率・オフセットで描き、バッジも拡大率に追従させる。
         canvas.SpriteBatch.Begin(samplerState: SamplerState.LinearClamp,

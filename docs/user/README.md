@@ -67,6 +67,8 @@ dotnet run --project samples/StationeryUI.Demo -c Release --no-build
 
 入力欄へ日本語を入力できます。Tab/Shift+Tabで移動、Ctrl+A/C/X/V/Z/Yで編集、ボタンで明暗テーマと拡大率を変更できます。ウィンドウのサイズを変えると入力欄が追従します。
 
+**F12** で [開発者ウィンドウ](developer-window.md) を開き、文房具 Id と階層パスを確認・コピーできます。
+
 - 上の２つの入力欄にマウスを合わせると、右端に角丸の `EDIT` バッジが出ます。クリックするとその場で編集でき、編集中の欄のバッジは隠れます。
 - 下の「ダイアログで編集するテキスト」にマウスを合わせると `POPUP` バッジが出ます。クリックして開いたダイアログでは、日本語入力後に「保存して閉じる」で反映、「キャンセル」で変更を破棄できます。Tabで選び、Enter/Spaceでも開けます。
 - `POPUP` は任意のバッジ名を指定するデモです。元のきふわらべでは、数値編集ダイアログを開く項目にも `EDIT` を使用しています。
@@ -92,7 +94,7 @@ protected override void LoadContent()
     var name = ui.AddTextBox("name", new(24, 24, 600, 64), "名前", "こんにちは");
     ui.AddButton("apply", new(24, 120, 320, 64), "名前を反映",
         () => Window.Title = name.Editor!.Text);
-    ui.Focus.Focus("name");
+    ui.Focus.Focus(name.Path);
 }
 
 protected override void Update(GameTime gameTime)
