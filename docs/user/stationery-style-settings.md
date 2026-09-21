@@ -183,6 +183,22 @@ CSS の float や Grid の互換実装ではなく、この JSON で指定した
 
 ## panel のパディング
 
+panel には `margin` と `border` も指定できる。いずれも `padding` と同じ四辺のオブジェクト形式で、非負の px 文字列を使う。margin / border の省略した辺は 0px。
+
+```json
+{
+    "id": "contentPanel",
+    "type": "panel",
+    "margin": { "top": "10px", "right": "10px", "bottom": "10px", "left": "10px" },
+    "padding": { "top": "8px", "right": "8px", "bottom": "8px", "left": "8px" },
+    "border": { "top": "2px", "right": "2px", "bottom": "2px", "left": "2px" }
+}
+```
+
+割り当て領域から margin を引いたものがパネルの外枠 `Bounds`、そこから padding を引いたものが `ContentBounds`。`border` は **全体のサイズ計算に含めない**。外枠の外側へ広がる描画領域を `BorderBounds` に返し、子の配置やグリッドのサイズを変えない。余白が足りない場合、枠は隣の領域へ重なる可能性がある。ウィンドウ外は描画時に切り取る。
+
+例えば幅 100px、左右 margin が各 10px、左右 padding が各 8px なら外枠は 80px、内容は 64px。左右 border を各 2px にしても外枠と内容の幅は変わらず、枠の描画幅だけが 84px になる。
+
 padding の四辺を "0px"、"8px"、"12.5px" のような非負の px 文字列で指定する。
 省略した辺は 8px。数値だけの 8、負数、rate、%、em、auto は未対応。
 panel のパディングは子を配置する領域を狭める設定で、各コントロール内部の文字余白とは別。
@@ -237,7 +253,7 @@ var nameBounds = arranged.Bounds["/demo/topDemoPage/nameField"];
 var innerBounds = arranged.ContentBounds["/demo"];
 ```
 
-Bounds はモデルごとの外枠、ContentBounds は panel のパディングを差し引いた内側で、いずれも完全パスをキーとする。
+Bounds は margin を差し引いたモデルごとの外枠、ContentBounds はさらに panel のパディングを差し引いた内側。BorderBounds は panel の border が外へ広がる描画領域。いずれも完全パスをキーとする。
 結果はウィンドウのピクセル座標。StationeryUiHost.Viewport に倍率・オフセットを設定している場合は、論理座標へ変換してから Element.Bounds に渡す。
 
 Current.Models[0].CreateTree() でノードを作り、StationeryUiHost.AddTextBox / AddButton のノード指定版で結び付ける。

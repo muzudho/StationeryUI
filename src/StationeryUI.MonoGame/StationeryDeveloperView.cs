@@ -74,6 +74,7 @@ public sealed class StationeryDeveloperView : IDisposable
     public void Update(GameTime time, bool active, KeyboardState keyboard, MouseState mouse, int width, int height)
     {
         var layout = StationeryLayoutEngine.Arrange(Style.Settings, width, height);
+        latestLayout = layout;
         header.Bounds = layout.ContentBounds[header.Path];
         split.Bounds = layout.ContentBounds[split.Path];
         copy.Bounds = layout.ContentBounds[copy.Path];
@@ -83,6 +84,11 @@ public sealed class StationeryDeveloperView : IDisposable
         if (before != Model.SelectedPath) { details.Scroll = 0; copy.Label = "パスをコピー"; }
         details.Label = Model.Details;
     }
-    public void Draw() => ui.Draw();
+    private StationeryLayoutResult? latestLayout;
+    public void Draw()
+    {
+        ui.Draw();
+        if (latestLayout is not null) ui.DrawPanelBorders(latestLayout);
+    }
     public void Dispose() => ui.Dispose();
 }

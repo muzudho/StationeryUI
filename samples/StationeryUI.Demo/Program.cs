@@ -126,6 +126,15 @@ internal sealed partial class Demo : Game
         // 起動時は未編集にして、名前・メモのホバーバッジを試せるようにする。
     }
 
+    private StationeryLayoutResult? latestLayout;
+    private void DrawPanelBorders(StationeryUiHost? host)
+    {
+        if (host is null || latestLayout is null) return;
+        var root = modelBinding.Root.Path;
+        var page = root + "/" + activePage;
+        host.DrawPanelBorders(latestLayout, path => path == root || path == page || path.StartsWith(page + "/", StringComparison.Ordinal));
+    }
+
     private void ApplyStyles()
     {
         if (!ReferenceEquals(appliedStyle, styles.Current))
@@ -141,6 +150,7 @@ internal sealed partial class Demo : Game
             appliedStyle = styles.Current;
         }
         var arranged = StationeryLayoutEngine.Arrange(styles.Current, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        latestLayout = arranged;
         var content = arranged.ContentBounds[modelBinding.Root.Path];
         hasContentArea = content.Width >= 1 && content.Height >= 1;
         if (!hasContentArea) return;
@@ -277,16 +287,16 @@ internal sealed partial class Demo : Game
     {
         GraphicsDevice.Clear(StationeryUiHost.Convert(ui?.Theme.Background ?? StationeryTheme.Dark.Background));
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
-        if (hasContentArea && activePage == "splitPaneDemoPage") splitUi?.Draw();
+        if (hasContentArea && activePage == "splitPaneDemoPage") { splitUi?.Draw(); DrawPanelBorders(splitUi); }
         else if (hasContentArea && popupOpen)
         {
-            ui?.Draw();
+            ui?.Draw(); DrawPanelBorders(ui);
             badges?.DrawDialogBackground(popupUi!);
             popupUi?.Draw();
         }
         else if (hasContentArea)
         {
-            ui?.Draw();
+            ui?.Draw(); DrawPanelBorders(ui);
             if (ui is not null && badges is not null)
             {
                 badges.Draw(ui, name!, "EDIT", pointer, IsActive || smoke);

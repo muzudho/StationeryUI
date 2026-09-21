@@ -8,6 +8,19 @@ public sealed class TreeView
     private readonly List<TreeItem> roots = [];
     public IReadOnlyList<TreeItem> Roots { get; }
     public TreeItem? SelectedItem { get; private set; }
+    public TreeItem? TargetItem { get; private set; }
+    public bool SelectOnInteraction { get; set; } = true;
+    public void ClearSelection() => SelectedItem = null;
+    public void ClearTarget() => TargetItem = null;
+
+    public void SetTarget(TreeItem item)
+    {
+        RequireOwned(item);
+        for (var parent = item.Parent; parent is not null; parent = parent.Parent) parent.IsExpanded = true;
+        TargetItem = item;
+        if (SelectOnInteraction) SelectedItem = item;
+    }
+
     public TreeView() => Roots = roots.AsReadOnly();
 
     public TreeItem AddNode(string id, string label, TreeItem? parent = null, bool expanded = true)
@@ -47,8 +60,13 @@ public sealed class TreeView
         if (item.Children.Count == 0) return;
         item.IsExpanded = expanded;
         if (!expanded)
-            for (var current = SelectedItem?.Parent; current is not null; current = current.Parent)
-                if (current == item) { SelectedItem = item; break; }
+        {
+            for (var current = TargetItem?.Parent; current is not null; current = current.Parent)
+                if (current == item) { TargetItem = item; break; }
+            if (SelectOnInteraction)
+                for (var current = SelectedItem?.Parent; current is not null; current = current.Parent)
+                    if (current == item) { SelectedItem = item; break; }
+        }
     }
 
     public void Toggle(TreeItem item) => SetExpanded(item, !item.IsExpanded);
@@ -57,22 +75,22 @@ public sealed class TreeView
     {
         var rows = VisibleRows();
         if (rows.Count == 0) return;
-        var index = rows.ToList().FindIndex(row => row.Item == SelectedItem);
-        Select(rows[index < 0 ? 0 : (int)Math.Clamp((long)index + delta, 0, rows.Count - 1)].Item);
+        var index = rows.ToList().FindIndex(row => row.Item == (TargetItem ?? SelectedItem));
+        SetTarget(rows[index < 0 ? 0 : (int)Math.Clamp((long)index + delta, 0, rows.Count - 1)].Item);
     }
 
     public void Left()
     {
-        if (SelectedItem is not { } item) { Move(0); return; }
+        if ((TargetItem ?? SelectedItem) is not { } item) { Move(0); return; }
         if (item.IsExpanded && item.Children.Count > 0) SetExpanded(item, false);
-        else if (item.Parent is { } parent) Select(parent);
+        else if (item.Parent is { } parent) SetTarget(parent);
     }
 
     public void Right()
     {
-        if (SelectedItem is not { } item) { Move(0); return; }
+        if ((TargetItem ?? SelectedItem) is not { } item) { Move(0); return; }
         if (!item.IsExpanded) SetExpanded(item, true);
-        else if (item.Children.Count > 0) Select(item.Children[0]);
+        else if (item.Children.Count > 0) SetTarget(item.Children[0]);
     }
 
     private void RequireOwned(TreeItem item)

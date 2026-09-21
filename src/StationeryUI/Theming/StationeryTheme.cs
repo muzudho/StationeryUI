@@ -25,6 +25,7 @@ public sealed record StationeryTheme
     public ButtonColor Disabled { get; init; } = new(24, 27, 31);
     public ButtonColor DisabledText { get; init; } = new(91, 100, 106);
     public ButtonColor Selection { get; init; } = new(50, 108, 139, 210);
+    public ButtonColor TreeTarget { get; init; } = new(80, 195, 245);
     public ButtonColor Composition { get; init; } = new(255, 225, 128);
     public ButtonColor Shadow { get; init; } = new(0, 0, 0, 95);
     public string FontFamily { get; init; } = "Meiryo";

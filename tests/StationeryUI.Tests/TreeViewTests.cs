@@ -33,6 +33,19 @@ internal static class TreeViewTests
         Reject(() => new TreeView().Select(leaf));
         Reject(() => new TreeView().AddNode("foreign", "invalid", root));
         new TreeView().Move(1);
+        var independent = new TreeView { SelectOnInteraction = false };
+        var a = independent.AddNode("a", "selected");
+        var b = independent.AddNode("b", "target");
+        var child = independent.AddNode("child", "child", b);
+        independent.Select(a); independent.SetTarget(child);
+        Check(independent.SelectedItem == a && independent.TargetItem == child, "selection and target are independent");
+        independent.SetExpanded(b, false);
+        Check(independent.SelectedItem == a && independent.TargetItem == b, "collapse moves only target");
+        independent.Move(-1);
+        Check(independent.SelectedItem == a && independent.TargetItem == a, "keyboard moves target independently");
+        independent.ClearSelection(); independent.SetTarget(b);
+        Check(independent.SelectedItem is null && independent.TargetItem == b, "target-only tree");
+        Reject(() => independent.SetTarget(leaf));
     }
 
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }

@@ -35,7 +35,8 @@ public readonly record struct LayoutTrack(double Value, bool IsRate);
 
 /// <summary>A reusable layout definition. It has no reference to model identities.</summary>
 public sealed record StationeryLayoutNode(string Id, string Type, ViewportPadding Padding,
-    IReadOnlyList<LayoutTrack> Rows, IReadOnlyList<LayoutTrack> Columns, SplitPaneOptions? Split = null, double InspectorHeight = 0);
+    IReadOnlyList<LayoutTrack> Rows, IReadOnlyList<LayoutTrack> Columns, SplitPaneOptions? Split = null, double InspectorHeight = 0,
+    ViewportPadding Margin = default, ViewportPadding Border = default);
 public sealed record StationeryCellBinding(string ModelPath, int Row, int Column);
 /// <summary>References are resolved to canonical model paths when a complete settings snapshot is parsed.</summary>
 public sealed record StationeryLayoutBinding(string Layout, string ModelPath, IReadOnlyList<StationeryCellBinding> Children,
@@ -88,6 +89,17 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 item.TryGetProperty("model", out _) || item.TryGetProperty("parentModel", out _))
                 throw new JsonException($"{path}: model references and placement belong in bindings.");
             var padding = default(ViewportPadding);
+            var margin = default(ViewportPadding);
+            var border = default(ViewportPadding);
+            ViewportPadding ReadEdges(string name)
+            {
+                if (!item.TryGetProperty(name, out var edges)) return default;
+                RequireObject(edges, path + "." + name);
+                double Side(string side) => edges.TryGetProperty(side, out var v) ? ReadLength(v, path + "." + name + "." + side, false).Value : 0;
+                return new(Side("top"), Side("right"), Side("bottom"), Side("left"));
+            }
+            if (type != "panel" && (item.TryGetProperty("margin", out _) || item.TryGetProperty("border", out _)))
+                throw new JsonException($"{path}: margin and border require a panel layout.");
             SplitPaneOptions? split = null;
             double inspectorHeight = 0;
             IReadOnlyList<LayoutTrack> rows = Array.Empty<LayoutTrack>(), columns = Array.Empty<LayoutTrack>();
@@ -101,6 +113,8 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             }
             else if (type == "panel")
             {
+                margin = ReadEdges("margin");
+                border = ReadEdges("border");
                 if (item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
                     throw new JsonException($"{path}: track definitions require floating-layout.");
                 padding = new(8, 8, 8, 8);
@@ -131,7 +145,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 rows = ReadTracks(item, "row-definitions", path);
                 columns = ReadTracks(item, "column-definitions", path);
             }
-            layouts.Add(new(id, type, padding, rows, columns, split, inspectorHeight));
+            layouts.Add(new(id, type, padding, rows, columns, split, inspectorHeight, margin, border));
         }
         var bindings = new List<StationeryLayoutBinding>();
         var panels = new HashSet<string>(StringComparer.Ordinal);

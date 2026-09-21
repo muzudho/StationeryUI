@@ -13,7 +13,11 @@ public sealed class StyleBlueprint
     private JsonObject? imported;
     public bool IsImported => imported is not null;
     public string? SelectedLayoutId { get; private set; }
-    public bool CanEditGrid => !IsImported || SelectedLayoutId is not null;
+    public string? SelectedLayoutType => !IsImported ? "floating-layout" : (string?)imported!["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == SelectedLayoutId)?["type"];
+    public bool CanEditPanel => SelectedLayoutType == "panel";
+    public bool CanEditGrid => !IsImported || SelectedLayoutType == "floating-layout";
+    public Dictionary<string, Track> PanelEdges { get; } = [];
+    private readonly Dictionary<string, string> originalPanelNumbers = [];
     public IReadOnlyList<string> EditableLayouts => imported?["layouts"]!.AsArray()
         .Where(l => (string?)l!["type"] == "floating-layout" && l["row-definitions"]!.AsArray().Count <= 8 && l["column-definitions"]!.AsArray().Count <= 8)
         .Select(l => (string)l!["id"]!).ToArray() ?? ["mainGrid"];
@@ -24,13 +28,29 @@ public sealed class StyleBlueprint
         StationeryStyleSettings.Parse(json);
         var plan = new StyleBlueprint { imported = JsonNode.Parse(json)!.AsObject() };
         if (plan.EditableLayouts.Count > 0) plan.SelectLayout(plan.EditableLayouts[0]);
+        else if (plan.imported["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["type"] == "panel") is { } panel)
+            plan.SelectLayout((string)panel["id"]!);
         return plan;
     }
     public void SelectLayout(string id)
     {
-        if (!IsImported || !EditableLayouts.Contains(id)) throw new ArgumentException("このレイアウトは表では編集できません。");
+        if (!IsImported) throw new ArgumentException("レイアウトを読み込んでください。");
         var committed = JsonNode.Parse(BuildJson())!.AsObject();
-        var layout = committed["layouts"]!.AsArray().Single(l => (string?)l!["id"] == id)!;
+        var layout = committed["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == id)
+            ?? throw new ArgumentException("レイアウトがありません。");
+        if ((string?)layout["type"] == "panel")
+        {
+            imported = committed; SelectedLayoutId = id; PanelEdges.Clear(); originalPanelNumbers.Clear();
+            foreach (var group in new[] { "margin", "padding", "border" })
+                foreach (var side in new[] { "top", "right", "bottom", "left" })
+                {
+                    var value = (string?)layout[group]?[side] ?? (group == "padding" ? "8px" : "0px");
+                    PanelEdges[group + "." + side] = new() { Number = value[..^2], IsRate = false };
+                    originalPanelNumbers[group + "." + side] = value[..^2];
+                }
+            return;
+        }
+        if (!EditableLayouts.Contains(id)) throw new ArgumentException("このレイアウトは表では編集できません。");
         imported = committed;
         SelectedLayoutId = null;
         Resize(layout["column-definitions"]!.AsArray().Count, layout["row-definitions"]!.AsArray().Count);
@@ -105,7 +125,22 @@ public sealed class StyleBlueprint
         if (imported is not null)
         {
             var draft = (JsonObject)imported.DeepClone();
-            if (SelectedLayoutId is not null)
+            if (CanEditPanel)
+            {
+                var panel = draft["layouts"]!.AsArray().Single(l => (string?)l!["id"] == SelectedLayoutId)!;
+                foreach (var group in new[] { "margin", "padding", "border" })
+                {
+                    foreach (var side in new[] { "top", "right", "bottom", "left" })
+                    {
+                        var key = group + "." + side;
+                        var length = PanelEdges[key].Length();
+                        if (PanelEdges[key].Number == originalPanelNumbers[key]) continue;
+                        if (panel[group] is null) panel[group] = new JsonObject();
+                        panel[group]![side] = length;
+                    }
+                }
+            }
+            else if (SelectedLayoutId is not null)
             {
                 var layout = draft["layouts"]!.AsArray().Single(l => (string?)l!["id"] == SelectedLayoutId)!;
                 layout["row-definitions"] = new JsonArray(Rows.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>());
@@ -148,11 +183,51 @@ public sealed class StyleBlueprint
         var json = root.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
         StationeryStyleSettings.Parse(json);
         // Use four spaces, matching the style file convention, without altering label strings.
-        return string.Join(Environment.NewLine, json.Split('\n').Select(line =>
+        return string.Join(Environment.NewLine, json.ReplaceLineEndings("\n").Split('\n').Select(line =>
         {
             var spaces = line.TakeWhile(c => c == ' ').Count();
             return new string(' ', spaces) + line;
         })) + Environment.NewLine;
+    }
+
+    public string AddLayout(string type)
+    {
+        if (type is not ("panel" or "floating-layout")) throw new ArgumentException("追加できない種類です。");
+        var draft = JsonNode.Parse(BuildJson())!.AsObject();
+        var layouts = draft["layouts"]!.AsArray();
+        var prefix = type == "panel" ? "panel" : "floatingLayout";
+        var number = 1;
+        while (layouts.Any(l => (string?)l!["id"] == prefix + number)) number++;
+        var id = prefix + number;
+        var added = new JsonObject { ["id"] = id, ["type"] = type };
+        if (type == "floating-layout")
+        {
+            added["row-definitions"] = new JsonArray("1rate", "1rate");
+            added["column-definitions"] = new JsonArray("1rate", "1rate");
+        }
+        else foreach (var group in new[] { "margin", "padding", "border" })
+            added[group] = new JsonObject { ["top"] = "0px", ["right"] = "0px", ["bottom"] = "0px", ["left"] = "0px" };
+        layouts.Add(added);
+        Serialize(draft);
+        imported = draft; SelectedLayoutId = null;
+        SelectLayout(id);
+        return id;
+    }
+
+    public void DeleteNode(IReadOnlyList<string> path)
+    {
+        if (path.Count < 2) throw new ArgumentException("トップ階層は削除できません。");
+        var draft = JsonNode.Parse(BuildJson())!.AsObject();
+        JsonNode parent = draft;
+        foreach (var part in path.Take(path.Count - 1))
+            parent = parent is JsonArray array ? array[int.Parse(part, CultureInfo.InvariantCulture)]! : parent[part]!;
+        if (parent is JsonArray children) children.RemoveAt(int.Parse(path[^1], CultureInfo.InvariantCulture));
+        else parent.AsObject().Remove(path[^1]);
+        Serialize(draft); // Reject dangling bindings and required-property deletion atomically.
+        var keep = SelectedLayoutId;
+        imported = draft; SelectedLayoutId = null; PanelEdges.Clear();
+        if (keep is not null && draft["layouts"]!.AsArray().Any(l => (string?)l!["id"] == keep)) SelectLayout(keep);
+        else if (EditableLayouts.Count > 0) SelectLayout(EditableLayouts[0]);
     }
 
     /// <summary>Export a new file only; an existing target is never overwritten.</summary>

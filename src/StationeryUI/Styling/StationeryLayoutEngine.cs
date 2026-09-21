@@ -6,7 +6,10 @@ using StationeryUI.Inspection;
 using StationeryUI.Controls;
 
 public sealed record StationeryLayoutResult(IReadOnlyDictionary<string, ScreenRectangle> Bounds,
-    IReadOnlyDictionary<string, ScreenRectangle> ContentBounds);
+    IReadOnlyDictionary<string, ScreenRectangle> ContentBounds)
+{
+    public IReadOnlyDictionary<string, ScreenRectangle> BorderBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
+}
 
 /// <summary>Computes window-pixel rectangles without changing the model tree or using a graphics device.</summary>
 public static class StationeryLayoutEngine
@@ -25,10 +28,18 @@ public static class StationeryLayoutEngine
         var splits = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "split-pane").ToDictionary(binding => binding.ModelPath);
         var bounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var contents = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var borders = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
 
         void Visit(StationeryNode node, ScreenRectangle inherited)
         {
             var outer = positions.GetValueOrDefault(node.Path, inherited);
+            if (panels.TryGetValue(node.Path, out var box))
+            {
+                var inset = box.Margin.GetContentBounds(outer.Width, outer.Height);
+                outer = inset with { X = outer.X + inset.X, Y = outer.Y + inset.Y };
+                borders[node.Path] = new(outer.X - box.Border.Left, outer.Y - box.Border.Top,
+                    outer.Width + box.Border.Left + box.Border.Right, outer.Height + box.Border.Top + box.Border.Bottom);
+            }
             bounds.Add(node.Path, outer);
             var content = outer;
             if (pages.TryGetValue(node.Path, out var page))
@@ -63,7 +74,8 @@ public static class StationeryLayoutEngine
         }
 
         foreach (var model in settings.Models) Visit(model.CreateTree(), new(0, 0, width, height));
-        return new(new ReadOnlyDictionary<string, ScreenRectangle>(bounds), new ReadOnlyDictionary<string, ScreenRectangle>(contents));
+        return new(new ReadOnlyDictionary<string, ScreenRectangle>(bounds), new ReadOnlyDictionary<string, ScreenRectangle>(contents))
+        { BorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(borders) };
     }
 
     private static double[] TrackEdges(IReadOnlyList<LayoutTrack> tracks, double available)

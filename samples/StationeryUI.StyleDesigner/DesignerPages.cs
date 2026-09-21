@@ -76,9 +76,7 @@ internal sealed partial class DesignerGame
         Text("readOnlyTitle", new(12, 12, 1256, 64), "2 / 2 — スタイルの確認");
         Text("readOnlyHelp", new(12, 100, 1256, 150), "このファイルには、表で編集できる 8×8 以下のフローティングレイアウトがありません。\n左側のツリーでスタイル全体を確認できます。内容を保ったまま別名で出力できます。");
         ui.AddButton("back", new(12, 280, 300, 52), "1 ページ目へ戻る", () => pendingPage = BuildWelcome);
-        output = ui.AddTextBox("output", new(12, 380, 980, 52), "出力先", outputPath, 4096);
-        ui.AddButton("export", new(1010, 380, 258, 52), "エクスポート", () => Guard(() =>
-        { outputPath = output.Editor!.Text; blueprint.Export(outputPath); message = "出力しました。"; }));
+        BuildOutputControls(380);
         status = Text("status", new(12, 470, 1256, 100), message);
         BuildSidebar();
     }
@@ -94,8 +92,9 @@ internal sealed partial class DesignerGame
         sidebar?.Dispose();
         sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
         sidebar.AddTextBlock(sidebar.Root.AddChild("heading", "textBlock"), new(8, 8, 300, 76), "2 / 2 — スタイルツリー\nmodels / layouts / bindings");
-        styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 92, 300, 680), "スタイルの構造", new());
-        sidebar.AddTextBlock(sidebar.Root.AddChild("treeHelp", "textBlock"), new(8, 782, 300, 110), "＋／－で開閉。\nlayouts 内の表を選ぶと右側で編集できます。\n他の種類はツリーで確認できます。");
+        styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 92, 300, 600), "スタイルの構造", new());
+        sidebar.AddTextBlock(sidebar.Root.AddChild("treeHelp", "textBlock"), new(8, 782, 300, 110), "＋／－で開閉。水色の枠が操作対象です。\nlayouts 内の panel や表をクリックすると編集できます。");
+        BuildTreeActions();
         treeJson = null;
         try { RefreshTree(blueprint.BuildJson()); }
         catch (System.Text.Json.JsonException) { if (lastValidTreeJson is not null) RefreshTree(lastValidTreeJson); }
@@ -107,44 +106,58 @@ internal sealed partial class DesignerGame
         var old = new Dictionary<string, bool>();
         void Remember(TreeItem item) { old[item.Id] = item.IsExpanded; foreach (var child in item.Children) Remember(child); }
         foreach (var root in styleTree.Tree!.Roots) Remember(root);
-        var selected = styleTree.Tree.SelectedItem?.Id;
-        var next = new TreeView(); treeLayouts.Clear();
+        var selected = styleTree.Tree.TargetItem?.Id;
+        var next = new TreeView { SelectOnInteraction = false }; treeLayouts.Clear(); treePaths.Clear();
         TreeItem? restore = null;
-        void Visit(JsonNode? value, string key, string identity, TreeItem? parent, int depth, string? layoutId = null)
+        void Visit(JsonNode? value, string key, string identity, TreeItem? parent, int depth, string? layoutId = null, string[]? jsonPath = null)
         {
+            jsonPath ??= [key];
             var title = value is JsonObject obj && obj["id"] is JsonValue id
                 ? $"{id.GetValue<string>()} ({(string?)obj["type"]})"
                 : value is JsonValue ? $"{key}: {value}" : key;
             var item = next.AddNode(identity, title, parent, old.GetValueOrDefault(identity, depth < 1 || key == "layouts"));
+            treePaths[item.Id] = jsonPath;
             if (identity == selected) restore = item;
             if (layoutId is not null) treeLayouts[item.Id] = layoutId;
             if (value is JsonObject properties)
             {
                 var index = 0;
-                foreach (var pair in properties) Visit(pair.Value, pair.Key, identity + "_p" + index++, item, depth + 1);
+                foreach (var pair in properties) Visit(pair.Value, pair.Key, identity + "_p" + index++, item, depth + 1, jsonPath: [.. jsonPath, pair.Key]);
             }
             else if (value is JsonArray array)
                 for (var i = 0; i < array.Count; i++) Visit(array[i], $"[{i}]", identity + "_a" + i, item, depth + 1,
-                    key == "layouts" ? (string?)array[i]?["id"] : null);
+                    key == "layouts" ? (string?)array[i]?["id"] : null, [.. jsonPath, i.ToString(System.Globalization.CultureInfo.InvariantCulture)]);
         }
         var rootJson = JsonNode.Parse(json)!.AsObject(); var section = 0;
         foreach (var pair in rootJson) Visit(pair.Value, pair.Key, "section" + section++, null, 0);
-        if (restore is not null) next.Select(restore);
+        if (revealLayout is not null)
+        {
+            var identity = treeLayouts.FirstOrDefault(p => p.Value == revealLayout).Key;
+            TreeItem? Find(IEnumerable<TreeItem> items) => items.SelectMany(i => new[] { i }.Concat(Flatten(i.Children))).FirstOrDefault(i => i.Id == identity);
+            IEnumerable<TreeItem> Flatten(IEnumerable<TreeItem> items) => items.SelectMany(i => new[] { i }.Concat(Flatten(i.Children)));
+            restore = Find(next.Roots); revealLayout = null;
+        }
+        if (restore is not null) next.SetTarget(restore);
         sidebar!.ReplaceTree(styleTree, next); treeJson = lastValidTreeJson = json;
     }
 
     private void HandleTreeSelection()
     {
-        var selected = styleTree?.Tree?.SelectedItem?.Id;
+        var selected = styleTree?.Tree?.TargetItem?.Id;
+        UpdateTreeActions();
         if (selected == lastTreeSelection) return;
         lastTreeSelection = selected;
         if (selected is null || !treeLayouts.TryGetValue(selected, out var layoutId)) return;
         if (!blueprint.IsImported) return;
         Guard(() =>
         {
-            Capture(); blueprint.SelectLayout(layoutId);
+            Capture();
+            var layoutType = (string?)JsonNode.Parse(blueprint.BuildJson())!["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == layoutId)?["type"];
+            if (layoutType is not ("panel" or "floating-layout")) return;
+            blueprint.SelectLayout(layoutId);
             selectedRow = selectedColumn = 0; rebuild = true;
-            message = $"編集中：{layoutId}。行・列のサイズを変更できます。既存モデルの種類・配置は保持します。";
+            message = blueprint.CanEditPanel ? $"編集中：{layoutId}。四辺の margin・padding・border を指定できます。"
+                : $"編集中：{layoutId}。行・列のサイズを変更できます。既存モデルの種類・配置は保持します。";
         });
     }
 
@@ -165,6 +178,7 @@ internal sealed partial class DesignerGame
                 ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             return;
         }
+        if (PrepareLayoutEditingSmoke(ref mouse)) return;
         var editFrame = frames - 3;
         if (!string.IsNullOrEmpty(smokeInput))
         {
@@ -184,6 +198,21 @@ internal sealed partial class DesignerGame
         }
         if (editFrame == 4) { SetText(columns, "4"); SetText(rows, "3"); }
         if (editFrame == 8) { SetText(columns, "2"); SetText(rows, "1"); }
+        if (editFrame == 12)
+        {
+            if (ui.Focus.IsEnabled(ui.Root.Path + "/createFile"))
+                throw new InvalidOperationException("New file must be disabled before folder selection.");
+            selectedOutputFolder = smokeOutput;
+            File.WriteAllText(System.IO.Path.Combine(smokeOutput, "my-plan.stationery-style.json"), "existing file");
+            rebuild = true;
+        }
+        if (editFrame >= 13)
+        {
+            var createPoint = ui.Viewport.ToWindow(new StationeryUI.Canvas.ScreenRectangle(678, 806, 174, 38));
+            mouse = new((int)createPoint.X + 10, (int)createPoint.Y + 10, 0, editFrame == 14 ? ButtonState.Pressed : ButtonState.Released,
+                ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+            return;
+        }
         var point = ui.Viewport.ToWindow(editFrame >= 4 ? new(484, 54, 220, 44) : kind.Bounds);
         mouse = new((int)point.X + 10, (int)point.Y + 10, 0, editFrame is 1 or 5 or 9 or 11 ? ButtonState.Pressed : ButtonState.Released,
             ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
@@ -200,6 +229,7 @@ internal sealed partial class DesignerGame
     }
     private void ValidateDesignerSmoke()
     {
+        if (ValidateLayoutEditingSmoke()) return;
         if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG") == "1" && !testedNativeDialog)
             throw new InvalidOperationException("Native file dialog was not observed.");
         if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") == "1")
@@ -216,5 +246,9 @@ internal sealed partial class DesignerGame
         }
         if (blueprint.At(0, 0).Kind != "button" || blueprint.At(0, 0).Label != "開始ボタン") throw new InvalidOperationException("Designer cell editing failed.");
         if (blueprint.Columns.Count != 2 || blueprint.Rows.Count != 1) throw new InvalidOperationException("Designer resize/confirmation failed.");
+        var created = System.IO.Path.Combine(smokeOutput!, "my-plan-2.stationery-style.json");
+        if (!File.Exists(created) || File.ReadAllText(System.IO.Path.Combine(smokeOutput!, "my-plan.stationery-style.json")) != "existing file")
+            throw new InvalidOperationException("New file creation or collision handling failed.");
+        outputPath = System.IO.Path.Combine(smokeOutput!, "plan.stationery-style.json");
     }
 }

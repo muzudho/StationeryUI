@@ -131,10 +131,10 @@ public sealed partial class StationeryUiHost
             var hit = TreeHit(element, pointer);
             element.PressedTreeItem = hit.Item;
             element.PressedTreeToggle = hit.Toggle;
-            if (hit.Item is not null) tree.Select(hit.Item);
+            if (hit.Item is not null) tree.SetTarget(hit.Item);
         }
         if (Focus.FocusedId != element.Path) return;
-        if (tree.SelectedItem is null) tree.Move(0);
+        if (tree.TargetItem is null) tree.Move(0);
         var navigating = false;
         if (repeated(Keys.Up)) { tree.Move(-1); navigating = true; }
         if (repeated(Keys.Down)) { tree.Move(1); navigating = true; }
@@ -142,11 +142,11 @@ public sealed partial class StationeryUiHost
         if (key(Keys.Right)) { tree.Right(); navigating = true; }
         if (key(Keys.Home)) { tree.Move(-int.MaxValue); navigating = true; }
         if (key(Keys.End)) { tree.Move(int.MaxValue); navigating = true; }
-        if ((key(Keys.Enter) || key(Keys.Space)) && tree.SelectedItem is { } selected)
+        if ((key(Keys.Enter) || key(Keys.Space)) && tree.TargetItem is { } selected)
         { tree.Toggle(selected); navigating = true; }
         if (navigating)
         {
-            var index = tree.VisibleRows().ToList().FindIndex(row => row.Item == tree.SelectedItem);
+            var index = tree.VisibleRows().ToList().FindIndex(row => row.Item == tree.TargetItem);
             var height = TreeRowHeight(element.Theme ?? Theme);
             if (index * height < element.TreeScroll) element.TreeScroll = index * height;
             if ((index + 1) * height > element.TreeScroll + element.Bounds.Height)
@@ -189,8 +189,16 @@ public sealed partial class StationeryUiHost
             var y = element.Bounds.Y + i * height - element.TreeScroll;
             if (y + height <= element.Bounds.Y || y >= element.Bounds.Y + element.Bounds.Height) continue;
             var rect = new ScreenRectangle(element.Bounds.X, y, element.Bounds.Width, height);
-            if (row.Item == element.Tree.SelectedItem) Fill(rect, theme.Selection);
+            if (row.Item == element.Tree.SelectedItem) Fill(rect, theme.Selected);
             else if (Contains(element.Bounds, pointer) && Contains(rect, pointer)) Fill(rect, theme.ButtonFill(true, false, false, true));
+            if (row.Item == element.Tree.TargetItem)
+            {
+                var color = theme.TreeTarget;
+                Fill(new(rect.X, rect.Y, rect.Width, 2), color);
+                Fill(new(rect.X, rect.Y + rect.Height - 2, rect.Width, 2), color);
+                Fill(new(rect.X, rect.Y, 2, rect.Height), color);
+                Fill(new(rect.X + rect.Width - 2, rect.Y, 2, rect.Height), color);
+            }
             var x = element.Bounds.X + theme.Padding + row.Depth * 24;
             if (row.Item.Children.Count > 0)
             {

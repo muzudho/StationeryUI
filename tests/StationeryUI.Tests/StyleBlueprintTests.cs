@@ -8,12 +8,15 @@ internal static class StyleBlueprintTests
     public static void Run()
     {
         ImportedStyles();
+        LayoutEditing();
         var plan = new StyleBlueprint();
         plan.Resize(3, 2);
         plan.Columns[0].Number = "1.5";
         plan.Columns[1].IsRate = false; plan.Columns[1].Number = "100";
         plan.At(0, 0).Kind = "button"; plan.At(0, 0).Label = "開始\n日本語 \"ラベル\"";
         var json = plan.BuildJson();
+        Check(!json.Contains("\r\r") && !json.ReplaceLineEndings("\n").Contains("\n\n"), "no doubled or blank line endings");
+        Check(json.Split('\n')[1].StartsWith("    \"models\""), "four-space indentation");
         var style = StationeryStyleSettings.Parse(json);
         Check(style.Layouts[0].Columns[0].Value == 1.5 && !style.Layouts[0].Columns[1].IsRate, "fractional number and unit");
         using var doc = JsonDocument.Parse(json);
@@ -39,6 +42,7 @@ internal static class StyleBlueprintTests
             var path = Path.Combine(directory, "plan.stationery-style.json");
             plan.Export(path);
             var original = File.ReadAllText(path);
+            Check(!original.Contains("\r\r") && !original.ReplaceLineEndings("\n").Contains("\n\n"), "exported file has single line endings");
             plan.At(0, 0).Label = "変更後";
             try { plan.Export(path); throw new Exception("Existing file overwritten."); } catch (IOException) { }
             Check(File.ReadAllText(path) == original && Directory.GetFiles(directory).Length == 1, "existing file untouched and temporary cleaned");
@@ -73,6 +77,37 @@ internal static class StyleBlueprintTests
         var readOnly = StyleBlueprint.Parse("{\"models\":[{\"id\":\"root\",\"type\":\"viewport\"}],\"layouts\":[],\"bindings\":[],\"window\":{\"width\":1000}}");
         Check(!readOnly.CanEditGrid && JsonNode.Parse(readOnly.BuildJson())!["window"]!["width"]!.GetValue<int>() == 1000, "non-grid document stays intact");
         Reject(() => StyleBlueprint.Parse("{"));
+    }
+
+    private static void LayoutEditing()
+    {
+        var plan = new StyleBlueprint();
+        var panel = plan.AddLayout("panel");
+        Check(plan.CanEditPanel && !plan.CanEditGrid, "panel editor selection");
+        plan.PanelEdges["margin.left"].Number = "10";
+        plan.PanelEdges["padding.top"].Number = "4";
+        plan.PanelEdges["border.right"].Number = "7";
+        var json = JsonNode.Parse(plan.BuildJson())!;
+        json["bindings"]!.AsArray().Add(new JsonObject { ["layout"] = panel, ["model"] = "design/mainPage" });
+        var style = StationeryStyleSettings.Parse(json.ToJsonString());
+        var arranged = StationeryLayoutEngine.Arrange(style, 100, 80);
+        Check(arranged.Bounds["/design/mainPage"].Width == 90 && arranged.ContentBounds["/design/mainPage"].Y == 4, "margin and padding affect layout");
+        Check(arranged.BorderBounds["/design/mainPage"].Width == 97 && arranged.ContentBounds["/design/mainPage"].Width == 90, "border does not consume size");
+        var grid = plan.AddLayout("floating-layout");
+        Check(plan.CanEditGrid && plan.SelectedLayoutId == grid, "new grid uses grid editor");
+        plan.Columns[0].Number = "2.5";
+        plan.SelectLayout(panel);
+        Check(plan.PanelEdges["margin.left"].Number == "10", "panel values survive switching");
+        plan.DeleteNode(["layouts", "2"]);
+        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Layouts.Count == 2, "delete unused layout");
+        var before = plan.BuildJson();
+        Reject(() => plan.DeleteNode(["layouts", "0"]));
+        Check(plan.BuildJson() == before, "referenced layout deletion is atomic");
+        plan.DeleteNode(["layouts", "1", "border"]);
+        Check(JsonNode.Parse(plan.BuildJson())!["layouts"]![1]!["border"] is null, "deleted optional panel property stays deleted");
+        try { plan.DeleteNode(["layouts"]); throw new Exception("Root deleted"); } catch (ArgumentException) { }
+        plan.PanelEdges["border.top"].Number = "-1";
+        Reject(() => plan.BuildJson());
     }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
     private static void Reject(Action action)

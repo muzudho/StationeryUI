@@ -1,4 +1,4 @@
-param([string]$Executable = 'samples/StationeryUI.StyleDesigner/bin/Release/net8.0-windows/StationeryUI.StyleDesigner.exe', [switch]$Existing, [switch]$NativeDialog, [switch]$CancelDialog, [switch]$Dark)
+param([string]$Executable = 'samples/StationeryUI.StyleDesigner/bin/Release/net8.0-windows/StationeryUI.StyleDesigner.exe', [switch]$Existing, [switch]$NativeDialog, [switch]$CancelDialog, [switch]$Dark, [ValidateSet('panel','floating','delete')][string]$LayoutEditing)
 $ErrorActionPreference = 'Stop'
 $workspace = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $testDirectory = Join-Path $workspace ('artifacts/style-designer-test/' + [Guid]::NewGuid().ToString('N'))
@@ -8,10 +8,12 @@ $previousInput = $env:STATIONERYUI_DESIGNER_TEST_INPUT
 $previousNative = $env:STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG
 $previousCancel = $env:STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG
 $previousDark = $env:STATIONERYUI_DESIGNER_TEST_DARK
+$previousLayout = $env:STATIONERYUI_DESIGNER_TEST_LAYOUT
 $process = $null
 try {
     $env:STATIONERYUI_DESIGNER_TEST_OUTPUT = $testDirectory
     $env:STATIONERYUI_DESIGNER_TEST_INPUT = ''
+    $env:STATIONERYUI_DESIGNER_TEST_LAYOUT = $LayoutEditing
     $env:STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG = if ($NativeDialog) { '1' } else { '' }
     $env:STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG = if ($CancelDialog) { '1' } else { '' }
     $env:STATIONERYUI_DESIGNER_TEST_DARK = if ($Dark) { '1' } else { '' }
@@ -22,14 +24,16 @@ try {
     }
     $process = Start-Process -FilePath (Join-Path $workspace $Executable) -WindowStyle Hidden -PassThru
     if (!$process.WaitForExit(30000)) { throw 'Style designer test timed out.' }
-    if ($process.ExitCode -ne 0) { throw "Style designer failed: $($process.ExitCode)" }
+    if ($process.ExitCode -ne 0) { throw "Style designer failed: $($process.ExitCode). Check $testDirectory/error.txt" }
     if ($CancelDialog) {
         if (Test-Path -LiteralPath (Join-Path $testDirectory 'plan.stationery-style.json')) { throw 'Cancel exported a file.' }
         Write-Output "PASS native dialog cancellation stays on first page: $testDirectory"
         return
     }
     $json = Get-Content -LiteralPath (Join-Path $testDirectory 'plan.stationery-style.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-    if ($Existing) {
+    if ($LayoutEditing) {
+        if ($json.layouts.Count -ne $(if ($LayoutEditing -eq 'delete') { 1 } else { 2 })) { throw 'Layout count mismatch.' }
+    } elseif ($Existing) {
         $layout = $json.layouts | Where-Object id -eq 'topDemoLayout'
         if ($layout.'column-definitions'[0] -ne '2.5rate') { throw 'Imported edit missing.' }
         if ((Get-FileHash -LiteralPath $source).Hash -ne $sourceHash) { throw 'Source file changed.' }
@@ -50,4 +54,5 @@ try {
     $env:STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG = $previousNative
     $env:STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG = $previousCancel
     $env:STATIONERYUI_DESIGNER_TEST_DARK = $previousDark
+    $env:STATIONERYUI_DESIGNER_TEST_LAYOUT = $previousLayout
 }

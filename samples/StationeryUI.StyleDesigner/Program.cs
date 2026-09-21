@@ -12,7 +12,16 @@ using System.Text.Json;
 internal static class Program
 {
     [STAThread]
-    private static void Main() { using var game = new DesignerGame(); game.Run(); }
+    private static void Main()
+    {
+        try { using var game = new DesignerGame(); game.Run(); }
+        catch (Exception ex)
+        {
+            var testOutput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_OUTPUT");
+            if (!string.IsNullOrEmpty(testOutput)) File.WriteAllText(Path.Combine(testOutput, "error.txt"), ex.ToString());
+            throw;
+        }
+    }
 }
 
 internal sealed partial class DesignerGame : Game
@@ -61,6 +70,9 @@ internal sealed partial class DesignerGame : Game
     }
     private void Capture()
     {
+        if (editingPage) outputPath = output.Editor!.Text;
+        if (editingPage && blueprint.CanEditPanel)
+            foreach (var (field, key) in panelFields) blueprint.PanelEdges[key].Number = field.Editor!.Text;
         if (!editingPage || !blueprint.CanEditGrid) return;
         foreach (var (field, _, track) in tracks) track.Number = field.Editor!.Text;
         if (!blueprint.IsImported) blueprint.At(selectedRow, selectedColumn).Label = label.Editor!.Text;
@@ -68,8 +80,9 @@ internal sealed partial class DesignerGame : Game
     }
     private void BuildUi()
     {
-        ui?.Dispose(); tracks.Clear(); cells.Clear(); preview.Clear();
+        ui?.Dispose(); tracks.Clear(); cells.Clear(); preview.Clear(); panelFields.Clear();
         ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true };
+        if (blueprint.CanEditPanel) { BuildPanelEditor(); return; }
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
         Text("title", new(12, 8, 1256, 42), blueprint.IsImported ? $"2 / 2 — 編集中：{blueprint.SelectedLayoutId}（既存モデルと bindings は保持）" : "2 / 2 — 新規スタイル設計（横・縦とも 1～8 セル）");
         ui.AddButton("back", new(1070, 54, 198, 44), "1 ページ目へ戻る", () => { Capture(); pendingPage = BuildWelcome; });
@@ -127,14 +140,8 @@ internal sealed partial class DesignerGame : Game
         for (var r = 0; r < blueprint.Rows.Count; r++)
             for (var c = 0; c < blueprint.Columns.Count; c++)
                 preview.Add((Text($"preview{r}_{c}", new(), $"{r + 1},{c + 1}"), r, c));
-        Text("outputTitle", new(12, 770, 120, 42), "出力先：");
-        output = ui.AddTextBox("output", new(136, 770, 904, 42), "新しい JSON の出力パス", outputPath, 4096);
-        ui.AddButton("export", new(1052, 770, 216, 42), "エクスポート", () => Guard(() =>
-        {
-            Capture(); blueprint.Export(outputPath);
-            message = "設計図を出力しました。この JSON を AI に渡して「こう作って」と指示できます。";
-        }));
-        status = Text("status", new(12, 824, 1256, 64), message);
+        BuildOutputControls(762);
+        status = Text("status", new(12, 850, 1256, 48), message);
         BuildSidebar();
     }
     private static string KindLabel(string kind) => kind switch
@@ -150,6 +157,7 @@ internal sealed partial class DesignerGame : Game
     protected override void Update(GameTime gameTime)
     {
         var scale = Math.Max(.1, Math.Min(GraphicsDevice.Viewport.Width / 1600.0, GraphicsDevice.Viewport.Height / 900.0));
+        if (layoutDialog is not null) { UpdateLayoutDialog(gameTime, scale); base.Update(gameTime); return; }
         ui.Viewport.Scale = scale;
         ui.Viewport.Offset = new(editingPage ? 320 * scale : 0, 0);
         if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Theme = theme; }
@@ -166,7 +174,13 @@ internal sealed partial class DesignerGame : Game
         if (pendingPage is not null) { var action = pendingPage; pendingPage = null; action(); return; }
         if (!editingPage) { status.Label = message; base.Update(gameTime); return; }
         if (rebuild) { rebuild = false; BuildUi(); ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, 0); }
-        if (!blueprint.CanEditGrid) { status.Label = message; base.Update(gameTime); return; }
+        if (!blueprint.CanEditGrid)
+        {
+            Capture();
+            try { RefreshTree(blueprint.BuildJson()); status.Label = message; }
+            catch (JsonException ex) { status.Label = "入力を確認してください：" + ex.Message; }
+            base.Update(gameTime); return;
+        }
         Capture();
         foreach (var (element, row, column) in cells)
         {
@@ -200,20 +214,21 @@ internal sealed partial class DesignerGame : Game
     {
         GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background)); ui.Draw();
         if (editingPage) sidebar?.Draw();
+        layoutDialog?.Draw();
         CaptureWelcomeSmoke();
         if (!string.IsNullOrEmpty(smokeOutput) && ++frames == 19)
         {
-            ValidateDesignerSmoke();
-            if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") != "1") blueprint.Export(outputPath);
             var data = new Microsoft.Xna.Framework.Color[GraphicsDevice.Viewport.Width * GraphicsDevice.Viewport.Height];
             GraphicsDevice.GetBackBufferData(data);
             using var texture = new Microsoft.Xna.Framework.Graphics.Texture2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
             texture.SetData(data);
             using var file = File.Create(Path.Combine(smokeOutput, "designer.png")); texture.SaveAsPng(file, texture.Width, texture.Height);
+            ValidateDesignerSmoke();
+            if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") != "1") blueprint.Export(outputPath);
             Exit();
         }
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }

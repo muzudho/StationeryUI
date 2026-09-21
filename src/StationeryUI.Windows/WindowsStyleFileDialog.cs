@@ -6,6 +6,20 @@ using System.Windows.Forms;
 /// <summary>Native Windows file selection, owned by the calling UI thread's active HWND.</summary>
 public static class WindowsStyleFileDialog
 {
+    public static string? ChooseFolder(string? initialFolder = null)
+    {
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = "新しいスタイル設定ファイルのフォルダーを選択",
+            UseDescriptionForTitle = true,
+            SelectedPath = initialFolder ?? "",
+            ShowNewFolderButton = true
+        };
+        var owner = GetActiveWindow();
+        var result = owner == 0 ? dialog.ShowDialog() : dialog.ShowDialog(new WindowOwner(owner));
+        return result == DialogResult.OK ? dialog.SelectedPath : null;
+    }
+
     public static string? Open(string? initialFile = null)
     {
         using var dialog = new OpenFileDialog
