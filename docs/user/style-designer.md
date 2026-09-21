@@ -41,6 +41,10 @@ Tab で入力欄やボタンへ移動し、Enter／Space でボタンを操作�
 
 ## 起動と配布
 
+GitHub Release の Windows x64 ZIP は .NET ランタイム同梱版。ZIP を新しいフォルダーへすべて展開し、その中の `StationeryUI.StyleDesigner.exe` を起動する。別途 .NET をインストールする必要はない。EXE だけを取り出さず、DLL・licenses などを含むフォルダー全体を使う。
+
+v0.1.0 の設計ツールは未署名で配布する。Windows の保護機能によって起動可否が異なる場合がある。
+
 ソースからの起動：
 
 ```powershell
@@ -53,5 +57,5 @@ dotnet run --project samples/StationeryUI.StyleDesigner -c Release
 dotnet publish samples/StationeryUI.StyleDesigner -c Release --self-contained false -o artifacts/release/style-designer
 ```
 
-出力フォルダー全体を配布し、`StationeryUI.StyleDesigner.exe` から起動する。Windows 用の .NET 8 Desktop Runtime が必要。
+上記コマンドによるランタイム非同梱版は、出力フォルダー全体から `StationeryUI.StyleDesigner.exe` を起動する。こちらは Windows 用の .NET 8 Desktop Runtime が必要。
 設計ツールは文房具 UI の DLL を利用するが、文房具 UI の NuGet パッケージに設計ツールは含めない。

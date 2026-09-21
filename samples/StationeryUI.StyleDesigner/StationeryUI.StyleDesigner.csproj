@@ -4,11 +4,16 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <IsPackable>false</IsPackable>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../docs/user/style-designer.md" Link="README.md" CopyToPublishDirectory="PreserveNewest" />
     <None Include="../../LICENSE" Link="LICENSE" CopyToPublishDirectory="PreserveNewest" />
     <None Include="../../THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="../../docs/user/CircleSpaceCoordinator-LICENSE.txt" Link="licenses/CircleSpaceCoordinator-LICENSE.txt" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="../../docs/user/licenses/*.txt" Link="licenses/%(Filename)%(Extension)" CopyToPublishDirectory="PreserveNewest" />
     <ProjectReference Include="../../src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj" />
     <ProjectReference Include="../../src/StationeryUI.Windows/StationeryUI.Windows.csproj" />
   </ItemGroup>

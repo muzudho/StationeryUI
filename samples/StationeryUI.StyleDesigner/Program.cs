@@ -17,6 +17,7 @@ internal static class Program
 
 internal sealed partial class DesignerGame : Game
 {
+    private static readonly string AppVersion = typeof(DesignerGame).Assembly.GetName().Version!.ToString(3);
     private readonly GraphicsDeviceManager manager;
     private StyleBlueprint blueprint = new();
     private WindowsTextInputService input = null!;
@@ -43,7 +44,7 @@ internal sealed partial class DesignerGame : Game
     }
     protected override void LoadContent()
     {
-        Window.Title = "文房具 UI — スタイル設計ツール";
+        Window.Title = $"文房具 UI — スタイル設計ツール v{AppVersion}";
         input = new(Window.Handle);
         if (!string.IsNullOrEmpty(smokeOutput) && Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_DARK") == "1")
             theme = StationeryTheme.Dark with { FontSize = 16, Padding = 4 };
