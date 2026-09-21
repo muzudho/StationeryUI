@@ -3,6 +3,7 @@
 StationeryUI自体の開発・保守を行う方向けの資料です。ライブラリーをアプリに組み込む場合は [利用者向けドキュメント](../user/README.md) を参照してください。
 
 - [設計と境界](architecture.md)
+- [文房具 UI 製の開発者ウィンドウ](developer-window.md)
 - [コントロールのプログラム解説](control-guide.md)
 - [アンダーラインの表示規約とアクションバッジ](action-badges.md)：`Edit` / `Popup` / `Move`、文字色と下線色、ホバー表示。
 - [抽出元一覧](extraction-inventory.md)

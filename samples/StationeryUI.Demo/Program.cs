@@ -12,7 +12,14 @@ using StationeryUI.Controls;
 internal static class Program
 {
     [STAThread]
-    private static void Main() { using var game = new Demo(); game.Run(); }
+    private static void Main(string[] args)
+    {
+        if (args.Length == 2 && args[0] == "--stationery-inspector")
+        {
+            using var inspector = new InspectorGame(args[1]); inspector.Run();
+        }
+        else { using var game = new Demo(); game.Run(); }
+    }
 }
 
 internal sealed partial class Demo : Game

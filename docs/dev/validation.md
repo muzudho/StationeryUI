@@ -99,6 +99,16 @@
 - artifacts/page-smoke/ の画像で両方向の分割、リンクと戻る画面を目視確認。150% でリンク下線が領域内に収まるよう調整後、該当描画スモークも再確認。
 - 実 IME・物理入力の手動操作と、実ウィンドウのリサイズ操作は今回未実施。新しい使い方は docs/user/split-pane.md。
 
+## 2026-09-21 開発者ウィンドウの文房具 UI 化
+
+- Windows Forms の Form / TreeView / SplitContainer / TextBox による開発者ウィンドウを、StationeryDeveloperView のツリー・スプリットペーン・読み取り専用テキスト・コピーボタンへ置換。
+- 別プロセスの MonoGame ホストと同一ユーザー限定の名前付きパイプを使用。F12 / Esc での非表示・再表示、閉じるボタン後のホスト再作成、親の終了に伴う終了を実ウィンドウで確認。
+- コア 24/24 成功。同名 Id の完全パスによる選択、座標のライブ更新、構造変更・削除時の選択、閉じた枝の保持と復元を検査。
+- Test-DeveloperWindow.ps1 で、検証用スタイルの X=64 への更新、二つの nameField の区別、非表示のダイアログ、枝を閉じた状態の保持、OS クリップボードへの完全パスのコピーを確認。
+- 中央の仕切りと詳細欄の 17px スクロールバーのドラッグ、選択・分割位置の再表示時の保持を確認。実際の描画環境で検証用 MouseState / KeyboardState を注入しており、物理入力の手動試験とは区別する。
+- artifacts/developer-window-stationery/inspector.png で日本語・ツリー・詳細の折り返し・スクロール表示を目視確認。UI Automation の標準 TreeItem ではなく、文房具 UI の状態レポートと画像で検証する。
+- Release ソリューション／Debug デモのビルド成功（警告・エラー 0）、Release publish 成功。ウィンドウ UI から Windows Forms を除いたが、既存の Windows クリップボード接続は System.Windows.Forms.Clipboard を継続使用する。
+
 ## 手動確認の手順
 
 ### models / layouts の配列化（2026-09-21）

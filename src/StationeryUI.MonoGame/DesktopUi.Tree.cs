@@ -25,15 +25,17 @@ public sealed partial class DesktopUi
     private static double TreeRowHeight(StationeryTheme theme) => Math.Max(32, theme.FontSize * 1.5 + 8);
 
     private (ScreenRectangle Track, ScreenRectangle Thumb, double Maximum) TreeScrollbar(Element element)
+        => Scrollbar(element, element.Tree!.VisibleRows().Count * TreeRowHeight(element.Theme ?? Theme), element.TreeScroll);
+
+    private (ScreenRectangle Track, ScreenRectangle Thumb, double Maximum) Scrollbar(Element element, double total, double scroll)
     {
-        var total = element.Tree!.VisibleRows().Count * TreeRowHeight(element.Theme ?? Theme);
         var maximum = Math.Max(0, total - element.Bounds.Height);
         if (maximum == 0 || element.Bounds.Height <= 0 || element.Bounds.Width <= 0) return default;
         // Style px are window pixels, including when text/UI zoom is active.
         var width = Math.Min(element.Bounds.Width, 17 / Viewport.Scale);
         var track = new ScreenRectangle(element.Bounds.X + element.Bounds.Width - width, element.Bounds.Y, width, element.Bounds.Height);
         var height = Math.Min(track.Height, Math.Max(17 / Viewport.Scale, track.Height * track.Height / total));
-        var y = track.Y + (track.Height - height) * element.TreeScroll / maximum;
+        var y = track.Y + (track.Height - height) * scroll / maximum;
         return (track, new(track.X, y, width, height), maximum);
     }
 

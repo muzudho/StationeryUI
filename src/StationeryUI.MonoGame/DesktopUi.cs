@@ -60,6 +60,12 @@ public sealed partial class DesktopUi : IDisposable
         internal TextInputSession? Session;
         internal Action? Click;
         internal double Scroll;
+        internal bool DraggingTextScroll;
+        internal double TextThumbGrab;
+        internal string? WrappedText;
+        internal double WrapWidth;
+        internal StationeryTheme? WrapTheme;
+        internal List<string> WrappedLines = [];
     }
     public DesktopUi(GraphicsDevice graphics, ITextInputService input, Func<string, ITextRasterizer> rasterizerFactory,
         StationeryNode? root = null)
@@ -120,6 +126,7 @@ public sealed partial class DesktopUi : IDisposable
             binding.Element.Node = binding.Node;
             binding.Element.DraggingTreeScroll = false;
             binding.Element.DraggingSplit = false;
+            binding.Element.DraggingTextScroll = false;
             binding.Element.PressedTreeItem = null;
         }
         Focus = nextFocus;
@@ -165,6 +172,7 @@ public sealed partial class DesktopUi : IDisposable
                 element.PressedTreeItem = null;
                 element.DraggingTreeScroll = false;
                 element.DraggingSplit = false;
+                element.DraggingTextScroll = false;
             }
             editing?.Session?.Blur(); editing = null; Focus.Deactivate();
             repeats.Clear();
@@ -236,6 +244,9 @@ public sealed partial class DesktopUi : IDisposable
             var caret = field.Bounds.X + theme.Padding + Measure(text, theme) - field.Scroll;
             input.SetInputArea(Viewport.ToWindow(new(caret, field.Bounds.Y, 2, field.Bounds.Height)));
         }
+        foreach (var element in elements.Where(e => e.Node.Kind == "textBlock"))
+            UpdateTextBlock(element, pointer, hit == element, pressedMouse, mouse.LeftButton == ButtonState.Pressed,
+                mouse.ScrollWheelValue - previousMouse.ScrollWheelValue, Pressed, control);
         var release = mouse.LeftButton == ButtonState.Released && previousMouse.LeftButton == ButtonState.Pressed;
         if (release)
         {
@@ -301,6 +312,12 @@ public sealed partial class DesktopUi : IDisposable
                     continue;
                 }
                 var focused = e.Path == Focus.FocusedId;
+                if (e.Node.Kind == "textBlock")
+                {
+                    DrawTextBlock(e, theme);
+                    sprites.End();
+                    continue;
+                }
                 var hovered = Contains(e.Bounds, Viewport.ToLogical(new(previousMouse.X, previousMouse.Y)));
                 if (e.Split is not null)
                 {

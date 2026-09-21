@@ -1,18 +1,25 @@
 namespace StationeryUI.Windows;
 
 using StationeryUI.Inspection;
-using System.Globalization;
+using System.Diagnostics;
+using System.IO.Pipes;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
 
-/// <summary>A modeless inspector with its own STA message loop. Pass snapshots from the game thread.</summary>
+/// <summary>Runs a StationeryUI inspector host in a separate process. The host handles --stationery-inspector PIPE.</summary>
 public sealed class StationeryDeveloperWindow : IDisposable
 {
     private readonly object gate = new();
+    private readonly CancellationTokenSource stopping = new();
     private StationeryInspectionEntry[] snapshot = [];
-    private Thread? thread;
-    private bool requested;
-    private bool visible;
-    private bool disposed;
+    private DeveloperViewState? viewState;
+    private Task? worker;
+    private Process? process;
+    private bool visible, requested, disposed;
+    private long showSequence;
     public bool IsOpen { get { lock (gate) return visible || requested; } }
+    public string? LastError { get; private set; }
 
     public void Show(IReadOnlyList<StationeryInspectionEntry> entries)
     {
@@ -20,162 +27,90 @@ public sealed class StationeryDeveloperWindow : IDisposable
         {
             ObjectDisposedException.ThrowIf(disposed, this);
             snapshot = entries.ToArray();
-            requested = true;
-            if (thread is not null) return;
-            thread = new Thread(Run) { IsBackground = true, Name = "StationeryUI F12 developer window" };
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
+            requested = true; showSequence++;
+            if (worker is null || worker.IsCompleted) worker = Task.Run(RunAsync);
         }
     }
-
     public void Update(IReadOnlyList<StationeryInspectionEntry> entries)
     {
-        lock (gate)
-        {
-            if (!disposed) snapshot = entries.ToArray();
-        }
+        lock (gate) { if (!disposed) snapshot = entries.ToArray(); }
     }
 
-    private void Run()
+    private async Task RunAsync()
     {
-        using var form = new InspectorForm();
-        using var timer = new System.Windows.Forms.Timer { Interval = 150 };
-        var stopping = false;
-        form.FormClosing += (_, e) =>
+        var pipeName = "StationeryUI.Inspector." + Guid.NewGuid().ToString("N");
+        using var pipe = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte,
+            PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+        try
         {
-            if (stopping) return;
-            e.Cancel = true;
-            form.Hide();
-            lock (gate) visible = false;
-        };
-        form.VisibleChanged += (_, _) => { lock (gate) visible = form.Visible; };
-        timer.Tick += (_, _) =>
-        {
-            StationeryInspectionEntry[] current;
-            bool show;
+            var executable = Environment.ProcessPath ?? throw new InvalidOperationException("No inspector host executable.");
+            var start = new ProcessStartInfo(executable) { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Normal };
+            if (Path.GetFileNameWithoutExtension(executable).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
+                start.ArgumentList.Add(Assembly.GetEntryAssembly()!.Location);
+            start.ArgumentList.Add("--stationery-inspector"); start.ArgumentList.Add(pipeName);
+            // A helper must not inherit the demo's screenshot/automatic-input switches.
+            foreach (var key in start.Environment.Keys.Where(key => key.StartsWith("STATIONERYUI_SMOKE_", StringComparison.Ordinal)).ToArray())
+                start.Environment.Remove(key);
             lock (gate)
             {
-                stopping = disposed;
-                current = snapshot;
-                show = requested;
-                requested = false;
+                if (disposed) return;
+                process = Process.Start(start) ?? throw new InvalidOperationException("Cannot start inspector.");
             }
-            if (stopping)
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stopping.Token);
+            timeout.CancelAfter(TimeSpan.FromSeconds(15));
+            await pipe.WaitForConnectionAsync(timeout.Token);
+            using var reader = new StreamReader(pipe, Encoding.UTF8, false, 4096, true);
+            using var writer = new StreamWriter(pipe, new UTF8Encoding(false), 4096, true) { AutoFlush = true };
+            LastError = null;
+            while (!stopping.IsCancellationRequested)
             {
-                timer.Stop();
-                form.Close();
-                Application.ExitThread();
-                return;
+                DeveloperInspectionMessage message;
+                lock (gate) message = new(snapshot, showSequence, viewState);
+                await writer.WriteLineAsync(JsonSerializer.Serialize(message).AsMemory(), stopping.Token);
+                var response = await reader.ReadLineAsync(stopping.Token).AsTask().WaitAsync(TimeSpan.FromSeconds(10), stopping.Token);
+                if (response is null) break;
+                var state = JsonSerializer.Deserialize<DeveloperViewState>(response);
+                lock (gate)
+                {
+                    if (state is not null) { viewState = state; visible = state.Visible; }
+                    if (showSequence == message.ShowSequence) requested = false;
+                }
+                await Task.Delay(150, stopping.Token);
             }
-            if (show)
+        }
+        catch (OperationCanceledException) when (stopping.IsCancellationRequested) { }
+        catch (Exception ex) when (ex is IOException or TimeoutException or OperationCanceledException or JsonException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            LastError = ex.Message;
+            Trace.WriteLine("StationeryUI inspector: " + ex.Message);
+        }
+        finally
+        {
+            lock (gate)
             {
-                form.Show();
-                if (form.WindowState == FormWindowState.Minimized) form.WindowState = FormWindowState.Normal;
-                form.Activate();
+                if (process is not null)
+                {
+                    if (!process.HasExited) process.Kill();
+                    process.Dispose(); process = null;
+                }
+                visible = requested = false;
             }
-            if (form.Visible) form.RefreshSnapshot(current);
-        };
-        timer.Start();
-        Application.Run();
+        }
     }
 
     public void Dispose()
     {
-        Thread? current;
+        Task? current;
         lock (gate)
         {
             if (disposed) return;
-            disposed = true;
-            requested = visible = false;
-            current = thread;
+            disposed = true; visible = requested = false;
+            stopping.Cancel(); current = worker;
         }
-        if (current is not null && current != Thread.CurrentThread) current.Join(2000);
-    }
-
-    private sealed class InspectorForm : Form
-    {
-        private readonly TreeView tree = new() { Dock = DockStyle.Fill, HideSelection = false, AccessibleName = "文房具の階層" };
-        private readonly TextBox details = new() { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true,
-            ScrollBars = ScrollBars.Both, WordWrap = false, AccessibleName = "選択した文房具の情報" };
-        private readonly Button copy = new() { Text = "パスをコピー", Dock = DockStyle.Bottom, Height = 40, Enabled = false };
-        private readonly Dictionary<string, TreeNode> nodes = new(StringComparer.Ordinal);
-        private Dictionary<string, StationeryInspectionEntry> entries = new(StringComparer.Ordinal);
-
-        public InspectorForm()
+        try { current?.Wait(2000); } catch (AggregateException) { }
+        lock (gate)
         {
-            Text = "F12 開発者ウィンドウ — 文房具UI";
-            AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new(900, 520);
-            MinimumSize = new(640, 360);
-            StartPosition = FormStartPosition.CenterScreen;
-            KeyPreview = true;
-            Font = new System.Drawing.Font("Yu Gothic UI", 10);
-            var split = new SplitContainer { Dock = DockStyle.Fill, Size = ClientSize, SplitterDistance = 350 };
-            split.Panel1.Controls.Add(tree);
-            split.Panel2.Controls.Add(details);
-            split.Panel2.Controls.Add(copy);
-            Controls.Add(split);
-            Controls.Add(new Label { Dock = DockStyle.Top, Height = 52, Padding = new(12, 8, 12, 4),
-                Text = "文房具を選んで Id と完全パスを確認できます。F12 / Esc で閉じます。\nId は C# コードで付ける名前です。ここでは編集しません。" });
-            tree.AfterSelect += (_, _) => UpdateDetails();
-            copy.Click += (_, _) =>
-            {
-                if (tree.SelectedNode?.Name is not { } path) return;
-                try { Clipboard.SetText(path); }
-                catch (System.Runtime.InteropServices.ExternalException)
-                {
-                    MessageBox.Show(this, "クリップボードを使用できません。もう一度お試しください。", Text);
-                }
-            };
-            KeyDown += (_, e) =>
-            {
-                if (e.KeyCode is Keys.F12 or Keys.Escape) { e.SuppressKeyPress = true; Close(); }
-            };
-        }
-
-        public void RefreshSnapshot(StationeryInspectionEntry[] snapshot)
-        {
-            entries = snapshot.ToDictionary(entry => entry.Path, StringComparer.Ordinal);
-            if (!nodes.Keys.SequenceEqual(entries.Keys))
-            {
-                var selected = tree.SelectedNode?.Name;
-                tree.BeginUpdate();
-                tree.Nodes.Clear();
-                nodes.Clear();
-                foreach (var entry in snapshot) nodes.Add(entry.Path, new TreeNode { Name = entry.Path });
-                foreach (var entry in snapshot)
-                {
-                    var node = nodes[entry.Path];
-                    if (entry.ParentPath is not null && nodes.TryGetValue(entry.ParentPath, out var parent)) parent.Nodes.Add(node);
-                    else tree.Nodes.Add(node);
-                }
-                tree.ExpandAll();
-                tree.SelectedNode = selected is not null && nodes.TryGetValue(selected, out var previous)
-                    ? previous : tree.Nodes.Cast<TreeNode>().FirstOrDefault();
-                tree.EndUpdate();
-            }
-            foreach (var entry in snapshot)
-            {
-                var node = nodes[entry.Path];
-                node.Text = $"{entry.Id}  [{entry.Kind}]" + (entry.Visible ? "" : "  （非表示）");
-                node.ForeColor = entry.Visible ? System.Drawing.SystemColors.WindowText : System.Drawing.SystemColors.GrayText;
-            }
-            UpdateDetails();
-        }
-
-        private void UpdateDetails()
-        {
-            if (tree.SelectedNode?.Name is not { } path || !entries.TryGetValue(path, out var entry))
-            {
-                copy.Enabled = false;
-                details.Text = "文房具を選択してください。";
-                return;
-            }
-            copy.Enabled = true;
-            var bounds = entry.WindowBounds is { } b
-                ? string.Create(CultureInfo.InvariantCulture, $"X={b.X:0.##}, Y={b.Y:0.##}, 幅={b.Width:0.##}, 高さ={b.Height:0.##}") : "—";
-            var text = $"文房具 Id: {entry.Id}\r\n\r\n完全パス: {entry.Path}\r\n\r\n種類: {entry.Kind}\r\n名前: {entry.Label}\r\n表示: {(entry.Visible ? "表示中" : "非表示")}\r\n\r\nウィンドウ内の位置（px）:\r\n{bounds}";
-            if (details.Text != text) details.Text = text;
+            if (process is { HasExited: false }) process.Kill();
         }
     }
 }
