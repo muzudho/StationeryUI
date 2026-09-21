@@ -15,7 +15,10 @@ public sealed class StationeryDeveloperView : IDisposable
 {
     private readonly StationeryUiHost ui;
     private readonly ITextInputService input;
-    private readonly StationeryUiHost.Element header, split, tree, details, copy, capture;
+    private readonly StationeryUiHost.Element header, split, tree, details, copy, capture, toolHint;
+    public ScreenRectangle InspectorPanelBounds { get; private set; }
+    public ScreenRectangle ToolHintBounds => toolHint.Bounds;
+    public string ToolHintText => toolHint.Label;
     public bool CaptureEnabled { get; private set; }
     public ScreenRectangle CaptureBounds => capture.Bounds;
     public StationeryDeveloperStyle Style { get; }
@@ -35,18 +38,24 @@ public sealed class StationeryDeveloperView : IDisposable
         this.input = input;
         Style = style ?? StationeryDeveloperStyle.Load();
         var root = Style.Settings.Models[0].CreateTree();
-        var splitNode = root.Resolve("/developerWindow/inspectorSplit")!;
-        var treeNode = root.Resolve("/developerWindow/inspectorSplit/stationeryTree")!;
-        var detailsNode = root.Resolve("/developerWindow/inspectorSplit/details")!;
+        var splitNode = root.Resolve("/developerViewport/developerWindow/inspectorSplit")!;
+        var treeNode = root.Resolve("/developerViewport/developerWindow/inspectorSplit/stationeryTree")!;
+        var detailsNode = root.Resolve("/developerViewport/developerWindow/inspectorSplit/details")!;
         ui = new(graphics, input, rasterizerFactory, root);
-        header = ui.AddTextBlock(root.Resolve("/developerWindow/instructions")!, new(), "F12 開発者ウィンドウ\n文房具を選択して Id・パス・位置を確認。F12 / Esc で閉じる。");
+        header = ui.AddTextBlock(root.Resolve("/developerViewport/developerWindow/instructions")!, new(), "開発者ウィンドウ");
         split = ui.AddSplitPane(splitNode, new(), "階層と詳細", Style.SplitOptions);
         tree = ui.AddTree(treeNode, new(), "文房具の階層", Model.Tree);
         details = ui.AddTextBlock(detailsNode, new(), Model.Details);
-        copy = ui.AddButton(root.Resolve("/developerWindow/copyPath")!, new(), "パスをコピー", CopySelectedPath);
-        var captureNode = root.Resolve("/developerWindow/capture") ?? root.AddChild("capture", "button");
+        copy = ui.AddButton(root.Resolve("/developerViewport/developerWindow/copyPath")!, new(), "パスをコピー", CopySelectedPath);
+        var captureNode = root.Resolve("/developerViewport/developerWindow/capture")
+            ?? root.Resolve("/developerViewport/developerWindow")!.AddChild("capture", "button");
         capture = ui.AddButton(captureNode, new(), "キャプチャー", () => CaptureEnabled = !CaptureEnabled);
         capture.ToolHint = "キャプチャー：画面上の文房具を選択。もう一度押すと解除。";
+        toolHint = ui.AddTextBlock(root.Resolve("/developerViewport/developerWindow/inspectorPanel/toolHint")!, new(), "");
+        tree.ToolHint = "文房具を選ぶと Id・パス・位置を表示します。矢印キーで移動、＋／－で枝を開閉。";
+        split.ToolHint = "仕切りをドラッグ、または左右キーで階層と詳細の幅を調整します。";
+        details.ToolHint = "詳細はスクロールできます。Ctrl+C で詳細全体をコピーします。";
+        copy.ToolHint = "選択した文房具の完全パスをクリップボードへコピーします。";
         ui.BindSplitContent(split, tree, details);
         ui.Focus.Focus(tree.Path);
     }
@@ -94,10 +103,12 @@ public sealed class StationeryDeveloperView : IDisposable
         header.Bounds = new(header.Bounds.X + 56, header.Bounds.Y, Math.Max(0, header.Bounds.Width - 56), header.Bounds.Height);
         split.Bounds = layout.ContentBounds[split.Path];
         copy.Bounds = layout.ContentBounds[copy.Path];
+        InspectorPanelBounds = layout.Bounds["/developerViewport/developerWindow/inspectorPanel"];
+        toolHint.Bounds = layout.ContentBounds[toolHint.Path];
         ui.Focus.SetEnabled(copy.Path, Model.SelectedPath is not null);
         var before = Model.SelectedPath;
         ui.Update(time, active, keyboard, mouse);
-        header.Label = "F12 開発者ウィンドウ\n" + (CaptureEnabled
+        toolHint.Label = ui.HoveredToolHint ?? (CaptureEnabled
             ? "キャプチャー中：画面上の文房具をクリック。手のボタンで解除。"
             : "手のボタンでキャプチャー。F12 / Esc で閉じる。");
         if (before != Model.SelectedPath) { details.Scroll = 0; copy.Label = "パスをコピー"; }

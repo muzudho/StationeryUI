@@ -119,6 +119,7 @@ internal sealed class InspectorGame : Game
             var report = new { ProcessId = Environment.ProcessId, IsActive, InputSequence = testInput?.Sequence ?? 0, view.FocusedPath,
                 CopiedPath = view.LastCopiedPath is null ? null : input!.ReadClipboard(), State = view.Capture(shown), view.Model.Details,
                 view.TreeBounds, view.SplitBounds, view.CopyBounds, view.CaptureBounds, view.DetailsBounds, view.DetailsScroll,
+                view.InspectorPanelBounds, view.ToolHintBounds, view.ToolHintText,
                 Rows = view.Model.Tree.VisibleRows().Select(row => new { Path = view.Model.PathFor(row.Item), row.Depth, row.Item.IsExpanded }) };
             File.WriteAllText(Path.Combine(testOutput, "report.tmp"), JsonSerializer.Serialize(report));
             File.Move(Path.Combine(testOutput, "report.tmp"), Path.Combine(testOutput, "report.json"), true);

@@ -5,33 +5,97 @@
     },
     "models": [
         {
-            "id": "developerWindow",
+            "id": "developerViewport",
             "type": "viewport",
             "children": [
-                { "id": "instructions", "type": "textBlock" },
                 {
-                    "id": "inspectorSplit",
-                    "type": "splitPane",
+                    "id": "developerWindow",
+                    "type": "page",
                     "children": [
-                        { "id": "stationeryTree", "type": "tree" },
-                        { "id": "details", "type": "textBlock" }
+                        {
+                            "id": "instructions",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "inspectorSplit",
+                            "type": "splitPane",
+                            "children": [
+                                {
+                                    "id": "stationeryTree",
+                                    "type": "tree"
+                                },
+                                {
+                                    "id": "details",
+                                    "type": "textBlock"
+                                }
+                            ]
+                        },
+                        {
+                            "id": "copyPath",
+                            "type": "button"
+                        },
+                        {
+                            "id": "inspectorPanel",
+                            "type": "container",
+                            "children": [
+                                {
+                                    "id": "toolHint",
+                                    "type": "textBlock"
+                                }
+                            ]
+                        }
                     ]
-                },
-                { "id": "copyPath", "type": "button" }
+                }
             ]
         }
     ],
     "layouts": [
         {
+            "id": "workPage",
+            "type": "work-page-layout",
+            "inspectorHeight": "80px"
+        },
+        {
+            "id": "inspectorPadding",
+            "type": "panel",
+            "padding": {
+                "top": "8px",
+                "right": "8px",
+                "bottom": "8px",
+                "left": "8px"
+            }
+        },
+        {
+            "id": "inspectorContents",
+            "type": "floating-layout",
+            "row-definitions": [
+                "1rate"
+            ],
+            "column-definitions": [
+                "1rate"
+            ]
+        },
+        {
             "id": "windowPadding",
             "type": "panel",
-            "padding": { "top": "8px", "right": "8px", "bottom": "8px", "left": "8px" }
+            "padding": {
+                "top": "8px",
+                "right": "8px",
+                "bottom": "8px",
+                "left": "8px"
+            }
         },
         {
             "id": "windowRows",
             "type": "floating-layout",
-            "row-definitions": ["104px", "1rate", "48px"],
-            "column-definitions": ["1rate"]
+            "row-definitions": [
+                "56px",
+                "1rate",
+                "48px"
+            ],
+            "column-definitions": [
+                "1rate"
+            ]
         },
         {
             "id": "inspectorColumns",
@@ -43,19 +107,54 @@
         }
     ],
     "bindings": [
-        { "layout": "windowPadding", "model": "developerWindow" },
+        {
+            "layout": "workPage",
+            "model": "developerViewport/developerWindow",
+            "inspectorModel": "inspectorPanel"
+        },
+        {
+            "layout": "inspectorPadding",
+            "model": "developerViewport/developerWindow/inspectorPanel"
+        },
+        {
+            "layout": "inspectorContents",
+            "parentModel": "developerViewport/developerWindow/inspectorPanel",
+            "childrenModel": [
+                {
+                    "model": "toolHint",
+                    "row": 0,
+                    "column": 0
+                }
+            ]
+        },
+        {
+            "layout": "windowPadding",
+            "model": "developerViewport/developerWindow"
+        },
         {
             "layout": "windowRows",
-            "parentModel": "developerWindow",
+            "parentModel": "developerViewport/developerWindow",
             "childrenModel": [
-                { "model": "instructions", "row": 0, "column": 0 },
-                { "model": "inspectorSplit", "row": 1, "column": 0 },
-                { "model": "copyPath", "row": 2, "column": 0 }
+                {
+                    "model": "instructions",
+                    "row": 0,
+                    "column": 0
+                },
+                {
+                    "model": "inspectorSplit",
+                    "row": 1,
+                    "column": 0
+                },
+                {
+                    "model": "copyPath",
+                    "row": 2,
+                    "column": 0
+                }
             ]
         },
         {
             "layout": "inspectorColumns",
-            "model": "developerWindow/inspectorSplit",
+            "model": "developerViewport/developerWindow/inspectorSplit",
             "firstModel": "stationeryTree",
             "secondModel": "details"
         }

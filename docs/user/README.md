@@ -157,7 +157,7 @@ ui.Viewport.Scale = 1.5;
 
 - [他アプリへのスタイル設定組み込みガイド](style-settings/README.md)：AI 向けの接続例、オートリロード、JSON の読み方、既存 C# からの段階的な移行。
 
-- [インスペクターパネルとツールヒント欄](inspector-panel-guide.md)：画面下の80pxに操作説明を集約する設計ガイド。
+- [インスペクターパネルとツールヒント欄](inspector-panel-guide.md)：画面下の80pxに操作説明を集約する、おすすめのスタイルガイドライン（必須ではありません）。
 
 - [下線付きテキストの見分け方](underline-guide.md)
 - [リストUI設計の目安](list-ui-guidelines.md)
