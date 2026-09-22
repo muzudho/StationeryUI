@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using StationeryUI.Controls;
+using StationeryUI.Inspection;
 using StationeryUI.MonoGame;
 using StationeryUI.StyleDesigner;
 using StationeryUI.Styling;
@@ -13,6 +14,9 @@ internal sealed partial class DesignerGame
     private Action? pendingPage;
     private StationeryUiHost? sidebar;
     private StationeryUiHost.Element? styleTree;
+    private StationeryUiHost.Element? modelTreeModeButton, layoutTreeModeButton, jsonTreeModeButton;
+    private readonly DeveloperInspectionModel semanticTree = new();
+    private DesignerTreeMode designerTreeMode = DesignerTreeMode.Layout;
     private string sourceFile = "";
     private string? treeJson;
     private string? lastValidTreeJson;
@@ -31,6 +35,8 @@ internal sealed partial class DesignerGame
     private bool HasLayoutTarget => TargetLayoutId is { } id
         && id == (blueprint.IsImported ? blueprint.SelectedLayoutId : "/mainGrid");
     private readonly string? smokeInput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_INPUT");
+
+    private enum DesignerTreeMode { Model, Layout, Json }
 
     private void BuildWelcome()
     {
@@ -91,13 +97,18 @@ internal sealed partial class DesignerGame
         if (sidebar is not null && styleTree is not null)
         {
             sidebar.Theme = theme;
+            UpdateDesignerTreeButtons();
             try { RefreshTree(blueprint.BuildJson()); } catch (System.Text.Json.JsonException) { }
             return;
         }
         sidebar?.Dispose();
         sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
         sidebar.AddTextBlock(sidebar.Root.AddChild("heading", "textBlock"), new(8, 8, 300, 36), "スタイルツリー");
-        styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 48, 300, 644), "スタイルの構造", new());
+        modelTreeModeButton = sidebar.AddButton("modelTreeMode", new(8, 46, 94, 32), "モデル", () => SetDesignerTreeMode(DesignerTreeMode.Model));
+        layoutTreeModeButton = sidebar.AddButton("layoutTreeMode", new(106, 46, 94, 32), "レイアウト", () => SetDesignerTreeMode(DesignerTreeMode.Layout));
+        jsonTreeModeButton = sidebar.AddButton("jsonTreeMode", new(204, 46, 94, 32), "JSON", () => SetDesignerTreeMode(DesignerTreeMode.Json));
+        styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 84, 300, 608), "スタイルの構造", new());
+        UpdateDesignerTreeButtons();
         BuildTreeActions();
         treeJson = null;
         try { RefreshTree(blueprint.BuildJson()); }
@@ -105,6 +116,77 @@ internal sealed partial class DesignerGame
     }
 
     private void RefreshTree(string json)
+    {
+        if (designerTreeMode == DesignerTreeMode.Json) RefreshJsonTree(json);
+        else RefreshSemanticTree(json);
+    }
+
+    private void SetDesignerTreeMode(DesignerTreeMode mode)
+    {
+        if (designerTreeMode == mode) return;
+        Capture();
+        designerTreeMode = mode;
+        treeJson = null;
+        lastTreeSelection = null;
+        UpdateDesignerTreeButtons();
+        try { RefreshTree(blueprint.BuildJson()); }
+        catch (System.Text.Json.JsonException) { }
+    }
+
+    private void UpdateDesignerTreeButtons()
+    {
+        if (modelTreeModeButton is null) return;
+        modelTreeModeButton.Label = (designerTreeMode == DesignerTreeMode.Model ? "● " : "") + "モデル";
+        layoutTreeModeButton!.Label = (designerTreeMode == DesignerTreeMode.Layout ? "● " : "") + "レイアウト";
+        jsonTreeModeButton!.Label = (designerTreeMode == DesignerTreeMode.Json ? "● " : "") + "JSON";
+    }
+
+    private void RefreshSemanticTree(string json)
+    {
+        if (json == treeJson || styleTree is null) return;
+        var previous = semanticTree.SelectedPath;
+        var snapshot = blueprint.CreatePreview(Math.Max(1, previewWindow.Width), Math.Max(1, previewWindow.Height));
+        var root = snapshot.Settings.Models[0].CreateTree();
+        var entries = new List<StationeryInspectionEntry>();
+        bool InPreview(string path) => path == snapshot.ScopePath || path.StartsWith(snapshot.ScopePath + "/", StringComparison.Ordinal)
+            || snapshot.ScopePath.StartsWith(path + "/", StringComparison.Ordinal);
+        void Visit(StationeryNode node)
+        {
+            snapshot.Layout.Bounds.TryGetValue(node.Path, out var bounds);
+            entries.Add(new(node.Id, node.Path, node.Parent?.Path, node.Kind, node.Id, InPreview(node.Path), bounds));
+            foreach (var child in node.Children) Visit(child);
+        }
+        Visit(root);
+        var enriched = DeveloperInspectionLayout.Apply(entries, snapshot.Settings, snapshot.Layout);
+        var targetMode = designerTreeMode == DesignerTreeMode.Model ? DeveloperTreeMode.Model : DeveloperTreeMode.Layout;
+        semanticTree.SetTreeMode(targetMode);
+        semanticTree.Refresh(enriched);
+        if (revealLayout is not null)
+        {
+            var requested = revealLayout;
+            var semanticLayoutPath = enriched.SelectMany(e => e.LayoutNodes ?? [])
+                .FirstOrDefault(l => l.Path.EndsWith(":" + requested, StringComparison.Ordinal))?.Path ?? requested;
+            if (semanticTree.Select(semanticLayoutPath)) revealLayout = null;
+        }
+        else if (previous is not null) semanticTree.Select(previous);
+        sidebar!.ReplaceTree(styleTree!, semanticTree.Tree);
+        treePaths.Clear(); treeLayouts.Clear();
+        var rootLayouts = snapshot.Settings.Bindings
+            .GroupBy(b => b.ModelPath, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => "/" + g.First().Layout.Split('/')[1], StringComparer.Ordinal);
+        foreach (var row in semanticTree.Tree.VisibleRows())
+        {
+            var path = semanticTree.PathFor(row.Item);
+            if (path is null) continue;
+            var separator = path.IndexOf(':');
+            if (separator >= 0) treeLayouts[row.Item.Id] = path[(separator + 1)..];
+            else if (rootLayouts.TryGetValue(path, out var rootLayout)) treeLayouts[row.Item.Id] = rootLayout;
+        }
+        treeJson = lastValidTreeJson = json;
+        UpdateTreeActions();
+    }
+
+    private void RefreshJsonTree(string json)
     {
         if (json == treeJson || styleTree is null) return;
         var old = new Dictionary<string, bool>();
@@ -209,6 +291,16 @@ internal sealed partial class DesignerGame
                 var visible = styleTree!.Tree!.VisibleRows();
                 var index = visible.ToList().FindIndex(r => treeLayouts.GetValueOrDefault(r.Item.Id) == target);
                 if (index < 0) throw new InvalidOperationException("Layout missing from style tree.");
+                if (designerTreeMode != DesignerTreeMode.Json)
+                {
+                    if (editFrame == 5)
+                    {
+                        var item = visible[index].Item;
+                        styleTree.Tree.SetTarget(item);
+                    }
+                    mouse = new();
+                    return;
+                }
                 var treePoint = sidebar!.Viewport.ToWindow(new StationeryUI.Canvas.ScreenRectangle(60, styleTree.Bounds.Y + index * 32 + 16, 1, 1));
                 mouse = new((int)treePoint.X, (int)treePoint.Y, 0, editFrame == 5 ? ButtonState.Pressed : ButtonState.Released,
                     ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
@@ -273,7 +365,7 @@ internal sealed partial class DesignerGame
             if (editingPage) throw new InvalidOperationException("Cancel should stay on the first page.");
             return;
         }
-        if (!editingPage || styleTree?.Tree?.Roots.Count < 3) throw new InvalidOperationException("Page navigation or style tree failed.");
+        if (!editingPage || styleTree?.Tree?.Roots.Count < 1) throw new InvalidOperationException("Page navigation or style tree failed.");
         if (!string.IsNullOrEmpty(smokeInput))
         {
             if (!blueprint.IsImported) throw new InvalidOperationException("Imported style editing failed.");

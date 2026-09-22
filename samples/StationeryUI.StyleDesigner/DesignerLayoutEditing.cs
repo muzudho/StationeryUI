@@ -47,6 +47,16 @@ internal sealed partial class DesignerGame
         var target = styleTree?.Tree?.TargetItem;
         var path = target is not null ? treePaths.GetValueOrDefault(target.Id) : null;
         var canAdd = path is ["layouts"];
+        if (designerTreeMode != DesignerTreeMode.Json && TargetLayoutId is { } semanticLayout)
+        {
+            try
+            {
+                var node = StyleBlueprint.FindLayout(JsonNode.Parse(blueprint.BuildJson())!, semanticLayout);
+                canAdd = (string?)node?["type"] == "grid-layout" ||
+                    (string?)node?["type"] == "box-layout" && (node?["children"] as JsonArray)?.Count is null or 0;
+            }
+            catch (System.Text.Json.JsonException) { canAdd = false; }
+        }
         if (!canAdd && path is not null)
         {
             try
@@ -59,12 +69,13 @@ internal sealed partial class DesignerGame
             catch (System.Text.Json.JsonException) { }
         }
         sidebar.Focus.SetEnabled(addChild.Path, canAdd);
-        sidebar.Focus.SetEnabled(deleteNode.Path, IsEditableLayoutPath(path));
+        sidebar.Focus.SetEnabled(deleteNode.Path, designerTreeMode == DesignerTreeMode.Json && IsEditableLayoutPath(path));
         if (renameId is not null)
         {
             var enabled = false;
             try { enabled = IsEditableLayoutPath(path) && blueprint.NodeId(path!) is not null; }
             catch (System.Text.Json.JsonException) { }
+            if (designerTreeMode != DesignerTreeMode.Json) enabled = false;
             sidebar.Focus.SetEnabled(renameId.Path, enabled);
         }
     }
@@ -77,7 +88,9 @@ internal sealed partial class DesignerGame
             Capture();
             var target = styleTree?.Tree?.TargetItem;
             var path = target is null ? null : treePaths.GetValueOrDefault(target.Id);
-            addParentLayout = path is null or ["layouts"] ? null : blueprint.LayoutPathFor(path[^1] == "children" ? path[..^1] : path);
+            addParentLayout = designerTreeMode != DesignerTreeMode.Json
+                ? (TargetLayoutId is { } selectedLayout && selectedLayout.Count(c => c == '/') > 1 ? selectedLayout : null)
+                : path is null or ["layouts"] ? null : blueprint.LayoutPathFor(path[^1] == "children" ? path[..^1] : path);
             var suffix = 1;
             while (blueprint.ValidateChildId("layout" + suffix, addParentLayout).Error is not null) suffix++;
             OpenIdDialog(null, "layout" + suffix);
@@ -212,7 +225,9 @@ internal sealed partial class DesignerGame
         if (frames <= 5)
         {
             var rows = styleTree!.Tree!.VisibleRows();
-            var index = rows.ToList().FindIndex(r => treePaths.GetValueOrDefault(r.Item.Id) is ["layouts"]);
+            var index = rows.ToList().FindIndex(r => treeLayouts.TryGetValue(r.Item.Id, out var layout)
+                && layout.Count(c => c == '/') == 1
+                && (string?)StyleBlueprint.FindLayout(JsonNode.Parse(blueprint.BuildJson())!, layout)?["type"] is "grid-layout" or "box-layout");
             mouse = SmokeMouse(sidebar!, 80, styleTree.Bounds.Y + index * 32 + 16, frames == 4);
         }
         else if (frames <= 7)
