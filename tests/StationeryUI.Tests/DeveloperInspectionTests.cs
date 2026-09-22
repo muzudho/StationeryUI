@@ -127,7 +127,7 @@ internal static class DeveloperInspectionTests
         Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner + ":/layoutShowcase/box", "model under direct box layout");
         Check(model.Select(owner + ":/layoutShowcase/box"), "hidden intermediate box is inspectable");
         Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner, "nested layout attached directly to merged owner");
-        Check(model.SelectedEntry!.BoxModel!.Padding.Left == 24 && model.SelectedEntry.BoxModel.Margin.Left == 6, "intermediate layout owns its own insets");
+        Check(model.SelectedEntry!.BoxModel!.Padding.Left == 24 && model.SelectedEntry.BoxModel.Margin.Left == 8, "intermediate layout owns its own insets");
         var arranged = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 1000, 700);
         var snapshot = DeveloperInspectionLayout.Apply(entries, settings, arranged);
         var received = System.Text.Json.JsonSerializer.Deserialize<StationeryInspectionEntry[]>(

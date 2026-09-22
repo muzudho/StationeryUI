@@ -363,7 +363,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 {
                     if (item.TryGetProperty("model", out _)) throw new JsonException($"{path}: box-layout uses either model or parentModel, not both.");
                     var boxParent = ResolveModel(modelTree, ReadString(item, "parentModel", path), null);
-                    if (boxParent.Kind is not ("viewport" or "page" or "container" or "dialog"))
+                    if (boxParent.Kind is not ("viewport" or "page" or "container" or "dialog" or "textBlock" or "link"))
                         throw new JsonException($"{boxParent.Path} cannot be a box parent.");
                     if (!panels.Add(boxParent.Path + ":" + layout.Path)) throw new JsonException($"Multiple box-layout bindings for {boxParent.Path}.");
                     var boxChildren = new List<StationeryCellBinding>();

@@ -9,15 +9,23 @@ internal static class PageLayoutTests
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json")))!;
         var settings = StationeryStyleSettings.Parse(json.ToJsonString());
         var model = DemoModelBinding.Create(settings);
-        Check(settings.Layouts.Count(l => l.Type == "box-layout") == 1, "only border demonstration box remains");
+        Check(settings.Layouts.Count(l => l.Type == "box-layout") == 3, "border demonstration and model-owned margin boxes remain");
         var oldJson = json.DeepClone();
         var link = oldJson["models"]![0]!["children"]!.AsArray().Single(n => (string?)n!["id"] == "layoutDemoPage")!["children"]!
             .AsArray().Single(n => (string?)n!["id"] == "body")!["children"]!.AsArray().Single(n => (string?)n!["id"] == "topDemoLink")!;
-        var oldMargin = link["margin"]!.DeepClone();
+        var oldMargin = new JsonObject { ["top"] = "4px", ["right"] = "4px", ["bottom"] = "4px", ["left"] = "4px" };
+        link["margin"] = oldMargin.DeepClone();
         link.AsObject().Remove("margin");
+        var oldBindings = oldJson["bindings"]!.AsArray();
+        foreach (var obsoleteBinding in oldBindings.Where(b => (string?)b!["layout"] == "/topDemoLinkBox").ToArray()) oldBindings.Remove(obsoleteBinding);
+        foreach (var obsoleteBinding in oldBindings.Where(b => (string?)b!["layout"] == "/spanCellBox").ToArray()) oldBindings.Remove(obsoleteBinding);
         oldJson["layouts"]!.AsArray().Add(new JsonObject { ["id"] = "elementMargin1", ["type"] = "box-layout",
             ["padding"] = new JsonObject { ["top"] = "0px", ["right"] = "0px", ["bottom"] = "0px", ["left"] = "0px" }, ["margin"] = oldMargin });
         oldJson["bindings"]!.AsArray().Add(new JsonObject { ["layout"] = "/elementMargin1", ["model"] = "demo/layoutDemoPage/body/topDemoLink" });
+        oldJson["layouts"]!.AsArray().Add(new JsonObject { ["id"] = "elementMargin2", ["type"] = "box-layout",
+            ["padding"] = new JsonObject { ["top"] = "0px", ["right"] = "0px", ["bottom"] = "0px", ["left"] = "0px" },
+            ["margin"] = new JsonObject { ["top"] = "16px", ["right"] = "16px", ["bottom"] = "16px", ["left"] = "16px" } });
+        oldJson["bindings"]!.AsArray().Add(new JsonObject { ["layout"] = "/elementMargin2", ["model"] = "demo/layoutDemoPage/body/spanCell" });
         var oldSettings = StationeryStyleSettings.Parse(oldJson.ToJsonString());
         foreach (var (w, h) in new[] { (1000, 660), (720, 560), (20, 20) })
         {
