@@ -110,6 +110,8 @@ public sealed class TreeItem
     public string Path => (Parent?.Path ?? "") + "/" + Id;
     public IReadOnlyList<TreeItem> Children { get; }
     public bool IsExpanded { get; internal set; }
+    /// <summary>Dims the row when the represented item is currently outside the visible page.</summary>
+    public bool IsDimmed { get; set; }
     internal TreeItem(TreeView owner, string id, string label, TreeItem? parent, bool expanded)
     {
         Owner = owner; Id = id; Label = label; Parent = parent; IsExpanded = expanded;

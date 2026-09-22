@@ -77,6 +77,7 @@ public sealed class DeveloperInspectionModel
                     if (entry.ParentPath is { } parentPath && entries.ContainsKey(parentPath) && !items.TryGetValue(parentPath, out parent)) continue;
                     // The full source path is the identity; generated IDs also allow partial snapshots with duplicate root IDs.
                     var item = Tree.AddNode("node" + items.Count.ToString(CultureInfo.InvariantCulture), "", parent);
+                    item.IsDimmed = !entry.Visible;
                     items.Add(entry.Path, item); paths.Add(item, entry.Path); pending.Remove(entry); progress = true;
                 }
                 if (!progress) throw new ArgumentException("Inspection hierarchy contains a cycle.", nameof(snapshot));
@@ -84,8 +85,11 @@ public sealed class DeveloperInspectionModel
             RestoreSelection(state);
         }
         foreach (var (path, entry) in entries)
+        {
+            items[path].IsDimmed = !entry.Visible;
             items[path].Label = TreeMode == DeveloperTreeMode.Layout
                 ? DeveloperInspectionLayout.FormatLabel(entry) : DeveloperInspectionLayout.FormatModelLabel(entry);
+        }
     }
 
     private string? ResolveMergedPath(string? path) => path is null ? null : mergedLayoutPaths.GetValueOrDefault(path, path);

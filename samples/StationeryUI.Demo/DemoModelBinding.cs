@@ -410,24 +410,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             "bottom": "2px",
             "left": "2px"
           },
-          "children": [
-            {
-              "id": "content",
-              "type": "grid-layout",
-              "row-definitions": [
-                "1rate"
-              ],
-              "column-definitions": [
-                "1rate"
-              ],
-              "cells": [
-                {
-                  "row": 0,
-                  "col": 0
-                }
-              ]
-            }
-          ],
+          "children": [],
           "row": 2,
           "col": 0
         },
@@ -752,15 +735,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "/layoutShowcase/box/content",
+      "layout": "/layoutShowcase/box",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
-          "model": "boxContent",
-          "cell": {
-            "row": 1,
-            "col": 1
-          }
+          "model": "boxContent"
         }
       ]
     },

@@ -124,7 +124,7 @@ internal static class DeveloperInspectionTests
         model.Refresh(DeveloperInspectionLayout.Apply(entries, settings));
         model.SetTreeMode(DeveloperTreeMode.Layout);
         Check(model.Select(owner + "/boxContent"), "nested model selectable by capture path");
-        Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner + ":/layoutShowcase/box/content", "model under nested content layout");
+        Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner + ":/layoutShowcase/box", "model under direct box layout");
         Check(model.Select(owner + ":/layoutShowcase/box"), "hidden intermediate box is inspectable");
         Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner, "nested layout attached directly to merged owner");
         Check(model.SelectedEntry!.BoxModel!.Padding.Left == 24 && model.SelectedEntry.BoxModel.Margin.Left == 6, "intermediate layout owns its own insets");
@@ -138,10 +138,10 @@ internal static class DeveloperInspectionTests
         var key = owner + ":/layoutShowcase/box";
         var selection = DeveloperInspectionLayout.FindVisibleEntry(received, key);
         Check(selection?.WindowBounds == arranged.LayoutBounds[key], "nested layout window bounds survive transport");
-        var contentKey = key + "/content";
-        var content = DeveloperInspectionLayout.FindVisibleEntry(received, contentKey)!.WindowBounds!.Value;
+        var content = arranged.Bounds[owner + "/boxContent"];
         var outer = selection!.WindowBounds!.Value;
-        Check(content.X == outer.X + 24 && content.Width == outer.Width - 48, "outline includes padding, child content is inset");
+        Check(content.X == outer.X + 24 && content.Width == outer.Width - 48,
+            $"direct box child includes box padding and model margin ({content} vs {outer})");
         Check(DeveloperCapture.HitTest(received, outer.X + 1, outer.Y + 1) is null, "layout metadata does not intercept model captures");
         Check(DeveloperInspectionLayout.FindVisibleEntry(DeveloperInspectionLayout.Apply(entries.Select(e => e with { Visible = false }).ToArray(), settings, arranged), key) is null, "hidden owner has no layout outline");
         Check(DeveloperInspectionLayout.FindVisibleEntry(DeveloperInspectionLayout.Apply(entries, settings), key) is null, "missing arrangement has no invented rectangle");

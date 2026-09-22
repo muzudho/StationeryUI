@@ -83,6 +83,10 @@ public static class StationeryLayoutEngine
                 foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
                     foreach (var child in binding.Children)
                         positions.Add(child.ModelPath, Cell(layout, content, child.Row, child.Column, child.RowSpan, child.ColumnSpan));
+            if (layout.Type == "box-layout")
+                foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
+                    foreach (var child in binding.Children)
+                        positions[child.ModelPath] = content;
             if (layout.Type == "dock-layout")
                 foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
                 {

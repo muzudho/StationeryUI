@@ -236,16 +236,17 @@ public sealed partial class StationeryUiHost
                 Fill(new(rect.X + rect.Width - 2, rect.Y, 2, rect.Height), color);
             }
             var x = element.Bounds.X + theme.Padding + row.Depth * 24 - element.TreeHorizontalScroll;
+            var textColor = row.Item.IsDimmed ? theme.DisabledText : theme.Text;
             if (row.Item.Children.Count > 0)
             {
                 // Draw the box and +/- as geometry: the affordance does not depend on font glyphs.
                 var box = new ScreenRectangle(x + 2, y + (height - 20) / 2, 20, 20);
                 Fill(box, theme.Border);
                 Fill(new(box.X + 1, box.Y + 1, 18, 18), theme.Surface);
-                Fill(new(box.X + 5, box.Y + 9, 10, 2), theme.Text);
-                if (!row.Item.IsExpanded) Fill(new(box.X + 9, box.Y + 5, 2, 10), theme.Text);
+                Fill(new(box.X + 5, box.Y + 9, 10, 2), textColor);
+                if (!row.Item.IsExpanded) Fill(new(box.X + 9, box.Y + 5, 2, 10), textColor);
             }
-            DrawText(row.Item.Label, x + 30, y + 4, theme, theme.Text);
+            DrawText(row.Item.Label, x + 30, y + 4, theme, textColor);
         }
         if (bars.MaximumY > 0)
         {

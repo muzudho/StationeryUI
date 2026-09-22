@@ -359,11 +359,31 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             }
             if (layout.Type == "box-layout")
             {
-                if (item.TryGetProperty("parentModel", out _) || item.TryGetProperty("childrenModel", out _))
-                    throw new JsonException($"{path}: a box-layout binding uses model, not parentModel/childrenModel.");
-                var node = ResolveModel(modelTree, ReadString(item, "model", path), null);
-                if (!panels.Add(node.Path + ":" + layout.Path)) throw new JsonException($"Multiple box-layout bindings for {node.Path}.");
-                bindings.Add(new(layoutId, node.Path, Array.Empty<StationeryCellBinding>()));
+                if (item.TryGetProperty("parentModel", out _))
+                {
+                    if (item.TryGetProperty("model", out _)) throw new JsonException($"{path}: box-layout uses either model or parentModel, not both.");
+                    var boxParent = ResolveModel(modelTree, ReadString(item, "parentModel", path), null);
+                    if (boxParent.Kind is not ("viewport" or "page" or "container" or "dialog"))
+                        throw new JsonException($"{boxParent.Path} cannot be a box parent.");
+                    if (!panels.Add(boxParent.Path + ":" + layout.Path)) throw new JsonException($"Multiple box-layout bindings for {boxParent.Path}.");
+                    var boxChildren = new List<StationeryCellBinding>();
+                    foreach (var child in ReadArray(item, "childrenModel", path).EnumerateArray())
+                    {
+                        var childPath = $"{path}.childrenModel[{boxChildren.Count}]";
+                        RequireObject(child, childPath);
+                        var node = ResolveModel(modelTree, ReadString(child, "model", childPath), boxParent);
+                        if (node.Parent != boxParent || !placedModels.Add(node.Path) || boxChildren.Count > 0)
+                            throw new JsonException($"{childPath}: box-layout requires one direct child model.");
+                        boxChildren.Add(new(node.Path, 0, 0));
+                    }
+                    bindings.Add(new(layoutId, boxParent.Path, boxChildren.AsReadOnly()));
+                }
+                else
+                {
+                    var node = ResolveModel(modelTree, ReadString(item, "model", path), null);
+                    if (!panels.Add(node.Path + ":" + layout.Path)) throw new JsonException($"Multiple box-layout bindings for {node.Path}.");
+                    bindings.Add(new(layoutId, node.Path, Array.Empty<StationeryCellBinding>()));
+                }
                 continue;
             }
             if (item.TryGetProperty("model", out _)) throw new JsonException($"{path}: grid-layout uses parentModel and childrenModel.");
