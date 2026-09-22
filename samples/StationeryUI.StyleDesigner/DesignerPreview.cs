@@ -40,7 +40,7 @@ internal sealed partial class DesignerGame
         var key = json + $"|{width}|{height}|{blueprint.SelectedLayoutId}|{selectedRow}|{selectedColumn}|{theme.Background}";
         if (key != previewKey)
         {
-            var snapshot = blueprint.CreatePreview(width, height);
+            var snapshot = blueprint.CreatePreview(width, height, TargetLayoutId);
             ResetLivePreview(); previewSnapshot = snapshot;
             livePreview = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family))
             { Theme = theme, UseStationeryButtons = true };

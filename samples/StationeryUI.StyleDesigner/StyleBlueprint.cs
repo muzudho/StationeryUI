@@ -42,11 +42,11 @@ public sealed class StyleBlueprint
     public sealed record Preview(string Json, StationeryStyleSettings Settings, StationeryLayoutResult Layout,
         string ScopePath, bool Standalone, IReadOnlyList<(int Row, int Column, StationeryUI.Canvas.ScreenRectangle Bounds)> Cells);
 
-    public Preview CreatePreview(double width, double height)
+    public Preview CreatePreview(double width, double height, string? targetLayoutId = null)
     {
         var json = BuildJson();
         var settings = StationeryStyleSettings.Parse(json);
-        var selectedId = IsImported ? SelectedLayoutId : "/mainGrid";
+        var selectedId = targetLayoutId ?? (IsImported ? SelectedLayoutId : "/mainGrid");
         var binding = settings.Bindings.FirstOrDefault(b => ("/" + b.Layout.Split('/')[1]) == (selectedId is null ? null : "/" + selectedId.Split('/')[1]));
         var standalone = selectedId is not null && binding is null;
         if (standalone)

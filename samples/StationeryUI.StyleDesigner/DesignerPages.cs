@@ -32,8 +32,7 @@ internal sealed partial class DesignerGame
             return null;
         }
     }
-    private bool HasLayoutTarget => TargetLayoutId is { } id
-        && id == (blueprint.IsImported ? blueprint.SelectedLayoutId : "/mainGrid");
+    private bool HasLayoutTarget => TargetLayoutId is not null;
     private readonly string? smokeInput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_INPUT");
 
     private enum DesignerTreeMode { Model, Layout, Json }
@@ -145,7 +144,7 @@ internal sealed partial class DesignerGame
     {
         if (json == treeJson || styleTree is null) return;
         var previous = semanticTree.SelectedPath;
-        var snapshot = blueprint.CreatePreview(Math.Max(1, previewWindow.Width), Math.Max(1, previewWindow.Height));
+        var snapshot = blueprint.CreatePreview(Math.Max(1, previewWindow.Width), Math.Max(1, previewWindow.Height), TargetLayoutId);
         var root = snapshot.Settings.Models[0].CreateTree();
         var entries = new List<StationeryInspectionEntry>();
         bool InPreview(string path) => path == snapshot.ScopePath || path.StartsWith(snapshot.ScopePath + "/", StringComparison.Ordinal)
@@ -171,9 +170,17 @@ internal sealed partial class DesignerGame
         else if (previous is not null) semanticTree.Select(previous);
         sidebar!.ReplaceTree(styleTree!, semanticTree.Tree);
         treePaths.Clear(); treeLayouts.Clear();
-        var rootLayouts = snapshot.Settings.Bindings
-            .GroupBy(b => b.ModelPath, StringComparer.Ordinal)
-            .ToDictionary(g => g.Key, g => "/" + g.First().Layout.Split('/')[1], StringComparer.Ordinal);
+        var rootLayouts = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var binding in snapshot.Settings.Bindings)
+        {
+            var rootLayout = "/" + binding.Layout.Split('/')[1];
+            for (var path = binding.ModelPath; path is not null; )
+            {
+                rootLayouts.TryAdd(path, rootLayout);
+                var slash = path.LastIndexOf('/');
+                path = slash > 0 ? path[..slash] : null;
+            }
+        }
         foreach (var row in semanticTree.Tree.VisibleRows())
         {
             var path = semanticTree.PathFor(row.Item);
@@ -252,7 +259,12 @@ internal sealed partial class DesignerGame
         {
             Capture();
             var layoutType = (string?)StyleBlueprint.FindLayout(JsonNode.Parse(blueprint.BuildJson())!, layoutId)?["type"];
-            if (layoutType is not ("box-layout" or "grid-layout")) { rebuild = true; return; }
+            if (layoutType is not ("box-layout" or "grid-layout"))
+            {
+                rebuild = true;
+                message = $"{layoutId} は閲覧専用レイアウトです。プレビューだけ表示します。";
+                return;
+            }
             blueprint.SelectLayout(layoutId);
             selectedRow = selectedColumn = 0; rebuild = true;
             message = blueprint.CanEditPanel ? $"編集中：{layoutId}。四辺の margin・padding・border を指定できます。"
