@@ -10,12 +10,12 @@ MonoGame アプリへ文房具 UI を接続する開発者向けの資料です�
 | `StationeryUI.MonoGame` | .NET 8以降 | DesktopGL 3.8.5.1への描画・入力接続 |
 | `StationeryUI.Windows` | .NET 8 Windows以降 | Windows文字描画、クリップボード、SDL2入力・合成監視 |
 
-初回の `.nupkg` はGitHub Releaseで配布します。NuGet.orgへの公開は未実施です。パッケージを任意のローカルフォルダーへダウンロードし、プロジェクトの `NuGet.Config` にそのフォルダーをソースとして追加してください。両利用アプリでは `LocalPackages/StationeryUI` を同梱しています。
+`.nupkg` は [GitHub Release v0.2.0](https://github.com/muzudho/StationeryUI/releases/tag/v0.2.0) から入手できます。NuGet.orgへの公開は未実施です。3 つのパッケージを任意のローカルフォルダーへダウンロードし、プロジェクトの `NuGet.Config` にそのフォルダーをソースとして追加してください。両利用アプリでは `LocalPackages/StationeryUI` を同梱しています。
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="StationeryUI.MonoGame" Version="0.1.1" />
-  <PackageReference Include="StationeryUI.Windows" Version="0.1.1" />
+  <PackageReference Include="StationeryUI.MonoGame" Version="0.2.0" />
+  <PackageReference Include="StationeryUI.Windows" Version="0.2.0" />
 </ItemGroup>
 ```
 
