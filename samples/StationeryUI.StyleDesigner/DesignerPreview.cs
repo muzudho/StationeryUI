@@ -17,10 +17,12 @@ internal sealed partial class DesignerGame
     private bool previewMouseDown;
     private bool previewWasActive;
     private ScreenRectangle previewWindow;
+    private ScreenRectangle? previewDialogBounds;
+    private IReadOnlyDictionary<string, ScreenRectangle> previewDialogChildren = new Dictionary<string, ScreenRectangle>();
 
     private void ResetLivePreview()
     {
-        livePreview?.Dispose(); livePreview = null; previewKey = null; previewSnapshot = null;
+        livePreview?.Dispose(); livePreview = null; previewKey = null; previewSnapshot = null; previewDialogBounds = null; previewDialogChildren = new Dictionary<string, ScreenRectangle>();
     }
 
     private void BuildLivePreviewHeader()
@@ -38,7 +40,7 @@ internal sealed partial class DesignerGame
         livePreviewTitle!.Bounds = new(560, 8, previewWindow.Width / BodyScale, 36);
         var width = Math.Max(1, (int)previewWindow.Width);
         var height = Math.Max(1, (int)previewWindow.Height);
-        var key = json + $"|{width}|{height}|{blueprint.SelectedLayoutId}|{selectedRow}|{selectedColumn}|{theme.Background}";
+        var key = json + $"|{width}|{height}|{blueprint.SelectedLayoutId}|{selectedRow}|{selectedColumn}|{theme.Background}|{SelectedPreviewModelPath()}";
         if (key != previewKey)
         {
             var snapshot = blueprint.CreatePreview(width, height, TargetLayoutId);
@@ -47,6 +49,29 @@ internal sealed partial class DesignerGame
             { Theme = theme, UseStationeryButtons = true };
             livePreview.Viewport.Offset = new(previewWindow.X, previewWindow.Y);
             var index = 0;
+            var selectedModelPath = SelectedPreviewModelPath();
+            var selectedNode = selectedModelPath is null ? null : snapshot.Settings.Models[0].CreateTree().Resolve(selectedModelPath);
+            var dialogNode = selectedNode;
+            while (dialogNode is not null && dialogNode.Kind != "dialog") dialogNode = dialogNode.Parent;
+            var dialogPath = dialogNode?.Path;
+            var dialogBounds = dialogPath is null ? (ScreenRectangle?)null
+                : new(width * .15, height * .16, width * .7, height * .62);
+            previewDialogBounds = dialogBounds;
+            var dialogChildren = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+            if (dialogNode is not null && dialogBounds is { } dialogArea)
+            {
+                var children = dialogNode.Children.ToArray();
+                var buttons = children.Where(child => child.Kind is "button" or "link").ToArray();
+                var content = children.Where(child => !buttons.Contains(child)).ToArray();
+                var contentHeight = Math.Max(40, dialogArea.Height - 104);
+                for (var i = 0; i < content.Length; i++)
+                    dialogChildren[content[i].Path] = new(dialogArea.X + 28, dialogArea.Y + 28 + i * contentHeight / Math.Max(1, content.Length),
+                        Math.Max(1, dialogArea.Width - 56), Math.Max(32, contentHeight / Math.Max(1, content.Length) - 12));
+                for (var i = 0; i < buttons.Length; i++)
+                    dialogChildren[buttons[i].Path] = new(dialogArea.X + 28 + i * (dialogArea.Width - 56) / Math.Max(1, buttons.Length),
+                        dialogArea.Y + dialogArea.Height - 76, Math.Max(1, (dialogArea.Width - 56) / Math.Max(1, buttons.Length) - 12), 48);
+            }
+            previewDialogChildren = dialogChildren;
             ScreenRectangle Clip(ScreenRectangle rect)
             {
                 var x = Math.Clamp(rect.X, 0, width); var y = Math.Clamp(rect.Y, 0, height);
@@ -68,21 +93,26 @@ internal sealed partial class DesignerGame
             foreach (var cell in snapshot.Cells)
                 Block(cell.Bounds, $"{cell.Row + 1},{cell.Column + 1}");
             var metadata = JsonNode.Parse(snapshot.Json)!;
-            bool Visible(string path) => path == snapshot.ScopePath || path.StartsWith(snapshot.ScopePath + "/", StringComparison.Ordinal);
+            bool Visible(string path)
+                => dialogPath is not null
+                    ? path == dialogPath || path.StartsWith(dialogPath + "/", StringComparison.Ordinal)
+                    : path == snapshot.ScopePath || path.StartsWith(snapshot.ScopePath + "/", StringComparison.Ordinal);
             void Visit(JsonNode model, string parent)
             {
                 var id = (string)model["id"]!;
                 var path = parent + "/" + id;
                 var kind = (string)model["type"]!;
                 var visible = Visible(path);
-                if (kind == "dialog" && path != snapshot.ScopePath) return;
+                if (kind == "dialog" && dialogPath is null && path != snapshot.ScopePath) return;
                 if (visible && snapshot.Layout.Bounds.TryGetValue(path, out var bounds))
                 {
-                    var rect = Clip(bounds);
+                    var rect = Clip(dialogPath == path && dialogBounds is { } dialog ? dialog :
+                        dialogChildren.GetValueOrDefault(path, bounds));
                     var title = model["label"] is JsonValue value && value.TryGetValue<string>(out var text) ? text : id;
                     var previewId = "preview" + index++;
                     switch (kind)
                     {
+                        case "dialog": Block(rect, "", true); break;
                         case "button": livePreview.AddButton(previewId, rect, title, () => { }); break;
                         case "textBox": livePreview.AddTextBox(previewId, rect, title, title); break;
                         case "link": livePreview.AddLink(previewId, rect, title, () => { }); break;
@@ -104,7 +134,7 @@ internal sealed partial class DesignerGame
                 if (model["children"] is JsonArray children) foreach (var child in children) Visit(child!, path);
             }
             foreach (var root in metadata["models"]!.AsArray()) Visit(root!, "");
-            if (blueprint.CanEditPanel)
+            if (dialogPath is null && blueprint.CanEditPanel)
             {
                 foreach (var (layoutKey, area) in snapshot.Layout.LayoutContentBounds)
                     if (layoutKey.EndsWith(":" + blueprint.SelectedLayoutId, StringComparison.Ordinal)) Outline(area);
@@ -138,13 +168,26 @@ internal sealed partial class DesignerGame
         var layout = previewSnapshot.Layout;
         var shifted = new StationeryLayoutResult(layout.Bounds.ToDictionary(p => p.Key, p => Shift(p.Value)), layout.ContentBounds)
         { BorderBounds = layout.BorderBounds.ToDictionary(p => p.Key, p => Shift(p.Value)) };
-        livePreview.DrawPanelBorders(shifted, path => path == previewSnapshot.ScopePath || path.StartsWith(previewSnapshot.ScopePath + "/", StringComparison.Ordinal) || previewSnapshot.ScopePath.StartsWith(path + "/", StringComparison.Ordinal), previewWindow);
+        if (previewDialogBounds is null)
+            livePreview.DrawPanelBorders(shifted, path => path == previewSnapshot.ScopePath || path.StartsWith(previewSnapshot.ScopePath + "/", StringComparison.Ordinal) || previewSnapshot.ScopePath.StartsWith(path + "/", StringComparison.Ordinal), previewWindow);
         var selectedPath = SelectedPreviewModelPath();
-        var component = selectedPath is not null && layout.Bounds.TryGetValue(selectedPath, out var selectedBounds) ? Shift(selectedBounds) : (ScreenRectangle?)null;
-        var margin = selectedPath is not null && layout.MarginBounds.TryGetValue(selectedPath, out var selectedMargin) ? Shift(selectedMargin) : (ScreenRectangle?)null;
+        var dialogSelectionPath = snapshotDialogPath();
+        var component = previewDialogBounds is { } dialog && selectedPath is not null && dialogSelectionPath is not null &&
+            (selectedPath == dialogSelectionPath || selectedPath.StartsWith(dialogSelectionPath + "/", StringComparison.Ordinal))
+            ? Shift(selectedPath == dialogSelectionPath ? dialog : previewDialogChildren.GetValueOrDefault(selectedPath, dialog))
+            : selectedPath is not null && layout.Bounds.TryGetValue(selectedPath, out var selectedBounds) ? Shift(selectedBounds) : (ScreenRectangle?)null;
+        var margin = previewDialogBounds is null && selectedPath is not null && layout.MarginBounds.TryGetValue(selectedPath, out var selectedMargin) ? Shift(selectedMargin) : (ScreenRectangle?)null;
         var partitions = ParentPreviewPartitions();
         ScreenPoint ShiftPoint(ScreenPoint point) => new(point.X + previewWindow.X, point.Y + previewWindow.Y);
         livePreview.DrawPreviewGuides(margin, component, partitions.Select(line => new StationeryInspectionLine(ShiftPoint(line.Start), ShiftPoint(line.End))).ToArray());
+
+        string? snapshotDialogPath()
+        {
+            var selected = selectedPath is null ? null : previewSnapshot.Settings.Models[0].CreateTree().Resolve(selectedPath);
+            for (var node = selected; node is not null; node = node.Parent)
+                if (node.Kind == "dialog") return node.Path;
+            return null;
+        }
     }
 
     private string? SelectedPreviewModelPath()
