@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 
 var tests = new (string Name, Action Run)[]
 {
+    ("tree scrollbars handle both axes, resize, zoom and tiny viewports", TreeScrollLayoutTests.Run),
     ("inspector operation logs record clicks, state transitions and inactive input", DeveloperOperationLogTests.Run),
     ("style autosave debounce, exact savepoints, restore, retention and conflicts", StyleSaveSessionTests.Run),
     ("style blueprint exports new validated designs without overwriting files", StyleBlueprintTests.Run),

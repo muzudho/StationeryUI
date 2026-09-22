@@ -60,6 +60,8 @@ public sealed partial class StationeryUiHost : IDisposable
         internal bool DraggingSplit;
         internal double SplitGrab;
         internal double TreeScroll;
+        internal double TreeHorizontalScroll;
+        internal bool DraggingTreeHorizontalScroll;
         internal TreeItem? PressedTreeItem;
         internal bool PressedTreeToggle;
         internal bool DraggingTreeScroll;
@@ -132,6 +134,7 @@ public sealed partial class StationeryUiHost : IDisposable
         {
             binding.Element.Node = binding.Node;
             binding.Element.DraggingTreeScroll = false;
+            binding.Element.DraggingTreeHorizontalScroll = false;
             binding.Element.DraggingSplit = false;
             binding.Element.DraggingTextScroll = false;
             binding.Element.PressedTreeItem = null;
@@ -186,6 +189,7 @@ public sealed partial class StationeryUiHost : IDisposable
             {
                 element.PressedTreeItem = null;
                 element.DraggingTreeScroll = false;
+                element.DraggingTreeHorizontalScroll = false;
                 element.DraggingSplit = false;
                 element.DraggingTextScroll = false;
             }
@@ -274,7 +278,7 @@ public sealed partial class StationeryUiHost : IDisposable
         }
         foreach (var element in elements.Where(e => e.Tree is not null))
             UpdateTree(element, pointer, hit == element, pressedMouse, mouse.ScrollWheelValue - previousMouse.ScrollWheelValue,
-                Pressed, Repeated);
+                mouse.HorizontalScrollWheelValue - previousMouse.HorizontalScrollWheelValue, shift, Pressed, Repeated);
         if ((Pressed(Keys.Enter) || Pressed(Keys.Space)) && editing is null)
             elements.FirstOrDefault(e => e.Path == Focus.FocusedId)?.Click?.Invoke();
         KeyboardConsumed = Focus.ConsumesKeyboard;

@@ -118,7 +118,8 @@ public sealed class StationeryDeveloperView : IDisposable
         OperationLog.Record(mouse, keyboard, new(active, hit?.Path, ui.Focus.FocusedId,
             Model.SelectedPath, Model.Tree.TargetItem is { } target ? Model.PathFor(target) : null,
             CaptureEnabled, SplitRatio, tree.TreeScroll, details.Scroll,
-            string.Join("\n", Model.Capture().CollapsedPaths.OrderBy(path => path, StringComparer.Ordinal)), width, height));
+            string.Join("\n", Model.Capture().CollapsedPaths.OrderBy(path => path, StringComparer.Ordinal)), width, height)
+            { TreeHorizontalScroll = tree.TreeHorizontalScroll });
     }
     private StationeryLayoutResult? latestLayout;
     public void Draw()

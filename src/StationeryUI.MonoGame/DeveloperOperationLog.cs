@@ -90,4 +90,7 @@ public sealed class DeveloperOperationLog : IDisposable
 /// <summary>Inspector state after processing a frame; paths identify controls, without copying document text.</summary>
 public sealed record DeveloperOperationState(bool InputEnabled, string? HitPath, string? FocusedPath,
     string? SelectedPath, string? TargetPath, bool CaptureEnabled, double SplitRatio,
-    double TreeScroll, double DetailsScroll, string CollapsedPaths, int Width, int Height);
+    double TreeScroll, double DetailsScroll, string CollapsedPaths, int Width, int Height)
+{
+    public double TreeHorizontalScroll { get; init; }
+}

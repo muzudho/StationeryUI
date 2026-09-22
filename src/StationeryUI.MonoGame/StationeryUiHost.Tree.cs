@@ -33,12 +33,30 @@ public sealed partial class StationeryUiHost
         if (Focus.CapturedId == element.Path) Focus.ReleasePointer();
         element.PressedTreeItem = null;
         element.DraggingTreeScroll = false;
+        element.DraggingTreeHorizontalScroll = false;
         element.Tree = tree;
-        element.TreeScroll = Math.Clamp(element.TreeScroll, 0, Math.Max(0, tree.VisibleRows().Count * TreeRowHeight(element.Theme ?? Theme) - element.Bounds.Height));
+        ClampTreeScroll(element);
     }
 
-    private (ScreenRectangle Track, ScreenRectangle Thumb, double Maximum) TreeScrollbar(Element element)
-        => Scrollbar(element, element.Tree!.VisibleRows().Count * TreeRowHeight(element.Theme ?? Theme), element.TreeScroll);
+    private readonly Dictionary<(string Text, string Font, int Size), double> treeTextWidths = [];
+    private TreeScrollLayout TreeScrollbars(Element element)
+    {
+        var theme = element.Theme ?? Theme;
+        var rows = element.Tree!.VisibleRows();
+        var width = 0.0;
+        foreach (var row in rows)
+        {
+            var key = (row.Item.Label, theme.FontFamily, TextPixelSize(theme));
+            if (!treeTextWidths.TryGetValue(key, out var textWidth))
+            {
+                if (treeTextWidths.Count >= 4096) treeTextWidths.Clear();
+                treeTextWidths[key] = textWidth = Measure(row.Item.Label, theme) * Viewport.Scale;
+            }
+            width = Math.Max(width, theme.Padding * 2 + row.Depth * 24 + 30 + textWidth / Viewport.Scale);
+        }
+        return TreeScrollLayout.Create(element.Bounds, width, rows.Count * TreeRowHeight(theme),
+            17 / Viewport.Scale, element.TreeHorizontalScroll, element.TreeScroll);
+    }
 
     private (ScreenRectangle Track, ScreenRectangle Thumb, double Maximum) Scrollbar(Element element, double total, double scroll)
     {
@@ -54,40 +72,47 @@ public sealed partial class StationeryUiHost
 
     private void DragTreeScroll(Element element, ScreenPoint pointer)
     {
-        var bar = TreeScrollbar(element);
-        var travel = bar.Track.Height - bar.Thumb.Height;
-        if (bar.Maximum <= 0 || travel <= 0) { element.DraggingTreeScroll = false; return; }
-        element.TreeScroll = Math.Clamp((pointer.Y - bar.Track.Y - element.TreeThumbGrab * bar.Thumb.Height) / travel, 0, 1) * bar.Maximum;
+        var bars = TreeScrollbars(element);
+        var horizontal = element.DraggingTreeHorizontalScroll;
+        var track = horizontal ? bars.HorizontalTrack : bars.VerticalTrack;
+        var thumb = horizontal ? bars.HorizontalThumb : bars.VerticalThumb;
+        var length = horizontal ? thumb.Width : thumb.Height;
+        var travel = (horizontal ? track.Width : track.Height) - length;
+        if (travel <= 0) { element.DraggingTreeScroll = element.DraggingTreeHorizontalScroll = false; return; }
+        var position = horizontal ? pointer.X - track.X : pointer.Y - track.Y;
+        var offset = Math.Clamp((position - element.TreeThumbGrab * length) / travel, 0, 1);
+        if (horizontal) element.TreeHorizontalScroll = offset * bars.MaximumX;
+        else element.TreeScroll = offset * bars.MaximumY;
     }
 
     private void ClampTreeScroll(Element element)
     {
-        var height = TreeRowHeight(element.Theme ?? Theme);
-        element.TreeScroll = Math.Clamp(element.TreeScroll, 0,
-            Math.Max(0, element.Tree!.VisibleRows().Count * height - element.Bounds.Height));
+        var bars = TreeScrollbars(element);
+        element.TreeScroll = bars.OffsetY;
+        element.TreeHorizontalScroll = bars.OffsetX;
     }
 
     private (TreeItem? Item, bool Toggle) TreeHit(Element element, ScreenPoint pointer)
     {
         ClampTreeScroll(element);
-        if (!Contains(element.Bounds, pointer)) return (null, false);
-        if (Contains(TreeScrollbar(element).Track, pointer)) return (null, false);
+        if (!Contains(TreeScrollbars(element).Content, pointer)) return (null, false);
         var theme = element.Theme ?? Theme;
         var height = TreeRowHeight(theme);
         var rows = element.Tree!.VisibleRows();
         var index = (int)((pointer.Y - element.Bounds.Y + element.TreeScroll) / height);
         if (index < 0 || index >= rows.Count) return (null, false);
         var row = rows[index];
-        var x = element.Bounds.X + theme.Padding + row.Depth * 24;
+        var x = element.Bounds.X + theme.Padding + row.Depth * 24 - element.TreeHorizontalScroll;
         return (row.Item, row.Item.Children.Count > 0 && pointer.X >= x && pointer.X < x + 28);
     }
 
     private void ReleaseTree(Element element, ScreenPoint pointer, bool captured)
     {
-        if (element.DraggingTreeScroll)
+        if (element.DraggingTreeScroll || element.DraggingTreeHorizontalScroll)
         {
             if (Focus.CapturedId == element.Path) DragTreeScroll(element, pointer);
             element.DraggingTreeScroll = false;
+            element.DraggingTreeHorizontalScroll = false;
             element.PressedTreeItem = null;
             return;
         }
@@ -99,31 +124,39 @@ public sealed partial class StationeryUiHost
     }
 
     private void UpdateTree(Element element, ScreenPoint pointer, bool hovered, bool pressed, int wheel,
-        Func<Keys, bool> key, Func<Keys, bool> repeated)
+        int horizontalWheel, bool shift, Func<Keys, bool> key, Func<Keys, bool> repeated)
     {
         var tree = element.Tree!;
         ClampTreeScroll(element);
-        if (Focus.CapturedId != element.Path) element.DraggingTreeScroll = false;
-        if (element.DraggingTreeScroll) { DragTreeScroll(element, pointer); return; }
-        if (hovered && wheel != 0)
+        if (Focus.CapturedId != element.Path) element.DraggingTreeScroll = element.DraggingTreeHorizontalScroll = false;
+        if (element.DraggingTreeScroll || element.DraggingTreeHorizontalScroll) { DragTreeScroll(element, pointer); return; }
+        if (hovered && (wheel != 0 || horizontalWheel != 0))
         {
-            element.TreeScroll -= wheel / 120.0 * TreeRowHeight(element.Theme ?? Theme) * 3;
+            var step = TreeRowHeight(element.Theme ?? Theme) * 3 / 120.0;
+            if (shift) element.TreeHorizontalScroll -= wheel * step;
+            else element.TreeScroll -= wheel * step;
+            element.TreeHorizontalScroll += horizontalWheel * step;
             ClampTreeScroll(element);
         }
         if (hovered && pressed && Focus.CapturedId == element.Path)
         {
-            var bar = TreeScrollbar(element);
-            if (Contains(bar.Track, pointer))
+            var bars = TreeScrollbars(element);
+            var horizontal = Contains(bars.HorizontalTrack, pointer);
+            var track = horizontal ? bars.HorizontalTrack : bars.VerticalTrack;
+            var thumb = horizontal ? bars.HorizontalThumb : bars.VerticalThumb;
+            if (Contains(track, pointer))
             {
                 element.PressedTreeItem = null;
-                if (Contains(bar.Thumb, pointer))
+                if (Contains(thumb, pointer))
                 {
-                    element.DraggingTreeScroll = true;
-                    element.TreeThumbGrab = (pointer.Y - bar.Thumb.Y) / bar.Thumb.Height;
+                    element.DraggingTreeScroll = !horizontal;
+                    element.DraggingTreeHorizontalScroll = horizontal;
+                    element.TreeThumbGrab = horizontal ? (pointer.X - thumb.X) / thumb.Width : (pointer.Y - thumb.Y) / thumb.Height;
                 }
                 else
                 {
-                    element.TreeScroll += pointer.Y < bar.Thumb.Y ? -element.Bounds.Height : element.Bounds.Height;
+                    if (horizontal) element.TreeHorizontalScroll += pointer.X < thumb.X ? -bars.Content.Width : bars.Content.Width;
+                    else element.TreeScroll += pointer.Y < thumb.Y ? -bars.Content.Height : bars.Content.Height;
                     ClampTreeScroll(element);
                 }
                 return;
@@ -149,8 +182,9 @@ public sealed partial class StationeryUiHost
             var index = tree.VisibleRows().ToList().FindIndex(row => row.Item == tree.TargetItem);
             var height = TreeRowHeight(element.Theme ?? Theme);
             if (index * height < element.TreeScroll) element.TreeScroll = index * height;
-            if ((index + 1) * height > element.TreeScroll + element.Bounds.Height)
-                element.TreeScroll = (index + 1) * height - element.Bounds.Height;
+            var content = TreeScrollbars(element).Content;
+            if ((index + 1) * height > element.TreeScroll + content.Height)
+                element.TreeScroll = (index + 1) * height - content.Height;
             ClampTreeScroll(element);
         }
     }
@@ -158,6 +192,7 @@ public sealed partial class StationeryUiHost
     private void InspectTree(Element element, bool visible, List<StationeryInspectionEntry> entries)
     {
         ClampTreeScroll(element);
+        var content = TreeScrollbars(element).Content;
         var height = TreeRowHeight(element.Theme ?? Theme);
         var indices = element.Tree!.VisibleRows().Select((row, index) => (row.Item, index)).ToDictionary(pair => pair.Item, pair => pair.index);
         void Visit(TreeItem item)
@@ -166,8 +201,8 @@ public sealed partial class StationeryUiHost
             if (indices.TryGetValue(item, out var index))
             {
                 var top = Math.Max(element.Bounds.Y, element.Bounds.Y + index * height - element.TreeScroll);
-                var bottom = Math.Min(element.Bounds.Y + element.Bounds.Height, element.Bounds.Y + (index + 1) * height - element.TreeScroll);
-                if (bottom > top && element.Bounds.Width > 0) bounds = Viewport.ToWindow(new(element.Bounds.X, top, element.Bounds.Width, bottom - top));
+                var bottom = Math.Min(content.Y + content.Height, element.Bounds.Y + (index + 1) * height - element.TreeScroll);
+                if (bottom > top && content.Width > 0) bounds = Viewport.ToWindow(new(content.X, top, content.Width, bottom - top));
             }
             entries.Add(new(item.Id, element.Path + item.Path, element.Path + (item.Parent?.Path ?? ""), "treeNode",
                 item.Label, visible && bounds is not null, bounds));
@@ -179,6 +214,7 @@ public sealed partial class StationeryUiHost
     private void DrawTree(Element element, StationeryTheme theme)
     {
         ClampTreeScroll(element);
+        var bars = TreeScrollbars(element);
         Fill(element.Bounds, theme.Surface);
         var rows = element.Tree!.VisibleRows();
         var height = TreeRowHeight(theme);
@@ -187,10 +223,10 @@ public sealed partial class StationeryUiHost
         {
             var row = rows[i];
             var y = element.Bounds.Y + i * height - element.TreeScroll;
-            if (y + height <= element.Bounds.Y || y >= element.Bounds.Y + element.Bounds.Height) continue;
-            var rect = new ScreenRectangle(element.Bounds.X, y, element.Bounds.Width, height);
+            if (y + height <= element.Bounds.Y || y >= element.Bounds.Y + bars.Content.Height) continue;
+            var rect = new ScreenRectangle(element.Bounds.X, y, bars.Content.Width, height);
             if (row.Item == element.Tree.SelectedItem) Fill(rect, theme.Selected);
-            else if (Contains(element.Bounds, pointer) && Contains(rect, pointer)) Fill(rect, theme.ButtonFill(true, false, false, true));
+            else if (wasActive && Contains(bars.Content, pointer) && Contains(rect, pointer)) Fill(rect, theme.ButtonFill(true, false, false, true));
             if (row.Item == element.Tree.TargetItem)
             {
                 var color = theme.TreeTarget;
@@ -199,7 +235,7 @@ public sealed partial class StationeryUiHost
                 Fill(new(rect.X, rect.Y, 2, rect.Height), color);
                 Fill(new(rect.X + rect.Width - 2, rect.Y, 2, rect.Height), color);
             }
-            var x = element.Bounds.X + theme.Padding + row.Depth * 24;
+            var x = element.Bounds.X + theme.Padding + row.Depth * 24 - element.TreeHorizontalScroll;
             if (row.Item.Children.Count > 0)
             {
                 // Draw the box and +/- as geometry: the affordance does not depend on font glyphs.
@@ -211,12 +247,18 @@ public sealed partial class StationeryUiHost
             }
             DrawText(row.Item.Label, x + 30, y + 4, theme, theme.Text);
         }
-        var bar = TreeScrollbar(element);
-        if (bar.Maximum > 0)
+        if (bars.MaximumY > 0)
         {
-            Fill(bar.Track, theme.Background);
-            Fill(bar.Thumb, element.DraggingTreeScroll || Contains(bar.Thumb, pointer) ? theme.Accent : theme.Border);
+            Fill(bars.VerticalTrack, theme.Background);
+            Fill(bars.VerticalThumb, element.DraggingTreeScroll || wasActive && Contains(bars.VerticalThumb, pointer) ? theme.Accent : theme.Border);
         }
+        if (bars.MaximumX > 0)
+        {
+            Fill(bars.HorizontalTrack, theme.Background);
+            Fill(bars.HorizontalThumb, element.DraggingTreeHorizontalScroll || wasActive && Contains(bars.HorizontalThumb, pointer) ? theme.Accent : theme.Border);
+        }
+        if (bars.MaximumX > 0 && bars.MaximumY > 0)
+            Fill(new(bars.VerticalTrack.X, bars.HorizontalTrack.Y, bars.VerticalTrack.Width, bars.HorizontalTrack.Height), theme.Background);
         Fill(new(element.Bounds.X, element.Bounds.Y + element.Bounds.Height - theme.BorderWidth, element.Bounds.Width, theme.BorderWidth),
             Focus.FocusedId == element.Path ? theme.Accent : theme.Border);
     }
