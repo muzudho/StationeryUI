@@ -274,7 +274,7 @@ internal sealed partial class DesignerGame
             }
             blueprint.SelectLayout(layoutId);
             selectedRow = selectedColumn = 0; rebuild = true;
-            message = blueprint.CanEditPanel ? $"編集中：{layoutId}。四辺の margin・padding・border を指定できます。"
+            message = blueprint.CanEditPanel ? $"編集中：{layoutId}。四辺の margin・padding を指定できます。border は padding 上に表示されます。"
                 : $"編集中：{layoutId}。行・列のサイズを変更できます。既存モデルの種類・配置は保持します。";
         });
     }

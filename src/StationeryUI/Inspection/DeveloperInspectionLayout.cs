@@ -24,7 +24,8 @@ public static class DeveloperInspectionLayout
             var modelMargin = modelMargins.GetValueOrDefault(path);
             var layoutMargin = root?.Margin ?? default;
             return new(new(modelMargin.Top + layoutMargin.Top, modelMargin.Right + layoutMargin.Right,
-                modelMargin.Bottom + layoutMargin.Bottom, modelMargin.Left + layoutMargin.Left), root?.Padding ?? default);
+                modelMargin.Bottom + layoutMargin.Bottom, modelMargin.Left + layoutMargin.Left),
+                root?.Padding ?? default, root?.Border ?? default);
         }
         var parents = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var binding in settings.Bindings)
@@ -51,7 +52,7 @@ public static class DeveloperInspectionLayout
                     PartitionLines = Partitions(owner.Path, l),
                     LayoutTypes = [l.Type],
                     Cell = l.Path == root.Path ? null : new(l.Column, l.Row, l.ColumnSpan, l.RowSpan),
-                    BoxModel = new(l.Margin, l.Padding)
+                    BoxModel = new(l.Margin, l.Padding, l.Border)
                 }).ToArray();
         }
         return entries.Select(entry => entry with

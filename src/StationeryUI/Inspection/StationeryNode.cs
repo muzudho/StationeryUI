@@ -77,5 +77,8 @@ public sealed record StationeryInspectionEntry(string Id, string Path, string? P
 
 public sealed record StationeryInspectionCell(int Column, int Row, int ColumnSpan, int RowSpan);
 
-/// <summary>Configured pixel insets: root-layout margin and padding only.</summary>
-public sealed record StationeryBoxModel(StationeryUI.Styling.ViewportPadding Margin, StationeryUI.Styling.ViewportPadding Padding);
+/// <summary>Configured pixel insets used by the inspection Compound diagram.</summary>
+public sealed record StationeryBoxModel(
+    StationeryUI.Styling.ViewportPadding Margin,
+    StationeryUI.Styling.ViewportPadding Padding,
+    StationeryUI.Styling.ViewportPadding Border = default);

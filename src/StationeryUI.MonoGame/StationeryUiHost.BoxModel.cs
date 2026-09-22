@@ -1,6 +1,7 @@
 namespace StationeryUI.MonoGame;
 
 using StationeryUI.Canvas;
+using StationeryUI.Controls;
 using StationeryUI.Styling;
 using StationeryUI.Theming;
 
@@ -32,12 +33,28 @@ public sealed partial class StationeryUiHost
             Center(Px(edges.Right), area.X + area.Width - side, area.Y + area.Height / 2);
         }
         Band(new(x, y, width, 218), "margin", model.Margin, true);
-        Band(new(x + width * .18, y + 36, width * .64, 146), "padding", model.Padding, false);
+        var padding = new ScreenRectangle(x + width * .18, y + 36, width * .64, 146);
+        Band(padding, "padding", model.Padding, false);
+        DrawBorderInside(padding, model.Border, theme.Border);
         var content = new ScreenRectangle(x + width * .36, y + 76, width * .28, 66);
         Fill(content, theme.Surface);
         DrawButtonOutline(content, 1, theme.Accent);
         Center("content", x + width / 2, y + 99);
         Center("px / schematic", x + width / 2, y + 224);
+    }
+
+    // Border is painted over the padding band and grows inward when it is
+    // thicker than the available padding. It never expands into the margin.
+    private void DrawBorderInside(ScreenRectangle area, ViewportPadding border, ButtonColor color)
+    {
+        var top = Math.Clamp(border.Top, 0, area.Height);
+        var right = Math.Clamp(border.Right, 0, area.Width);
+        var bottom = Math.Clamp(border.Bottom, 0, area.Height);
+        var left = Math.Clamp(border.Left, 0, area.Width);
+        if (top > 0) Fill(new(area.X, area.Y, area.Width, top), color);
+        if (bottom > 0) Fill(new(area.X, area.Y + area.Height - bottom, area.Width, bottom), color);
+        if (left > 0) Fill(new(area.X, area.Y, left, area.Height), color);
+        if (right > 0) Fill(new(area.X + area.Width - right, area.Y, right, area.Height), color);
     }
 
     private static string Px(double value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "px";

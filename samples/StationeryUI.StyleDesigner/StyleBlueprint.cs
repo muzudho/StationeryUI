@@ -207,7 +207,7 @@ public sealed class StyleBlueprint
         if (imported is not null)
         {
             var draft = (JsonObject)imported.DeepClone();
-            if (PanelEdges.Count > 0)
+            if (SelectedLayoutId is not null && PanelEdges.Count > 0)
             {
                 var panel = FindLayout(draft, SelectedLayoutId)!;
                 foreach (var group in new[] { "margin", "padding", "border" })

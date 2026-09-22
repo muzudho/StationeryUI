@@ -30,7 +30,7 @@ public sealed partial class StationeryUiHost
         finally { graphics.ScissorRectangle = previous; }
     }
 
-    /// <summary>Draw panel outlines outside their allocated bounds. Call after Draw;
+    /// <summary>Draw panel borders over the padding side of their allocated bounds. Call after Draw;
     /// include can restrict drawing to the currently visible model paths.</summary>
     public void DrawPanelBorders(StationeryLayoutResult layout, Func<string, bool>? include = null, ScreenRectangle? clip = null)
     {
@@ -50,10 +50,18 @@ public sealed partial class StationeryUiHost
                 {
                     if (bounds.Width > 0 && bounds.Height > 0) Fill(FromWindow(bounds), Theme.Border);
                 }
-                Strip(new(outside.X, outside.Y, outside.Width, inside.Y - outside.Y));
-                Strip(new(outside.X, inside.Y + inside.Height, outside.Width, outside.Y + outside.Height - inside.Y - inside.Height));
-                Strip(new(outside.X, inside.Y, inside.X - outside.X, inside.Height));
-                Strip(new(inside.X + inside.Width, inside.Y, outside.X + outside.Width - inside.X - inside.Width, inside.Height));
+                // LayoutEngine records the configured border thickness as the
+                // difference between outside and inside. Paint it inward from
+                // the allocated edge so it overlays padding and never enters
+                // the margin band.
+                var top = Math.Max(0, inside.Y - outside.Y);
+                var right = Math.Max(0, outside.X + outside.Width - inside.X - inside.Width);
+                var bottom = Math.Max(0, outside.Y + outside.Height - inside.Y - inside.Height);
+                var left = Math.Max(0, inside.X - outside.X);
+                Strip(new(inside.X, inside.Y, inside.Width, top));
+                Strip(new(inside.X, inside.Y + inside.Height - bottom, inside.Width, bottom));
+                Strip(new(inside.X, inside.Y, left, inside.Height));
+                Strip(new(inside.X + inside.Width - right, inside.Y, right, inside.Height));
             }
         }
         finally { sprites.End(); graphics.ScissorRectangle = previous; }

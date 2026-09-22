@@ -278,7 +278,7 @@ internal sealed partial class DesignerGame
         var sides = new[] { "top", "right", "bottom", "left" };
         var sideLabels = new[] { "上", "右", "下", "左" };
         for (var c = 0; c < sides.Length; c++) Text("side" + c, new(120 + c * 104, 136, 100, 40), sideLabels[c] + " (px)");
-        var groups = new[] { "margin", "padding", "border" };
+        var groups = new[] { "margin", "padding" };
         for (var r = 0; r < groups.Length; r++)
         {
             Text("group" + r, new(12, 180 + r * 72, 104, 44), groups[r]);
