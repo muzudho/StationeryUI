@@ -97,6 +97,9 @@ internal sealed class TextCacheRenderingTests : Game
         Click(inspector.LayoutTreeButtonBounds);
         if (inspector.Model.TreeMode != DeveloperTreeMode.Layout || !inspector.Model.Select("/demo/body:/grid/box"))
             throw new Exception("Layout tree button did not expose nested layouts.");
+        if (inspector.Model.Tree.SelectedItem!.Parent!.Label != "(body : Container) (- : gridLayout)"
+            || inspector.Model.Tree.VisibleRows().Count != 3)
+            throw new Exception("Owning model and root layout were not merged.");
         inspector.Update(new GameTime(), true, new(), new(), 1000, 660);
         if (inspector.TreeBounds.Y < inspector.LayoutTreeButtonBounds.Y + inspector.LayoutTreeButtonBounds.Height)
             throw new Exception("Toolbar overlaps tree.");

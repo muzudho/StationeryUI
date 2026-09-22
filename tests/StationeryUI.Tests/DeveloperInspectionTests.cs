@@ -77,13 +77,18 @@ internal static class DeveloperInspectionTests
         Check(model.Tree.SelectedItem!.Label == "(demoPage : Page) (- : gridLayout)", "layout owner label and serialization");
         model.Select("/demo/demoPage/btn123");
         Check(model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 0, 3, 2 : -)", "column row column-span row-span order");
-        Check(model.Tree.SelectedItem!.Parent!.Label == "(grid : Layout) (- : gridLayout)", "bound model is under actual layout");
+        Check(model.Tree.SelectedItem!.Parent!.Label == "(demoPage : Page) (- : gridLayout)", "root layout merged into owning model");
+        Check(model.Tree.VisibleRows().Count == 3, "one row per model without duplicate root layout");
+        Check(model.Select("/demo/demoPage:/grid") && model.SelectedPath == "/demo/demoPage", "legacy root selection resolves to owner");
         model.Select("/demo/demoPage:/grid");
         model.Tree.Toggle(model.Tree.SelectedItem!);
         model.SetTreeMode(DeveloperTreeMode.Model);
         Check(model.SelectedPath == "/demo/demoPage" && !model.Select("/demo/demoPage:/grid"), "model tree omits layout nodes");
         model.SetTreeMode(DeveloperTreeMode.Layout);
-        Check(model.SelectedPath == "/demo/demoPage:/grid" && model.Capture().CollapsedPaths.Contains("/demo/demoPage:/grid"), "layout selection and collapse survive switching");
+        Check(model.SelectedPath == "/demo/demoPage" && model.Capture().CollapsedPaths.Contains("/demo/demoPage"), "layout selection and collapse survive switching");
+        model.Restore(new("/demo/demoPage:/grid", ["/demo/demoPage:/grid"]) { TreeMode = DeveloperTreeMode.Layout, OtherTreeState = model.Capture().OtherTreeState });
+        Check(model.SelectedPath == "/demo/demoPage" && model.Capture().CollapsedPaths.Contains("/demo/demoPage"), "legacy root state maps selection and collapse");
+        Check(model.Details.Contains("所有レイアウト: /grid"), "merged model details retain root definition path");
         var saved = System.Text.Json.JsonSerializer.Deserialize<DeveloperViewState>(System.Text.Json.JsonSerializer.Serialize(model.Capture()))!;
         var reopened = new DeveloperInspectionModel();
         reopened.Refresh(received.Entries); reopened.Restore(saved);
@@ -120,6 +125,7 @@ internal static class DeveloperInspectionTests
         Check(model.Select(owner + "/boxContent"), "nested model selectable by capture path");
         Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner + ":/layoutShowcase/box/content", "model under nested content layout");
         Check(model.Select(owner + ":/layoutShowcase/box"), "hidden intermediate box is inspectable");
+        Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner, "nested layout attached directly to merged owner");
         Check(model.SelectedEntry!.BoxModel!.Padding.Left == 24 && model.SelectedEntry.BoxModel.Margin.Left == 6, "intermediate layout owns its own insets");
         var arranged = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 1000, 700);
         var snapshot = DeveloperInspectionLayout.Apply(entries, settings, arranged);

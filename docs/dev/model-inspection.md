@@ -50,3 +50,7 @@ ui.Focus.Focus(name.Path);
 
 レイアウトの桃色の枠には、画面の配置に使った最新の `StationeryLayoutResult` を `arranged` として検査データへ渡す。座標はウィンドウのピクセル単位で、ズーム変換を重ねて掛けない。
 枠の対象は `DeveloperInspectionLayout.FindVisibleEntry(entries, selectedPath)` で検索し、その `WindowBounds` を `DrawInspectionOutline` に渡す。モデルだけの検索ではレイアウトノードが見つからない。キャプチャーのヒット判定には従来のモデル配列を使う。
+
+
+レイアウトツリーでは、文房具とその所有するルートレイアウトを１行にまとめる。例えば `(demoPage : Page) (- : gridLayout)` の下へ配置されたモデルを直接表示し、同じ gridLayout のノードは重ねて表示しない。ルートの内部にネストしたレイアウトは別ノードとして残す。
+統合ノードの識別子は文房具のパスを使い、外周・分割点線・margin／padding を確認できる。詳細欄の「所有レイアウト」で定義パスも確認できる。古いルートレイアウトの選択・開閉パスは所有モデルへ読み替える。検査データの `LayoutNodes` は維持し、表示上の階層だけをまとめる。

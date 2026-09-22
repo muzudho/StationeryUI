@@ -17,6 +17,7 @@ public sealed class DeveloperInspectionModel
 {
     private IReadOnlyList<StationeryInspectionEntry> source = [];
     private DeveloperViewState? otherTreeState;
+    private Dictionary<string, string> mergedLayoutPaths = new(StringComparer.Ordinal);
     public DeveloperTreeMode TreeMode { get; private set; }
     public void SetTreeMode(DeveloperTreeMode mode)
     {
@@ -41,9 +42,21 @@ public sealed class DeveloperInspectionModel
     public void Refresh(IReadOnlyList<StationeryInspectionEntry> snapshot)
     {
         source = snapshot;
+        mergedLayoutPaths = new(StringComparer.Ordinal);
         if (TreeMode == DeveloperTreeMode.Layout)
-            snapshot = snapshot.Select(entry => entry with { ParentPath = entry.LayoutParentPath ?? entry.ParentPath })
-                .Concat(snapshot.SelectMany(entry => entry.LayoutNodes ?? [])).ToArray();
+        {
+            // A model owns at most one root layout. Keep its model identity and move
+            // the root layout's children directly beneath that model.
+            foreach (var owner in snapshot)
+            {
+                var roots = (owner.LayoutNodes ?? []).Where(layout => layout.ParentPath == owner.Path).ToArray();
+                if (roots.Length == 1) mergedLayoutPaths.Add(roots[0].Path, owner.Path);
+            }
+            snapshot = snapshot.Select(entry => entry with { ParentPath = ResolveMergedPath(entry.LayoutParentPath ?? entry.ParentPath) })
+                .Concat(snapshot.SelectMany(entry => entry.LayoutNodes ?? [])
+                    .Where(entry => !mergedLayoutPaths.ContainsKey(entry.Path))
+                    .Select(entry => entry with { ParentPath = ResolveMergedPath(entry.ParentPath) })).ToArray();
+        }
         var next = snapshot.ToDictionary(entry => entry.Path, StringComparer.Ordinal);
         var changed = entries.Count != next.Count || next.Any(pair => !entries.TryGetValue(pair.Key, out var old) || old.ParentPath != pair.Value.ParentPath);
         var state = Capture();
@@ -72,9 +85,11 @@ public sealed class DeveloperInspectionModel
                 ? DeveloperInspectionLayout.FormatLabel(entry) : DeveloperInspectionLayout.FormatModelLabel(entry);
     }
 
+    private string? ResolveMergedPath(string? path) => path is null ? null : mergedLayoutPaths.GetValueOrDefault(path, path);
+
     public bool Select(string path)
     {
-        if (!items.TryGetValue(path, out var item)) return false;
+        if (!items.TryGetValue(ResolveMergedPath(path)!, out var item)) return false;
         Tree.Select(item); Tree.SetTarget(item); return true;
     }
     public DeveloperViewState Capture(double splitRatio = .4, bool visible = true)
@@ -89,7 +104,7 @@ public sealed class DeveloperInspectionModel
     {
         if (state?.SelectedPath is not { } selected || !Select(selected)) Tree.Move(0);
         foreach (var path in state?.CollapsedPaths ?? [])
-            if (items.TryGetValue(path, out var item)) Tree.SetExpanded(item, false);
+            if (items.TryGetValue(ResolveMergedPath(path)!, out var item)) Tree.SetExpanded(item, false);
     }
     public string? IdPath => SelectedPath?.TrimStart('/').Replace('/', '.');
 
@@ -103,6 +118,8 @@ public sealed class DeveloperInspectionModel
             if (entry.Kind == "layout" && entry.Path.IndexOf(':') is var separator && separator >= 0)
                 return $"レイアウト Id: {entry.Id}\n\nレイアウトパス: {entry.Label}\n\n所有モデル: {entry.Path[..separator]}\n\n識別パス: {entry.Path}\n\n種類: {string.Join(", ", entry.LayoutTypes ?? [])}\n\nウィンドウ内の位置（px）:\n{bounds}";
             return $"文房具 Id: {entry.Id}\n\nId path: {IdPath}\n\n完全パス: {entry.Path}\n\n種類: {entry.Kind}\n名前: {entry.Label}\n表示: {(entry.Visible ? "表示中" : "非表示")}\n\nウィンドウ内の位置（px）:\n{bounds}"
+                + (entry.LayoutNodes?.SingleOrDefault(layout => layout.ParentPath == entry.Path) is { } rootLayout
+                    ? $"\n\n所有レイアウト: {rootLayout.Label}" : "")
                 + (entry.LayoutError is null ? "" : "\n\nレイアウトエラー:\n" + entry.LayoutError);
         }
     }
