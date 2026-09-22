@@ -20,6 +20,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
       - run: dotnet run --project tests/StationeryUI.Tests -c Release
+      - run: dotnet restore StationeryUI.slnx
       - run: |
           mkdir -p artifacts/nuget
           dotnet pack src/StationeryUI/StationeryUI.csproj -c Release --no-restore -o artifacts/nuget
