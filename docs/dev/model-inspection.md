@@ -33,6 +33,6 @@ ui.Focus.Focus(name.Path);
 
 従来の `Inspect()` や追加情報のないスナップショットも利用でき、その場合のレイアウト表示は `(—)`。独自の配置処理を使うアプリは `LayoutTypes` / `Cell` を自分で設定できる。`Apply` は渡された設定を正として情報を付け直すので、削除された binding の情報は残らない。
 
-デモの F12 は、読み込んだ `models` の階層を表示する。デモの原本には `topDemoPage` と `splitPaneDemoPage` を置き、名前欄は `/demo/topDemoPage/nameField` になる。models と layouts の役割は [スタイル設定ガイド](../user/stationery-style-settings.md) を参照。
+デモの F12 は、読み込んだ `models` の階層を表示する。デモの原本には `topDemoPage` と `splitPaneDemoPage` を置き、名前欄は `/demo/topDemoPage/body/nameField` になる。models と layouts の役割は [スタイル設定ガイド](../user/stationery-style-settings.md) を参照。
 
 [開発者向け目次](README.md)

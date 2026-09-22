@@ -25,14 +25,14 @@ internal static class SplitPaneTests
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
         var settings = StationeryStyleSettings.Parse(source);
         var result = StationeryLayoutEngine.Arrange(settings, 1000, 780);
-        Check(result.Bounds["/demo/splitPaneDemoPage/verticalSplit/leftPane"].Width > 0, "bound split content");
+        Check(result.Bounds["/demo/splitPaneDemoPage/body/verticalSplit/leftPane"].Width > 0, "bound split content");
         foreach (var edit in new Action<JsonNode>[] {
             n => n["layouts"]![3]!["ratio"] = 2,
             n => n["layouts"]![3]!["orientation"] = "diagonal",
             n => n["layouts"]![3]!["dividerWidth"] = "0px",
             n => n["layouts"]![3]!["minimumPaneSize"] = "-1px",
             n => n["bindings"]![3]!["firstModel"] = "rightPane",
-            n => n["bindings"]![3]!["firstModel"] = "/demo/topDemoPage/nameField",
+            n => n["bindings"]![3]!["firstModel"] = "/demo/topDemoPage/body/nameField",
         })
         {
             var json = JsonNode.Parse(source)!; edit(json);

@@ -123,21 +123,21 @@ try {
  $inspectorProcess=Get-Process -Id $r.ProcessId
  if($inspectorProcess.Id -eq $demo.Id){throw 'Inspector must have its own MonoGame process'}
  $dev=Wait-Window $inspectorProcess.Id 'F12 開発者ウィンドウ'
- $r=Select-Path '/demo/topDemoPage/nameField'
+ $r=Select-Path '/demo/topDemoPage/body/nameField'
  if(!$r.Details.Contains('種類: textBox')){throw 'Details missing'}
  $style=Get-Content (Join-Path $outputPath 'style.json') -Raw -Encoding UTF8 | ConvertFrom-Json
- $style.layouts[0].padding.left='64px'
+ ($style.layouts | Where-Object { $_.id -eq 'bodyPadding' }).padding.left='64px'
  $style | ConvertTo-Json -Depth 30 | Set-Content (Join-Path $outputPath 'style.json') -Encoding UTF8
- $r=Wait-Report {param($r) $r.Details.Contains('X=64') -and $r.State.SelectedPath -eq '/demo/topDemoPage/nameField'}
+ $r=Wait-Report {param($r) $r.Details.Contains('X=64') -and $r.State.SelectedPath -eq '/demo/topDemoPage/body/nameField'}
  Write-Output 'PASS live coordinates update without losing selection'
- $r=Select-Path '/demo/topDemoPage/sampleTree'
+ $r=Select-Path '/demo/topDemoPage/body/sampleTree'
  Key $dev 0x25
- $null=Wait-Report {param($r) $r.State.CollapsedPaths -contains '/demo/topDemoPage/sampleTree'}
+ $null=Wait-Report {param($r) $r.State.CollapsedPaths -contains '/demo/topDemoPage/body/sampleTree'}
  Write-Output 'PASS StationeryUI tree collapse survives live refresh'
- $r=Select-Path '/demo/topDemoPage/editDialog/nameField'
+ $r=Select-Path '/demo/topDemoPage/body/editDialog/nameField'
  if(!$r.Details.Contains('非表示')){throw 'Hidden dialog should be marked hidden'}
  Click $dev ([int]($r.CopyBounds.X+80)) ([int]($r.CopyBounds.Y+20))
- $null=Wait-Report {param($r) $r.CopiedPath -eq '/demo/topDemoPage/editDialog/nameField'}
+ $null=Wait-Report {param($r) $r.CopiedPath -eq '/demo/topDemoPage/body/editDialog/nameField'}
  Write-Output 'PASS copy complete selected path'
  $r=Report
  $splitX=$r.TreeBounds.X+$r.TreeBounds.Width+5
@@ -181,7 +181,7 @@ try {
  $r=Wait-Report {param($r) $r.State.Visible -and $r.ProcessId -ne $oldInspectorId}
  $inspectorProcess=Get-Process -Id $r.ProcessId
  $script:dev=Wait-Window $inspectorProcess.Id 'F12 開発者ウィンドウ' $false
- if($r.State.SplitRatio -le .5 -or $r.State.SelectedPath -ne '/demo/topDemoPage/editDialog/nameField'){throw 'Close/reopen lost view state'}
+ if($r.State.SplitRatio -le .5 -or $r.State.SelectedPath -ne '/demo/topDemoPage/body/editDialog/nameField'){throw 'Close/reopen lost view state'}
  Write-Output 'PASS close button and new process restore view state'
  $null=[DevNative]::PostMessageW($main,0x10,[IntPtr]::Zero,[IntPtr]::Zero)
  if(!$demo.WaitForExit(10000)){throw 'Demo did not exit'}

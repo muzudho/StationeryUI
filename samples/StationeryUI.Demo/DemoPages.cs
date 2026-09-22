@@ -84,7 +84,7 @@ internal sealed partial class Demo
             }
         }
     }
-    private static bool IsPageSmoke(string? scenario) => scenario is "page-hint" or "page-hint-clear" or "page-open" or "page-back" or "page-keyboard" or "split-vertical" or "split-horizontal" or "split-keyboard";
+    private static bool IsPageSmoke(string? scenario) => scenario is "page-hint" or "page-hint-clear" or "page-open" or "page-back" or "page-keyboard" or "split-vertical" or "split-horizontal" or "split-keyboard" or "layout-open";
     private void PreparePageSmoke(string? scenario, bool smoke, ref KeyboardState keyboard, ref MouseState mouse)
     {
         if (!smoke || !IsPageSmoke(scenario)) return;
@@ -118,7 +118,7 @@ internal sealed partial class Demo
             if (updateFrames == 5) keyboard = new(Keys.Right);
             return;
         }
-        var bounds = ui!.Viewport.ToWindow(forwardLink.Bounds);
+        var bounds = ui!.Viewport.ToWindow(scenario == "layout-open" ? layoutLink.Bounds : forwardLink.Bounds);
         var down = updateFrames == 2;
         if (updateFrames >= 4 && scenario == "page-back")
         {
@@ -159,7 +159,16 @@ internal sealed partial class Demo
         }
         if (activePage == "splitPaneDemoPage" && splitToolHint.Bounds.Height != 0)
             throw new InvalidOperationException("Fullscreen inspector must be hidden.");
-        if (activePage != (scenario is "page-back" or "page-keyboard" ? "topDemoPage" : "splitPaneDemoPage")) throw new InvalidOperationException("Page navigation failed.");
+        var expectedPage = scenario == "layout-open" ? "layoutDemoPage" : scenario is "page-back" or "page-keyboard" ? "topDemoPage" : "splitPaneDemoPage";
+        if (activePage != expectedPage) throw new InvalidOperationException("Page navigation failed.");
+        if (scenario == "layout-open")
+        {
+            var hint = layoutUi!.Viewport.ToWindow(layoutToolHint.Bounds);
+            if (hint.X != 0 || hint.Width != GraphicsDevice.Viewport.Width || hint.Height != 80 || hint.Y + hint.Height != GraphicsDevice.Viewport.Height)
+                throw new InvalidOperationException("Layout demo dock must reserve the bottom 80 pixels.");
+            if (layoutElements.Any(e => e != layoutToolHint && layoutUi.Viewport.ToWindow(e.Bounds).Y + layoutUi.Viewport.ToWindow(e.Bounds).Height > hint.Y))
+                throw new InvalidOperationException("Layout demo content overlaps the docked inspector.");
+        }
         if (scenario == "split-keyboard" && verticalSplit.Split!.Ratio <= .5) throw new InvalidOperationException("Split keyboard adjustment failed.");
         if (scenario == "split-vertical" && verticalSplit.Split!.Ratio < .65 || scenario == "split-horizontal" && horizontalSplit.Split!.Ratio < .65)
             throw new InvalidOperationException("Split divider drag failed.");

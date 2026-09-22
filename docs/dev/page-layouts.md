@@ -1,5 +1,13 @@
 # ページレイアウトとツールヒント
 
+## 現在のデモ：dock-layout
+
+３ページは共通の `pageDock` を使う。各ページ直下に `body` と `inspectorPanel` を置き、配列の先頭で bottom のパネルを確保し、center の本文に残りを渡す。トップとレイアウトデモは80px、スプリットペーンデモは0px。本文の box/grid は body に結び付ける。`ContentBounds[page.Path + "/body"]` が余白を除いた本文領域になる。
+
+設定原本と C# 内の fallback は同じ構成。入力・ページ移動・分割操作は既存の部品 Id で接続し、完全パスには `/body/` が加わる。`PageLayoutTests` は本文・下端のサイズ、狭い画面、サイズ変更のリロード、検査ツリー、fallback の一致を検証する。設定方法は [ドック配置](dock-layout.md)を参照。
+
+## 互換用のページレイアウト
+
 `fullscreen-layout` と `work-page-layout` は本文とインスペクターの領域を分ける。本文の grid-layout と組み合わせて使い、モデルへ本文用のラッパーを追加する必要はない。
 
 StationeryStyleSettings は次を検証する。
@@ -13,7 +21,7 @@ StationeryLayoutEngine はページの Bounds から下部パネルを確保し�
 フルスクリーンではインスペクターとその通常の子レイアウトが高さ 0 になり、StationeryUiHost が描画・フォーカス対象から外す。
 ホストは本文とヒントの Bounds を更新する。物理 px から論理座標へ変換する際は Viewport.Scale で割り、80px の高さを拡大しない。
 
-デモは両ページの toolHint と inspectorPanel の binding を検証する。無効な設定への変更は StationeryStyleFile が拒否し、直前の有効な状態を維持する。
+デモは各ページの toolHint と inspectorPanel の binding を検証する。既存のページレイアウト形式も受け付ける。ドックの回復可能な設定エラーを除き、無効な設定への変更は StationeryStyleFile が拒否し、直前の有効な状態を維持する。
 binding の layout だけの変更ではモデルを再接続せず、コントロールの状態を保持する。
 
 ## ホバー説明

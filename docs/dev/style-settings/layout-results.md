@@ -9,7 +9,7 @@ Update からファイルの Update を呼び、Current と現在の描画領域
 styles.Update(gameTime.ElapsedGameTime);
 var arranged = StationeryLayoutEngine.Arrange(
     styles.Current, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-var nameBounds = arranged.Bounds["/demo/topDemoPage/nameField"];
+var nameBounds = arranged.Bounds["/demo/topDemoPage/body/nameField"];
 var innerBounds = arranged.ContentBounds["/demo"];
 ```
 

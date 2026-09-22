@@ -218,37 +218,39 @@ F5 と自動リロードは継続する。
 
 | 種類 | 表示 |
 |---|---|
-| `fullscreen-layout` | 本文がページ全体を使い、インスペクターは高さ 0 で非表示 |
-| `work-page-layout` | 本文の下にインスペクターを確保。既定の高さは 80px |
+| `dock-layout` の bottom が `0px` | 本文がページ全体を使い、インスペクターは非表示 |
+| `dock-layout` の bottom が `80px` | 本文の下に高さ80pxのインスペクターを確保 |
 
-デモはトップデモページを作業ページ、スプリットペーンデモページをフルスクリーンにしている。原本は `App_Data/demo.stationery-style.json`。
+デモの３ページは共通の `pageDock` を使う。トップとレイアウトデモの下端は80px、スプリットペーンデモは0px。原本は `App_Data/demo.stationery-style.json`。
 
 関連部分の抜粋：
 
 ```json
 {
     "layouts": [
-        { "id": "fullscreenLayout", "type": "fullscreen-layout" },
-        { "id": "workPageLayout", "type": "work-page-layout", "inspectorHeight": "80px" }
+        { "id": "pageDock", "type": "dock-layout" }
     ],
     "bindings": [
         {
-            "layout": "workPageLayout",
-            "model": "demo/topDemoPage",
-            "inspectorModel": "inspectorPanel"
+            "layout": "pageDock",
+            "parentModel": "demo/topDemoPage",
+            "childrenModel": [
+                { "model": "inspectorPanel", "dock": "bottom", "size": "80px" },
+                { "model": "body", "dock": "center", "size": "remaining" }
+            ]
         }
     ]
 }
 ```
 
-既存の binding の `layout` を `fullscreenLayout` に変えるだけで切り替えられる。`models`、本文のセル配置、`inspectorModel` は同じまま使う。同じページへ両方を同時に bind しない。
+bottom の `size` を `0px` に変えると、下端を非表示にして本文へ領域を戻せる。`models` や本文のセル配置は同じまま使う。四辺は配列順に確保し、center は最後に残りを使う。
 読み込み用設定の `autoReload` が有効なら保存後に反映され、文房具 Id や入力値、ツリーの開閉状態を保持する。
 
-`inspectorModel` はページ直下の `container` を指定する。デモは `inspectorPanel` 内に読み取り専用の `toolHint` を置き、grid-layout の binding でパネル全体へ広げている。
+ページ直下の `body` と `inspectorPanel` は container。デモは `inspectorPanel` 内に読み取り専用の `toolHint` を置き、grid-layout の binding でパネル全体へ広げている。
 ボタンやリンクにマウスを合わせると説明が表示され、離すと案内文に戻る。この下部パネルは F12 の別ウィンドウとは独立している。
 
 高さの px は UI 拡大率に影響されない。ページが 80px より低い場合は収まる高さに縮める。
 インスペクターはページの外枠いっぱいの横幅を使い、ページ本文の padding の影響を受けない。祖先の padding でページ全体が狭められている場合は、その幅に収まる。
-デモではルートの padding を 0px にし、本文の 8px の余白を各ページの `pagePadding` に移した。これでパネルは画面の左右端まで広がる。
+デモではルートの padding を 0px にし、本文の8pxの余白を `bodyPadding`（レイアウトデモでは `showcaseBox`）で body に適用する。これでパネルは画面の左右端まで広がる。
 
-既存のデモ用 JSON では、各ページの inspectorPanel と toolHint、ページレイアウトとヒント欄の対応付けを揃える。
+旧 `fullscreen-layout` / `work-page-layout` も互換用として利用できるが、現在のデモでは使わない。[ドック配置の詳しい仕様](../dev/dock-layout.md)を参照。

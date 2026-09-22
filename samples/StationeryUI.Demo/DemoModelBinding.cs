@@ -20,54 +20,64 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "type": "page",
           "children": [
             {
-              "id": "nameField",
-              "type": "textBox"
-            },
-            {
-              "id": "memoField",
-              "type": "textBox"
-            },
-            {
-              "id": "themeButton",
-              "type": "button"
-            },
-            {
-              "id": "scaleButton",
-              "type": "button"
-            },
-            {
-              "id": "applyTitleButton",
-              "type": "button"
-            },
-            {
-              "id": "openDialogButton",
-              "type": "button"
-            },
-            {
-              "id": "sampleTree",
-              "type": "tree"
-            },
-            {
-              "id": "editDialog",
-              "type": "dialog",
+              "id": "body",
+              "type": "container",
               "children": [
                 {
                   "id": "nameField",
                   "type": "textBox"
                 },
                 {
-                  "id": "cancelButton",
+                  "id": "memoField",
+                  "type": "textBox"
+                },
+                {
+                  "id": "themeButton",
                   "type": "button"
                 },
                 {
-                  "id": "saveButton",
+                  "id": "scaleButton",
                   "type": "button"
+                },
+                {
+                  "id": "applyTitleButton",
+                  "type": "button"
+                },
+                {
+                  "id": "openDialogButton",
+                  "type": "button"
+                },
+                {
+                  "id": "sampleTree",
+                  "type": "tree"
+                },
+                {
+                  "id": "editDialog",
+                  "type": "dialog",
+                  "children": [
+                    {
+                      "id": "nameField",
+                      "type": "textBox"
+                    },
+                    {
+                      "id": "cancelButton",
+                      "type": "button"
+                    },
+                    {
+                      "id": "saveButton",
+                      "type": "button"
+                    }
+                  ]
+                },
+                {
+                  "id": "splitPaneDemoLink",
+                  "type": "link"
+                },
+                {
+                  "id": "layoutDemoLink",
+                  "type": "link"
                 }
               ]
-            },
-            {
-              "id": "splitPaneDemoLink",
-              "type": "link"
             },
             {
               "id": "inspectorPanel",
@@ -78,10 +88,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   "type": "textBlock"
                 }
               ]
-            },
-            {
-              "id": "layoutDemoLink",
-              "type": "link"
             }
           ]
         },
@@ -90,34 +96,40 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "type": "page",
           "children": [
             {
-              "id": "topDemoLink",
-              "type": "link"
-            },
-            {
-              "id": "verticalSplit",
-              "type": "splitPane",
+              "id": "body",
+              "type": "container",
               "children": [
                 {
-                  "id": "leftPane",
-                  "type": "textBox"
+                  "id": "topDemoLink",
+                  "type": "link"
                 },
                 {
-                  "id": "rightPane",
-                  "type": "textBox"
-                }
-              ]
-            },
-            {
-              "id": "horizontalSplit",
-              "type": "splitPane",
-              "children": [
-                {
-                  "id": "topPane",
-                  "type": "textBox"
+                  "id": "verticalSplit",
+                  "type": "splitPane",
+                  "children": [
+                    {
+                      "id": "leftPane",
+                      "type": "textBox"
+                    },
+                    {
+                      "id": "rightPane",
+                      "type": "textBox"
+                    }
+                  ]
                 },
                 {
-                  "id": "bottomPane",
-                  "type": "textBox"
+                  "id": "horizontalSplit",
+                  "type": "splitPane",
+                  "children": [
+                    {
+                      "id": "topPane",
+                      "type": "textBox"
+                    },
+                    {
+                      "id": "bottomPane",
+                      "type": "textBox"
+                    }
+                  ]
                 }
               ]
             },
@@ -138,48 +150,54 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "type": "page",
           "children": [
             {
-              "id": "topDemoLink",
-              "type": "link"
-            },
-            {
-              "id": "title",
-              "type": "textBlock"
-            },
-            {
-              "id": "boxTitle",
-              "type": "textBlock"
-            },
-            {
-              "id": "boxContent",
-              "type": "textBlock"
-            },
-            {
-              "id": "gridTitle",
-              "type": "textBlock"
-            },
-            {
-              "id": "spanCell",
-              "type": "textBlock"
-            },
-            {
-              "id": "nestedA",
-              "type": "textBlock"
-            },
-            {
-              "id": "nestedB",
-              "type": "textBlock"
-            },
-            {
-              "id": "nestedC",
-              "type": "textBlock"
-            },
-            {
-              "id": "nestedD",
-              "type": "textBlock"
-            },
-            {
-              "id": "gridFooter",
-              "type": "textBlock"
+              "id": "body",
+              "type": "container",
+              "children": [
+                {
+                  "id": "topDemoLink",
+                  "type": "link"
+                },
+                {
+                  "id": "title",
+                  "type": "textBlock"
+                },
+                {
+                  "id": "boxTitle",
+                  "type": "textBlock"
+                },
+                {
+                  "id": "boxContent",
+                  "type": "textBlock"
+                },
+                {
+                  "id": "gridTitle",
+                  "type": "textBlock"
+                },
+                {
+                  "id": "spanCell",
+                  "type": "textBlock"
+                },
+                {
+                  "id": "nestedA",
+                  "type": "textBlock"
+                },
+                {
+                  "id": "nestedB",
+                  "type": "textBlock"
+                },
+                {
+                  "id": "nestedC",
+                  "type": "textBlock"
+                },
+                {
+                  "id": "nestedD",
+                  "type": "textBlock"
+                },
+                {
+                  "id": "gridFooter",
+                  "type": "textBlock"
+                }
+              ]
             },
             {
               "id": "inspectorPanel",
@@ -251,16 +269,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "minimumPaneSize": "60px"
     },
     {
-      "id": "fullscreenLayout",
-      "type": "fullscreen-layout"
+      "id": "pageDock",
+      "type": "dock-layout"
     },
     {
-      "id": "workPageLayout",
-      "type": "work-page-layout",
-      "inspectorHeight": "80px"
-    },
-    {
-      "id": "pagePadding",
+      "id": "bodyPadding",
       "type": "box-layout",
       "padding": {
         "top": "8px",
@@ -421,7 +434,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "layout": "topDemoLayout",
-      "parentModel": "demo/topDemoPage",
+      "parentModel": "demo/topDemoPage/body",
       "childrenModel": [
         {
           "model": "nameField",
@@ -472,7 +485,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "layout": "splitDemoLayout",
-      "parentModel": "demo/splitPaneDemoPage",
+      "parentModel": "demo/splitPaneDemoPage/body",
       "childrenModel": [
         {
           "model": "topDemoLink",
@@ -493,24 +506,35 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "layout": "verticalSplitLayout",
-      "model": "demo/splitPaneDemoPage/verticalSplit",
+      "model": "demo/splitPaneDemoPage/body/verticalSplit",
       "firstModel": "leftPane",
       "secondModel": "rightPane"
     },
     {
       "layout": "horizontalSplitLayout",
-      "model": "demo/splitPaneDemoPage/horizontalSplit",
+      "model": "demo/splitPaneDemoPage/body/horizontalSplit",
       "firstModel": "topPane",
       "secondModel": "bottomPane"
     },
     {
-      "layout": "workPageLayout",
-      "model": "demo/topDemoPage",
-      "inspectorModel": "inspectorPanel"
+      "layout": "pageDock",
+      "parentModel": "demo/topDemoPage",
+      "childrenModel": [
+        {
+          "model": "inspectorPanel",
+          "dock": "bottom",
+          "size": "80px"
+        },
+        {
+          "model": "body",
+          "dock": "center",
+          "size": "remaining"
+        }
+      ]
     },
     {
-      "layout": "pagePadding",
-      "model": "demo/topDemoPage"
+      "layout": "bodyPadding",
+      "model": "demo/topDemoPage/body"
     },
     {
       "layout": "inspectorContents",
@@ -524,13 +548,24 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "fullscreenLayout",
-      "model": "demo/splitPaneDemoPage",
-      "inspectorModel": "inspectorPanel"
+      "layout": "pageDock",
+      "parentModel": "demo/splitPaneDemoPage",
+      "childrenModel": [
+        {
+          "model": "inspectorPanel",
+          "dock": "bottom",
+          "size": "0px"
+        },
+        {
+          "model": "body",
+          "dock": "center",
+          "size": "remaining"
+        }
+      ]
     },
     {
-      "layout": "pagePadding",
-      "model": "demo/splitPaneDemoPage"
+      "layout": "bodyPadding",
+      "model": "demo/splitPaneDemoPage/body"
     },
     {
       "layout": "inspectorContents",
@@ -545,7 +580,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "layout": "showcaseBox.layoutShowcase",
-      "parentModel": "demo/layoutDemoPage",
+      "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
           "model": "topDemoLink",
@@ -571,7 +606,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "layout": "showcaseBox.layoutShowcase.box.content",
-      "parentModel": "demo/layoutDemoPage",
+      "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
           "model": "boxContent",
@@ -582,7 +617,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "layout": "showcaseBox.layoutShowcase.grid.paddedCell.content",
-      "parentModel": "demo/layoutDemoPage",
+      "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
           "model": "spanCell",
@@ -593,7 +628,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "layout": "showcaseBox.layoutShowcase.grid.nestedGrid",
-      "parentModel": "demo/layoutDemoPage",
+      "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
           "model": "nestedA",
@@ -619,7 +654,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "layout": "showcaseBox.layoutShowcase.grid",
-      "parentModel": "demo/layoutDemoPage",
+      "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
           "model": "gridFooter",
@@ -630,9 +665,20 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "workPageLayout",
-      "model": "demo/layoutDemoPage",
-      "inspectorModel": "inspectorPanel"
+      "layout": "pageDock",
+      "parentModel": "demo/layoutDemoPage",
+      "childrenModel": [
+        {
+          "model": "inspectorPanel",
+          "dock": "bottom",
+          "size": "80px"
+        },
+        {
+          "model": "body",
+          "dock": "center",
+          "size": "remaining"
+        }
+      ]
     },
     {
       "layout": "inspectorContents",

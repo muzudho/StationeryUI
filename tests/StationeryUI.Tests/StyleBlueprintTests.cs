@@ -146,9 +146,9 @@ internal static class StyleBlueprintTests
         Check(plan.BuildJson() == before, "duplicate rename is atomic");
         Check(StyleBlueprint.CheckId("MyPanel", ["myPanel"]).Error is null, "case-sensitive sibling ids");
         var fixture = StyleBlueprint.Open(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
-        fixture.RenameId(["models", "0", "children", "0", "children", "0"], "renamedName");
+        fixture.RenameId(["models", "0", "children", "0", "children", "0", "children", "0"], "renamedName");
         var root = JsonNode.Parse(fixture.BuildJson())!;
-        var pageChildren = root["models"]![0]!["children"]![0]!["children"]!.AsArray();
+        var pageChildren = root["models"]![0]!["children"]![0]!["children"]![0]!["children"]!.AsArray();
         var dialog = pageChildren.Single(n => (string?)n!["id"] == "editDialog")!;
         Check((string?)dialog["children"]![0]!["id"] == "nameField", "same id under other parent not renamed");
         fixture.RenameId(["models", "0"], "newRoot");

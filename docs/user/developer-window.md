@@ -64,19 +64,21 @@ Id の重複や禁止文字は登録時にエラーにする。自動で連番�
 ```text
 /demo
     /topDemoPage
-        /nameField
-        /memoField
-        /editDialog
+        /body
             /nameField
-            /saveButton
+            /memoField
+            /editDialog
+                /nameField
+                /saveButton
+        /inspectorPanel
 ```
 
 デモには同じ `nameField` があるが、次の完全パスなら一意になる。
 
 ```json
 [
-    "/demo/topDemoPage/nameField",
-    "/demo/topDemoPage/editDialog/nameField"
+    "/demo/topDemoPage/body/nameField",
+    "/demo/topDemoPage/body/editDialog/nameField"
 ]
 ```
 

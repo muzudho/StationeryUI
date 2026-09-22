@@ -8,7 +8,7 @@ internal static class ModelLayoutTests
     {
         var shippedText = File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
         var shipped = StationeryStyleSettings.Parse(shippedText);
-        Require(shipped.Models.Count == 1 && shipped.Layouts.Any(l => l.Type == "work-page-layout") && shipped.Bindings.Any(b => b.InspectorModel is not null), "shipped independent arrays");
+        Require(shipped.Models.Count == 1 && shipped.Layouts.Any(l => l.Type == "dock-layout") && shipped.Bindings.Any(b => b.DockChildren.Count > 0), "shipped independent arrays");
         Require(DemoModelBinding.Create(shipped).Main["nameField"].Kind == "textBox", "shipped code binding");
         var source = """
             {"models":[{"id":"demo","type":"viewport","children":[
@@ -45,10 +45,10 @@ internal static class ModelLayoutTests
             Reject(() => StationeryStyleSettings.Parse("{\"models\":" + invalidModel + ",\"layouts\":[],\"bindings\":[]}"));
 
         var binding = DemoModelBinding.Create(DemoModelBinding.Fallback);
-        Require(binding.Main["nameField"].Path == "/demo/topDemoPage/nameField", "flat model binding");
-        Require(binding.DialogControls["nameField"].Path == "/demo/topDemoPage/editDialog/nameField", "dialog binding");
+        Require(binding.Main["nameField"].Path == "/demo/topDemoPage/body/nameField", "body model binding");
+        Require(binding.DialogControls["nameField"].Path == "/demo/topDemoPage/body/editDialog/nameField", "dialog binding");
         var wrapped = JsonNode.Parse(shippedText)!;
-        var children = wrapped["models"]![0]!["children"]![0]!["children"]!.AsArray();
+        var children = wrapped["models"]![0]!["children"]![0]!["children"]![0]!["children"]!.AsArray();
         var name = children[0]!;
         children.RemoveAt(0);
         children.Insert(0, new JsonObject { ["id"] = "inputs", ["type"] = "container", ["children"] = new JsonArray(name) });
@@ -56,7 +56,7 @@ internal static class ModelLayoutTests
         var layoutBefore = wrapped["layouts"]!.ToJsonString();
         wrapped["bindings"]![1]!["childrenModel"]![0]!["model"] = "inputs/nameField";
         var wrappedSettings = StationeryStyleSettings.Parse(wrapped.ToJsonString());
-        Require(DemoModelBinding.Create(wrappedSettings).Main["nameField"].Path == "/demo/topDemoPage/inputs/nameField", "scoped child path");
+        Require(DemoModelBinding.Create(wrappedSettings).Main["nameField"].Path == "/demo/topDemoPage/body/inputs/nameField", "scoped child path");
         Require(layoutBefore == wrapped["layouts"]!.ToJsonString(), "layout definitions are independent");
         Reject(() => DemoModelBinding.Create(settings));
         name["type"] = "button";
@@ -75,7 +75,7 @@ internal static class ModelLayoutTests
             name["type"] = "textBox";
             File.WriteAllText(style, wrapped.ToJsonString());
             file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Require(DemoModelBinding.Create(file.Current).Main["nameField"].Path == "/demo/topDemoPage/inputs/nameField" && file.LastError is null, "recovery");
+            Require(DemoModelBinding.Create(file.Current).Main["nameField"].Path == "/demo/topDemoPage/body/inputs/nameField" && file.LastError is null, "recovery");
             var good = file.Current;
             wrapped["layouts"]![1]!["row-definitions"]![0] = "-1rate";
             File.WriteAllText(style, wrapped.ToJsonString());
