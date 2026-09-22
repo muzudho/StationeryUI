@@ -77,10 +77,10 @@ internal sealed partial class DesignerGame
                 var x = Math.Clamp(rect.X, 0, width); var y = Math.Clamp(rect.Y, 0, height);
                 return new(x, y, Math.Max(0, Math.Min(width, rect.X + rect.Width) - x), Math.Max(0, Math.Min(height, rect.Y + rect.Height) - y));
             }
-            void Block(ScreenRectangle rect, string text, bool outline = false)
+            void Block(ScreenRectangle rect, string text, bool outline = false, ButtonColor? surface = null)
             {
                 var element = livePreview.AddTextBlock(livePreview.Root.AddChild("preview" + index++, "textBlock"), Clip(rect), text);
-                if (outline) element.Theme = theme with { Surface = theme.TreeTarget };
+                if (outline || surface is not null) element.Theme = theme with { Surface = surface ?? theme.TreeTarget };
             }
             void Outline(ScreenRectangle rect)
             {
@@ -89,7 +89,7 @@ internal sealed partial class DesignerGame
                 Block(new(rect.X, rect.Y, 1, rect.Height), "", true);
                 Block(new(rect.X + rect.Width - 1, rect.Y, 1, rect.Height), "", true);
             }
-            Block(new(0, 0, width, height), "");
+            Block(new(0, 0, width, height), "", surface: dialogPath is null ? null : new ButtonColor(0, 0, 0, 140));
             foreach (var cell in snapshot.Cells)
                 Block(cell.Bounds, $"{cell.Row + 1},{cell.Column + 1}");
             var metadata = JsonNode.Parse(snapshot.Json)!;
@@ -112,7 +112,7 @@ internal sealed partial class DesignerGame
                     var previewId = "preview" + index++;
                     switch (kind)
                     {
-                        case "dialog": Block(rect, "", true); break;
+                        case "dialog": Block(rect, ""); break;
                         case "button": livePreview.AddButton(previewId, rect, title, () => { }); break;
                         case "textBox": livePreview.AddTextBox(previewId, rect, title, title); break;
                         case "link": livePreview.AddLink(previewId, rect, title, () => { }); break;
