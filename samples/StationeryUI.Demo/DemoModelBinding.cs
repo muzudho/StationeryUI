@@ -238,7 +238,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "column-definitions": [
         "1rate",
         "1rate"
-      ]
+      ],
+      "padding": {
+        "top": "8px",
+        "right": "8px",
+        "bottom": "8px",
+        "left": "8px"
+      }
     },
     {
       "id": "splitDemoLayout",
@@ -250,7 +256,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ],
       "column-definitions": [
         "1rate"
-      ]
+      ],
+      "padding": {
+        "top": "8px",
+        "right": "8px",
+        "bottom": "8px",
+        "left": "8px"
+      }
     },
     {
       "id": "verticalSplitLayout",
@@ -273,16 +285,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "type": "dock-layout"
     },
     {
-      "id": "bodyPadding",
-      "type": "box-layout",
-      "padding": {
-        "top": "8px",
-        "right": "8px",
-        "bottom": "8px",
-        "left": "8px"
-      }
-    },
-    {
       "id": "inspectorContents",
       "type": "grid-layout",
       "row-definitions": [
@@ -293,36 +295,78 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "id": "showcaseBox",
-      "type": "box-layout",
-      "padding": {
-        "top": "8px",
-        "right": "8px",
-        "bottom": "8px",
-        "left": "8px"
-      },
+      "id": "layoutShowcase",
+      "type": "grid-layout",
+      "row-definitions": [
+        "60px",
+        "52px",
+        "1rate"
+      ],
+      "column-definitions": [
+        "1rate",
+        "2rate"
+      ],
       "children": [
         {
-          "id": "layoutShowcase",
+          "id": "box",
+          "type": "box-layout",
+          "padding": {
+            "top": "24px",
+            "right": "24px",
+            "bottom": "24px",
+            "left": "24px"
+          },
+          "margin": {
+            "top": "6px",
+            "right": "6px",
+            "bottom": "6px",
+            "left": "6px"
+          },
+          "border": {
+            "top": "2px",
+            "right": "2px",
+            "bottom": "2px",
+            "left": "2px"
+          },
+          "children": [
+            {
+              "id": "content",
+              "type": "grid-layout",
+              "row-definitions": [
+                "1rate"
+              ],
+              "column-definitions": [
+                "1rate"
+              ]
+            }
+          ],
+          "row": 2,
+          "col": 0
+        },
+        {
+          "id": "grid",
           "type": "grid-layout",
           "row-definitions": [
-            "60px",
-            "52px",
+            "1rate",
+            "1rate",
             "1rate"
           ],
           "column-definitions": [
             "1rate",
-            "2rate"
+            "1rate",
+            "1rate"
           ],
+          "row": 2,
+          "col": 1,
           "children": [
             {
-              "id": "box",
+              "id": "paddedCell",
               "type": "box-layout",
               "padding": {
-                "top": "24px",
-                "right": "24px",
-                "bottom": "24px",
-                "left": "24px"
+                "top": "16px",
+                "right": "16px",
+                "bottom": "16px",
+                "left": "16px"
               },
               "margin": {
                 "top": "6px",
@@ -348,83 +392,35 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   ]
                 }
               ],
-              "row": 2,
-              "col": 0
+              "row": 0,
+              "col": 0,
+              "rowspan": 2
             },
             {
-              "id": "grid",
+              "id": "nestedGrid",
               "type": "grid-layout",
               "row-definitions": [
-                "1rate",
                 "1rate",
                 "1rate"
               ],
               "column-definitions": [
                 "1rate",
-                "1rate",
                 "1rate"
               ],
-              "row": 2,
+              "row": 0,
               "col": 1,
-              "children": [
-                {
-                  "id": "paddedCell",
-                  "type": "box-layout",
-                  "padding": {
-                    "top": "16px",
-                    "right": "16px",
-                    "bottom": "16px",
-                    "left": "16px"
-                  },
-                  "margin": {
-                    "top": "6px",
-                    "right": "6px",
-                    "bottom": "6px",
-                    "left": "6px"
-                  },
-                  "border": {
-                    "top": "2px",
-                    "right": "2px",
-                    "bottom": "2px",
-                    "left": "2px"
-                  },
-                  "children": [
-                    {
-                      "id": "content",
-                      "type": "grid-layout",
-                      "row-definitions": [
-                        "1rate"
-                      ],
-                      "column-definitions": [
-                        "1rate"
-                      ]
-                    }
-                  ],
-                  "row": 0,
-                  "col": 0,
-                  "rowspan": 2
-                },
-                {
-                  "id": "nestedGrid",
-                  "type": "grid-layout",
-                  "row-definitions": [
-                    "1rate",
-                    "1rate"
-                  ],
-                  "column-definitions": [
-                    "1rate",
-                    "1rate"
-                  ],
-                  "row": 0,
-                  "col": 1,
-                  "rowspan": 2,
-                  "colspan": 2
-                }
-              ]
+              "rowspan": 2,
+              "colspan": 2
             }
           ]
         }
-      ]
+      ],
+      "padding": {
+        "top": "8px",
+        "right": "8px",
+        "bottom": "8px",
+        "left": "8px"
+      }
     }
   ],
   "bindings": [
@@ -533,10 +529,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "bodyPadding",
-      "model": "demo/topDemoPage/body"
-    },
-    {
       "layout": "inspectorContents",
       "parentModel": "demo/topDemoPage/inspectorPanel",
       "childrenModel": [
@@ -564,10 +556,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "bodyPadding",
-      "model": "demo/splitPaneDemoPage/body"
-    },
-    {
       "layout": "inspectorContents",
       "parentModel": "demo/splitPaneDemoPage/inspectorPanel",
       "childrenModel": [
@@ -579,7 +567,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "showcaseBox.layoutShowcase",
+      "layout": "layoutShowcase",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
@@ -605,7 +593,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "showcaseBox.layoutShowcase.box.content",
+      "layout": "layoutShowcase.box.content",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
@@ -616,7 +604,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "showcaseBox.layoutShowcase.grid.paddedCell.content",
+      "layout": "layoutShowcase.grid.paddedCell.content",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
@@ -627,7 +615,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "showcaseBox.layoutShowcase.grid.nestedGrid",
+      "layout": "layoutShowcase.grid.nestedGrid",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
@@ -653,7 +641,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "showcaseBox.layoutShowcase.grid",
+      "layout": "layoutShowcase.grid",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {

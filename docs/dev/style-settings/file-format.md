@@ -2,6 +2,15 @@
 
 [目次](README.md) ／ [動かせる最小例](integration.md)
 
+
+## １ノード１レイアウトと共通の padding
+
+各モデルノードが持てるルートレイアウトは最大１つです。`box-layout` / `grid-layout` / `dock-layout` はどれも `padding` を指定できます。例えば `"padding": {"top":"8px","right":"8px","bottom":"8px","left":"8px"}` とします。値は非負の px 文字列です。省略した辺は box-layout では従来どおり8px、grid-layout / dock-layout では0pxです。padding を引いた内側に子を配置し、領域が足りない場合は０サイズまで縮めます。
+
+複合配置はレイアウトの `children` でネストします。同じルートツリー内の `frame.grid` などへ複数 binding を書いても、所有するレイアウトは１つです。dock の各領域をさらに分割するときは子コンテナーに grid などを持たせます。別々のルートを同一ノードへ binding すると、読み込み時にエラーになります。実行中のリロードでは直前の有効な設定を維持します。
+
+旧設定で余白用 box と配置用 grid を併用していた場合は、box の padding を grid へ移して box の binding を削除してください。margin / border も必要なら、box の `children` に grid を入れ、binding の layout を `boxId.gridId` に変更します。
+
 ## models → bindings → layouts の順にたどる
 
 たとえば `/app/nameField` の配置を知りたい場合、`models` でそのノードを確認し、`bindings` の `childrenModel` でセルを確認し、そこから `layout` Id で `layouts` の行・列定義へたどります。`layouts[0]` がルート用という規則はありません。
@@ -71,7 +80,7 @@ binding は `layout`、`parentModel`、`childrenModel` を使い、子には `mo
 
 各トラックは非負の小数を含む文字列です。`"12.5px"`、`"1.5rate"`、`"0rate"` を使えます。数値だけ、負数、指数表記、`%`、`em`、`auto` は未対応です。行・列それぞれに少なくとも1つ正の値が必要です。
 
-親は `viewport` / `page` / `container` / `dialog` 型で、配置するモデルはその子孫である必要があります。同じセルへの重複配置、同じモデルへの重複配置、範囲外の行・列はエラーです。box-layout と grid-layout を同じモデルへ併用すると、box-layout の内側をグリッドに分けます。
+親は `viewport` / `page` / `container` / `dialog` 型で、配置するモデルはその子孫である必要があります。同じセルへの重複配置、同じモデルへの重複配置、範囲外の行・列はエラーです。各モデルに適用できるルートレイアウトは最大１つです。余白は grid-layout 自身の padding へ指定し、複合配置は children でネストするか子コンテナーへ別のレイアウトを適用します。
 
 セルへ配置していないモデルは親の内側矩形を引き継ぎます。**未配置は非表示という意味ではありません。** これが意図しない重なりを生む場合は、アプリの検証で必須部品のセル配置を要求します。
 
@@ -136,7 +145,7 @@ bindings: outerGrid のセルに contentArea を配置
 
 binding は `{ "layout": "workPage", "model": "/app/editorPage", "inspectorModel": "inspectorPanel" }` の形です。対象は `page`、inspectorModel はその直下の `container` にします。fullscreen-layout でも inspectorModel は必要で、高さ0になります。切り替えるときは binding の layout Id を変えます。
 
-インスペクターはページの横幅いっぱいに配置され、ページ本文の padding の影響を受けません。祖先の余白は影響します。work-page-layout の inspectorHeight は省略時80px、低い画面では収まる高さへ縮みます。本文の余白は別の box-layout、行・列は別の grid-layout で同じページに適用します。ページレイアウト自体に padding やトラック定義は書けません。
+インスペクターはページの横幅いっぱいに配置され、ページ本文の padding の影響を受けません。祖先の余白は影響します。work-page-layout の inspectorHeight は省略時80px、低い画面では収まる高さへ縮みます。本文を子コンテナーにし、そのコンテナーのレイアウトに余白や行・列を指定します。同じページへ別のルートレイアウトは適用できません。ページレイアウト自体に padding やトラック定義は書けません。
 
 インスペクター内の文言、ツールヒント、タイマーバーは C# 側で作ります。アプリケーションバー専用のレイアウト型はまだありません。先頭行に `"40px"` を割り当てるなど、既存のグリッドで構成できます。
 

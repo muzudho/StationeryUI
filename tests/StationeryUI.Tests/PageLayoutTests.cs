@@ -26,7 +26,7 @@ internal static class PageLayoutTests
         foreach (var (width, height) in new[] { (1000, 780), (720, 560), (1400, 900) })
         {
             var showcase = StationeryLayoutEngine.Arrange(settings, width, height);
-            var owner = model.LayoutPage.Path + "/body:showcaseBox.layoutShowcase";
+            var owner = model.LayoutPage.Path + "/body:layoutShowcase";
             var box = showcase.LayoutBounds[owner + ".box"];
             var content = showcase.Bounds[model.LayoutControls["boxContent"].Path];
             Check(content.X == box.X + 24 && content.Y == box.Y + 24 && content.Width == box.Width - 48, "box padding surrounds its only child");

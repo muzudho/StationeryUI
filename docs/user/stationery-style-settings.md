@@ -142,8 +142,8 @@ childrenModel の各要素の model は、parentModel からたどる相対パ�
 parentModel の型は viewport / page / container / dialog。
 存在しないモデルやレイアウトへの参照は読み込みエラー。
 
-同じモデルに box-layout と grid-layout をそれぞれ 1 つ適用できる。
-box-layout が内側の領域を作り、grid-layout がその領域を行と列に分ける。
+同じモデルに適用できるルートレイアウトは最大１つ。box-layout / grid-layout / dock-layout はどれも padding を持てる。余白だけなら grid / dock 自身に指定し、細かい配置は children または子コンテナーでネストする。
+padding は四辺の非負 px 文字列で、省略した辺は box では従来どおり8px、grid / dock では0px。
 独立した複数のルートグリッドやルートボックスを同じモデルに重ねて指定することはできない。同じレイアウトツリー内の複数グリッドを参照する場合は、同じ parentModel を使える。
 別のモデルであれば、同じレイアウト定義を再利用できる。
 
@@ -251,6 +251,6 @@ bottom の `size` を `0px` に変えると、下端を非表示にして本文�
 
 高さの px は UI 拡大率に影響されない。ページが 80px より低い場合は収まる高さに縮める。
 インスペクターはページの外枠いっぱいの横幅を使い、ページ本文の padding の影響を受けない。祖先の padding でページ全体が狭められている場合は、その幅に収まる。
-デモではルートの padding を 0px にし、本文の8pxの余白を `bodyPadding`（レイアウトデモでは `showcaseBox`）で body に適用する。これでパネルは画面の左右端まで広がる。
+デモではルートの padding を 0px にし、本文の8pxの余白を body の grid-layout 自身の `padding` に指定する。これでパネルは画面の左右端まで広がる。
 
 旧 `fullscreen-layout` / `work-page-layout` も互換用として利用できるが、現在のデモでは使わない。[ドック配置の詳しい仕様](../dev/dock-layout.md)を参照。

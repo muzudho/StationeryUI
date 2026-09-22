@@ -32,6 +32,15 @@ static class DockLayoutTests
         Equal(new(0, 180, 220, 20), result.Bounds["/app/footer"]);
         Equal(new(0, 70, 220, 110), result.Bounds["/app/body"]);
         Equal(result.Bounds["/app/body"], result.Bounds["/app/body/button"]);
+        var paddedJson = JsonNode.Parse(Source)!;
+        paddedJson["layouts"]![0]!["padding"] = JsonNode.Parse("""{"left":"10px","top":"20px","right":"30px","bottom":"40px"}""");
+        paddedJson["layouts"]![1]!["padding"] = JsonNode.Parse("""{"left":"5px","top":"6px"}""");
+        var padded = StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(paddedJson.ToJsonString()), 300, 200);
+        Equal(new(10, 20, 260, 140), padded.ContentBounds["/app"]);
+        Equal(new(10, 20, 260, 40), padded.Bounds["/app/header"]);
+        Equal(new(15, 96, 175, 44), padded.Bounds["/app/body/button"]);
+        Equal(padded.ContentBounds["/app/body"], padded.Bounds["/app/body/button"]);
+        Equal(padded.ContentBounds["/app"], padded.LayoutContentBounds["/app:dock"]);
         var reverse = StationeryDockLayout.Arrange(new(10, 20, 100, 100), [new("right", "right", 30), new("top", "top", 40), new("left", "left", 10), new("center", "center")]);
         Equal(new(80, 20, 30, 100), reverse["right"]);
         Equal(new(10, 20, 70, 40), reverse["top"]);
@@ -55,6 +64,9 @@ static class DockLayoutTests
         var nested = StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(nestedJson.ToJsonString()), 300, 200);
         Equal(new(8, 8, 284, 40), nested.Bounds["/app/header"]);
         Check(nested.LayoutBounds.ContainsKey("/app:frame.dock"), "nested dock gets layout bounds");
+        StationeryUI.Inspection.StationeryInspectionEntry[] entries = [new("app", "/app", null, "viewport", "", true, null)];
+        var inspected = StationeryUI.Inspection.DeveloperInspectionLayout.Apply(entries, StationeryStyleSettings.Parse(nestedJson.ToJsonString()));
+        Check(inspected[0].LayoutTypes!.SequenceEqual(new[] { "box-layout" }), "nested dock reports only its root layout");
         foreach (var invalid in new[] {
             Source.Replace("\"right\"", "\"diagonal\""),
             Source.Replace("40px", "remaining"), Source.Replace("40px", "-1px"), Source.Replace("40px", "1rate"),

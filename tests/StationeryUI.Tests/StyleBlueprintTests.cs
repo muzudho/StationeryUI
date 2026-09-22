@@ -165,6 +165,7 @@ internal static class StyleBlueprintTests
         plan.PanelEdges["padding.top"].Number = "4";
         plan.PanelEdges["border.right"].Number = "7";
         var json = JsonNode.Parse(plan.BuildJson())!;
+        json["bindings"]!.AsArray().Clear();
         json["bindings"]!.AsArray().Add(new JsonObject { ["layout"] = panel, ["model"] = "design/mainPage" });
         var oldBox = json.DeepClone();
         oldBox["layouts"]![1]!["type"] = "panel";

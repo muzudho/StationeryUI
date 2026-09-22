@@ -31,11 +31,7 @@ public sealed class StationeryDeveloperStyle
             binding.SecondModel != "/developerViewport/developerWindow/inspectorSplit/details")
             throw new JsonException("The inspector split must bind stationeryTree first and details second.");
         SplitOptions = settings.Layouts.Single(l => l.Path == binding.Layout).Split!;
-        if (!settings.Bindings.Any(b => b.ModelPath == "/developerViewport/developerWindow" &&
-            b.InspectorModel == "/developerViewport/developerWindow/inspectorPanel" &&
-            settings.Layouts.Any(l => l.Path == b.Layout && l.Type == "work-page-layout")))
-            throw new JsonException("The developer page requires an inspectorPanel work-page binding.");
-        foreach (var path in new[] { "/developerViewport/developerWindow/instructions", "/developerViewport/developerWindow/inspectorSplit", "/developerViewport/developerWindow/copyPath", "/developerViewport/developerWindow/inspectorPanel/toolHint" })
+        foreach (var path in new[] { "/developerViewport/developerWindow/inspectorPanel", "/developerViewport/developerWindow/instructions", "/developerViewport/developerWindow/inspectorSplit", "/developerViewport/developerWindow/copyPath", "/developerViewport/developerWindow/inspectorPanel/toolHint" })
             if (!settings.Bindings.Any(b => b.Children.Any(c => c.ModelPath == path)))
                 throw new JsonException($"Required grid-layout placement: {path}.");
     }

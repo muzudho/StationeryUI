@@ -11,12 +11,12 @@ internal static class GridLayoutTests
             {"id":"a","type":"button"},{"id":"b","type":"button"},{"id":"c","type":"button"}
           ]}],
           "layouts":[
-            {"id":"frame","type":"box-layout","padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}},
-            {"id":"grid","type":"grid-layout","row-definitions":["1rate","3rate"],"column-definitions":["1rate","1.5rate"]}
+            {"id":"frame","type":"box-layout","padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"},"children":[
+            {"id":"grid","type":"grid-layout","row-definitions":["1rate","3rate"],"column-definitions":["1rate","1.5rate"]}]}
           ],
           "bindings":[
             {"layout":"frame","model":"screen"},
-            {"layout":"grid","parentModel":"screen","childrenModel":[
+            {"layout":"frame.grid","parentModel":"screen","childrenModel":[
               {"model":"a","row":0,"column":0},{"model":"b","row":0,"column":1},{"model":"c","row":1,"column":0}
             ]}
           ]
@@ -42,16 +42,28 @@ internal static class GridLayoutTests
         Equal(new(40, 10, 96, 90), StationeryLayoutEngine.Arrange(padded, 300, 400).Bounds["/screen/a"]);
         Equal(new(20, 10, 0, 0), StationeryLayoutEngine.Arrange(padded, 20, 20).Bounds["/screen/a"]);
 
-        var fixedRows = Edit(node => node["layouts"]![1]!["row-definitions"] = JsonNode.Parse("""["100px","1rate"]"""));
+        var gridPadding = Edit(node => node["layouts"]![0]!["children"]![0]!["padding"] =
+            JsonNode.Parse("""{"left":"10px","top":"20px"}"""));
+        Equal(new(10, 20, 36, 45), StationeryLayoutEngine.Arrange(gridPadding, 100, 200).Bounds["/screen/a"]);
+        // Independent root layouts on one model are invalid, even box + grid.
+        Reject(node =>
+        {
+            var grid = node["layouts"]![0]!["children"]![0]!.DeepClone();
+            node["layouts"]![0]!.AsObject().Remove("children");
+            node["layouts"]!.AsArray().Add(grid);
+            node["bindings"]![1]!["layout"] = "grid";
+        });
+
+        var fixedRows = Edit(node => node["layouts"]![0]!["children"]![0]!["row-definitions"] = JsonNode.Parse("""["100px","1rate"]"""));
         Equal(new(0, 100, 40, 300), StationeryLayoutEngine.Arrange(fixedRows, 100, 400).Bounds["/screen/c"]);
-        var overflow = Edit(node => node["layouts"]![1]!["column-definitions"] = JsonNode.Parse("""["200px","100px"]"""));
+        var overflow = Edit(node => node["layouts"]![0]!["children"]![0]!["column-definitions"] = JsonNode.Parse("""["200px","100px"]"""));
         Equal(new(0, 0, 100, 50), StationeryLayoutEngine.Arrange(overflow, 150, 200).Bounds["/screen/a"]);
         Equal(new(100, 0, 50, 50), StationeryLayoutEngine.Arrange(overflow, 150, 200).Bounds["/screen/b"]);
-        var collapsed = Edit(node => node["layouts"]![1]!["column-definitions"] = JsonNode.Parse("""["0rate","1rate"]"""));
+        var collapsed = Edit(node => node["layouts"]![0]!["children"]![0]!["column-definitions"] = JsonNode.Parse("""["0rate","1rate"]"""));
         Equal(new(0, 0, 0, 50), StationeryLayoutEngine.Arrange(collapsed, 100, 200).Bounds["/screen/a"]);
         Equal(new(0, 0, 100, 50), StationeryLayoutEngine.Arrange(collapsed, 100, 200).Bounds["/screen/b"]);
         var huge = "1" + new string('0', 300) + "rate";
-        var largeRates = Edit(node => node["layouts"]![1]!["column-definitions"] = new JsonArray(huge, huge));
+        var largeRates = Edit(node => node["layouts"]![0]!["children"]![0]!["column-definitions"] = new JsonArray(huge, huge));
         Equal(new(50, 0, 50, 50), StationeryLayoutEngine.Arrange(largeRates, 100, 200).Bounds["/screen/b"]);
 
         // Declaration order is unrelated to application order.
@@ -63,12 +75,12 @@ internal static class GridLayoutTests
         Equal(result.Bounds["/screen/c"], StationeryLayoutEngine.Arrange(reversed, 100, 200).Bounds["/screen/c"]);
 
         foreach (var bad in new[] { "-1rate", "NaNrate", "Infinityrate", "1em", "", "1.2.3rate", "1Rate" })
-            Reject(node => node["layouts"]![1]!["column-definitions"]![0] = bad);
-        Reject(node => node["layouts"]![1]!["column-definitions"]![0] = 1);
-        Reject(node => node["layouts"]![1]!["row-definitions"] = new JsonArray());
-        Reject(node => node["layouts"]![1]!["row-definitions"] = new JsonArray("0rate", "0px"));
-        Reject(node => node["layouts"]![1]!["padding"] = new JsonObject());
-        Reject(node => node["layouts"]![1]!["id"] = "frame");
+            Reject(node => node["layouts"]![0]!["children"]![0]!["column-definitions"]![0] = bad);
+        Reject(node => node["layouts"]![0]!["children"]![0]!["column-definitions"]![0] = 1);
+        Reject(node => node["layouts"]![0]!["children"]![0]!["row-definitions"] = new JsonArray());
+        Reject(node => node["layouts"]![0]!["children"]![0]!["row-definitions"] = new JsonArray("0rate", "0px"));
+        Reject(node => node["layouts"]![0]!["children"]![0]!["padding"] = JsonNode.Parse("""{"left":"-1px"}"""));
+        Reject(node => node["layouts"]![0]!["children"]![0]!["id"] = "frame");
         Reject(node => node["bindings"]![1]!["layout"] = "unknown");
         Reject(node => node["bindings"]![1]!["parentModel"] = "unknown");
         Reject(node => node["bindings"]![1]!["childrenModel"]![0]!["model"] = "unknown");

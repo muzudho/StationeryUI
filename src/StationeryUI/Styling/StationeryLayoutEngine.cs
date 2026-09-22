@@ -38,9 +38,9 @@ public static class StationeryLayoutEngine
             throw new ArgumentOutOfRangeException(nameof(width), "Window dimensions must be finite and nonnegative.");
         var layouts = settings.Layouts.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
         var owners = settings.Bindings.GroupBy(b => b.ModelPath).ToDictionary(g => g.Key, g => g.ToArray());
-        var panels = owners.Select(pair => (pair.Key, Box: pair.Value.Select(b => layouts[b.Layout.Split('.')[0]])
-                .Distinct().SingleOrDefault(l => l.Type == "box-layout")))
-            .Where(p => p.Box is not null).ToDictionary(p => p.Key, p => p.Box!);
+        var roots = owners.ToDictionary(pair => pair.Key,
+            pair => pair.Value.Select(b => layouts[b.Layout.Split('.')[0]]).Distinct().Single());
+        var panels = roots.Where(pair => pair.Value.Type == "box-layout").ToDictionary(pair => pair.Key, pair => pair.Value);
         var pages = settings.Bindings.Where(b => b.InspectorModel is not null).ToDictionary(b => b.ModelPath);
         var positions = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var splits = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "split-pane").ToDictionary(binding => binding.ModelPath);
@@ -110,7 +110,7 @@ public static class StationeryLayoutEngine
                 content = outer with { Height = outer.Height - inspectorHeight };
                 positions.Add(page.InspectorModel!, new(outer.X, outer.Y + content.Height, outer.Width, inspectorHeight));
             }
-            if (panels.TryGetValue(node.Path, out var panel))
+            if (roots.TryGetValue(node.Path, out var panel))
             {
                 var inset = panel.Padding.GetContentBounds(content.Width, content.Height);
                 content = inset with { X = outer.X + inset.X, Y = outer.Y + inset.Y };
@@ -125,8 +125,7 @@ public static class StationeryLayoutEngine
             }
             if (owners.TryGetValue(node.Path, out var ownerBindings))
                 foreach (var layout in ownerBindings.Select(b => layouts[b.Layout.Split('.')[0]]).Distinct())
-                    if (layout.Type == "box-layout") ArrangeLayout(layout, node.Path, outer, content);
-                    else if (layout.Type is "grid-layout" or "dock-layout") ArrangeLayout(layout, node.Path, content);
+                    if (layout.Type is "box-layout" or "grid-layout" or "dock-layout") ArrangeLayout(layout, node.Path, outer, content);
             // An unbound dock child must not cover every sibling; other nested bindings still take precedence.
             var inheritedChild = ownerBindings?.Any(b => layouts[b.Layout].Type == "dock-layout") == true
                 ? new ScreenRectangle(content.X, content.Y, 0, 0) : content;

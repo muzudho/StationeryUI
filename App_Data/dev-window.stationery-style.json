@@ -51,19 +51,37 @@
     ],
     "layouts": [
         {
-            "id": "workPage",
-            "type": "work-page-layout",
-            "inspectorHeight": "80px"
-        },
-        {
-            "id": "inspectorPadding",
-            "type": "box-layout",
-            "padding": {
-                "top": "8px",
-                "right": "8px",
-                "bottom": "8px",
-                "left": "8px"
-            }
+            "id": "windowLayout",
+            "type": "grid-layout",
+            "row-definitions": [
+                "1rate",
+                "80px"
+            ],
+            "column-definitions": [
+                "1rate"
+            ],
+            "children": [
+                {
+                    "id": "windowRows",
+                    "type": "grid-layout",
+                    "row-definitions": [
+                        "56px",
+                        "1rate",
+                        "48px"
+                    ],
+                    "column-definitions": [
+                        "1rate"
+                    ],
+                    "padding": {
+                        "top": "8px",
+                        "right": "8px",
+                        "bottom": "8px",
+                        "left": "8px"
+                    },
+                    "row": 0,
+                    "col": 0
+                }
+            ]
         },
         {
             "id": "inspectorContents",
@@ -73,29 +91,13 @@
             ],
             "column-definitions": [
                 "1rate"
-            ]
-        },
-        {
-            "id": "windowPadding",
-            "type": "box-layout",
+            ],
             "padding": {
                 "top": "8px",
                 "right": "8px",
                 "bottom": "8px",
                 "left": "8px"
             }
-        },
-        {
-            "id": "windowRows",
-            "type": "grid-layout",
-            "row-definitions": [
-                "56px",
-                "1rate",
-                "48px"
-            ],
-            "column-definitions": [
-                "1rate"
-            ]
         },
         {
             "id": "inspectorColumns",
@@ -108,13 +110,15 @@
     ],
     "bindings": [
         {
-            "layout": "workPage",
-            "model": "developerViewport/developerWindow",
-            "inspectorModel": "inspectorPanel"
-        },
-        {
-            "layout": "inspectorPadding",
-            "model": "developerViewport/developerWindow/inspectorPanel"
+            "layout": "windowLayout",
+            "parentModel": "developerViewport/developerWindow",
+            "childrenModel": [
+                {
+                    "model": "inspectorPanel",
+                    "row": 1,
+                    "col": 0
+                }
+            ]
         },
         {
             "layout": "inspectorContents",
@@ -128,11 +132,7 @@
             ]
         },
         {
-            "layout": "windowPadding",
-            "model": "developerViewport/developerWindow"
-        },
-        {
-            "layout": "windowRows",
+            "layout": "windowLayout.windowRows",
             "parentModel": "developerViewport/developerWindow",
             "childrenModel": [
                 {

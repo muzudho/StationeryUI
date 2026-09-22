@@ -72,7 +72,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         {
             var rootPath = "/" + Models[0].Id;
             var binding = Bindings.FirstOrDefault(binding => binding.ModelPath == rootPath &&
-                Layouts.Any(layout => layout.Path == binding.Layout.Split('.')[0] && layout.Type == "box-layout"));
+                Layouts.Any(layout => layout.Path == binding.Layout.Split('.')[0] && layout.Type is "box-layout" or "grid-layout" or "dock-layout"));
             return binding is null ? default : Layouts.Single(layout => layout.Path == binding.Layout.Split('.')[0]).Padding;
         }
     }
@@ -133,12 +133,13 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                     inspectorHeight = item.TryGetProperty("inspectorHeight", out var h) ? ReadLength(h, path + ".inspectorHeight", false).Value : 80;
                 else if (item.TryGetProperty("inspectorHeight", out _)) throw new JsonException("fullscreen-layout has no inspectorHeight.");
                 if (item.TryGetProperty("padding", out _) || item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
-                    throw new JsonException("Page layouts use a separate box-layout or grid-layout for content.");
+                    throw new JsonException("Page layouts cannot contain padding or track definitions; use a child container for content.");
             }
             else if (type == "dock-layout")
             {
-                if (item.TryGetProperty("padding", out _) || item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
-                    throw new JsonException($"{path}: dock-layout uses dock/size on childrenModel, not padding or track definitions.");
+                padding = ReadEdges("padding");
+                if (item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
+                    throw new JsonException($"{path}: dock-layout uses dock/size on childrenModel, not track definitions.");
             }
             else if (type == "box-layout")
             {
@@ -170,7 +171,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             }
             else
             {
-                if (item.TryGetProperty("padding", out _)) throw new JsonException($"{path}: put padding in a separate box-layout.");
+                padding = ReadEdges("padding");
                 rows = ReadTracks(item, "row-definitions", path);
                 columns = ReadTracks(item, "column-definitions", path);
             }
@@ -319,14 +320,12 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             }
             bindings.Add(new(layoutId, parent.Path, children.AsReadOnly()));
         }
-        // Each bound layout tree is instantiated once per owner model. Distinct root grids/boxes
-        // cannot compete for that owner's content; a separate box and grid remain compatible.
+        // A model owns at most one root tree; bindings to descendants of that tree are valid.
         foreach (var group in bindings.GroupBy(b => b.ModelPath))
         {
-            var roots = group.Select(b => layouts.Single(l => l.Path == b.Layout.Split('.')[0])).Distinct().ToArray();
-            if (roots.Count(l => l.Type == "box-layout") > 1 || roots.Count(l => l.Type is "grid-layout" or "dock-layout" || l.Children.Count > 0) > 1
-                || group.Any(b => layouts.Single(l => l.Path == b.Layout).Type == "dock-layout") && group.Any(b => b.InspectorModel is not null || b.FirstModel is not null))
-                throw new JsonException($"Conflicting layout trees for {group.Key}.");
+            var roots = group.Select(b => b.Layout.Split('.')[0]).Distinct().ToArray();
+            if (roots.Length > 1)
+                throw new JsonException($"{group.Key}: a node can own at most one layout tree. Nest layouts instead of binding multiple roots.");
         }
         return new(Array.AsReadOnly(new[] { model }), layouts.AsReadOnly(), bindings.AsReadOnly());
     }

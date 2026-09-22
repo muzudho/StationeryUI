@@ -2,6 +2,15 @@
 
 JSON の型名は `dock-layout`、開発者ウィンドウでの表示名は `dockLayout` です。`work-page-layout` は互換性のため残ります。
 
+
+## １ノード１レイアウトと共通の padding
+
+各モデルノードが持てるルートレイアウトは最大１つです。`box-layout` / `grid-layout` / `dock-layout` はどれも `padding` を指定できます。例えば `"padding": {"top":"8px","right":"8px","bottom":"8px","left":"8px"}` とします。値は非負の px 文字列です。省略した辺は box-layout では従来どおり8px、grid-layout / dock-layout では0pxです。padding を引いた内側に子を配置し、領域が足りない場合は０サイズまで縮めます。
+
+複合配置はレイアウトの `children` でネストします。同じルートツリー内の `frame.grid` などへ複数 binding を書いても、所有するレイアウトは１つです。dock の各領域をさらに分割するときは子コンテナーに grid などを持たせます。別々のルートを同一ノードへ binding すると、読み込み時にエラーになります。実行中のリロードでは直前の有効な設定を維持します。
+
+旧設定で余白用 box と配置用 grid を併用していた場合は、box の padding を grid へ移して box の binding を削除してください。margin / border も必要なら、box の `children` に grid を入れ、binding の layout を `boxId.gridId` に変更します。
+
 ## 配置の規則
 
 - `childrenModel` は空配列でもよく、要素数の上限はありません。同じ方向を複数指定できます。
@@ -48,7 +57,7 @@ JSON の型名は `dock-layout`、開発者ウィンドウでの表示名は `do
 }
 ```
 
-ドックと別のルートグリッドで同じ親の全域を取り合う指定はエラーです。中央の `body` のような子コンテナーへグリッドを適用してください。親の `box-layout` とドックを組み合わせると、その余白の内側にドックを配置できます。ドックを `box-layout` や `grid-layout` の子レイアウトとして定義することもできます。ドック自身の配置先は `bindings.childrenModel` で指定します。
+ドックと別のルートグリッドで同じ親の全域を取り合う指定はエラーです。中央の `body` のような子コンテナーへグリッドを適用してください。余白はドック自身の `padding` に指定できます。同じ親に別のルート `box-layout` を付けることはできません。ドックを `box-layout` や `grid-layout` の子レイアウトとして定義することもできます。ドック自身の配置先は `bindings.childrenModel` で指定します。
 
 `work-page-layout` から移行する場合は、本文コンテナーを作り、下端のインスペクターを `bottom`、本文を `center` にします。従来のページレイアウトとは同じ親に重ねません。既存ファイルを自動で書き換えることはありません。
 
