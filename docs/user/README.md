@@ -13,6 +13,7 @@
 - [ダウンロードして起動する](getting-started.md)
 - [エディターの使い方](style-designer.md)：レイアウト編集、保存、バックアップと復元。
 - [スタイル設定ファイルの仕様](stationery-style-settings.md)：設定を直接確認・編集する場合の資料。
+- [レイアウトをネストする](nested-layouts.md)：子レイアウトと複数行・列に跨る配置。
 - [v0.2.0 のリリースノート](releases/style-designer-v0.2.0.md) ／ [v0.1.0 のリリースノート](releases/style-designer-v0.1.0.md)
 
 ## 文房具 UI の画面を操作する

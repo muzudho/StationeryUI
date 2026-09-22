@@ -92,7 +92,7 @@ internal sealed partial class DesignerGame
                             var binding = snapshot.Settings.Bindings.FirstOrDefault(b => b.ModelPath == path && b.FirstModel is not null);
                             if (binding is not null)
                                 livePreview.AddSplitPane(livePreview.Root.AddChild(previewId, "splitPane"), Clip(snapshot.Layout.ContentBounds[path]), title,
-                                    snapshot.Settings.Layouts.Single(l => l.Id == binding.Layout).Split!);
+                                    snapshot.Settings.Layouts.Single(l => l.Path == binding.Layout).Split!);
                             break;
                         default:
                             if (kind == "textBlock" || model["children"] is not JsonArray { Count: > 0 } && kind is not ("viewport" or "page")) Block(rect, title);
@@ -104,8 +104,8 @@ internal sealed partial class DesignerGame
             foreach (var root in metadata["models"]!.AsArray()) Visit(root!, "");
             if (blueprint.CanEditPanel)
             {
-                var panelBinding = snapshot.Settings.Bindings.FirstOrDefault(b => b.Layout == blueprint.SelectedLayoutId);
-                if (panelBinding is not null) Outline(snapshot.Layout.ContentBounds[panelBinding.ModelPath]);
+                foreach (var (layoutKey, area) in snapshot.Layout.LayoutContentBounds)
+                    if (layoutKey.EndsWith(":" + blueprint.SelectedLayoutId, StringComparison.Ordinal)) Outline(area);
             }
             foreach (var cell in snapshot.Cells)
             {

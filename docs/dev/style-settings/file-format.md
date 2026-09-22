@@ -20,7 +20,7 @@
 
 - Id は空でない `[A-Za-z0-9_]+`。大小文字を区別します。camelCase を推奨します。
 - 同じ親の直下のモデル Id は一意にします。異なる親の下なら同じ Id を使えます。
-- レイアウト Id は `layouts` 配列全体で一意にします。モデル Id とは別の名前空間です。
+- レイアウト Id は同じ親の下で一意にします。モデル Id とは別の名前空間です。`bindings.layout` は `frame.grid.inner` のようなドット区切りの完全パスで参照します。
 - `model` / `parentModel` はルートからのパスです。`app/pageA` と `/app/pageA` は同じ参照です。
 - `childrenModel[].model` は `parentModel` からの相対パス、または `/` で始まる完全パスです。
 - `firstModel` / `secondModel` / `inspectorModel` も、その binding の `model` からの相対パスか完全パスです。
@@ -61,7 +61,7 @@ padding は省略した辺が **8px**、margin / border は省略した辺が **
 }
 ```
 
-binding は `layout`、`parentModel`、`childrenModel` を使い、子には `model`、`row`、`column` を指定します。[最小例](integration.md)を参照してください。行・列番号は **0 始まり**で、1セルに1モデルを配置します。空きセルがあっても隣へ自動拡張しません。
+binding は `layout`、`parentModel`、`childrenModel` を使い、子には `model`、`row`、`col`（旧名 `column`）を指定します。`rowspan`・`colspan` は省略時1で、複数セルに跨る範囲を指定できます。行・列番号は **0 始まり**です。範囲の重複と範囲外はエラーです。空きセルへ自動拡張しません。[ネストとセル範囲指定](nested-layouts-proposal.md)を参照してください。
 
 `px` の固定分を先に確保し、残りを `rate` の比で分けます。幅740pxで `["240px", "1rate", "1.5rate"]` なら 240px / 200px / 300px です。固定分が領域を超えたら固定部分を比例縮小し、rate 部分は0になります。固定値だけで領域を埋めない場合は末尾に空白を残します。
 
@@ -82,9 +82,9 @@ bindings: outerGrid のセルに contentArea を配置
           innerGrid の親を /app/contentArea にして、その子を配置
 ```
 
-`layouts` 配列の中でレイアウト定義に `children` を書く方式ではありません。レイアウト定義は独立したまま、モデルの親子関係と bindings で入れ子を表現します。配置は外側から内側へ計算され、layouts 配列の順番には依存しません。
+この既存方式に加え、レイアウト自身の `children` で入れ子を表現できます。ボックスの子は0～1個、グリッドの子は0～複数個です。グリッドの子にセル位置と span を指定します。どちらの方式も配置は外側から内側へ計算します。
 
-現時点では、必要なモデルと対応付けを JSON・C# 側で用意します。エディターで個々のグリッド定義を調整することと、入れ子の構造そのものを GUI で作ることは別です。**セルから内側のレイアウトを追加し、models / bindings の接続を含めて編集できる GUI は今後の目標**です。[導入の意義と今後の目標](overview.md)も参照してください。
+エディターはネストしたレイアウトの追加・編集・保存に対応しています。必要な models / bindings の生成・移し替えは自動ではありません。[ネストの実装と配置基準](nested-layouts-proposal.md)も参照してください。
 
 ## split-pane — 左右・上下の分割
 
@@ -141,7 +141,7 @@ binding は `{ "layout": "workPage", "model": "/app/editorPage", "inspectorModel
 | したいこと | 現在の扱い |
 | --- | --- |
 | CSS の色・フォント・セレクター・継承・状態スタイル | 未対応。C# の Theme / Element 等で指定 |
-| gap、rowspan / colspan、内容に合わせる auto サイズ、自動折り返し | 未対応。空き行・列や C# の配置処理で補う |
+| gap、内容に合わせる auto サイズ、自動折り返し | 未対応。空き行・列や C# の配置処理で補う |
 | 最小・最大幅やメディアクエリー | 汎用指定は未対応。アプリ側で制御。split-pane の minimumPaneSize は専用機能 |
 | JSON から任意の UI・イベント・データ接続を自動生成 | 未対応。C# で実装 |
 | 配置だけで非表示ページ・モーダルの入力を遮断 | 未対応。アプリがホストの Update / Draw を制御 |

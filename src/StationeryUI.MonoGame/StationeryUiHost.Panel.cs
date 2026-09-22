@@ -16,10 +16,12 @@ public sealed partial class StationeryUiHost
         sprites.Begin(blendState: BlendState.NonPremultiplied, rasterizerState: clipState);
         try
         {
-            foreach (var (path, outside) in layout.BorderBounds)
+            var outlines = layout.LayoutBorderBounds.Count > 0
+                ? layout.LayoutBorderBounds.Select(pair => (Owner: pair.Key.Split(':')[0], Outside: pair.Value, Inside: layout.LayoutBounds[pair.Key]))
+                : layout.BorderBounds.Select(pair => (Owner: pair.Key, Outside: pair.Value, Inside: layout.Bounds[pair.Key]));
+            foreach (var (path, outside, inside) in outlines)
             {
                 if (include is not null && !include(path)) continue;
-                var inside = layout.Bounds[path];
                 void Strip(ScreenRectangle bounds)
                 {
                     if (bounds.Width > 0 && bounds.Height > 0) Fill(FromWindow(bounds), Theme.Border);

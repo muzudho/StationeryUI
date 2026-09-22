@@ -27,7 +27,7 @@ internal sealed partial class DesignerGame
             modalPixel.SetData(new[] { Color.White });
         }
         ScreenRectangle logical = utilityDialog is not null ? new(180, 200, 1240, 380)
-            : restoreDialog is not null ? new(184, 64, 1232, 688) : new(430, 210, 740, 370);
+            : restoreDialog is not null ? new(184, 64, 1232, 688) : new(430, 210, 740, placementFields.Count > 0 ? 480 : 370);
         var bounds = dialog.Viewport.ToWindow(logical);
         var rectangle = new Rectangle((int)Math.Floor(bounds.X) - 2, (int)Math.Floor(bounds.Y) - 2,
             (int)Math.Ceiling(bounds.Width) + 4, (int)Math.Ceiling(bounds.Height) + 4);

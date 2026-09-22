@@ -26,14 +26,14 @@ public sealed class StationeryDeveloperStyle
             if (root.Resolve("/developerViewport/developerWindow" + path)?.Kind != kind)
                 throw new JsonException($"Required developer model: /developerViewport/developerWindow{path} ({kind}).");
         var binding = settings.Bindings.SingleOrDefault(b => b.ModelPath == "/developerViewport/developerWindow/inspectorSplit" &&
-            settings.Layouts.Any(l => l.Id == b.Layout && l.Type == "split-pane"));
+            settings.Layouts.Any(l => l.Path == b.Layout && l.Type == "split-pane"));
         if (binding is null || binding.FirstModel != "/developerViewport/developerWindow/inspectorSplit/stationeryTree" ||
             binding.SecondModel != "/developerViewport/developerWindow/inspectorSplit/details")
             throw new JsonException("The inspector split must bind stationeryTree first and details second.");
-        SplitOptions = settings.Layouts.Single(l => l.Id == binding.Layout).Split!;
+        SplitOptions = settings.Layouts.Single(l => l.Path == binding.Layout).Split!;
         if (!settings.Bindings.Any(b => b.ModelPath == "/developerViewport/developerWindow" &&
             b.InspectorModel == "/developerViewport/developerWindow/inspectorPanel" &&
-            settings.Layouts.Any(l => l.Id == b.Layout && l.Type == "work-page-layout")))
+            settings.Layouts.Any(l => l.Path == b.Layout && l.Type == "work-page-layout")))
             throw new JsonException("The developer page requires an inspectorPanel work-page binding.");
         foreach (var path in new[] { "/developerViewport/developerWindow/instructions", "/developerViewport/developerWindow/inspectorSplit", "/developerViewport/developerWindow/copyPath", "/developerViewport/developerWindow/inspectorPanel/toolHint" })
             if (!settings.Bindings.Any(b => b.Children.Any(c => c.ModelPath == path)))

@@ -8,6 +8,10 @@ using StationeryUI.Controls;
 public sealed record StationeryLayoutResult(IReadOnlyDictionary<string, ScreenRectangle> Bounds,
     IReadOnlyDictionary<string, ScreenRectangle> ContentBounds)
 {
+    // Keyed by owner model path + ":" + complete layout path (layouts are reusable).
+    public IReadOnlyDictionary<string, ScreenRectangle> LayoutBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
+    public IReadOnlyDictionary<string, ScreenRectangle> LayoutContentBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
+    public IReadOnlyDictionary<string, ScreenRectangle> LayoutBorderBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
     public IReadOnlyDictionary<string, ScreenRectangle> BorderBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
 }
 
@@ -30,17 +34,48 @@ public static class StationeryLayoutEngine
     {
         if (!double.IsFinite(width) || width < 0 || !double.IsFinite(height) || height < 0)
             throw new ArgumentOutOfRangeException(nameof(width), "Window dimensions must be finite and nonnegative.");
-        var layouts = settings.Layouts.ToDictionary(layout => layout.Id, StringComparer.Ordinal);
-        var panels = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "box-layout")
-            .ToDictionary(binding => binding.ModelPath, binding => layouts[binding.Layout], StringComparer.Ordinal);
-        var grids = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "grid-layout")
-            .ToDictionary(binding => binding.ModelPath, StringComparer.Ordinal);
+        var layouts = settings.Layouts.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
+        var owners = settings.Bindings.GroupBy(b => b.ModelPath).ToDictionary(g => g.Key, g => g.ToArray());
+        var panels = owners.Select(pair => (pair.Key, Box: pair.Value.Select(b => layouts[b.Layout.Split('.')[0]])
+                .Distinct().SingleOrDefault(l => l.Type == "box-layout")))
+            .Where(p => p.Box is not null).ToDictionary(p => p.Key, p => p.Box!);
         var pages = settings.Bindings.Where(b => b.InspectorModel is not null).ToDictionary(b => b.ModelPath);
         var positions = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var splits = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "split-pane").ToDictionary(binding => binding.ModelPath);
         var bounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var contents = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var borders = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var layoutBounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var layoutContents = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var layoutBorders = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+
+        ScreenRectangle Inset(ScreenRectangle area, ViewportPadding padding)
+        {
+            var inset = padding.GetContentBounds(area.Width, area.Height);
+            return inset with { X = area.X + inset.X, Y = area.Y + inset.Y };
+        }
+        ScreenRectangle Cell(StationeryLayoutNode grid, ScreenRectangle area, int row, int col, int rowSpan, int colSpan)
+        {
+            var rows = TrackEdges(grid.Rows, area.Height);
+            var columns = TrackEdges(grid.Columns, area.Width);
+            return new(area.X + columns[col], area.Y + rows[row], columns[col + colSpan] - columns[col], rows[row + rowSpan] - rows[row]);
+        }
+        void ArrangeLayout(StationeryLayoutNode layout, string owner, ScreenRectangle area, ScreenRectangle? rootContent = null)
+        {
+            var outer = rootContent is not null ? area : Inset(area, layout.Margin);
+            var content = rootContent ?? Inset(outer, layout.Padding);
+            var key = owner + ":" + layout.Path;
+            layoutBounds.Add(key, outer); layoutContents.Add(key, content);
+            if (layout.Type == "box-layout") layoutBorders.Add(key, new(outer.X - layout.Border.Left, outer.Y - layout.Border.Top,
+                outer.Width + layout.Border.Left + layout.Border.Right, outer.Height + layout.Border.Top + layout.Border.Bottom));
+            if (layout.Type == "grid-layout")
+                foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
+                    foreach (var child in binding.Children)
+                        positions.Add(child.ModelPath, Cell(layout, content, child.Row, child.Column, child.RowSpan, child.ColumnSpan));
+            foreach (var child in layout.Children)
+                ArrangeLayout(child, owner, layout.Type == "grid-layout"
+                    ? Cell(layout, content, child.Row, child.Column, child.RowSpan, child.ColumnSpan) : content);
+        }
 
         void Visit(StationeryNode node, ScreenRectangle inherited)
         {
@@ -73,21 +108,19 @@ public static class StationeryLayoutEngine
                 positions.Add(splitBinding.FirstModel!, splitBounds.First);
                 positions.Add(splitBinding.SecondModel!, splitBounds.Second);
             }
-            if (grids.TryGetValue(node.Path, out var binding))
-            {
-                var layout = layouts[binding.Layout];
-                var rows = TrackEdges(layout.Rows, content.Height);
-                var columns = TrackEdges(layout.Columns, content.Width);
-                foreach (var child in binding.Children)
-                    positions.Add(child.ModelPath, new(content.X + columns[child.Column], content.Y + rows[child.Row],
-                        columns[child.Column + 1] - columns[child.Column], rows[child.Row + 1] - rows[child.Row]));
-            }
+            if (owners.TryGetValue(node.Path, out var ownerBindings))
+                foreach (var layout in ownerBindings.Select(b => layouts[b.Layout.Split('.')[0]]).Distinct())
+                    if (layout.Type == "box-layout") ArrangeLayout(layout, node.Path, outer, content);
+                    else if (layout.Type == "grid-layout") ArrangeLayout(layout, node.Path, content);
             foreach (var child in node.Children) Visit(child, content);
         }
 
         foreach (var model in settings.Models) Visit(model.CreateTree(), new(0, 0, width, height));
         return new(new ReadOnlyDictionary<string, ScreenRectangle>(bounds), new ReadOnlyDictionary<string, ScreenRectangle>(contents))
-        { BorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(borders) };
+        { BorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(borders),
+            LayoutBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBounds),
+            LayoutContentBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutContents),
+            LayoutBorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBorders) };
     }
 
     private static double[] TrackEdges(IReadOnlyList<LayoutTrack> tracks, double available)

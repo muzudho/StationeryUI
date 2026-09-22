@@ -122,7 +122,14 @@ internal sealed partial class DesignerGame
             var item = next.AddNode(identity, title, parent, old.GetValueOrDefault(identity, depth < 1 || key == "layouts"));
             treePaths[item.Id] = jsonPath;
             if (identity == selected) restore = item;
-            if (layoutId is not null) treeLayouts[item.Id] = layoutId;
+            if (jsonPath[0] == "layouts" && value is JsonObject layoutObject && layoutObject["id"] is not null &&
+                jsonPath.Length % 2 == 0 && jsonPath.Where((_, i) => i > 0 && i % 2 == 0).All(p => p == "children"))
+            {
+                var ids = new List<string>();
+                for (JsonNode? ancestor = value; ancestor is not null; ancestor = ancestor.Parent)
+                    if (ancestor is JsonObject objWithId && objWithId["id"] is JsonValue localId) ids.Insert(0, localId.GetValue<string>());
+                treeLayouts[item.Id] = string.Join(".", ids);
+            }
             if (value is JsonObject properties)
             {
                 var index = 0;
@@ -162,7 +169,7 @@ internal sealed partial class DesignerGame
         Guard(() =>
         {
             Capture();
-            var layoutType = (string?)JsonNode.Parse(blueprint.BuildJson())!["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == layoutId)?["type"];
+            var layoutType = (string?)StyleBlueprint.FindLayout(JsonNode.Parse(blueprint.BuildJson())!, layoutId)?["type"];
             if (layoutType is not ("box-layout" or "grid-layout")) { rebuild = true; return; }
             blueprint.SelectLayout(layoutId);
             selectedRow = selectedColumn = 0; rebuild = true;

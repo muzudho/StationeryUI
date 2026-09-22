@@ -122,8 +122,9 @@ models の各ノードには id と type、必要なら children 配列を置く
 
 layouts の id はモデルへの参照ではない。例えば demoViewport はレイアウト自身の名前で、
 bindings の model: demo によって初めてモデルと結び付く。
-レイアウト Id も英字・数字・アンダースコアを使い、layouts 配列内で一意にする。
-layouts 内にモデル参照や children / contents は置かない。
+レイアウト Id も英字・数字・アンダースコアを使い、同じ親の下で一意にする。
+box-layout は children に0～1個、grid-layout は0～複数個の子レイアウトを置ける。モデル参照や contents は置かない。
+bindings.layout にはドット区切りの完全パスを指定する。子の row・col・rowspan・colspan の指定例は[レイアウトをネストする](nested-layouts.md)を参照。
 
 ## bindings の参照と組み合わせ
 
@@ -143,7 +144,7 @@ parentModel の型は viewport / page / container / dialog。
 
 同じモデルに box-layout と grid-layout をそれぞれ 1 つ適用できる。
 box-layout が内側の領域を作り、grid-layout がその領域を行と列に分ける。
-同じ型のレイアウトを同じモデルに重ねて指定することはできない。
+独立した複数のルートグリッドやルートボックスを同じモデルに重ねて指定することはできない。同じレイアウトツリー内の複数グリッドを参照する場合は、同じ parentModel を使える。
 別のモデルであれば、同じレイアウト定義を再利用できる。
 
 配置したコンテナーにさらにレイアウトを結び付けることで、入れ子の配置もできる。
