@@ -282,3 +282,20 @@ ui.Viewport.Scale = 1.5;
 ## コードを読む
 
 [コントロールのプログラム解説](control-guide.md) に、描画境界と部品別の説明をまとめています。
+
+
+### レイアウトツリーの選択枠
+
+配置に使った最新の計算結果を渡し、レイアウト定義の領域も検索対象にする。
+
+```csharp
+var entries = ui.Inspect(settings, arranged); // arranged はウィンドウのピクセル単位
+if (developerWindow.IsOpen && developerWindow.SelectedPath is { } selected)
+{
+    var entry = DeveloperInspectionLayout.FindVisibleEntry(entries, selected);
+    if (entry?.WindowBounds is { } bounds)
+        ui.DrawInspectionOutline(bounds);
+}
+```
+
+複数ホストの場合は、結合したモデル配列に `DeveloperInspectionLayout.Apply(entries, settings, arranged)` を適用する。非表示ページのモデルは `Visible = false` にする。レイアウトノードをキャプチャー判定のモデル配列へ追加する必要はない。

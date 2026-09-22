@@ -109,7 +109,34 @@ internal sealed class TextCacheRenderingTests : Game
         Click(inspector.ModelTreeButtonBounds);
         if (inspector.Model.TreeMode != DeveloperTreeMode.Model || inspector.Model.Tree.SelectedItem!.Label != "(body : Container)")
             throw new Exception("Model tree button did not restore simple model labels.");
-        Console.WriteLine("PASS inspector box model and tree mode buttons, nested layouts and selection restore.");
+        using var outlineHost = new StationeryUiHost(GraphicsDevice, input, family => new WindowsTextRasterizer(family));
+        foreach (var scale in new[] { 1.0, 1.5 })
+        {
+            outlineHost.Viewport.Scale = scale;
+            outlineHost.Viewport.Offset = new(17, 29);
+            StationeryInspectionEntry[] outlineSnapshot = [
+                new("owner", "/owner", null, "container", "", true, null) {
+                    LayoutNodes = [new("box", "/owner:/grid/box", "/owner:/grid", "layout", "", true, new(40, 50, 180, 120))]
+                }
+            ];
+            var selected = DeveloperInspectionLayout.FindVisibleEntry(outlineSnapshot, "/owner:/grid/box")!;
+            GraphicsDevice.SetRenderTarget(target);
+            GraphicsDevice.Clear(Color.Black);
+            outlineHost.DrawInspectionOutline(selected.WindowBounds!.Value);
+            GraphicsDevice.SetRenderTarget(null);
+            var pixels = new Color[640 * 480];
+            target.GetData(pixels);
+            var pink = new Color(255, 105, 180);
+            for (var y = 0; y < 480; y++)
+            for (var x = 0; x < 640; x++)
+            {
+                var edge = x >= 40 && x < 220 && y >= 50 && y < 170
+                    && (x < 43 || x >= 217 || y < 53 || y >= 167);
+                if (pixels[y * 640 + x] != (edge ? pink : Color.Black))
+                    throw new Exception($"Layout outline misplaced at {x}, {y}, scale {scale}.");
+            }
+        }
+        Console.WriteLine("PASS inspector box model, tree mode buttons and layout outlines at 100%/150%.");
         Exit();
     }
 }

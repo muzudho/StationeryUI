@@ -120,6 +120,26 @@ internal static class DeveloperInspectionTests
         Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner + ":/layoutShowcase/box/content", "model under nested content layout");
         Check(model.Select(owner + ":/layoutShowcase/box"), "hidden intermediate box is inspectable");
         Check(model.SelectedEntry!.BoxModel!.Padding.Left == 24 && model.SelectedEntry.BoxModel.Margin.Left == 6, "intermediate layout owns its own insets");
+        var arranged = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 1000, 700);
+        var snapshot = DeveloperInspectionLayout.Apply(entries, settings, arranged);
+        var received = System.Text.Json.JsonSerializer.Deserialize<StationeryInspectionEntry[]>(
+            System.Text.Json.JsonSerializer.Serialize(snapshot))!;
+        var key = owner + ":/layoutShowcase/box";
+        var selection = DeveloperInspectionLayout.FindVisibleEntry(received, key);
+        Check(selection?.WindowBounds == arranged.LayoutBounds[key], "nested layout window bounds survive transport");
+        var contentKey = key + "/content";
+        var content = DeveloperInspectionLayout.FindVisibleEntry(received, contentKey)!.WindowBounds!.Value;
+        var outer = selection!.WindowBounds!.Value;
+        Check(content.X == outer.X + 24 && content.Width == outer.Width - 48, "outline includes padding, child content is inset");
+        Check(DeveloperCapture.HitTest(received, outer.X + 1, outer.Y + 1) is null, "layout metadata does not intercept model captures");
+        Check(DeveloperInspectionLayout.FindVisibleEntry(DeveloperInspectionLayout.Apply(entries.Select(e => e with { Visible = false }).ToArray(), settings, arranged), key) is null, "hidden owner has no layout outline");
+        Check(DeveloperInspectionLayout.FindVisibleEntry(DeveloperInspectionLayout.Apply(entries, settings), key) is null, "missing arrangement has no invented rectangle");
+        model.Refresh(received);
+        Check(model.Details.Contains("X="), "layout details show actual coordinates");
+        var resized = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 1300, 900);
+        model.Refresh(DeveloperInspectionLayout.Apply(entries, settings, resized));
+        Check(model.SelectedPath == key && model.SelectedEntry!.WindowBounds == resized.LayoutBounds[key]
+            && model.SelectedEntry.WindowBounds != outer, "resize updates selected layout rectangle");
         model.SetTreeMode(DeveloperTreeMode.Model);
         model.Select(owner + "/boxContent");
         Check(model.Tree.SelectedItem!.Parent!.Label == "(body : Container)", "model hierarchy unchanged");

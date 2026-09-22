@@ -339,7 +339,7 @@ internal sealed partial class Demo : Game
         }
         if (developerWindow.IsOpen && developerWindow.SelectedPath is { } selected)
         {
-            var entry = InspectStationery().FirstOrDefault(e => e.Path == selected && e.Visible);
+            var entry = DeveloperInspectionLayout.FindVisibleEntry(InspectStationery(), selected);
             if (entry?.WindowBounds is { } bounds) ui?.DrawInspectionOutline(bounds);
         }
         var screenshot = Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG");
@@ -397,7 +397,7 @@ internal sealed partial class Demo : Game
         var root = modelBinding.Root;
         entries[root.Path] = new(root.Id, root.Path, null, root.Kind, "デモ画面", true,
             new ScreenRectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
-        return DeveloperInspectionLayout.Apply(entries.Values.ToArray(), styles.Current);
+        return DeveloperInspectionLayout.Apply(entries.Values.ToArray(), styles.Current, latestLayout);
     }
 
     protected override void Dispose(bool disposing)

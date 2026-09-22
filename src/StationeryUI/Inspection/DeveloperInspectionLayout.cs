@@ -6,7 +6,7 @@ using StationeryUI.Styling;
 public static class DeveloperInspectionLayout
 {
     public static IReadOnlyList<StationeryInspectionEntry> Apply(
-        IReadOnlyList<StationeryInspectionEntry> entries, StationeryStyleSettings settings)
+        IReadOnlyList<StationeryInspectionEntry> entries, StationeryStyleSettings settings, StationeryLayoutResult? arranged = null)
     {
         var layouts = settings.Layouts.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
         var types = settings.Bindings.GroupBy(binding => binding.ModelPath, StringComparer.Ordinal)
@@ -37,7 +37,8 @@ public static class DeveloperInspectionLayout
             return settings.Layouts.Where(l => l.Path == root.Path || l.Path.StartsWith(root.Path + "/", StringComparison.Ordinal))
                 .Select(l => new StationeryInspectionEntry(l.Id, owner.Path + ":" + l.Path,
                     l.Path == root.Path ? owner.Path : owner.Path + ":" + l.ParentPath,
-                    "layout", l.Path, owner.Visible, null)
+                    "layout", l.Path, owner.Visible,
+                    arranged?.LayoutBounds.TryGetValue(owner.Path + ":" + l.Path, out var bounds) == true ? bounds : null)
                 {
                     LayoutTypes = [l.Type],
                     Cell = l.Path == root.Path ? null : new(l.Column, l.Row, l.ColumnSpan, l.RowSpan),
@@ -54,6 +55,11 @@ public static class DeveloperInspectionLayout
             BoxModel = BoxModel(entry.Path)
         }).ToArray();
     }
+
+    /// <summary>Finds a visible model or layout for an outline; does not change capture hit testing.</summary>
+    public static StationeryInspectionEntry? FindVisibleEntry(IReadOnlyList<StationeryInspectionEntry> entries, string path)
+        => entries.Where(e => e.Visible).SelectMany(e => new[] { e }.Concat(e.LayoutNodes ?? []))
+            .FirstOrDefault(e => e.Path == path && e.Visible && e.WindowBounds is { Width: > 0, Height: > 0 });
 
     public static string FormatModelLabel(StationeryInspectionEntry entry)
     {

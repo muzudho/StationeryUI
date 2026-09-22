@@ -157,6 +157,11 @@ public sealed partial class StationeryUiHost : IDisposable
     public IReadOnlyList<StationeryInspectionEntry> Inspect(StationeryUI.Styling.StationeryStyleSettings settings, bool visible = true)
         => DeveloperInspectionLayout.Apply(Inspect(visible), settings);
 
+    /// <summary>Includes nested layout rectangles from the current arrangement, in window pixels.</summary>
+    public IReadOnlyList<StationeryInspectionEntry> Inspect(StationeryUI.Styling.StationeryStyleSettings settings,
+        StationeryUI.Styling.StationeryLayoutResult arranged, bool visible = true)
+        => DeveloperInspectionLayout.Apply(Inspect(visible), settings, arranged);
+
     public IReadOnlyList<StationeryInspectionEntry> Inspect(bool visible = true)
     {
         ArrangeSplitPanes();

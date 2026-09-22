@@ -43,6 +43,10 @@ ui.Focus.Focus(name.Path);
 ## 開発者ウィンドウのモデル／レイアウト切り替え
 
 ツリー上部でモデルツリーとレイアウトツリーを切り替える。モデルツリーは `(Id : 種類)` のみ、レイアウトツリーは配置情報付きのラベルと実際のネストしたレイアウト定義を表示する。
-`DeveloperInspectionLayout.Apply(entries, settings)`（または `ui.Inspect(settings)`）でスナップショットへ `LayoutNodes` と `LayoutParentPath` を付与する。既存のモデル配列へレイアウトを直接追加しないため、画面のキャプチャー判定はモデルだけを対象にする。
+`DeveloperInspectionLayout.Apply(entries, settings, arranged)`（または `ui.Inspect(settings, arranged)`）でスナップショットへ `LayoutNodes` と `LayoutParentPath` を付与する。既存のモデル配列へレイアウトを直接追加しないため、画面のキャプチャー判定はモデルだけを対象にする。
 レイアウトの識別子は `ownerModelPath + ":" + layout.Path`。そのノードの `BoxModel` は定義自身の margin・padding を表す。付加情報のないスナップショットも表示できるが、定義の入れ子は表示できない。
 `DeveloperViewState` には表示モードと両ツリーの選択・開閉状態を保存する。操作ログの `TreeMode` は Model=0、Layout=1。
+
+
+レイアウトの桃色の枠には、画面の配置に使った最新の `StationeryLayoutResult` を `arranged` として検査データへ渡す。座標はウィンドウのピクセル単位で、ズーム変換を重ねて掛けない。
+枠の対象は `DeveloperInspectionLayout.FindVisibleEntry(entries, selectedPath)` で検索し、その `WindowBounds` を `DrawInspectionOutline` に渡す。モデルだけの検索ではレイアウトノードが見つからない。キャプチャーのヒット判定には従来のモデル配列を使う。

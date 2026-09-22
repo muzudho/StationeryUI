@@ -98,10 +98,10 @@ public sealed class DeveloperInspectionModel
         get
         {
             if (SelectedEntry is not { } entry) return "文房具を選択してください。";
-            if (entry.Kind == "layout" && entry.Path.IndexOf(':') is var separator && separator >= 0)
-                return $"レイアウト Id: {entry.Id}\n\nレイアウトパス: {entry.Label}\n\n所有モデル: {entry.Path[..separator]}\n\n識別パス: {entry.Path}\n\n種類: {string.Join(", ", entry.LayoutTypes ?? [])}\n\n位置: 未取得";
             var bounds = entry.WindowBounds is { } b
                 ? string.Create(CultureInfo.InvariantCulture, $"X={b.X:0.##}\nY={b.Y:0.##}\n幅={b.Width:0.##}\n高さ={b.Height:0.##}") : "—";
+            if (entry.Kind == "layout" && entry.Path.IndexOf(':') is var separator && separator >= 0)
+                return $"レイアウト Id: {entry.Id}\n\nレイアウトパス: {entry.Label}\n\n所有モデル: {entry.Path[..separator]}\n\n識別パス: {entry.Path}\n\n種類: {string.Join(", ", entry.LayoutTypes ?? [])}\n\nウィンドウ内の位置（px）:\n{bounds}";
             return $"文房具 Id: {entry.Id}\n\nId path: {IdPath}\n\n完全パス: {entry.Path}\n\n種類: {entry.Kind}\n名前: {entry.Label}\n表示: {(entry.Visible ? "表示中" : "非表示")}\n\nウィンドウ内の位置（px）:\n{bounds}"
                 + (entry.LayoutError is null ? "" : "\n\nレイアウトエラー:\n" + entry.LayoutError);
         }
