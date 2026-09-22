@@ -19,6 +19,7 @@
     <None Include="$(MSBuildThisFileDirectory)docs/dev/library-integration.md" Pack="true" PackagePath="docs/dev/" />
     <None Include="$(MSBuildThisFileDirectory)docs/dev/developer-window.md" Pack="true" PackagePath="docs/dev/" />
     <None Include="$(MSBuildThisFileDirectory)docs/dev/model-inspection.md" Pack="true" PackagePath="docs/dev/" />
+    <None Include="$(MSBuildThisFileDirectory)docs/dev/dock-layout.md" Pack="true" PackagePath="docs/dev/" />
     <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="/" />
     <None Include="$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="/" />
     <None Include="$(MSBuildThisFileDirectory)docs/user/CircleSpaceCoordinator-LICENSE.txt" Pack="true" PackagePath="licenses/" />

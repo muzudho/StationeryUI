@@ -67,6 +67,7 @@ public sealed record StationeryInspectionEntry(string Id, string Path, string? P
 {
     public IReadOnlyList<string>? LayoutTypes { get; init; }
     public StationeryInspectionCell? Cell { get; init; }
+    public string? LayoutError { get; init; }
 }
 
 public sealed record StationeryInspectionCell(int Column, int Row, int ColumnSpan, int RowSpan);

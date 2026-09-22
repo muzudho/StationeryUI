@@ -659,7 +659,8 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             ?? throw new JsonException("splitPaneDemoPage is required.");
         var layoutPage = root.Children.Single(node => node.Id == "layoutDemoPage" && node.Kind == "page");
         foreach (var page in new[] { topPage, splitPage, layoutPage })
-            if (!settings.Bindings.Any(b => b.ModelPath == page.Path && b.InspectorModel == page.Path + "/inspectorPanel"))
+            if (!settings.Bindings.Any(b => b.ModelPath == page.Path && (b.InspectorModel == page.Path + "/inspectorPanel"
+                || b.DockChildren.Any(c => c.ModelPath == page.Path + "/inspectorPanel"))))
                 throw new JsonException($"{page.Path} requires a page layout bound to inspectorPanel.");
         var dialogs = all.Where(node => node.Id == "editDialog" && node.Kind == "dialog").ToArray();
         if (dialogs.Length != 1) throw new JsonException("Demo models requires one editDialog of type dialog.");
@@ -694,6 +695,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             ["nameField"] = "textBox", ["cancelButton"] = "button", ["saveButton"] = "button"
         });
         var placed = settings.Bindings.SelectMany(binding => binding.Children).Select(child => child.ModelPath).ToHashSet(StringComparer.Ordinal);
+        placed.UnionWith(settings.Bindings.SelectMany(binding => binding.DockChildren).Select(child => child.ModelPath));
         foreach (var binding in settings.Bindings.Where(binding => binding.FirstModel is not null))
         {
             placed.Add(binding.FirstModel!); placed.Add(binding.SecondModel!);

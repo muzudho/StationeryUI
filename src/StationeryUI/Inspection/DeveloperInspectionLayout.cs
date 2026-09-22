@@ -14,10 +14,13 @@ public static class DeveloperInspectionLayout
                 .Distinct(StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
         var cells = settings.Bindings.SelectMany(binding => binding.Children)
             .ToDictionary(cell => cell.ModelPath, cell => new StationeryInspectionCell(cell.Column, cell.Row, cell.ColumnSpan, cell.RowSpan), StringComparer.Ordinal);
+        var errors = settings.Bindings.Where(b => b.LayoutError is not null).GroupBy(b => b.ModelPath)
+            .ToDictionary(g => g.Key, g => string.Join("\n", g.Select(b => b.LayoutError)), StringComparer.Ordinal);
         return entries.Select(entry => entry with
         {
             LayoutTypes = types.GetValueOrDefault(entry.Path),
-            Cell = cells.GetValueOrDefault(entry.Path)
+            Cell = cells.GetValueOrDefault(entry.Path),
+            LayoutError = errors.GetValueOrDefault(entry.Path)
         }).ToArray();
     }
 
@@ -28,11 +31,12 @@ public static class DeveloperInspectionLayout
             ? string.Join(", ", entry.LayoutTypes.Select(type => type switch
             {
                 "grid-layout" => "gridLayout", "box-layout" => "boxLayout",
+                "dock-layout" => "dockLayout",
                 "fullscreen-layout" => "fullscreenLayout", "work-page-layout" => "workPageLayout",
                 "split-pane" => "splitPane", _ => type
             }))
             : entry.Cell is { } cell
                 ? FormattableString.Invariant($"{cell.Column}, {cell.Row}, {cell.ColumnSpan}, {cell.RowSpan}") : "—";
-        return $"({entry.Id} : {kind}) ({layout})" + (entry.Visible ? "" : "  （非表示）");
+        return $"({entry.Id} : {kind}) ({layout})" + (entry.LayoutError is null ? "" : " （レイアウトエラー）") + (entry.Visible ? "" : "  （非表示）");
     }
 }

@@ -386,6 +386,7 @@ public sealed class StyleBlueprint
                 Rewrite(binding, "firstModel", resolved.FirstModel); Rewrite(binding, "secondModel", resolved.SecondModel);
                 Rewrite(binding, "inspectorModel", resolved.InspectorModel);
                 for (var c = 0; c < resolved.Children.Count; c++) Rewrite(binding["childrenModel"]![c]!, "model", resolved.Children[c].ModelPath);
+                for (var c = 0; c < resolved.DockChildren.Count; c++) Rewrite(binding["childrenModel"]![c]!, "model", resolved.DockChildren[c].ModelPath);
             }
         }
         node["id"] = id;

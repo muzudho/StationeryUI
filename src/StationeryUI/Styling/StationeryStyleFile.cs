@@ -99,7 +99,7 @@ public sealed class StationeryStyleFile
             if (text == acceptedStyleText)
             {
                 pendingStyleText = null;
-                styleError = null;
+                styleError = DockErrors(Current);
                 needsInitialStyle = false;
                 return false;
             }
@@ -108,12 +108,12 @@ public sealed class StationeryStyleFile
                 pendingStyleText = text;
                 return false;
             }
-            var next = StationeryStyleSettings.Parse(text);
+            var next = StationeryStyleSettings.ParseWithDockFallback(text);
             validate?.Invoke(next);
             Current = next;
             acceptedStyleText = text;
             pendingStyleText = null;
-            styleError = null;
+            styleError = DockErrors(next);
             needsInitialStyle = false;
             return true;
         }
@@ -127,4 +127,10 @@ public sealed class StationeryStyleFile
 
     private static bool IsReadError(Exception ex) =>
         ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException;
+
+    private string? DockErrors(StationeryStyleSettings settings)
+    {
+        var errors = settings.Bindings.Where(b => b.LayoutError is not null).Select(b => $"{b.ModelPath}: {b.LayoutError}").ToArray();
+        return errors.Length == 0 ? null : FilePath + ": " + string.Join("\n", errors);
+    }
 }

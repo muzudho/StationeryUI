@@ -28,6 +28,10 @@
 
 パーサーは数字始まりや非 camelCase も許可します。スタイル設定エディターはそれらに警告を表示しますが、警告表示はパーサーの機能ではありません。`StationeryNode.Resolve` を直接呼ぶ場合は、JSON の相対参照と違い **完全パス**を渡します。
 
+## dock-layout — 配列順に四辺を配置
+
+`bindings.childrenModel` の各要素に `model`、`dock`、`size` を指定します。四辺は配列順、`center` は最後に残りを使用します。方向の重複と任意個数に対応します。`row-definitions` / `column-definitions` は使いません。[完全な設定例とエラー時の代替配置](../dock-layout.md)を参照してください。
+
 ## box-layout — 余白と外枠
 
 旧名 `panel` は読み込み時の互換用別名として受け付け、解析結果の Type は `box-layout` に統一します。エディターで開いて保存すると type を新名で出力します。既存の Id・モデル名・bindings の参照先や、余白・枠の計算は変えません。

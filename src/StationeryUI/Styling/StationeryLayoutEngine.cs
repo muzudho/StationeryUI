@@ -8,12 +8,14 @@ using StationeryUI.Controls;
 public sealed record StationeryLayoutResult(IReadOnlyDictionary<string, ScreenRectangle> Bounds,
     IReadOnlyDictionary<string, ScreenRectangle> ContentBounds)
 {
+    public IReadOnlyList<StationeryLayoutError> Errors { get; init; } = [];
     // Keyed by owner model path + ":" + complete layout path (layouts are reusable).
     public IReadOnlyDictionary<string, ScreenRectangle> LayoutBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
     public IReadOnlyDictionary<string, ScreenRectangle> LayoutContentBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
     public IReadOnlyDictionary<string, ScreenRectangle> LayoutBorderBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
     public IReadOnlyDictionary<string, ScreenRectangle> BorderBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
 }
+public sealed record StationeryLayoutError(string ModelPath, string LayoutPath, string Message, ScreenRectangle Bounds);
 
 /// <summary>Computes window-pixel rectangles without changing the model tree or using a graphics device.</summary>
 public static class StationeryLayoutEngine
@@ -48,6 +50,7 @@ public static class StationeryLayoutEngine
         var layoutBounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var layoutContents = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var layoutBorders = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var errors = new List<StationeryLayoutError>();
 
         ScreenRectangle Inset(ScreenRectangle area, ViewportPadding padding)
         {
@@ -72,6 +75,18 @@ public static class StationeryLayoutEngine
                 foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
                     foreach (var child in binding.Children)
                         positions.Add(child.ModelPath, Cell(layout, content, child.Row, child.Column, child.RowSpan, child.ColumnSpan));
+            if (layout.Type == "dock-layout")
+                foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
+                {
+                    var dockContent = content;
+                    if (binding.LayoutError is { } error)
+                    {
+                        var headerHeight = Math.Min(64, content.Height);
+                        errors.Add(new(owner, layout.Path, error, content with { Height = headerHeight }));
+                        dockContent = content with { Y = content.Y + headerHeight, Height = content.Height - headerHeight };
+                    }
+                    foreach (var (path, dockArea) in StationeryDockLayout.Arrange(dockContent, binding.DockChildren)) positions[path] = dockArea;
+                }
             foreach (var child in layout.Children)
                 ArrangeLayout(child, owner, layout.Type == "grid-layout"
                     ? Cell(layout, content, child.Row, child.Column, child.RowSpan, child.ColumnSpan) : content);
@@ -111,13 +126,16 @@ public static class StationeryLayoutEngine
             if (owners.TryGetValue(node.Path, out var ownerBindings))
                 foreach (var layout in ownerBindings.Select(b => layouts[b.Layout.Split('.')[0]]).Distinct())
                     if (layout.Type == "box-layout") ArrangeLayout(layout, node.Path, outer, content);
-                    else if (layout.Type == "grid-layout") ArrangeLayout(layout, node.Path, content);
-            foreach (var child in node.Children) Visit(child, content);
+                    else if (layout.Type is "grid-layout" or "dock-layout") ArrangeLayout(layout, node.Path, content);
+            // An unbound dock child must not cover every sibling; other nested bindings still take precedence.
+            var inheritedChild = ownerBindings?.Any(b => layouts[b.Layout].Type == "dock-layout") == true
+                ? new ScreenRectangle(content.X, content.Y, 0, 0) : content;
+            foreach (var child in node.Children) Visit(child, inheritedChild);
         }
 
         foreach (var model in settings.Models) Visit(model.CreateTree(), new(0, 0, width, height));
         return new(new ReadOnlyDictionary<string, ScreenRectangle>(bounds), new ReadOnlyDictionary<string, ScreenRectangle>(contents))
-        { BorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(borders),
+        { Errors = errors.AsReadOnly(), BorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(borders),
             LayoutBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBounds),
             LayoutContentBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutContents),
             LayoutBorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBorders) };

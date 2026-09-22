@@ -37,6 +37,10 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 
 検査スナップショットはゲームスレッドで取得します。クリック判定・ツリー表示・枠描画には同じ検査ツリーを使い、マウス位置と `WindowBounds` の座標系を揃えます。独自描画の部品も検査情報へ登録し、モーダル表示中は `HitTest` の `scope` を対象の完全パスに限定します。
 
+## ドック配置と設定エラー
+
+`dock-layout` を使う場合は [ドック配置の設定例](dock-layout.md)を読んでください。各 `childrenModel` に `dock` / `size` を設定し、`center` には `remaining` を指定します。エラー時に代替配置する `StationeryStyleFile` を使うアプリは、子の描画後に `ui.DrawLayoutErrors(layoutResult)` を呼び、`LastError` と F12 の検査情報も更新してください。JSON 自体の構文エラーなどは直前の状態を維持します。
+
 ## ツリーへレイアウト情報を渡す
 
 スタイル設定がある場合は `ui.Inspect(settings)` を使って検査データにレイアウト情報を含めてください。複数ホストをまとめる場合は結合後に `DeveloperInspectionLayout.Apply(entries, settings)` を呼びます。ツリーは `(文房具Id : 種類) (レイアウトの種類、または col, row, colspan, rowspan)` で表示します。設定をリロードしたら最新の設定で検査情報も更新してください。詳しくは [モデルと検査情報の接続](model-inspection.md#ツリーノードのレイアウト表示)を参照してください。

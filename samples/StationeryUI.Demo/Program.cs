@@ -134,6 +134,7 @@ internal sealed partial class Demo : Game
         var root = modelBinding.Root.Path;
         var page = root + "/" + activePage;
         host.DrawPanelBorders(latestLayout, path => path == root || path == page || path.StartsWith(page + "/", StringComparison.Ordinal));
+        host.DrawLayoutErrors(latestLayout, path => path == root || path == page || path.StartsWith(page + "/", StringComparison.Ordinal));
     }
 
     private void ApplyStyles()
