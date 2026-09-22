@@ -1,4 +1,4 @@
-﻿# 文房具 UI 製の開発者ウィンドウ
+# 文房具 UI 製の開発者ウィンドウ
 
 F12 の別ウィンドウを、StationeryUI のツリー・スプリットペーン・読み取り専用テキスト・ボタンで構成する。
 Windows Forms の Form / TreeView / SplitContainer / TextBox による描画は廃止した。
