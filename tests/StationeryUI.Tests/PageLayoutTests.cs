@@ -55,9 +55,9 @@ internal static class PageLayoutTests
         {
             var showcase = StationeryLayoutEngine.Arrange(settings, width, height);
             var owner = model.LayoutPage.Path + "/body:/layoutShowcase";
-            var box = showcase.LayoutBounds[owner + "/box"];
+            var box = showcase.LayoutBounds[model.LayoutControls["boxContent"].Path + ":/box"];
             var content = showcase.Bounds[model.LayoutControls["boxContent"].Path];
-            Check(content.X == box.X + 24 && content.Y == box.Y + 24 && content.Width == box.Width - 48, "box padding surrounds its only child");
+            Check(content.X == box.X + 24 && content.Y == box.Y + 24 && content.Width == box.Width - 48, $"box padding surrounds its model ({box} vs {content})");
             var grid = showcase.LayoutContentBounds[owner + "/grid"];
             var nested = showcase.LayoutBounds[owner + "/grid/nestedGrid"];
             Check(Math.Abs(nested.Width - grid.Width * 2 / 3) < .001 && Math.Abs(nested.Height - grid.Height * 2 / 3) < .001, "nested grid spans two rows and columns");

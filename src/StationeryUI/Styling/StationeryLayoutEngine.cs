@@ -140,6 +140,11 @@ public static class StationeryLayoutEngine
                 var inset = panel.Padding.GetContentBounds(content.Width, content.Height);
                 content = inset with { X = outer.X + inset.X, Y = outer.Y + inset.Y };
             }
+            // A text/link component that owns a box layout is drawn inside that
+            // layout's padding. Its model bounds therefore represent the padded
+            // component area, while the layout metadata retains the outer frame.
+            if (panels.ContainsKey(node.Path) && node.Kind is "textBlock" or "link")
+                bounds[node.Path] = content;
             contents.Add(node.Path, content);
             if (splits.TryGetValue(node.Path, out var splitBinding))
             {

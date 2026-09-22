@@ -20,7 +20,7 @@ internal sealed partial class Demo
         {
             ["title"] = "レイアウトデモ",
             ["boxTitle"] = "ボックスレイアウト",
-            ["boxContent"] = "box-layout\npadding: 24px\n\n子レイアウト × 1\n（1 × 1 グリッド）",
+            ["boxContent"] = "boxLayout\npadding: 24px\n\nboxContent を直接配置",
             ["gridTitle"] = "グリッドレイアウト：3 行 × 3 列",
             ["spanCell"] = "入れ子 A\nrow: 0\ncol: 0\nrowspan: 2\n\nセル直下",
             ["nestedA"] = "入れ子 B\n2 × 2 グリッド\nセル (0, 0)",
@@ -34,7 +34,7 @@ internal sealed partial class Demo
             var element = layoutUi.AddTextBlock(modelBinding.LayoutControls[id], new(), label);
             element.ToolHint = id switch
             {
-                "boxContent" => "枠から 24px の余白を取り、唯一の子レイアウトを配置しています。",
+                "boxContent" => "boxLayout の padding 24px の内側に、boxContent を直接配置しています。",
                 "spanCell" => "親グリッドの row: 0 / col: 0 から 2 行にまたがるセルへ、直接配置しています。",
                 "nestedA" or "nestedB" or "nestedC" or "nestedD" => "親の row: 0 / col: 1 / rowspan: 2 / colspan: 2 に、2 × 2 グリッドを入れています。",
                 "gridFooter" => "colspan: 3 で、親グリッドの最下行を横いっぱいに使っています。",

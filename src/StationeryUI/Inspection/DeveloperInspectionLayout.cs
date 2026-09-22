@@ -57,6 +57,8 @@ public static class DeveloperInspectionLayout
         }
         return entries.Select(entry => entry with
         {
+            WindowBounds = entry.WindowBounds ?? (roots.TryGetValue(entry.Path, out var root) && root.Type == "box-layout" &&
+                entry.Kind is "textBlock" or "link" && arranged?.Bounds.TryGetValue(entry.Path, out var bounds) == true ? bounds : null),
             MarginBounds = arranged?.MarginBounds.TryGetValue(entry.Path, out var marginBounds) == true ? marginBounds : null,
             PartitionLines = roots.TryGetValue(entry.Path, out var rootLayout) ? Partitions(entry.Path, rootLayout) : [],
             LayoutNodes = LayoutNodes(entry),

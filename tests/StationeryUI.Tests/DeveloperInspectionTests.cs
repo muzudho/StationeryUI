@@ -124,10 +124,10 @@ internal static class DeveloperInspectionTests
         model.Refresh(DeveloperInspectionLayout.Apply(entries, settings));
         model.SetTreeMode(DeveloperTreeMode.Layout);
         Check(model.Select(owner + "/boxContent"), "nested model selectable by capture path");
-        Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner + ":/layoutShowcase/box", "model under direct box layout");
-        Check(model.Select(owner + ":/layoutShowcase/box"), "hidden intermediate box is inspectable");
-        Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner, "nested layout attached directly to merged owner");
-        Check(model.SelectedEntry!.BoxModel!.Padding.Left == 24 && model.SelectedEntry.BoxModel.Margin.Left == 8, "intermediate layout owns its own insets");
+        Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner, "model remains in the parent layout cell");
+        Check(model.Select(owner + "/boxContent:/box"), "box layout is associated with the model");
+        Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner, $"model with root layout remains in its parent ({model.PathFor(model.Tree.SelectedItem!.Parent!)})");
+        Check(model.SelectedEntry!.BoxModel!.Padding.Left == 24 && model.SelectedEntry.BoxModel.Margin.Left == 8, "associated layout owns its own insets");
         var arranged = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 1000, 700);
         var snapshot = DeveloperInspectionLayout.Apply(entries, settings, arranged);
         var received = System.Text.Json.JsonSerializer.Deserialize<StationeryInspectionEntry[]>(
@@ -135,22 +135,23 @@ internal static class DeveloperInspectionTests
         Check(received[0].PartitionLines!.Count > 0 &&
             received[0].LayoutNodes!.Single(e => e.Id == "layoutShowcase").PartitionLines!.SequenceEqual(received[0].PartitionLines!),
             "root and layout partitions survive transport in window pixels");
-        var key = owner + ":/layoutShowcase/box";
+        var key = owner + "/boxContent:/box";
         var selection = DeveloperInspectionLayout.FindVisibleEntry(received, key);
         Check(selection?.WindowBounds == arranged.LayoutBounds[key], "nested layout window bounds survive transport");
         var content = arranged.Bounds[owner + "/boxContent"];
         var outer = selection!.WindowBounds!.Value;
         Check(content.X == outer.X + 24 && content.Width == outer.Width - 48,
-            $"direct box child includes box padding and model margin ({content} vs {outer})");
+            $"associated box layout includes padding and model margin ({content} vs {outer})");
         Check(DeveloperCapture.HitTest(received, outer.X + 1, outer.Y + 1) is null, "layout metadata does not intercept model captures");
         Check(DeveloperInspectionLayout.FindVisibleEntry(DeveloperInspectionLayout.Apply(entries.Select(e => e with { Visible = false }).ToArray(), settings, arranged), key) is null, "hidden owner has no layout outline");
         Check(DeveloperInspectionLayout.FindVisibleEntry(DeveloperInspectionLayout.Apply(entries, settings), key) is null, "missing arrangement has no invented rectangle");
         model.Refresh(received);
-        Check(model.Details.Contains("X="), "layout details show actual coordinates");
+        Check(model.Details.Contains("X="), "selected model details show actual coordinates");
         var resized = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 1300, 900);
         model.Refresh(DeveloperInspectionLayout.Apply(entries, settings, resized));
-        Check(model.SelectedPath == key && model.SelectedEntry!.WindowBounds == resized.LayoutBounds[key]
-            && model.SelectedEntry.WindowBounds != outer, "resize updates selected layout rectangle");
+        var resizedModelPath = owner + "/boxContent";
+        Check(model.SelectedPath == resizedModelPath && model.SelectedEntry!.WindowBounds == resized.Bounds[resizedModelPath]
+            && model.SelectedEntry.WindowBounds != content, "resize updates selected model rectangle");
         model.SetTreeMode(DeveloperTreeMode.Model);
         model.Select(owner + "/boxContent");
         Check(model.Tree.SelectedItem!.Parent!.Label == "(body : Container)", "model hierarchy unchanged");

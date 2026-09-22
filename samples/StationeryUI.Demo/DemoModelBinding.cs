@@ -390,31 +390,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ],
       "children": [
         {
-          "id": "box",
-          "type": "box-layout",
-          "padding": {
-            "top": "24px",
-            "right": "24px",
-            "bottom": "24px",
-            "left": "24px"
-          },
-          "margin": {
-            "top": "6px",
-            "right": "6px",
-            "bottom": "6px",
-            "left": "6px"
-          },
-          "border": {
-            "top": "2px",
-            "right": "2px",
-            "bottom": "2px",
-            "left": "2px"
-          },
-          "children": [],
-          "row": 2,
-          "col": 0
-        },
-        {
           "id": "grid",
           "type": "grid-layout",
           "row-definitions": [
@@ -507,8 +482,34 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
           "row": 1,
           "col": 1
+        },
+        {
+          "row": 2,
+          "col": 0
         }
       ]
+    },
+    {
+      "id": "box",
+      "type": "box-layout",
+      "padding": {
+        "top": "24px",
+        "right": "24px",
+        "bottom": "24px",
+        "left": "24px"
+      },
+      "margin": {
+        "top": "6px",
+        "right": "6px",
+        "bottom": "6px",
+        "left": "6px"
+      },
+      "border": {
+        "top": "2px",
+        "right": "2px",
+        "bottom": "2px",
+        "left": "2px"
+      }
     },
     {
       "id": "pageDockFullscreen",
@@ -726,6 +727,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           }
         },
         {
+          "model": "boxContent",
+          "cell": {
+            "row": 3,
+            "col": 1
+          }
+        },
+        {
           "model": "gridTitle",
           "cell": {
             "row": 2,
@@ -735,13 +743,8 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "/layoutShowcase/box",
-      "parentModel": "demo/layoutDemoPage/body",
-      "childrenModel": [
-        {
-          "model": "boxContent"
-        }
-      ]
+      "layout": "/box",
+      "model": "demo/layoutDemoPage/body/boxContent"
     },
     {
       "layout": "/layoutShowcase/grid",
