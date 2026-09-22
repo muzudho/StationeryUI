@@ -74,7 +74,7 @@ internal static class StyleBlueprintTests
         var edited = JsonNode.Parse(imported.BuildJson())!;
         foreach (var key in new[] { "models", "bindings", "extraMetadata" })
             Check(JsonNode.DeepEquals(source[key], edited[key]), "preserves " + key);
-        Check(JsonNode.DeepEquals(source["layouts"]![0], edited["layouts"]![0]), "preserves unrelated panel");
+        Check(JsonNode.DeepEquals(source["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "pageDock"), edited["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "pageDock")), "preserves unrelated panel");
         Check(imported.CellDescription(0, 0) == "nameField", "existing model references in table");
         imported.SelectLayout("/splitDemoLayout");
         imported.Rows[0].Number = "72";

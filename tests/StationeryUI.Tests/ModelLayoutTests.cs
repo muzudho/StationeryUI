@@ -54,7 +54,7 @@ internal static class ModelLayoutTests
         children.Insert(0, new JsonObject { ["id"] = "inputs", ["type"] = "container", ["children"] = new JsonArray(name) });
         // Only bindings must change when a model moves; the layouts definition stays identical.
         var layoutBefore = wrapped["layouts"]!.ToJsonString();
-        wrapped["bindings"]![1]!["childrenModel"]![0]!["model"] = "inputs/nameField";
+        wrapped["bindings"]!.AsArray().Single(b => (string?)b!["layout"] == "/topDemoLayout")!["childrenModel"]![0]!["model"] = "inputs/nameField";
         var wrappedSettings = StationeryStyleSettings.Parse(wrapped.ToJsonString());
         Require(DemoModelBinding.Create(wrappedSettings).Main["nameField"].Path == "/demo/topDemoPage/body/inputs/nameField", "scoped child path");
         Require(layoutBefore == wrapped["layouts"]!.ToJsonString(), "layout definitions are independent");
@@ -77,20 +77,20 @@ internal static class ModelLayoutTests
             file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
             Require(DemoModelBinding.Create(file.Current).Main["nameField"].Path == "/demo/topDemoPage/body/inputs/nameField" && file.LastError is null, "recovery");
             var good = file.Current;
-            wrapped["layouts"]![1]!["row-definitions"]![0] = "-1rate";
+            wrapped["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "topDemoLayout")!["row-definitions"]![0] = "-1rate";
             File.WriteAllText(style, wrapped.ToJsonString());
             file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
             Require(ReferenceEquals(good, file.Current) && file.LastError is not null, "invalid rate retains whole snapshot");
-            wrapped["layouts"]![1]!["row-definitions"]![0] = "1.5rate";
+            wrapped["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "topDemoLayout")!["row-definitions"]![0] = "1.5rate";
             File.WriteAllText(style, wrapped.ToJsonString());
             file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Require(file.LastError is null && file.Current.Layouts[1].Rows[0].Value == 1.5, "fractional rate reload");
-            wrapped["layouts"]![3]!["ratio"] = .65;
+            Require(file.LastError is null && file.Current.Layouts.Single(l => l.Id == "topDemoLayout").Rows[0].Value == 1.5, "fractional rate reload");
+            wrapped["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "verticalSplitLayout")!["ratio"] = .65;
             File.WriteAllText(style, wrapped.ToJsonString());
             file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Require(file.LastError is null && file.Current.Layouts[3].Split!.Ratio == .65, "split ratio reload");
+            Require(file.LastError is null && file.Current.Layouts.Single(l => l.Id == "verticalSplitLayout").Split!.Ratio == .65, "split ratio reload");
             var goodSplit = file.Current;
-            wrapped["layouts"]![3]!["ratio"] = 2;
+            wrapped["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "verticalSplitLayout")!["ratio"] = 2;
             File.WriteAllText(style, wrapped.ToJsonString());
             file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
             Require(ReferenceEquals(goodSplit, file.Current) && file.LastError is not null, "invalid split ratio preserves snapshot");

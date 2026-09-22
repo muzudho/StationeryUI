@@ -9,6 +9,26 @@ internal static class PageLayoutTests
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json")))!;
         var settings = StationeryStyleSettings.Parse(json.ToJsonString());
         var model = DemoModelBinding.Create(settings);
+        Check(settings.Layouts.Count(l => l.Type == "box-layout") == 2, "only border demonstration boxes remain");
+        var oldJson = json.DeepClone();
+        var link = oldJson["models"]![0]!["children"]!.AsArray().Single(n => (string?)n!["id"] == "layoutDemoPage")!["children"]!
+            .AsArray().Single(n => (string?)n!["id"] == "body")!["children"]!.AsArray().Single(n => (string?)n!["id"] == "topDemoLink")!;
+        var oldMargin = link["margin"]!.DeepClone();
+        link.AsObject().Remove("margin");
+        oldJson["layouts"]!.AsArray().Add(new JsonObject { ["id"] = "elementMargin1", ["type"] = "box-layout",
+            ["padding"] = new JsonObject { ["top"] = "0px", ["right"] = "0px", ["bottom"] = "0px", ["left"] = "0px" }, ["margin"] = oldMargin });
+        oldJson["bindings"]!.AsArray().Add(new JsonObject { ["layout"] = "/elementMargin1", ["model"] = "demo/layoutDemoPage/body/topDemoLink" });
+        var oldSettings = StationeryStyleSettings.Parse(oldJson.ToJsonString());
+        foreach (var (w, h) in new[] { (1000, 660), (720, 560), (20, 20) })
+        {
+            var before = StationeryLayoutEngine.Arrange(oldSettings, w, h);
+            var after = StationeryLayoutEngine.Arrange(settings, w, h);
+            Check(before.Bounds.All(p => after.Bounds[p.Key] == p.Value) &&
+                before.ContentBounds.All(p => after.ContentBounds[p.Key] == p.Value), "margin migration preserves every model rectangle");
+        }
+        var invalidMargin = json.DeepClone();
+        invalidMargin["models"]![0]!["margin"] = new JsonObject { ["left"] = "-1px" };
+        Reject(invalidMargin.ToJsonString());
         var bounds = StationeryLayoutEngine.Arrange(settings, 1000, 660);
         var panel = bounds.Bounds["/demo/topDemoPage/inspectorPanel"];
         Check(panel.X == 0 && panel.Y == 580 && panel.Width == 1000 && panel.Height == 80, "full-width bottom panel");

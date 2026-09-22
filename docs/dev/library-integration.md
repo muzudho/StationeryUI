@@ -299,3 +299,7 @@ if (developerWindow.IsOpen && developerWindow.SelectedPath is { } selected)
 ```
 
 複数ホストの場合は、結合したモデル配列に `DeveloperInspectionLayout.Apply(entries, settings, arranged)` を適用する。非表示ページのモデルは `Visible = false` にする。レイアウトノードをキャプチャー判定のモデル配列へ追加する必要はない。
+
+
+分割境界も描く場合は、検索した entry を `ui.DrawInspectionSelection(entry)` に渡す。
+外周は実線、`PartitionLines` は桃色の点線で描画される。grid は結合セルの内部を省き、dock は配列順に切り取った境界を表示する。`DrawInspectionOutline(bounds)` は引き続き外周だけを描く。

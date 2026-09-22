@@ -197,3 +197,11 @@ box-layout / grid-layout / dock-layout に `margin` を指定できます。cell
 F12 の詳細欄には margin を外側、padding を内側とする Compound 図を表示します。数値は設定上の px で、帯の幅は模式図です。margin と padding はそのモデル自身のルートレイアウトの値を表示します。祖先や内部の子レイアウトの余白は合算しません。スタイル情報を渡していない従来の検査データには図を表示しません。
 
 デモ本文のグリッドは四辺 margin 4px + padding 4px とし、従来の合計8pxの余白を保ちます。レイアウトデモの戻るリンク自身に余白用 box-layout を持たせ、margin 4px・padding 0px を設定しています。
+
+
+### モデル自身の margin
+
+モデルにも `"margin": {"left": "4px", "top": "4px", "right": "4px", "bottom": "4px"}` を指定できる。非負の px 指定で、未指定の辺は 0。割り当てられた配置枠から内側へ縮めるので、余白だけのために boxLayout を挟む必要はない。セル位置・結合・dock の方向などは引き続き layouts に定義し、slots は Id だけを持つ。
+
+モデル自身と所有するルートレイアウトの両方に margin がある場合は、モデル、ルートレイアウトの順に適用する。モデルの Compound 図は両者の margin の合計とルートレイアウトの padding、レイアウト定義の Compound 図はその定義自身の値を示す。
+デモの `demoViewport`（余白ゼロ）と `elementMargin1`（リンクの余白のみ）は削除し、後者の 4px を `topDemoLink` の margin へ移した。枠線と padding を実演する二つの boxLayout は残す。

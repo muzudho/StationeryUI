@@ -116,13 +116,13 @@ internal sealed class TextCacheRenderingTests : Game
             outlineHost.Viewport.Offset = new(17, 29);
             StationeryInspectionEntry[] outlineSnapshot = [
                 new("owner", "/owner", null, "container", "", true, null) {
-                    LayoutNodes = [new("box", "/owner:/grid/box", "/owner:/grid", "layout", "", true, new(40, 50, 180, 120))]
+                    LayoutNodes = [new("box", "/owner:/grid/box", "/owner:/grid", "layout", "", true, new(40, 50, 180, 120)) { PartitionLines = [new(new(120, 60), new(120, 157)), new(new(50, 110), new(207, 110))] }]
                 }
             ];
             var selected = DeveloperInspectionLayout.FindVisibleEntry(outlineSnapshot, "/owner:/grid/box")!;
             GraphicsDevice.SetRenderTarget(target);
             GraphicsDevice.Clear(Color.Black);
-            outlineHost.DrawInspectionOutline(selected.WindowBounds!.Value);
+            outlineHost.DrawInspectionSelection(selected);
             GraphicsDevice.SetRenderTarget(null);
             var pixels = new Color[640 * 480];
             target.GetData(pixels);
@@ -132,11 +132,15 @@ internal sealed class TextCacheRenderingTests : Game
             {
                 var edge = x >= 40 && x < 220 && y >= 50 && y < 170
                     && (x < 43 || x >= 217 || y < 53 || y >= 167);
-                if (pixels[y * 640 + x] != (edge ? pink : Color.Black))
+                var dash = x >= 119 && x < 121 && y >= 60 && y < 157 && (y - 60) % 10 < 5
+                    || y >= 109 && y < 111 && x >= 50 && x < 207 && (x - 50) % 10 < 5;
+                if (pixels[y * 640 + x] != (edge || dash ? pink : Color.Black))
                     throw new Exception($"Layout outline misplaced at {x}, {y}, scale {scale}.");
             }
         }
-        Console.WriteLine("PASS inspector box model, tree mode buttons and layout outlines at 100%/150%.");
+        using (var output = File.Create("artifacts/text-cache-test/partition-lines.png"))
+            target.SaveAsPng(output, 640, 480);
+        Console.WriteLine("PASS inspector box model, tree mode buttons, layout outlines and dashed partitions at 100%/150%.");
         Exit();
     }
 }

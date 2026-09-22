@@ -18,6 +18,8 @@ public readonly record struct ViewportPadding(double Top, double Right, double B
 
 public sealed record StationeryModelNode(string Id, string Type, IReadOnlyList<StationeryModelNode> Children)
 {
+    public ViewportPadding Margin { get; init; }
+
     public StationeryUI.Inspection.StationeryNode CreateTree()
     {
         var root = new StationeryUI.Inspection.StationeryNode(Id, Type);
@@ -407,6 +409,19 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         return root.Resolve(path) ?? throw new JsonException($"Unknown model path '{path}'.");
     }
 
+    internal IReadOnlyDictionary<string, ViewportPadding> GetModelMargins()
+    {
+        var result = new Dictionary<string, ViewportPadding>(StringComparer.Ordinal);
+        void Visit(StationeryModelNode node, string parent)
+        {
+            var path = parent + "/" + node.Id;
+            result.Add(path, node.Margin);
+            foreach (var child in node.Children) Visit(child, path);
+        }
+        foreach (var node in Models) Visit(node, "");
+        return result;
+    }
+
     private static StationeryModelNode ReadModel(JsonElement value, string path)
     {
         RequireObject(value, path);
@@ -424,7 +439,15 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 children.Add(parsed);
             }
         }
-        return new(id, type, children.AsReadOnly());
+        var margin = default(ViewportPadding);
+        if (value.TryGetProperty("margin", out var edges))
+        {
+            RequireObject(edges, path + ".margin");
+            double Side(string side) => edges.TryGetProperty(side, out var v)
+                ? ReadLength(v, path + ".margin." + side, false).Value : 0;
+            margin = new(Side("top"), Side("right"), Side("bottom"), Side("left"));
+        }
+        return new(id, type, children.AsReadOnly()) { Margin = margin };
     }
 
     private static void ValidateId(string id, string path)

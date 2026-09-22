@@ -111,3 +111,6 @@ F12 の詳細欄には margin を外側、padding を内側とする Compound �
 
 レイアウトの桃色の枠には、画面の配置に使った最新の `StationeryLayoutResult` を `arranged` として検査データへ渡す。座標はウィンドウのピクセル単位で、ズーム変換を重ねて掛けない。
 枠の対象は `DeveloperInspectionLayout.FindVisibleEntry(entries, selectedPath)` で検索し、その `WindowBounds` を `DrawInspectionOutline` に渡す。モデルだけの検索ではレイアウトノードが見つからない。キャプチャーのヒット判定には従来のモデル配列を使う。
+
+
+gridLayout・dockLayout を選択すると、外周の桃色の実線に加えて、padding の内側の分割境界を桃色の点線で表示する。gridLayout は結合セル内を横切る線を省き、dockLayout は配置順に切り取った領域の境界を示す。点線は選択中のレイアウトだけに表示する。

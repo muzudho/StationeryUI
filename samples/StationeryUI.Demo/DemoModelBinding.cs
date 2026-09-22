@@ -155,7 +155,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
               "children": [
                 {
                   "id": "topDemoLink",
-                  "type": "link"
+                  "type": "link",
+                  "margin": {
+                    "top": "4px",
+                    "right": "4px",
+                    "bottom": "4px",
+                    "left": "4px"
+                  }
                 },
                 {
                   "id": "title",
@@ -215,16 +221,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     }
   ],
   "layouts": [
-    {
-      "id": "demoViewport",
-      "type": "box-layout",
-      "padding": {
-        "top": "0px",
-        "right": "0px",
-        "bottom": "0px",
-        "left": "0px"
-      }
-    },
     {
       "id": "topDemoLayout",
       "type": "grid-layout",
@@ -716,29 +712,9 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           ]
         }
       ]
-    },
-    {
-      "id": "elementMargin1",
-      "type": "box-layout",
-      "padding": {
-        "top": "0px",
-        "right": "0px",
-        "bottom": "0px",
-        "left": "0px"
-      },
-      "margin": {
-        "left": "4px",
-        "top": "4px",
-        "right": "4px",
-        "bottom": "4px"
-      }
     }
   ],
   "bindings": [
-    {
-      "layout": "/demoViewport",
-      "model": "demo"
-    },
     {
       "layout": "/topDemoLayout",
       "parentModel": "demo/topDemoPage/body",
@@ -956,10 +932,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "slot": "toolHint"
         }
       ]
-    },
-    {
-      "layout": "/elementMargin1",
-      "model": "demo/layoutDemoPage/body/topDemoLink"
     }
   ]
 }

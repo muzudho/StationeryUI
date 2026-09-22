@@ -42,6 +42,7 @@ internal static class DeveloperInspectionTests
         model.Refresh([]); Check(model.SelectedEntry is null && model.Details.Contains("選択"), "empty snapshot");
         CheckLayoutLabels();
         CheckNestedLayouts();
+        CheckPartitions();
     }
 
     private static void CheckLayoutLabels()
@@ -124,6 +125,9 @@ internal static class DeveloperInspectionTests
         var snapshot = DeveloperInspectionLayout.Apply(entries, settings, arranged);
         var received = System.Text.Json.JsonSerializer.Deserialize<StationeryInspectionEntry[]>(
             System.Text.Json.JsonSerializer.Serialize(snapshot))!;
+        Check(received[0].PartitionLines!.Count > 0 &&
+            received[0].LayoutNodes!.Single(e => e.Id == "layoutShowcase").PartitionLines!.SequenceEqual(received[0].PartitionLines!),
+            "root and layout partitions survive transport in window pixels");
         var key = owner + ":/layoutShowcase/box";
         var selection = DeveloperInspectionLayout.FindVisibleEntry(received, key);
         Check(selection?.WindowBounds == arranged.LayoutBounds[key], "nested layout window bounds survive transport");
@@ -143,6 +147,26 @@ internal static class DeveloperInspectionTests
         model.SetTreeMode(DeveloperTreeMode.Model);
         model.Select(owner + "/boxContent");
         Check(model.Tree.SelectedItem!.Parent!.Label == "(body : Container)", "model hierarchy unchanged");
+    }
+    private static void CheckPartitions()
+    {
+        var grid = new StationeryUI.Styling.StationeryLayoutNode("grid", "grid-layout", default,
+            [new(1, true), new(1, true)], [new(1, true), new(1, true), new(1, true)])
+        { Cells = [new(0, 0, 1, 2)] };
+        var lines = DeveloperInspectionPartitions.Create(grid, new(10, 20, 300, 200));
+        Check(lines.Count == 3 && lines.Contains(new(new(110, 120), new(110, 220)))
+            && lines.Contains(new(new(210, 20), new(210, 220)))
+            && lines.Contains(new(new(10, 120), new(310, 120))), "grid stops inside merged cells");
+        var dock = grid with { Type = "dock-layout", Cells = [
+            new(Dock: "center"), new(Dock: "top", Size: 40),
+            new(Dock: "right", Size: 60), new(Dock: "top", Size: 20)] };
+        var dockLines = DeveloperInspectionPartitions.Create(dock, new(10, 20, 300, 200));
+        Check(dockLines.SequenceEqual(new StationeryInspectionLine[] {
+            new(new(10, 60), new(310, 60)), new(new(250, 60), new(250, 220)),
+            new(new(10, 80), new(250, 80)) }), "dock boundaries honor declaration order and final center");
+        Check(DeveloperInspectionPartitions.Create(dock, new(0, 0, 0, 0)).Count == 0, "empty content has no partitions");
+        var saturated = dock with { Cells = [new(Dock: "top", Size: 999), new(Dock: "right", Size: 30)] };
+        Check(DeveloperInspectionPartitions.Create(saturated, new(0, 0, 100, 100)).Count == 0, "clipped docks do not invent partitions");
     }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
 }

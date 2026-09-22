@@ -36,6 +36,7 @@ public static class StationeryLayoutEngine
     {
         if (!double.IsFinite(width) || width < 0 || !double.IsFinite(height) || height < 0)
             throw new ArgumentOutOfRangeException(nameof(width), "Window dimensions must be finite and nonnegative.");
+        var modelMargins = settings.GetModelMargins();
         var layouts = settings.Layouts.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
         var owners = settings.Bindings.GroupBy(b => b.ModelPath).ToDictionary(g => g.Key, g => g.ToArray());
         var roots = owners.ToDictionary(pair => pair.Key,
@@ -105,7 +106,7 @@ public static class StationeryLayoutEngine
 
         void Visit(StationeryNode node, ScreenRectangle inherited)
         {
-            var outer = positions.GetValueOrDefault(node.Path, inherited);
+            var outer = Inset(positions.GetValueOrDefault(node.Path, inherited), modelMargins[node.Path]);
             if (roots.TryGetValue(node.Path, out var rootLayout)) outer = Inset(outer, rootLayout.Margin);
             if (panels.TryGetValue(node.Path, out var box))
             {

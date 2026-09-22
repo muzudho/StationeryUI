@@ -22,6 +22,32 @@ public sealed partial class StationeryUiHost
         finally { sprites.End(); }
     }
 
+    /// <summary>Draws the selected model/layout outline and dashed partitions in window pixels.</summary>
+    public void DrawInspectionSelection(StationeryUI.Inspection.StationeryInspectionEntry entry)
+    {
+        if (!entry.Visible || entry.WindowBounds is not { Width: > 0, Height: > 0 } bounds) return;
+        DrawInspectionOutline(bounds);
+        if (entry.PartitionLines is not { Count: > 0 } lines) return;
+        sprites.Begin(blendState: BlendState.NonPremultiplied);
+        try
+        {
+            var color = new Color(255, 105, 180);
+            foreach (var line in lines)
+            {
+                var vertical = line.Start.X == line.End.X;
+                var length = vertical ? line.End.Y - line.Start.Y : line.End.X - line.Start.X;
+                for (double offset = 0; offset < length; offset += 10)
+                {
+                    var dash = Math.Min(5, length - offset);
+                    var rect = vertical ? new ScreenRectangle(line.Start.X - 1, line.Start.Y + offset, 2, dash)
+                        : new ScreenRectangle(line.Start.X + offset, line.Start.Y - 1, dash, 2);
+                    sprites.Draw(pixel, RectangleOf(rect), color);
+                }
+            }
+        }
+        finally { sprites.End(); }
+    }
+
     /// <summary>A font-independent pinching hand icon with a latched pink background.</summary>
     public void DrawCaptureIcon(ScreenRectangle bounds, bool enabled, bool focused = false)
     {

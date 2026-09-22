@@ -81,3 +81,7 @@ cells は layouts 内に定義し、その各セル内の slots は id だけを
 
 レイアウトの桃色の枠には、画面の配置に使った最新の `StationeryLayoutResult` を `arranged` として検査データへ渡す。座標はウィンドウのピクセル単位で、ズーム変換を重ねて掛けない。
 枠の対象は `DeveloperInspectionLayout.FindVisibleEntry(entries, selectedPath)` で検索し、その `WindowBounds` を `DrawInspectionOutline` に渡す。モデルだけの検索ではレイアウトノードが見つからない。キャプチャーのヒット判定には従来のモデル配列を使う。
+
+
+分割境界も描く場合は、検索した entry を `ui.DrawInspectionSelection(entry)` に渡す。
+外周は実線、`PartitionLines` は桃色の点線で描画される。grid は結合セルの内部を省き、dock は配列順に切り取った境界を表示する。`DrawInspectionOutline(bounds)` は引き続き外周だけを描く。

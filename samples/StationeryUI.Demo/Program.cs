@@ -340,7 +340,7 @@ internal sealed partial class Demo : Game
         if (developerWindow.IsOpen && developerWindow.SelectedPath is { } selected)
         {
             var entry = DeveloperInspectionLayout.FindVisibleEntry(InspectStationery(), selected);
-            if (entry?.WindowBounds is { } bounds) ui?.DrawInspectionOutline(bounds);
+            if (entry is not null) ui?.DrawInspectionSelection(entry);
         }
         var screenshot = Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG");
         if (!string.IsNullOrEmpty(screenshot) && ++smokeFrames == 8)

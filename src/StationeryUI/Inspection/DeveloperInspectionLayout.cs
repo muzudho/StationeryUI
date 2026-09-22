@@ -8,6 +8,7 @@ public static class DeveloperInspectionLayout
     public static IReadOnlyList<StationeryInspectionEntry> Apply(
         IReadOnlyList<StationeryInspectionEntry> entries, StationeryStyleSettings settings, StationeryLayoutResult? arranged = null)
     {
+        var modelMargins = settings.GetModelMargins();
         var layouts = settings.Layouts.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
         var types = settings.Bindings.GroupBy(binding => binding.ModelPath, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Select(binding => layouts[("/" + binding.Layout.Split('/')[1])].Type)
@@ -20,7 +21,10 @@ public static class DeveloperInspectionLayout
         StationeryBoxModel BoxModel(string path)
         {
             var root = roots.GetValueOrDefault(path);
-            return new(root?.Margin ?? default, root?.Padding ?? default);
+            var modelMargin = modelMargins.GetValueOrDefault(path);
+            var layoutMargin = root?.Margin ?? default;
+            return new(new(modelMargin.Top + layoutMargin.Top, modelMargin.Right + layoutMargin.Right,
+                modelMargin.Bottom + layoutMargin.Bottom, modelMargin.Left + layoutMargin.Left), root?.Padding ?? default);
         }
         var parents = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var binding in settings.Bindings)
@@ -31,6 +35,9 @@ public static class DeveloperInspectionLayout
             foreach (var child in new[] { binding.FirstModel, binding.SecondModel, binding.InspectorModel })
                 if (child is not null) parents[child] = parent;
         }
+        IReadOnlyList<StationeryInspectionLine> Partitions(string owner, StationeryLayoutNode layout)
+            => !errors.ContainsKey(owner) && arranged?.LayoutContentBounds.TryGetValue(owner + ":" + layout.Path, out var content) == true
+                ? DeveloperInspectionPartitions.Create(layout, content) : [];
         StationeryInspectionEntry[] LayoutNodes(StationeryInspectionEntry owner)
         {
             if (!roots.TryGetValue(owner.Path, out var root)) return [];
@@ -40,6 +47,7 @@ public static class DeveloperInspectionLayout
                     "layout", l.Path, owner.Visible,
                     arranged?.LayoutBounds.TryGetValue(owner.Path + ":" + l.Path, out var bounds) == true ? bounds : null)
                 {
+                    PartitionLines = Partitions(owner.Path, l),
                     LayoutTypes = [l.Type],
                     Cell = l.Path == root.Path ? null : new(l.Column, l.Row, l.ColumnSpan, l.RowSpan),
                     BoxModel = new(l.Margin, l.Padding)
@@ -47,6 +55,7 @@ public static class DeveloperInspectionLayout
         }
         return entries.Select(entry => entry with
         {
+            PartitionLines = roots.TryGetValue(entry.Path, out var rootLayout) ? Partitions(entry.Path, rootLayout) : [],
             LayoutNodes = LayoutNodes(entry),
             LayoutParentPath = parents.GetValueOrDefault(entry.Path),
             LayoutTypes = types.GetValueOrDefault(entry.Path),
