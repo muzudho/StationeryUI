@@ -326,6 +326,8 @@ layouts.cells にある bottom の `size` を `0px` に変えると、下端を�
 インスペクターはページの外枠いっぱいの横幅を使い、ページ本文の padding の影響を受けない。祖先の padding でページ全体が狭められている場合は、その幅に収まる。
 デモではルートの padding を 0px にし、本文の8pxの余白を body の grid-layout 自身の `margin` 4px + `padding` 4px に分けて指定する。これでパネルは画面の左右端まで広がる。
 
+レイアウトデモの `spanCell` は、親 grid の rowspan 2 のセルへ直接配置している。セルの直下に子モデルを置く例として、余白だけを持つ box-layout や 1×1 の中間 grid-layout は挟んでいない。
+
 旧 `fullscreen-layout` / `work-page-layout` も互換用として利用できるが、現在のデモでは使わない。[ドック配置の詳しい仕様](../dev/dock-layout.md)を参照。
 
 margin は box-layout / grid-layout / dock-layout に指定できる。cells は余白を持たない。基準は親の padding 内で割り当てられた配置枠。省略した辺は0pxで、非負の px 文字列を指定する。F12 の詳細欄では margin と padding の四辺を Compound 図で確認できる。[余白の計算と図の読み方](../dev/dock-layout.md#配置枠を基準にした-margin)を参照。

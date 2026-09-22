@@ -9,7 +9,7 @@ internal static class PageLayoutTests
         var json = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json")))!;
         var settings = StationeryStyleSettings.Parse(json.ToJsonString());
         var model = DemoModelBinding.Create(settings);
-        Check(settings.Layouts.Count(l => l.Type == "box-layout") == 2, "only border demonstration boxes remain");
+        Check(settings.Layouts.Count(l => l.Type == "box-layout") == 1, "only border demonstration box remains");
         var oldJson = json.DeepClone();
         var link = oldJson["models"]![0]!["children"]!.AsArray().Single(n => (string?)n!["id"] == "layoutDemoPage")!["children"]!
             .AsArray().Single(n => (string?)n!["id"] == "body")!["children"]!.AsArray().Single(n => (string?)n!["id"] == "topDemoLink")!;

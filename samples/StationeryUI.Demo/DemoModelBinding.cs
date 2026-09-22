@@ -442,49 +442,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "col": 1,
           "children": [
             {
-              "id": "paddedCell",
-              "type": "box-layout",
-              "padding": {
-                "top": "16px",
-                "right": "16px",
-                "bottom": "16px",
-                "left": "16px"
-              },
-              "margin": {
-                "top": "6px",
-                "right": "6px",
-                "bottom": "6px",
-                "left": "6px"
-              },
-              "border": {
-                "top": "2px",
-                "right": "2px",
-                "bottom": "2px",
-                "left": "2px"
-              },
-              "children": [
-                {
-                  "id": "content",
-                  "type": "grid-layout",
-                  "row-definitions": [
-                    "1rate"
-                  ],
-                  "column-definitions": [
-                    "1rate"
-                  ],
-                  "cells": [
-                    {
-                      "row": 0,
-                      "col": 0
-                    }
-                  ]
-                }
-              ],
-              "row": 0,
-              "col": 0,
-              "rowspan": 2
-            },
-            {
               "id": "nestedGrid",
               "type": "grid-layout",
               "row-definitions": [
@@ -520,6 +477,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             }
           ],
           "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "rowspan": 2
+            },
             {
               "row": 2,
               "col": 0,
@@ -797,13 +759,20 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "/layoutShowcase/grid/paddedCell/content",
+      "layout": "/layoutShowcase/grid",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
           "model": "spanCell",
           "cell": {
             "row": 1,
+            "col": 1
+          }
+        },
+        {
+          "model": "gridFooter",
+          "cell": {
+            "row": 3,
             "col": 1
           }
         }
@@ -839,19 +808,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "cell": {
             "row": 2,
             "col": 2
-          }
-        }
-      ]
-    },
-    {
-      "layout": "/layoutShowcase/grid",
-      "parentModel": "demo/layoutDemoPage/body",
-      "childrenModel": [
-        {
-          "model": "gridFooter",
-          "cell": {
-            "row": 3,
-            "col": 1
           }
         }
       ]
