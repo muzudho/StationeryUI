@@ -94,7 +94,7 @@ internal sealed partial class DesignerGame : Game
     }
     private void Capture()
     {
-        if (editingPage && blueprint.CanEditPanel)
+        if (editingPage && panelFields.Count > 0)
             foreach (var (field, key) in panelFields) blueprint.PanelEdges[key].Number = field.Editor!.Text;
         if (!editingPage || !gridEditorVisible) return;
         foreach (var (field, _, track) in tracks) track.Number = field.Editor!.Text;
@@ -125,9 +125,29 @@ internal sealed partial class DesignerGame : Game
             Text($"rowIndex{r}", new(280, 100 + r * 44, 36, 40), (r + 1).ToString());
             AddTrack(blueprint.Rows[r], $"row{r}", new(372, 100 + r * 44, 164, 40), $"行 {r + 1} の高さ");
         }
+        BuildGridInsetsEditor();
         BuildLivePreviewHeader();
         BuildSidebar();
     }
+    private void BuildGridInsetsEditor()
+    {
+        Text("gridInsetsTitle", new(12, 480, 524, 34), "margin / padding");
+        var sides = new[] { "top", "right", "bottom", "left" };
+        var labels = new[] { "上", "右", "下", "左" };
+        for (var c = 0; c < sides.Length; c++) Text("gridSide" + c, new(120 + c * 104, 514, 100, 28), labels[c]);
+        foreach (var group in new[] { "margin", "padding" })
+        {
+            var row = group == "margin" ? 544 : 592;
+            Text("grid" + group, new(12, row, 104, 40), group);
+            for (var c = 0; c < sides.Length; c++)
+            {
+                var key = group + "." + sides[c];
+                var field = ui.AddTextBox("gridEdge" + group + c, new(120 + c * 104, row, 100, 40), key, blueprint.PanelEdges[key].Number, 20);
+                panelFields.Add((field, key));
+            }
+        }
+    }
+
     private void AddTrack(StyleBlueprint.Track track, string id, ScreenRectangle bounds, string name)
     {
         var field = ui.AddTextBox(id, bounds with { Width = bounds.Width - 60 }, name, track.Number, 24);

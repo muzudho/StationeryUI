@@ -101,14 +101,7 @@ public sealed class StyleBlueprint
             ?? throw new ArgumentException("レイアウトがありません。");
         if ((string?)layout["type"] == "box-layout")
         {
-            imported = committed; SelectedLayoutId = id; PanelEdges.Clear(); originalPanelNumbers.Clear();
-            foreach (var group in new[] { "margin", "padding", "border" })
-                foreach (var side in new[] { "top", "right", "bottom", "left" })
-                {
-                    var value = (string?)layout[group]?[side] ?? (group == "padding" ? "8px" : "0px");
-                    PanelEdges[group + "." + side] = new() { Number = value[..^2], IsRate = false };
-                    originalPanelNumbers[group + "." + side] = value[..^2];
-                }
+            imported = committed; SelectedLayoutId = id; InitializeEdges(layout);
             return;
         }
         if (!EditableLayouts.Contains(id)) throw new ArgumentException("このレイアウトは表では編集できません。");
@@ -126,6 +119,7 @@ public sealed class StyleBlueprint
         }
         Read("row-definitions", Rows); Read("column-definitions", Columns);
         SelectedLayoutId = id;
+        InitializeEdges(layout);
     }
 
     public string CellDescription(int row, int column)
@@ -159,7 +153,23 @@ public sealed class StyleBlueprint
     private readonly Dictionary<(int Row, int Column), Cell> cells = [];
     public Cell At(int row, int column) => cells[(row, column)];
 
-    public StyleBlueprint() => Resize(2, 2);
+    public StyleBlueprint()
+    {
+        InitializeEdges(new JsonObject());
+        Resize(2, 2);
+    }
+
+    private void InitializeEdges(JsonNode layout)
+    {
+        PanelEdges.Clear(); originalPanelNumbers.Clear();
+        foreach (var group in new[] { "margin", "padding", "border" })
+            foreach (var side in new[] { "top", "right", "bottom", "left" })
+            {
+                var value = (string?)layout[group]?[side] ?? (group == "padding" ? "8px" : "0px");
+                PanelEdges[group + "." + side] = new() { Number = value[..^2], IsRate = false };
+                originalPanelNumbers[group + "." + side] = value[..^2];
+            }
+    }
     public void Resize(int columns, int rows)
     {
         if (columns is < 1 or > 8 || rows is < 1 or > 8)
@@ -190,7 +200,7 @@ public sealed class StyleBlueprint
         if (imported is not null)
         {
             var draft = (JsonObject)imported.DeepClone();
-            if (CanEditPanel)
+            if (PanelEdges.Count > 0)
             {
                 var panel = FindLayout(draft, SelectedLayoutId)!;
                 foreach (var group in new[] { "margin", "padding", "border" })
@@ -205,7 +215,7 @@ public sealed class StyleBlueprint
                     }
                 }
             }
-            else if (SelectedLayoutId is not null)
+            if (SelectedLayoutId is not null && !CanEditPanel)
             {
                 var layout = FindLayout(draft, SelectedLayoutId)!;
                 layout["row-definitions"] = new JsonArray(Rows.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>());
@@ -238,13 +248,20 @@ public sealed class StyleBlueprint
             {
                 ["id"] = "mainGrid", ["type"] = "grid-layout", ["cells"] = cells,
                 ["row-definitions"] = new JsonArray(Rows.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
-                ["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>())
+                ["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
+                ["margin"] = EdgeObject("margin"), ["padding"] = EdgeObject("padding")
             }),
             ["bindings"] = new JsonArray(new JsonObject
             { ["layout"] = "/mainGrid", ["parentModel"] = "design/mainPage", ["childrenModel"] = bindings })
         };
         return Serialize(root);
     }
+
+    private JsonObject EdgeObject(string group) => new()
+    {
+        ["top"] = PanelEdges[group + ".top"].Length(), ["right"] = PanelEdges[group + ".right"].Length(),
+        ["bottom"] = PanelEdges[group + ".bottom"].Length(), ["left"] = PanelEdges[group + ".left"].Length()
+    };
 
     private static string Serialize(JsonObject root)
     {

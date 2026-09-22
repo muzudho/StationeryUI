@@ -147,12 +147,11 @@ internal sealed partial class DesignerGame
         var snapshot = blueprint.CreatePreview(Math.Max(1, previewWindow.Width), Math.Max(1, previewWindow.Height), TargetLayoutId);
         var root = snapshot.Settings.Models[0].CreateTree();
         var entries = new List<StationeryInspectionEntry>();
-        bool InPreview(string path) => path == snapshot.ScopePath || path.StartsWith(snapshot.ScopePath + "/", StringComparison.Ordinal)
-            || snapshot.ScopePath.StartsWith(path + "/", StringComparison.Ordinal);
         void Visit(StationeryNode node)
         {
             snapshot.Layout.Bounds.TryGetValue(node.Path, out var bounds);
-            entries.Add(new(node.Id, node.Path, node.Parent?.Path, node.Kind, node.Id, InPreview(node.Path), bounds));
+            // The designer has no runtime page visibility state; every configured node is inspectable.
+            entries.Add(new(node.Id, node.Path, node.Parent?.Path, node.Kind, node.Id, true, bounds));
             foreach (var child in node.Children) Visit(child);
         }
         Visit(root);
