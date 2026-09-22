@@ -119,7 +119,7 @@ internal sealed class TextCacheRenderingTests : Game
             outlineHost.Viewport.Offset = new(17, 29);
             StationeryInspectionEntry[] outlineSnapshot = [
                 new("owner", "/owner", null, "container", "", true, null) {
-                    LayoutNodes = [new("box", "/owner:/grid/box", "/owner:/grid", "layout", "", true, new(40, 50, 180, 120)) { PartitionLines = [new(new(120, 60), new(120, 157)), new(new(50, 110), new(207, 110))] }]
+                    LayoutNodes = [new("box", "/owner:/grid/box", "/owner:/grid", "layout", "", true, new(40, 50, 180, 120)) { MarginBounds = new(30, 40, 190, 130), BoxModel = new(new(10, 0, 0, 10), default), PartitionLines = [new(new(120, 60), new(120, 157)), new(new(50, 110), new(207, 110))] }]
                 }
             ];
             var selected = DeveloperInspectionLayout.FindVisibleEntry(outlineSnapshot, "/owner:/grid/box")!;
@@ -137,7 +137,8 @@ internal sealed class TextCacheRenderingTests : Game
                     && (x < 43 || x >= 217 || y < 53 || y >= 167);
                 var dash = x >= 119 && x < 121 && y >= 60 && y < 157 && (y - 60) % 10 < 5
                     || y >= 109 && y < 111 && x >= 50 && x < 207 && (x - 50) % 10 < 5;
-                if (pixels[y * 640 + x] != (edge || dash ? pink : Color.Black))
+                var marginEdge = y == 40 && x >= 30 && x < 220 || x == 30 && y >= 40 && y < 170;
+                if (pixels[y * 640 + x] != (edge || dash || marginEdge ? pink : Color.Black))
                     throw new Exception($"Layout outline misplaced at {x}, {y}, scale {scale}.");
             }
         }

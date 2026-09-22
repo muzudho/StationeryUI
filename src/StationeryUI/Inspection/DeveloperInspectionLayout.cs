@@ -47,6 +47,7 @@ public static class DeveloperInspectionLayout
                     "layout", l.Path, owner.Visible,
                     arranged?.LayoutBounds.TryGetValue(owner.Path + ":" + l.Path, out var bounds) == true ? bounds : null)
                 {
+                    MarginBounds = arranged?.LayoutMarginBounds.TryGetValue(owner.Path + ":" + l.Path, out var marginBounds) == true ? marginBounds : null,
                     PartitionLines = Partitions(owner.Path, l),
                     LayoutTypes = [l.Type],
                     Cell = l.Path == root.Path ? null : new(l.Column, l.Row, l.ColumnSpan, l.RowSpan),
@@ -55,6 +56,7 @@ public static class DeveloperInspectionLayout
         }
         return entries.Select(entry => entry with
         {
+            MarginBounds = arranged?.MarginBounds.TryGetValue(entry.Path, out var marginBounds) == true ? marginBounds : null,
             PartitionLines = roots.TryGetValue(entry.Path, out var rootLayout) ? Partitions(entry.Path, rootLayout) : [],
             LayoutNodes = LayoutNodes(entry),
             LayoutParentPath = parents.GetValueOrDefault(entry.Path),
@@ -68,7 +70,7 @@ public static class DeveloperInspectionLayout
     /// <summary>Finds a visible model or layout for an outline; does not change capture hit testing.</summary>
     public static StationeryInspectionEntry? FindVisibleEntry(IReadOnlyList<StationeryInspectionEntry> entries, string path)
         => entries.Where(e => e.Visible).SelectMany(e => new[] { e }.Concat(e.LayoutNodes ?? []))
-            .FirstOrDefault(e => e.Path == path && e.Visible && e.WindowBounds is { Width: > 0, Height: > 0 });
+            .FirstOrDefault(e => e.Path == path && e.Visible && (e.WindowBounds is { Width: > 0, Height: > 0 } || e.MarginBounds is { Width: > 0, Height: > 0 }));
 
     public static string FormatModelLabel(StationeryInspectionEntry entry)
     {

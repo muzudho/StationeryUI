@@ -89,3 +89,8 @@ cells は layouts 内に定義し、その各セル内の slots は id だけを
 
 レイアウトツリーでは、文房具とその所有するルートレイアウトを１行にまとめる。例えば `(demoPage : Page) (- : gridLayout)` の下へ配置されたモデルを直接表示し、同じ gridLayout のノードは重ねて表示しない。ルートの内部にネストしたレイアウトは別ノードとして残す。
 統合ノードの識別子は文房具のパスを使い、外周・分割点線・margin／padding を確認できる。詳細欄の「所有レイアウト」で定義パスも確認できる。古いルートレイアウトの選択・開閉パスは所有モデルへ読み替える。検査データの `LayoutNodes` は維持し、表示上の階層だけをまとめる。
+
+
+選択した要素の margin の外側は、細い桃色の実線（1px）で表示する。0px の辺は描画しない。従来の太い実線は要素の外周、点線は grid／dock の分割境界を表す。
+margin の外側は、親の padding を除いた領域内で割り当てられたセル・dock 領域を基準にする。スロット自身に padding はない。狭い画面で margin が切り詰められても、配置計算時の元の枠を表示する。
+`StationeryLayoutResult.MarginBounds` はモデルと所有ルートの margin 適用前、`LayoutMarginBounds` は各レイアウト自身の margin 適用前のウィンドウ座標。検査エントリーの `MarginBounds` と `BoxModel.Margin` を `DrawInspectionSelection(entry)` が使用する。既存の検査・描画の接続を変更する必要はない。

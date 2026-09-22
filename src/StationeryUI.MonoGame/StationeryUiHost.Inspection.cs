@@ -22,16 +22,35 @@ public sealed partial class StationeryUiHost
         finally { sprites.End(); }
     }
 
-    /// <summary>Draws the selected model/layout outline and dashed partitions in window pixels.</summary>
+    /// <summary>Draws the selected model/layout outline, thin margin boundary and dashed partitions in window pixels.</summary>
     public void DrawInspectionSelection(StationeryUI.Inspection.StationeryInspectionEntry entry)
     {
-        if (!entry.Visible || entry.WindowBounds is not { Width: > 0, Height: > 0 } bounds) return;
-        DrawInspectionOutline(bounds);
-        if (entry.PartitionLines is not { Count: > 0 } lines) return;
+        if (!entry.Visible) return;
+        if (entry.WindowBounds is { Width: > 0, Height: > 0 } bounds) DrawInspectionOutline(bounds);
+        var lines = entry.PartitionLines ?? [];
+        var margin = entry.MarginBounds;
+        if (lines.Count == 0 && margin is null) return;
         sprites.Begin(blendState: BlendState.NonPremultiplied);
         try
         {
             var color = new Color(255, 105, 180);
+            // One physical pixel, unaffected by UI zoom. Use the original allocation,
+            // not expanded content bounds: large margins may have been clamped.
+            if (margin is { Width: > 0, Height: > 0 } m && margin != entry.WindowBounds)
+            {
+                void Strip(double x, double y, double w, double h)
+                    => sprites.Draw(pixel, RectangleOf(new(x, y, w, h)), color);
+                var inset = entry.BoxModel?.Margin;
+                var inner = entry.WindowBounds;
+                if (inset?.Top > 0 || inset is null && inner is { } top && top.Y > m.Y)
+                    Strip(m.X, m.Y, m.Width, Math.Min(1, m.Height));
+                if (inset?.Bottom > 0 || inset is null && inner is { } bottom && bottom.Y + bottom.Height < m.Y + m.Height)
+                    Strip(m.X, m.Y + Math.Max(0, m.Height - 1), m.Width, Math.Min(1, m.Height));
+                if (inset?.Left > 0 || inset is null && inner is { } left && left.X > m.X)
+                    Strip(m.X, m.Y, Math.Min(1, m.Width), m.Height);
+                if (inset?.Right > 0 || inset is null && inner is { } right && right.X + right.Width < m.X + m.Width)
+                    Strip(m.X + Math.Max(0, m.Width - 1), m.Y, Math.Min(1, m.Width), m.Height);
+            }
             foreach (var line in lines)
             {
                 var vertical = line.Start.X == line.End.X;

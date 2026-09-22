@@ -8,6 +8,10 @@ using StationeryUI.Controls;
 public sealed record StationeryLayoutResult(IReadOnlyDictionary<string, ScreenRectangle> Bounds,
     IReadOnlyDictionary<string, ScreenRectangle> ContentBounds)
 {
+    /// <summary>Allocated model rectangles before model and root-layout margins.</summary>
+    public IReadOnlyDictionary<string, ScreenRectangle> MarginBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
+    /// <summary>Allocated layout rectangles before each layout's own margin.</summary>
+    public IReadOnlyDictionary<string, ScreenRectangle> LayoutMarginBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
     public IReadOnlyList<StationeryLayoutError> Errors { get; init; } = [];
     // Keyed by owner model path + ":" + complete layout path (layouts are reusable).
     public IReadOnlyDictionary<string, ScreenRectangle> LayoutBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
@@ -48,6 +52,8 @@ public static class StationeryLayoutEngine
         var bounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var contents = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var borders = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var marginBounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var layoutMarginBounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var layoutBounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var layoutContents = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var layoutBorders = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
@@ -64,11 +70,12 @@ public static class StationeryLayoutEngine
             var columns = TrackEdges(grid.Columns, area.Width);
             return new(area.X + columns[col], area.Y + rows[row], columns[col + colSpan] - columns[col], rows[row + rowSpan] - rows[row]);
         }
-        void ArrangeLayout(StationeryLayoutNode layout, string owner, ScreenRectangle area, ScreenRectangle? rootContent = null)
+        void ArrangeLayout(StationeryLayoutNode layout, string owner, ScreenRectangle area, ScreenRectangle? rootContent = null, ScreenRectangle? rootAllocation = null)
         {
             var outer = rootContent is not null ? area : Inset(area, layout.Margin);
             var content = rootContent ?? Inset(outer, layout.Padding);
             var key = owner + ":" + layout.Path;
+            layoutMarginBounds.Add(key, rootAllocation ?? area);
             layoutBounds.Add(key, outer); layoutContents.Add(key, content);
             if (layout.Type == "box-layout") layoutBorders.Add(key, new(outer.X - layout.Border.Left, outer.Y - layout.Border.Top,
                 outer.Width + layout.Border.Left + layout.Border.Right, outer.Height + layout.Border.Top + layout.Border.Bottom));
@@ -106,7 +113,10 @@ public static class StationeryLayoutEngine
 
         void Visit(StationeryNode node, ScreenRectangle inherited)
         {
-            var outer = Inset(positions.GetValueOrDefault(node.Path, inherited), modelMargins[node.Path]);
+            var allocation = positions.GetValueOrDefault(node.Path, inherited);
+            marginBounds.Add(node.Path, allocation);
+            var outer = Inset(allocation, modelMargins[node.Path]);
+            var rootAllocation = outer;
             if (roots.TryGetValue(node.Path, out var rootLayout)) outer = Inset(outer, rootLayout.Margin);
             if (panels.TryGetValue(node.Path, out var box))
             {
@@ -136,7 +146,7 @@ public static class StationeryLayoutEngine
             }
             if (owners.TryGetValue(node.Path, out var ownerBindings))
                 foreach (var layout in ownerBindings.Select(b => layouts[("/" + b.Layout.Split('/')[1])]).Distinct())
-                    if (layout.Type is "box-layout" or "grid-layout" or "dock-layout") ArrangeLayout(layout, node.Path, outer, content);
+                    if (layout.Type is "box-layout" or "grid-layout" or "dock-layout") ArrangeLayout(layout, node.Path, outer, content, rootAllocation);
             // An unbound dock child must not cover every sibling; other nested bindings still take precedence.
             var inheritedChild = ownerBindings?.Any(b => layouts[b.Layout].Type == "dock-layout") == true
                 ? new ScreenRectangle(content.X, content.Y, 0, 0) : content;
@@ -146,6 +156,8 @@ public static class StationeryLayoutEngine
         foreach (var model in settings.Models) Visit(model.CreateTree(), new(0, 0, width, height));
         return new(new ReadOnlyDictionary<string, ScreenRectangle>(bounds), new ReadOnlyDictionary<string, ScreenRectangle>(contents))
         { Errors = errors.AsReadOnly(), BorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(borders),
+            MarginBounds = new ReadOnlyDictionary<string, ScreenRectangle>(marginBounds),
+            LayoutMarginBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutMarginBounds),
             LayoutBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBounds),
             LayoutContentBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutContents),
             LayoutBorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBorders) };

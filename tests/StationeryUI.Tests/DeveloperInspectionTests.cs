@@ -43,6 +43,7 @@ internal static class DeveloperInspectionTests
         CheckLayoutLabels();
         CheckNestedLayouts();
         CheckPartitions();
+        CheckMarginBounds();
     }
 
     private static void CheckLayoutLabels()
@@ -173,6 +174,38 @@ internal static class DeveloperInspectionTests
         Check(DeveloperInspectionPartitions.Create(dock, new(0, 0, 0, 0)).Count == 0, "empty content has no partitions");
         var saturated = dock with { Cells = [new(Dock: "top", Size: 999), new(Dock: "right", Size: 30)] };
         Check(DeveloperInspectionPartitions.Create(saturated, new(0, 0, 100, 100)).Count == 0, "clipped docks do not invent partitions");
+    }
+    private static void CheckMarginBounds()
+    {
+        var settings = StationeryUI.Styling.StationeryStyleSettings.Parse("""
+        {
+          "models":[{"id":"screen","type":"viewport","children":[{"id":"child","type":"button","margin":{"left":"3px"}}]}],
+          "layouts":[
+            {"id":"grid","type":"grid-layout","padding":{"left":"10px","top":"20px","right":"30px","bottom":"40px"},
+             "row-definitions":["1rate"],"column-definitions":["1rate","1rate"],
+             "cells":[{"row":0,"col":1,"slots":[{"id":"child"}]}],
+             "children":[{"id":"nested","type":"box-layout","row":0,"col":0,"margin":{"top":"5px","right":"7px"},"padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}}]},
+            {"id":"childLayout","type":"box-layout","margin":{"top":"6px","bottom":"8px"},"padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}}
+          ],
+          "bindings":[{"layout":"/grid","parentModel":"/screen","childrenModel":[{"model":"child","slot":"child"}]},
+                      {"layout":"/childLayout","model":"/screen/child"}]
+        }
+        """);
+        var arranged = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 240, 160);
+        Check(arranged.MarginBounds["/screen/child"] == new StationeryUI.Canvas.ScreenRectangle(110, 20, 100, 100), "model margin boundary is allocated cell inside parent padding");
+        Check(arranged.LayoutMarginBounds["/screen/child:/childLayout"] == new StationeryUI.Canvas.ScreenRectangle(113, 20, 97, 100), "root layout allocation follows model margin");
+        Check(arranged.LayoutMarginBounds["/screen:/grid/nested"] == new StationeryUI.Canvas.ScreenRectangle(10, 20, 100, 100), "nested layout margin boundary is its own cell");
+        StationeryInspectionEntry[] entries = [
+            new("screen", "/screen", null, "viewport", "", true, arranged.Bounds["/screen"]),
+            new("child", "/screen/child", "/screen", "button", "", true, arranged.Bounds["/screen/child"]) ];
+        var snapshot = DeveloperInspectionLayout.Apply(entries, settings, arranged);
+        var received = System.Text.Json.JsonSerializer.Deserialize<StationeryInspectionEntry[]>(System.Text.Json.JsonSerializer.Serialize(snapshot))!;
+        Check(received[1].MarginBounds == arranged.MarginBounds["/screen/child"] && received[1].BoxModel!.Margin.Left == 3
+            && received[1].BoxModel!.Margin.Top == 6 && received[1].BoxModel!.Margin.Right == 0, "merged model margin extents survive transport");
+        Check(received[0].LayoutNodes!.Single(e => e.Id == "nested").MarginBounds == arranged.LayoutMarginBounds["/screen:/grid/nested"], "nested margin metadata survives transport");
+        var tiny = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 42, 61);
+        Check(tiny.MarginBounds["/screen/child"] == new StationeryUI.Canvas.ScreenRectangle(11, 20, 1, 1)
+            && tiny.Bounds["/screen/child"].Width == 0, "clamped margin retains original allocation instead of expanding empty bounds");
     }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
 }
