@@ -134,7 +134,7 @@
         },
         {
             "id": "topDemoLayout",
-            "type": "floating-layout",
+            "type": "grid-layout",
             "row-definitions": [
                 "1rate",
                 "1rate",
@@ -149,7 +149,7 @@
         },
         {
             "id": "splitDemoLayout",
-            "type": "floating-layout",
+            "type": "grid-layout",
             "row-definitions": [
                 "64px",
                 "1rate",
@@ -196,7 +196,7 @@
         },
         {
             "id": "inspectorContents",
-            "type": "floating-layout",
+            "type": "grid-layout",
             "row-definitions": [
                 "1rate"
             ],

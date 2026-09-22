@@ -18,4 +18,8 @@
 
 製品が使われる場面は、利用者向けの[ユースケース](../../user/style-settings/use-case.md)を参照してください。
 
+## 拡張を検討する
+
+- [レイアウトのネストとセル範囲指定の仕様案](nested-layouts-proposal.md)：`children`、ドット区切りのパス、`row`・`col`・`rowspan`・`colspan`（未実装）。
+
 [ライブラリーの組み込み](../library-integration.md) ／ [開発者向け目次](../README.md)

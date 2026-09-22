@@ -10,7 +10,7 @@ JSON の type だけから任意の新しいコントロールを生成するわ
 
 メインには nameField / memoField（textBox）、
 themeButton / scaleButton / applyTitleButton / openDialogButton（button）、sampleTree（tree）、splitPaneDemoLink（link）が各 1 個必要。
-**トップページの 8 部品すべてに floating-layout のセルへの binding が必要。**
+**トップページの 8 部品すべてに grid-layout のセルへの binding が必要。**
 splitPaneDemoPage には topDemoLink、verticalSplit、horizontalSplit と、それぞれの子のテキスト欄を定義する。
 スプリットペーンの子は split-pane の firstModel / secondModel で配置する。
 ツリーの項目と開閉操作は [ツリーの使い方](../../user/tree.md) を参照。

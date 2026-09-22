@@ -1,4 +1,4 @@
-﻿# ツリーの組み込み
+# ツリーの組み込み
 
 ## C# で作る
 
@@ -28,7 +28,7 @@ F12 では /demo/topDemoPage/sampleTree/stationery/writing/pencil のような�
 
 デモでは models に {"id":"sampleTree","type":"tree"} を追加し、bindings で row: 0 / column: 1 に配置している。
 既存のモデルノードに接続するときは、AddTree の第 1 引数に StationeryNode を渡す。
-ツリー全体の配置は floating-layout に従い、ノード行の高さと字下げはツリー側が管理する。
+ツリー全体の配置は grid-layout に従い、ノード行の高さと字下げはツリー側が管理する。
 スタイルの再読み込みやモデルパスの変更で、ツリーの選択・開閉状態は失われない。
 
 現時点ではツリー内の項目は C# の TreeView.AddNode で作る。models の tree に children を定義する形式や、

@@ -144,7 +144,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "id": "topDemoLayout",
-      "type": "floating-layout",
+      "type": "grid-layout",
       "row-definitions": [
         "1rate",
         "1rate",
@@ -159,7 +159,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "id": "splitDemoLayout",
-      "type": "floating-layout",
+      "type": "grid-layout",
       "row-definitions": [
         "64px",
         "1rate",
@@ -206,7 +206,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "id": "inspectorContents",
-      "type": "floating-layout",
+      "type": "grid-layout",
       "row-definitions": [
         "1rate"
       ],
@@ -378,7 +378,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             placed.Add(binding.FirstModel!); placed.Add(binding.SecondModel!);
         }
         foreach (var node in main.Values.Concat(splitControls.Values))
-            if (!placed.Contains(node.Path)) throw new JsonException($"Demo control {node.Path} needs a floating-layout cell binding.");
+            if (!placed.Contains(node.Path)) throw new JsonException($"Demo control {node.Path} needs a grid-layout cell binding.");
         if (settings.Bindings.Any(binding => root.Resolve(binding.ModelPath)!.IsWithin(dialog)) ||
             placed.Any(path => root.Resolve(path)!.IsWithin(dialog)))
             throw new JsonException("The demo dialog currently uses its code-defined layout; bind the main controls only.");

@@ -3,7 +3,7 @@ using StationeryUI.Styling;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-internal static class FloatingLayoutTests
+internal static class GridLayoutTests
 {
     private const string Source = """
         {
@@ -12,7 +12,7 @@ internal static class FloatingLayoutTests
           ]}],
           "layouts":[
             {"id":"frame","type":"panel","padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}},
-            {"id":"grid","type":"floating-layout","row-definitions":["1rate","3rate"],"column-definitions":["1rate","1.5rate"]}
+            {"id":"grid","type":"grid-layout","row-definitions":["1rate","3rate"],"column-definitions":["1rate","1.5rate"]}
           ],
           "bindings":[
             {"layout":"frame","model":"screen"},
@@ -27,6 +27,11 @@ internal static class FloatingLayoutTests
     {
         var settings = StationeryStyleSettings.Parse(Source);
         var result = StationeryLayoutEngine.Arrange(settings, 100, 200);
+        var legacy = StationeryStyleSettings.Parse(Source.Replace("grid-layout", "floating-layout"));
+        if (legacy.Layouts.Single(l => l.Id == "grid").Type != "grid-layout")
+            throw new Exception("Legacy grid type must normalize to grid-layout.");
+        var legacyBounds = StationeryLayoutEngine.Arrange(legacy, 100, 200).Bounds;
+        foreach (var (path, bounds) in result.Bounds) Equal(bounds, legacyBounds[path]);
         Equal(new(0, 0, 40, 50), result.Bounds["/screen/a"]);
         Equal(new(40, 0, 60, 50), result.Bounds["/screen/b"]);
         Equal(new(0, 50, 40, 150), result.Bounds["/screen/c"]);
@@ -83,8 +88,8 @@ internal static class FloatingLayoutTests
               {"id":"left","type":"container","children":[{"id":"a","type":"button"}]},
               {"id":"right","type":"container","children":[{"id":"a","type":"button"}]}
             ]}],"layouts":[
-              {"id":"pair","type":"floating-layout","row-definitions":["1rate"],"column-definitions":["1rate","1rate"]},
-              {"id":"unit","type":"floating-layout","row-definitions":["1rate"],"column-definitions":["1rate"]}
+              {"id":"pair","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate","1rate"]},
+              {"id":"unit","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate"]}
             ],"bindings":[
               {"layout":"unit","parentModel":"/screen/right","childrenModel":[{"model":"a","row":0,"column":0}]},
               {"layout":"pair","parentModel":"screen","childrenModel":[{"model":"left","row":0,"column":0},{"model":"right","row":0,"column":1}]},
@@ -103,7 +108,7 @@ internal static class FloatingLayoutTests
     private static void Reject(Action<JsonNode> edit)
     {
         try { Edit(edit); } catch (JsonException) { return; }
-        throw new Exception("Expected invalid floating-layout or binding to be rejected.");
+        throw new Exception("Expected invalid grid-layout or binding to be rejected.");
     }
     private static void Equal(ScreenRectangle expected, ScreenRectangle actual)
     {

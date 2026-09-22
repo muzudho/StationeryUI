@@ -25,7 +25,7 @@ Tab で仕切りにフォーカスした場合は、左右分割なら ← / →
 
 App_Data/demo.stationery-style.json の models / layouts / bindings を使う。
 models には demo の下に二つの page を置き、splitPane の下には二つの子を置く。
-ページとスプリットペーン自体の配置は floating-layout が担当する。
+ページとスプリットペーン自体の配置は grid-layout が担当する。
 ペーン内部の配置は次の split-pane 定義が担当する。
 
 ```json

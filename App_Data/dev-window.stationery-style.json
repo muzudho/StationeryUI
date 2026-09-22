@@ -67,7 +67,7 @@
         },
         {
             "id": "inspectorContents",
-            "type": "floating-layout",
+            "type": "grid-layout",
             "row-definitions": [
                 "1rate"
             ],
@@ -87,7 +87,7 @@
         },
         {
             "id": "windowRows",
-            "type": "floating-layout",
+            "type": "grid-layout",
             "row-definitions": [
                 "56px",
                 "1rate",

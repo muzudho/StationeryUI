@@ -43,12 +43,12 @@ internal sealed partial class DesignerGame
         "chooseFolder" => "新規作成先のフォルダーを Windows のダイアログで選びます。",
         "createFile" => selectedOutputFolder is null ? "先にフォルダーを選択してください。" : "選択フォルダーへ現在の設計を作成します。同名があれば連番にして上書きを避けます。",
         "styleTree" => "＋／－で開閉。水色の枠が操作対象です。layouts 内の panel や表をクリックすると設定を編集できます。",
-        "addChild" => "トップ階層の layouts を操作対象にすると有効になります。Id を指定して panel または floating-layout を追加します。",
+        "addChild" => "トップ階層の layouts を操作対象にすると有効になります。Id を指定して panel または grid-layout を追加します。",
         "deleteNode" => "layouts 内の操作対象を削除します。models・bindings は閲覧専用です。参照や必須設定を壊す削除も拒否します。",
         "renameId" => "layouts 内の Id を変更します。既存の bindings の参照は自動で追従します。models・bindings は閲覧専用です。",
         "stationeryId" => "英字・数字・アンダースコアのみ。camelCase を推奨します。数字始まりなどの警告があっても確定できます。",
         "panel" => "指定した Id の panel を追加し、margin・padding・border の設定画面を開きます。",
-        "floating" => "指定した Id の floating-layout を追加し、列幅・行高を設定します。",
+        "floating" => "指定した Id の grid-layout を追加し、列幅・行高を設定します。",
         "confirmId" => "入力した Id に変更します。既存の bindings の参照も追従します。",
         "cancel" => utilityDialog is not null
             ? exportDialog ? "ダイアログを閉じます。書き出し済みのファイルは保持します。Esc キーでも閉じられます。"

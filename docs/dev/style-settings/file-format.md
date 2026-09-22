@@ -46,12 +46,14 @@
 
 padding は省略した辺が **8px**、margin / border は省略した辺が **0px** です。余白をなくすなら padding の四辺に明示的に `"0px"` を指定します。各値は非負の px 文字列です。padding は部品内部の文字余白である `Theme.Padding` とは異なります。
 
-## floating-layout — 行・列の配分
+## grid-layout — 行・列の配分
+
+旧名 `floating-layout` は読み込み時の互換用別名として受け付け、解析結果の Type は `grid-layout` に統一します。エディターで旧形式を開いて保存すると、レイアウトの type を新名で出力します。Id・bindings の参照先は変更しません。
 
 ```json
 {
     "id": "mainGrid",
-    "type": "floating-layout",
+    "type": "grid-layout",
     "row-definitions": ["48px", "1rate"],
     "column-definitions": ["240px", "1rate", "1.5rate"]
 }
@@ -63,13 +65,13 @@ binding は `layout`、`parentModel`、`childrenModel` を使い、子には `mo
 
 各トラックは非負の小数を含む文字列です。`"12.5px"`、`"1.5rate"`、`"0rate"` を使えます。数値だけ、負数、指数表記、`%`、`em`、`auto` は未対応です。行・列それぞれに少なくとも1つ正の値が必要です。
 
-親は `viewport` / `page` / `container` / `dialog` 型で、配置するモデルはその子孫である必要があります。同じセルへの重複配置、同じモデルへの重複配置、範囲外の行・列はエラーです。panel と floating-layout を同じモデルへ併用すると、panel の内側をグリッドに分けます。
+親は `viewport` / `page` / `container` / `dialog` 型で、配置するモデルはその子孫である必要があります。同じセルへの重複配置、同じモデルへの重複配置、範囲外の行・列はエラーです。panel と grid-layout を同じモデルへ併用すると、panel の内側をグリッドに分けます。
 
 セルへ配置していないモデルは親の内側矩形を引き継ぎます。**未配置は非表示という意味ではありません。** これが意図しない重なりを生む場合は、アプリの検証で必須部品のセル配置を要求します。
 
-## 入れ子のフローティングレイアウト
+## 入れ子のグリッドレイアウト
 
-**配置エンジンでは対応済み**です。外側のグリッドのセルへ `container` モデルを配置し、そのコンテナーを `parentModel` とする別の floating-layout の binding を作ります。内側のグリッドは、そのコンテナーの `ContentBounds` を分割します。
+**配置エンジンでは対応済み**です。外側のグリッドのセルへ `container` モデルを配置し、そのコンテナーを `parentModel` とする別の grid-layout の binding を作ります。内側のグリッドは、そのコンテナーの `ContentBounds` を分割します。
 
 ```text
 models:   /app → contentArea (container) → nameField / applyButton
@@ -128,7 +130,7 @@ bindings: outerGrid のセルに contentArea を配置
 
 binding は `{ "layout": "workPage", "model": "/app/editorPage", "inspectorModel": "inspectorPanel" }` の形です。対象は `page`、inspectorModel はその直下の `container` にします。fullscreen-layout でも inspectorModel は必要で、高さ0になります。切り替えるときは binding の layout Id を変えます。
 
-インスペクターはページの横幅いっぱいに配置され、ページ本文の padding の影響を受けません。祖先の余白は影響します。work-page-layout の inspectorHeight は省略時80px、低い画面では収まる高さへ縮みます。本文の余白は別の panel、行・列は別の floating-layout で同じページに適用します。ページレイアウト自体に padding やトラック定義は書けません。
+インスペクターはページの横幅いっぱいに配置され、ページ本文の padding の影響を受けません。祖先の余白は影響します。work-page-layout の inspectorHeight は省略時80px、低い画面では収まる高さへ縮みます。本文の余白は別の panel、行・列は別の grid-layout で同じページに適用します。ページレイアウト自体に padding やトラック定義は書けません。
 
 インスペクター内の文言、ツールヒント、タイマーバーは C# 側で作ります。アプリケーションバー専用のレイアウト型はまだありません。先頭行に `"40px"` を割り当てるなど、既存のグリッドで構成できます。
 

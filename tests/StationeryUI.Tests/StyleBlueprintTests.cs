@@ -17,6 +17,16 @@ internal static class StyleBlueprintTests
         plan.Columns[1].IsRate = false; plan.Columns[1].Number = "100";
         plan.At(0, 0).Kind = "button"; plan.At(0, 0).Label = "開始\n日本語 \"ラベル\"";
         var json = plan.BuildJson();
+        var oldJson = JsonNode.Parse(json)!;
+        oldJson["layouts"]![0]!["type"] = "floating-layout";
+        oldJson["extension"] = "floating-layout";
+        var legacyPlan = StyleBlueprint.Parse(oldJson.ToJsonString());
+        Check(legacyPlan.CanEditGrid && legacyPlan.SelectedLayoutType == "grid-layout", "legacy grid remains editable");
+        legacyPlan.Columns[0].Number = "2";
+        var migrated = JsonNode.Parse(legacyPlan.BuildJson())!;
+        Check((string?)migrated["layouts"]![0]!["type"] == "grid-layout" &&
+            (string?)migrated["extension"] == "floating-layout", "export normalizes layout type without touching other text");
+        Check(legacyPlan.CreatePreview(1000, 600).Cells.Count == 6, "legacy grid preview");
         Check(!json.Contains("\r\r") && !json.ReplaceLineEndings("\n").Contains("\n\n"), "no doubled or blank line endings");
         Check(json.Split('\n')[1].StartsWith("    \"models\""), "four-space indentation");
         var style = StationeryStyleSettings.Parse(json);
@@ -97,7 +107,7 @@ internal static class StyleBlueprintTests
         plan.PanelEdges["padding.left"].Number = "20";
         var preview = plan.CreatePreview(500, 300);
         Check(preview.Standalone && preview.Layout.ContentBounds["/previewRoot"].X == 30, "unbound panel preview uses box model");
-        var grid = plan.AddLayout("floating-layout");
+        var grid = plan.AddLayout("grid-layout");
         plan.Columns[0].Number = "0";
         preview = plan.CreatePreview(500, 300);
         Check(preview.Standalone && preview.Cells[0].Bounds.Width == 0 && preview.Cells[1].Bounds.Width == 500, "empty zero-width tracks remain configurable");
@@ -160,7 +170,7 @@ internal static class StyleBlueprintTests
         var arranged = StationeryLayoutEngine.Arrange(style, 100, 80);
         Check(arranged.Bounds["/design/mainPage"].Width == 90 && arranged.ContentBounds["/design/mainPage"].Y == 4, "margin and padding affect layout");
         Check(arranged.BorderBounds["/design/mainPage"].Width == 97 && arranged.ContentBounds["/design/mainPage"].Width == 90, "border does not consume size");
-        var grid = plan.AddLayout("floating-layout");
+        var grid = plan.AddLayout("grid-layout");
         Check(plan.CanEditGrid && plan.SelectedLayoutId == grid, "new grid uses grid editor");
         plan.Columns[0].Number = "2.5";
         plan.SelectLayout(panel);

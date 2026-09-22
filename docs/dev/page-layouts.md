@@ -1,6 +1,6 @@
 # ページレイアウトとツールヒント
 
-`fullscreen-layout` と `work-page-layout` は本文とインスペクターの領域を分ける。本文の floating-layout と組み合わせて使い、モデルへ本文用のラッパーを追加する必要はない。
+`fullscreen-layout` と `work-page-layout` は本文とインスペクターの領域を分ける。本文の grid-layout と組み合わせて使い、モデルへ本文用のラッパーを追加する必要はない。
 
 StationeryStyleSettings は次を検証する。
 
@@ -9,7 +9,7 @@ StationeryStyleSettings は次を検証する。
 - `inspectorHeight` は work-page-layout の非負 px 値。省略時は 80px、rate は不可。
 - fullscreen-layout は高さ 0。inspectorHeight の指定はエラー。
 
-StationeryLayoutEngine はページの Bounds から下部パネルを確保し、残りに panel の padding を適用して ContentBounds とする。本文の floating-layout は ContentBounds を使う。インスペクターの Bounds は本文の padding の外側に配置する。
+StationeryLayoutEngine はページの Bounds から下部パネルを確保し、残りに panel の padding を適用して ContentBounds とする。本文の grid-layout は ContentBounds を使う。インスペクターの Bounds は本文の padding の外側に配置する。
 フルスクリーンではインスペクターとその通常の子レイアウトが高さ 0 になり、StationeryUiHost が描画・フォーカス対象から外す。
 ホストは本文とヒントの Bounds を更新する。物理 px から論理座標へ変換する際は Viewport.Scale で割り、80px の高さを拡大しない。
 

@@ -84,7 +84,8 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             ValidateId(id, path);
             if (!layoutIds.Add(id)) throw new JsonException($"Duplicate layout Id '{id}'.");
             var type = ReadString(item, "type", path);
-            if (type is not ("panel" or "floating-layout" or "split-pane" or "fullscreen-layout" or "work-page-layout")) throw new JsonException($"{path}.type must be panel, floating-layout, split-pane, fullscreen-layout or work-page-layout.");
+            if (type == "floating-layout") type = "grid-layout"; // Legacy JSON spelling.
+            if (type is not ("panel" or "grid-layout" or "split-pane" or "fullscreen-layout" or "work-page-layout")) throw new JsonException($"{path}.type must be panel, grid-layout, split-pane, fullscreen-layout or work-page-layout.");
             if (item.TryGetProperty("children", out _) || item.TryGetProperty("contents", out _) ||
                 item.TryGetProperty("model", out _) || item.TryGetProperty("parentModel", out _))
                 throw new JsonException($"{path}: model references and placement belong in bindings.");
@@ -109,14 +110,14 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                     inspectorHeight = item.TryGetProperty("inspectorHeight", out var h) ? ReadLength(h, path + ".inspectorHeight", false).Value : 80;
                 else if (item.TryGetProperty("inspectorHeight", out _)) throw new JsonException("fullscreen-layout has no inspectorHeight.");
                 if (item.TryGetProperty("padding", out _) || item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
-                    throw new JsonException("Page layouts use a separate panel or floating-layout for content.");
+                    throw new JsonException("Page layouts use a separate panel or grid-layout for content.");
             }
             else if (type == "panel")
             {
                 margin = ReadEdges("margin");
                 border = ReadEdges("border");
                 if (item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
-                    throw new JsonException($"{path}: track definitions require floating-layout.");
+                    throw new JsonException($"{path}: track definitions require grid-layout.");
                 padding = new(8, 8, 8, 8);
                 if (item.TryGetProperty("padding", out var value))
                 {
@@ -193,11 +194,11 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 bindings.Add(new(layoutId, node.Path, Array.Empty<StationeryCellBinding>()));
                 continue;
             }
-            if (item.TryGetProperty("model", out _)) throw new JsonException($"{path}: floating-layout uses parentModel and childrenModel.");
+            if (item.TryGetProperty("model", out _)) throw new JsonException($"{path}: grid-layout uses parentModel and childrenModel.");
             var parent = ResolveModel(modelTree, ReadString(item, "parentModel", path), null);
             if (parent.Kind is not ("viewport" or "page" or "container" or "dialog"))
                 throw new JsonException($"{parent.Path} cannot be a layout parent.");
-            if (!grids.Add(parent.Path)) throw new JsonException($"Multiple floating layouts for {parent.Path}.");
+            if (!grids.Add(parent.Path)) throw new JsonException($"Multiple grid layouts for {parent.Path}.");
             var children = new List<StationeryCellBinding>();
             var cells = new HashSet<(int, int)>();
             foreach (var child in ReadArray(item, "childrenModel", path).EnumerateArray())

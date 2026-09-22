@@ -77,7 +77,7 @@ internal sealed partial class DesignerGame
         if (path is null)
         {
             idConfirmButtons.Add(layoutDialog.AddButton("panel", new(460, 380, 290, 48), "panel を追加", () => layoutChoice = "panel"));
-            idConfirmButtons.Add(layoutDialog.AddButton("floating", new(770, 380, 370, 48), "floating-layout を追加", () => layoutChoice = "floating-layout"));
+            idConfirmButtons.Add(layoutDialog.AddButton("floating", new(770, 380, 370, 48), "grid-layout を追加", () => layoutChoice = "grid-layout"));
         }
         else idConfirmButtons.Add(layoutDialog.AddButton("confirmId", new(460, 380, 680, 48), "変更を確定", () => layoutChoice = "rename"));
         idFeedback = layoutDialog.AddTextBlock(layoutDialog.Root.AddChild("idFeedback", "textBlock"), new(460, 438, 680, 72), "");
@@ -194,7 +194,7 @@ internal sealed partial class DesignerGame
                 throw new InvalidOperationException("Panel dialog/editor failed.");
         }
         else if (!blueprint.CanEditGrid || settings.Layouts.Count != 2 || blueprint.Columns[0].Number != "2.5")
-            throw new InvalidOperationException("Floating layout dialog/editor failed.");
+            throw new InvalidOperationException("Grid layout dialog/editor failed.");
         return true;
     }
 

@@ -59,7 +59,7 @@
         { "id": "outerPanel", "type": "panel" },
         {
             "id": "mainGrid",
-            "type": "floating-layout",
+            "type": "grid-layout",
             "row-definitions": ["1rate", "64px"],
             "column-definitions": ["1rate"]
         }
@@ -110,7 +110,7 @@ public sealed class StyledGame : Game
         {"models":[{"id":"app","type":"viewport","children":[
           {"id":"nameField","type":"textBox"},{"id":"applyButton","type":"button"}]}],
          "layouts":[{"id":"outerPanel","type":"panel"},
-          {"id":"mainGrid","type":"floating-layout",
+          {"id":"mainGrid","type":"grid-layout",
            "row-definitions":["1rate","64px"],"column-definitions":["1rate"]}],
          "bindings":[{"layout":"outerPanel","model":"/app"},
           {"layout":"mainGrid","parentModel":"/app","childrenModel":[

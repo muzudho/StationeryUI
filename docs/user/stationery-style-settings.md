@@ -67,7 +67,7 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
 | bindings | どのモデルに、どのレイアウトを適用するかの対応付け |
 
 旧トップレベルの viewport / model / layout は廃止。旧形式との混在もエラー。
-モデルの type: viewport は継続するが、レイアウトの型は panel / floating-layout / split-pane を使う。
+モデルの type: viewport は継続するが、レイアウトの型は panel / grid-layout / split-pane を使う。
 
 以下は形式を説明する小さな例。実際のデモでは原本の二つのページと、その中の文房具も必要。
 
@@ -96,7 +96,7 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
         },
         {
             "id": "demoPage",
-            "type": "floating-layout",
+            "type": "grid-layout",
             "row-definitions": ["1rate"],
             "column-definitions": ["1rate", "1.5rate"]
         }
@@ -128,7 +128,7 @@ layouts 内にモデル参照や children / contents は置かない。
 ## bindings の参照と組み合わせ
 
 panel には layout と model を指定する。
-floating-layout には layout、parentModel、childrenModel を指定する。
+grid-layout には layout、parentModel、childrenModel を指定する。
 childrenModel の各要素の model は、parentModel からたどる相対パス。
 
 - parentModel: demo、model: nameField → /demo/nameField。
@@ -141,8 +141,8 @@ childrenModel の各要素の model は、parentModel からたどる相対パ�
 parentModel の型は viewport / page / container / dialog。
 存在しないモデルやレイアウトへの参照は読み込みエラー。
 
-同じモデルに panel と floating-layout をそれぞれ 1 つ適用できる。
-panel が内側の領域を作り、floating-layout がその領域を行と列に分ける。
+同じモデルに panel と grid-layout をそれぞれ 1 つ適用できる。
+panel が内側の領域を作り、grid-layout がその領域を行と列に分ける。
 同じ型のレイアウトを同じモデルに重ねて指定することはできない。
 別のモデルであれば、同じレイアウト定義を再利用できる。
 
@@ -151,7 +151,7 @@ layouts / bindings の配列順には依存せず、外側のモデルから内�
 セルに配置していないモデルは親の内側領域を引き継ぐ。
 モデルの階層を変更したら bindings のパスも更新する。レイアウトの変更だけでは文房具のパスは変わらない。
 
-## floating-layout と rate
+## grid-layout と rate
 
 row-definitions が上から下の行、column-definitions が左から右の列を定義する。
 row / column は **0 始まり**。各セルに結び付いた文房具は、そのセル全体を占める。
@@ -243,7 +243,7 @@ F5 と自動リロードは継続する。
 既存の binding の `layout` を `fullscreenLayout` に変えるだけで切り替えられる。`models`、本文のセル配置、`inspectorModel` は同じまま使う。同じページへ両方を同時に bind しない。
 読み込み用設定の `autoReload` が有効なら保存後に反映され、文房具 Id や入力値、ツリーの開閉状態を保持する。
 
-`inspectorModel` はページ直下の `container` を指定する。デモは `inspectorPanel` 内に読み取り専用の `toolHint` を置き、floating-layout の binding でパネル全体へ広げている。
+`inspectorModel` はページ直下の `container` を指定する。デモは `inspectorPanel` 内に読み取り専用の `toolHint` を置き、grid-layout の binding でパネル全体へ広げている。
 ボタンやリンクにマウスを合わせると説明が表示され、離すと案内文に戻る。この下部パネルは F12 の別ウィンドウとは独立している。
 
 高さの px は UI 拡大率に影響されない。ページが 80px より低い場合は収まる高さに縮める。

@@ -37,7 +37,7 @@ public sealed class StationeryDeveloperStyle
             throw new JsonException("The developer page requires an inspectorPanel work-page binding.");
         foreach (var path in new[] { "/developerViewport/developerWindow/instructions", "/developerViewport/developerWindow/inspectorSplit", "/developerViewport/developerWindow/copyPath", "/developerViewport/developerWindow/inspectorPanel/toolHint" })
             if (!settings.Bindings.Any(b => b.Children.Any(c => c.ModelPath == path)))
-                throw new JsonException($"Required floating-layout placement: {path}.");
+                throw new JsonException($"Required grid-layout placement: {path}.");
     }
 
     public static StationeryDeveloperStyle Parse(string json)

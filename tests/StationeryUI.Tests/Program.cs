@@ -13,7 +13,7 @@ var tests = new (string Name, Action Run)[]
     ("developer inspection preserves selection, expansion and live details", DeveloperInspectionTests.Run),
     ("split panes arrange, clamp, preserve state and validate style bindings", SplitPaneTests.Run),
     ("tree expansion, selection, keyboard navigation and scoped IDs", TreeViewTests.Run),
-    ("floating layout rates, pixels, scoped bindings and reusable definitions", FloatingLayoutTests.Run),
+    ("grid layout rates, pixels, scoped bindings and reusable definitions", GridLayoutTests.Run),
     ("model hierarchy, layout reference and semantic reload validation", ModelLayoutTests.Run),
     ("stationery IDs resolve by ancestry and keep duplicate local IDs isolated", StationeryNodeTests.Run),
     ("style parsing, padding and reload preserve the last good snapshot", StationeryStyleTests.Run),

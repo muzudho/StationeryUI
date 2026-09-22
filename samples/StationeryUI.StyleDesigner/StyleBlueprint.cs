@@ -13,13 +13,13 @@ public sealed class StyleBlueprint
     private JsonObject? imported;
     public bool IsImported => imported is not null;
     public string? SelectedLayoutId { get; private set; }
-    public string? SelectedLayoutType => !IsImported ? "floating-layout" : (string?)imported!["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == SelectedLayoutId)?["type"];
+    public string? SelectedLayoutType => !IsImported ? "grid-layout" : (string?)imported!["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == SelectedLayoutId)?["type"];
     public bool CanEditPanel => SelectedLayoutType == "panel";
-    public bool CanEditGrid => !IsImported || SelectedLayoutType == "floating-layout";
+    public bool CanEditGrid => !IsImported || SelectedLayoutType == "grid-layout";
     public Dictionary<string, Track> PanelEdges { get; } = [];
     private readonly Dictionary<string, string> originalPanelNumbers = [];
     public IReadOnlyList<string> EditableLayouts => imported?["layouts"]!.AsArray()
-        .Where(l => (string?)l!["type"] == "floating-layout" && l["row-definitions"]!.AsArray().Count <= 8 && l["column-definitions"]!.AsArray().Count <= 8)
+        .Where(l => (string?)l!["type"] == "grid-layout" && l["row-definitions"]!.AsArray().Count <= 8 && l["column-definitions"]!.AsArray().Count <= 8)
         .Select(l => (string)l!["id"]!).ToArray() ?? ["mainGrid"];
 
     public static StyleBlueprint Open(string path) => Parse(File.ReadAllText(path));
@@ -58,7 +58,7 @@ public sealed class StyleBlueprint
         }
         if (scope == tree) scope = tree.Children.FirstOrDefault(n => n.Kind == "page") ?? tree;
         var arranged = StationeryLayoutEngine.Arrange(settings, width, height);
-        var cells = binding is not null && settings.Layouts.Single(l => l.Id == binding.Layout).Type == "floating-layout"
+        var cells = binding is not null && settings.Layouts.Single(l => l.Id == binding.Layout).Type == "grid-layout"
             ? StationeryLayoutEngine.ArrangeGridCells(settings.Layouts.Single(l => l.Id == binding.Layout), arranged.ContentBounds[binding.ModelPath])
             : Array.Empty<(int Row, int Column, StationeryUI.Canvas.ScreenRectangle Bounds)>();
         return new(json, settings, arranged, scope.Path, standalone, cells);
@@ -67,6 +67,9 @@ public sealed class StyleBlueprint
     {
         StationeryStyleSettings.Parse(json);
         var plan = new StyleBlueprint { imported = JsonNode.Parse(json)!.AsObject() };
+        // Normalize layout types only; preserve model IDs, labels and extension properties.
+        foreach (var layout in plan.imported["layouts"]!.AsArray())
+            if ((string?)layout!["type"] == "floating-layout") layout["type"] = "grid-layout";
         if (plan.EditableLayouts.Count > 0) plan.SelectLayout(plan.EditableLayouts[0]);
         else if (plan.imported["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["type"] == "panel") is { } panel)
             plan.SelectLayout((string)panel["id"]!);
@@ -208,7 +211,7 @@ public sealed class StyleBlueprint
             }),
             ["layouts"] = new JsonArray(new JsonObject
             {
-                ["id"] = "mainGrid", ["type"] = "floating-layout",
+                ["id"] = "mainGrid", ["type"] = "grid-layout",
                 ["row-definitions"] = new JsonArray(Rows.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
                 ["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>())
             }),
@@ -232,17 +235,18 @@ public sealed class StyleBlueprint
 
     public string AddLayout(string type, string? requestedId = null)
     {
-        if (type is not ("panel" or "floating-layout")) throw new ArgumentException("追加できない種類です。");
+        if (type == "floating-layout") type = "grid-layout";
+        if (type is not ("panel" or "grid-layout")) throw new ArgumentException("追加できない種類です。");
         var draft = JsonNode.Parse(BuildJson())!.AsObject();
         var layouts = draft["layouts"]!.AsArray();
-        var prefix = type == "panel" ? "panel" : "floatingLayout";
+        var prefix = type == "panel" ? "panel" : "gridLayout";
         var number = 1;
         while (layouts.Any(l => (string?)l!["id"] == prefix + number)) number++;
         var id = requestedId ?? prefix + number;
         var error = CheckId(id, layouts.Select(l => (string)l!["id"]!)).Error;
         if (error is not null) throw new ArgumentException(error);
         var added = new JsonObject { ["id"] = id, ["type"] = type };
-        if (type == "floating-layout")
+        if (type == "grid-layout")
         {
             added["row-definitions"] = new JsonArray("1rate", "1rate");
             added["column-definitions"] = new JsonArray("1rate", "1rate");

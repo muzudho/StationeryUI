@@ -16,7 +16,7 @@ StyleBlueprint など設計・出力専用のコードは設計ツールのプ�
 ## ２ページ構成と既存ファイル
 
 DesignerPages が開始ページと編集ページの移動、左側の JSON ツリー、レイアウト選択を担当する。右側の編集画面と左ツリーは別の StationeryUiHost を持ち、ポインター座標をそれぞれ変換する。キーボード入力は最後にクリックした側へ渡す。
-StyleBlueprint.Parse/Open は読み込んだ JsonObject 全体を保持する。既存ファイルの編集では、選択した floating-layout の row-definitions と column-definitions だけを変更する。レイアウトを切り替える前に現在の変更を検証・保持する。
+StyleBlueprint.Parse/Open は読み込んだ JsonObject 全体を保持する。既存ファイルの編集では、選択した grid-layout の row-definitions と column-definitions だけを変更する。レイアウトを切り替える前に現在の変更を検証・保持する。
 モデルの階層や種類、bindings、未編集のレイアウト、未知の追加プロパティを再構築しない。読み込み元への保存 API は設けず、従来の新規エクスポートを使う。
 8×8 を超える表や他のレイアウト種類もツリーへ表示するが、この版の表編集の対象外。編集可能な表がない文書には確認・別名出力の画面を表示する。
 StationeryUiHost.ReplaceTree は UI の要素 Id とスクロール位置を保ってツリーのスナップショットを交換する。交換時には旧ノードへのポインターキャプチャを解除する。設計ツール側は展開状態と選択を引き継ぐ。

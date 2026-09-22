@@ -17,7 +17,7 @@ public static class StationeryLayoutEngine
     /// <summary>All grid cells, including empty cells, in the supplied viewport-pixel content area.</summary>
     public static IReadOnlyList<(int Row, int Column, ScreenRectangle Bounds)> ArrangeGridCells(StationeryLayoutNode layout, ScreenRectangle content)
     {
-        if (layout.Type != "floating-layout") throw new ArgumentException("Expected floating-layout.", nameof(layout));
+        if (layout.Type != "grid-layout") throw new ArgumentException("Expected grid-layout.", nameof(layout));
         var rows = TrackEdges(layout.Rows, content.Height);
         var columns = TrackEdges(layout.Columns, content.Width);
         var result = new List<(int, int, ScreenRectangle)>();
@@ -33,7 +33,7 @@ public static class StationeryLayoutEngine
         var layouts = settings.Layouts.ToDictionary(layout => layout.Id, StringComparer.Ordinal);
         var panels = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "panel")
             .ToDictionary(binding => binding.ModelPath, binding => layouts[binding.Layout], StringComparer.Ordinal);
-        var grids = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "floating-layout")
+        var grids = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "grid-layout")
             .ToDictionary(binding => binding.ModelPath, StringComparer.Ordinal);
         var pages = settings.Bindings.Where(b => b.InspectorModel is not null).ToDictionary(b => b.ModelPath);
         var positions = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
