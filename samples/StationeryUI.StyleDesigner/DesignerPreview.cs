@@ -109,12 +109,6 @@ internal sealed partial class DesignerGame
                 foreach (var (layoutKey, area) in snapshot.Layout.LayoutContentBounds)
                     if (layoutKey.EndsWith(":" + blueprint.SelectedLayoutId, StringComparison.Ordinal)) Outline(area);
             }
-            foreach (var cell in snapshot.Cells)
-            {
-                Outline(cell.Bounds);
-                if (cell.Row == selectedRow && cell.Column == selectedColumn && cell.Bounds.Width > 4 && cell.Bounds.Height > 4)
-                    Outline(new(cell.Bounds.X + 2, cell.Bounds.Y + 2, cell.Bounds.Width - 4, cell.Bounds.Height - 4));
-            }
             previewKey = key;
         }
         livePreview!.Viewport.Offset = new(previewWindow.X, previewWindow.Y);
