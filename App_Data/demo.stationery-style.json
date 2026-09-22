@@ -388,10 +388,10 @@
                         "left": "24px"
                     },
                     "margin": {
-                        "top": "6px",
-                        "right": "6px",
-                        "bottom": "6px",
-                        "left": "6px"
+                        "top": "8px",
+                        "right": "8px",
+                        "bottom": "8px",
+                        "left": "8px"
                     },
                     "border": {
                         "top": "2px",

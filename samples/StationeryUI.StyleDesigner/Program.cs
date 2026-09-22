@@ -136,8 +136,10 @@ internal sealed partial class DesignerGame : Game
         // content height. Keep these one-line labels tall enough that they do
         // not accidentally acquire a vertical scrollbar.
         Text("gridInsetsTitle", new(12, 480, 524, 40), "margin / padding (px)");
-        Text("gridMarginCaption", new(12, 516, 92, 40), "margin");
-        Text("gridPaddingCaption", new(12, 558, 92, 40), "padding");
+        // TextBlock reserves room for a possible scrollbar when wrapping. Give
+        // the captions enough width that these short labels stay on one line.
+        Text("gridMarginCaption", new(12, 516, 130, 40), "margin");
+        Text("gridPaddingCaption", new(12, 558, 130, 40), "padding");
         AddInsetField("margin", "top", 230, 510);
         AddInsetField("padding", "top", 230, 548);
         AddInsetField("margin", "left", 96, 578, 80);
