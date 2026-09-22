@@ -19,3 +19,5 @@
 2026-09-22、本人による３パッケージの NuGet.org 公開が完了しました。公開者は [Muzudho](https://www.nuget.org/profiles/Muzudho) です。NuGet.org のみを取得元にした新規復元と、参照プロジェクトのビルドを確認済みです。詳細は[配布記録](../distribution/library-v0.2.0.md)を参照してください。
 
 [開発者向け目次](../README.md)
+
+- [v0.3.0 の公開手順](publish-v0.3.0.md)
