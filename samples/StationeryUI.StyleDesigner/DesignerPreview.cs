@@ -90,8 +90,9 @@ internal sealed partial class DesignerGame
                 Block(new(rect.X + rect.Width - 1, rect.Y, 1, rect.Height), "", true);
             }
             Block(new(0, 0, width, height), "", surface: dialogPath is null ? null : new ButtonColor(0, 0, 0, 140));
-            foreach (var cell in snapshot.Cells)
-                Block(cell.Bounds, $"{cell.Row + 1},{cell.Column + 1}");
+            if (dialogPath is null)
+                foreach (var cell in snapshot.Cells)
+                    Block(cell.Bounds, $"{cell.Row + 1},{cell.Column + 1}");
             var metadata = JsonNode.Parse(snapshot.Json)!;
             bool Visible(string path)
                 => dialogPath is not null
