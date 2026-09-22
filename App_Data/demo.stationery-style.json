@@ -124,7 +124,7 @@
     "layouts": [
         {
             "id": "demoViewport",
-            "type": "panel",
+            "type": "box-layout",
             "padding": {
                 "top": "0px",
                 "right": "0px",
@@ -186,7 +186,7 @@
         },
         {
             "id": "pagePadding",
-            "type": "panel",
+            "type": "box-layout",
             "padding": {
                 "top": "8px",
                 "right": "8px",

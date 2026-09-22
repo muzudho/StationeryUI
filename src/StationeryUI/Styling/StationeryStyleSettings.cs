@@ -47,7 +47,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
 {
     public static StationeryStyleSettings Default { get; } = Parse("""
         {"models":[{"id":"demo","type":"viewport"}],
-         "layouts":[{"id":"rootPanel","type":"panel"}],
+         "layouts":[{"id":"rootPanel","type":"box-layout"}],
          "bindings":[{"layout":"rootPanel","model":"demo"}]}
         """);
 
@@ -58,7 +58,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         {
             var rootPath = "/" + Models[0].Id;
             var binding = Bindings.FirstOrDefault(binding => binding.ModelPath == rootPath &&
-                Layouts.Any(layout => layout.Id == binding.Layout && layout.Type == "panel"));
+                Layouts.Any(layout => layout.Id == binding.Layout && layout.Type == "box-layout"));
             return binding is null ? default : Layouts.Single(layout => layout.Id == binding.Layout).Padding;
         }
     }
@@ -85,7 +85,8 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             if (!layoutIds.Add(id)) throw new JsonException($"Duplicate layout Id '{id}'.");
             var type = ReadString(item, "type", path);
             if (type == "floating-layout") type = "grid-layout"; // Legacy JSON spelling.
-            if (type is not ("panel" or "grid-layout" or "split-pane" or "fullscreen-layout" or "work-page-layout")) throw new JsonException($"{path}.type must be panel, grid-layout, split-pane, fullscreen-layout or work-page-layout.");
+            if (type == "panel") type = "box-layout";
+            if (type is not ("box-layout" or "grid-layout" or "split-pane" or "fullscreen-layout" or "work-page-layout")) throw new JsonException($"{path}.type must be box-layout, grid-layout, split-pane, fullscreen-layout or work-page-layout.");
             if (item.TryGetProperty("children", out _) || item.TryGetProperty("contents", out _) ||
                 item.TryGetProperty("model", out _) || item.TryGetProperty("parentModel", out _))
                 throw new JsonException($"{path}: model references and placement belong in bindings.");
@@ -99,8 +100,8 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 double Side(string side) => edges.TryGetProperty(side, out var v) ? ReadLength(v, path + "." + name + "." + side, false).Value : 0;
                 return new(Side("top"), Side("right"), Side("bottom"), Side("left"));
             }
-            if (type != "panel" && (item.TryGetProperty("margin", out _) || item.TryGetProperty("border", out _)))
-                throw new JsonException($"{path}: margin and border require a panel layout.");
+            if (type != "box-layout" && (item.TryGetProperty("margin", out _) || item.TryGetProperty("border", out _)))
+                throw new JsonException($"{path}: margin and border require a box-layout.");
             SplitPaneOptions? split = null;
             double inspectorHeight = 0;
             IReadOnlyList<LayoutTrack> rows = Array.Empty<LayoutTrack>(), columns = Array.Empty<LayoutTrack>();
@@ -110,9 +111,9 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                     inspectorHeight = item.TryGetProperty("inspectorHeight", out var h) ? ReadLength(h, path + ".inspectorHeight", false).Value : 80;
                 else if (item.TryGetProperty("inspectorHeight", out _)) throw new JsonException("fullscreen-layout has no inspectorHeight.");
                 if (item.TryGetProperty("padding", out _) || item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
-                    throw new JsonException("Page layouts use a separate panel or grid-layout for content.");
+                    throw new JsonException("Page layouts use a separate box-layout or grid-layout for content.");
             }
-            else if (type == "panel")
+            else if (type == "box-layout")
             {
                 margin = ReadEdges("margin");
                 border = ReadEdges("border");
@@ -142,7 +143,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             }
             else
             {
-                if (item.TryGetProperty("padding", out _)) throw new JsonException($"{path}: put padding in a separate panel layout.");
+                if (item.TryGetProperty("padding", out _)) throw new JsonException($"{path}: put padding in a separate box-layout.");
                 rows = ReadTracks(item, "row-definitions", path);
                 columns = ReadTracks(item, "column-definitions", path);
             }
@@ -185,12 +186,12 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 bindings.Add(new(layoutId, node.Path, Array.Empty<StationeryCellBinding>(), first.Path, second.Path));
                 continue;
             }
-            if (layout.Type == "panel")
+            if (layout.Type == "box-layout")
             {
                 if (item.TryGetProperty("parentModel", out _) || item.TryGetProperty("childrenModel", out _))
-                    throw new JsonException($"{path}: a panel binding uses model, not parentModel/childrenModel.");
+                    throw new JsonException($"{path}: a box-layout binding uses model, not parentModel/childrenModel.");
                 var node = ResolveModel(modelTree, ReadString(item, "model", path), null);
-                if (!panels.Add(node.Path)) throw new JsonException($"Multiple panel bindings for {node.Path}.");
+                if (!panels.Add(node.Path)) throw new JsonException($"Multiple box-layout bindings for {node.Path}.");
                 bindings.Add(new(layoutId, node.Path, Array.Empty<StationeryCellBinding>()));
                 continue;
             }

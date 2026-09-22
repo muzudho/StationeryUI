@@ -163,7 +163,7 @@ internal sealed partial class DesignerGame
         {
             Capture();
             var layoutType = (string?)JsonNode.Parse(blueprint.BuildJson())!["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == layoutId)?["type"];
-            if (layoutType is not ("panel" or "grid-layout")) { rebuild = true; return; }
+            if (layoutType is not ("box-layout" or "grid-layout")) { rebuild = true; return; }
             blueprint.SelectLayout(layoutId);
             selectedRow = selectedColumn = 0; rebuild = true;
             message = blueprint.CanEditPanel ? $"編集中：{layoutId}。四辺の margin・padding・border を指定できます。"

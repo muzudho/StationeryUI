@@ -14,11 +14,11 @@ tree.Select(selected);
 tree.SetTarget(target);
 ```
 
-## panel の枠と配置
+## box-layout の枠と配置
 
 `StationeryLayoutEngine.Arrange` は margin → padding の順で領域を計算する。border はレイアウトに影響せず `StationeryLayoutResult.BorderBounds` に外側の描画領域を返す。MonoGame では `host.Draw()` の後に `host.DrawPanelBorders(result)` を呼ぶとテーマの Border 色で描画できる。result はウィンドウ座標で渡す。複数ページを持つ場合は第２引数の述語で表示中のモデルパスに絞る。
 
-margin / border は panel 専用で、他の種類に直接指定するとパーサーが拒否する。padding の既定値 8px は維持し、margin / border の既定値は 0px。
+margin / border は box-layout 専用で、他の種類に直接指定するとパーサーが拒否する。padding の既定値 8px は維持し、margin / border の既定値は 0px。
 
 ## 既存コントロールの解説
 

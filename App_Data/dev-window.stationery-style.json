@@ -57,7 +57,7 @@
         },
         {
             "id": "inspectorPadding",
-            "type": "panel",
+            "type": "box-layout",
             "padding": {
                 "top": "8px",
                 "right": "8px",
@@ -77,7 +77,7 @@
         },
         {
             "id": "windowPadding",
-            "type": "panel",
+            "type": "box-layout",
             "padding": {
                 "top": "8px",
                 "right": "8px",

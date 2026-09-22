@@ -13,7 +13,7 @@ var nameBounds = arranged.Bounds["/demo/topDemoPage/nameField"];
 var innerBounds = arranged.ContentBounds["/demo"];
 ```
 
-Bounds は margin を差し引いたモデルごとの外枠、ContentBounds はさらに panel のパディングを差し引いた内側。BorderBounds は panel の border が外へ広がる描画領域。いずれも完全パスをキーとする。
+Bounds は margin を差し引いたモデルごとの外枠、ContentBounds はさらに box-layout のパディングを差し引いた内側。BorderBounds は box-layout の border が外へ広がる描画領域。いずれも完全パスをキーとする。
 結果はウィンドウのピクセル座標。StationeryUiHost.Viewport に倍率・オフセットを設定している場合は、論理座標へ変換してから Element.Bounds に渡す。
 
 Current.Models[0].CreateTree() でノードを作り、StationeryUiHost.AddTextBox / AddButton のノード指定版で結び付ける。

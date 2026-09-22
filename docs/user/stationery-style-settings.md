@@ -67,7 +67,7 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
 | bindings | どのモデルに、どのレイアウトを適用するかの対応付け |
 
 旧トップレベルの viewport / model / layout は廃止。旧形式との混在もエラー。
-モデルの type: viewport は継続するが、レイアウトの型は panel / grid-layout / split-pane を使う。
+モデルの type: viewport は継続するが、レイアウトの型は box-layout / grid-layout / split-pane を使う。
 
 以下は形式を説明する小さな例。実際のデモでは原本の二つのページと、その中の文房具も必要。
 
@@ -86,7 +86,7 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
     "layouts": [
         {
             "id": "demoViewport",
-            "type": "panel",
+            "type": "box-layout",
             "padding": {
                 "top": "32px",
                 "right": "32px",
@@ -127,7 +127,7 @@ layouts 内にモデル参照や children / contents は置かない。
 
 ## bindings の参照と組み合わせ
 
-panel には layout と model を指定する。
+box-layout には layout と model を指定する。
 grid-layout には layout、parentModel、childrenModel を指定する。
 childrenModel の各要素の model は、parentModel からたどる相対パス。
 
@@ -141,8 +141,8 @@ childrenModel の各要素の model は、parentModel からたどる相対パ�
 parentModel の型は viewport / page / container / dialog。
 存在しないモデルやレイアウトへの参照は読み込みエラー。
 
-同じモデルに panel と grid-layout をそれぞれ 1 つ適用できる。
-panel が内側の領域を作り、grid-layout がその領域を行と列に分ける。
+同じモデルに box-layout と grid-layout をそれぞれ 1 つ適用できる。
+box-layout が内側の領域を作り、grid-layout がその領域を行と列に分ける。
 同じ型のレイアウトを同じモデルに重ねて指定することはできない。
 別のモデルであれば、同じレイアウト定義を再利用できる。
 
@@ -180,14 +180,14 @@ CSS の float や Grid の互換実装ではなく、この JSON で指定した
 名前欄の右側には sampleTree、右下には splitPaneDemoLink を配置する。メモ欄などの右側は空きセルになる。
 ページ間の移動ともう一つのデモは [スプリットペーン](split-pane.md) を参照。
 
-## panel のパディング
+## box-layout のパディング
 
-panel には `margin` と `border` も指定できる。いずれも `padding` と同じ四辺のオブジェクト形式で、非負の px 文字列を使う。margin / border の省略した辺は 0px。
+box-layout には `margin` と `border` も指定できる。いずれも `padding` と同じ四辺のオブジェクト形式で、非負の px 文字列を使う。margin / border の省略した辺は 0px。
 
 ```json
 {
     "id": "contentPanel",
-    "type": "panel",
+    "type": "box-layout",
     "margin": { "top": "10px", "right": "10px", "bottom": "10px", "left": "10px" },
     "padding": { "top": "8px", "right": "8px", "bottom": "8px", "left": "8px" },
     "border": { "top": "2px", "right": "2px", "bottom": "2px", "left": "2px" }
@@ -200,7 +200,7 @@ panel には `margin` と `border` も指定できる。いずれも `padding` �
 
 padding の四辺を "0px"、"8px"、"12.5px" のような非負の px 文字列で指定する。
 省略した辺は 8px。数値だけの 8、負数、rate、%、em、auto は未対応。
-panel のパディングは子を配置する領域を狭める設定で、各コントロール内部の文字余白とは別。
+box-layout のパディングは子を配置する領域を狭める設定で、各コントロール内部の文字余白とは別。
 
 px は MonoGame の描画領域のピクセル単位。ウィンドウ枠を含まない。
 左・上のパディングを原点とし、右・下も差し引いた内側を使う。

@@ -102,7 +102,7 @@ internal static class StyleBlueprintTests
         Check(small.Cells[1].Bounds.Width == 280 && large.Cells[1].Bounds.Width == 680, "preview rate follows viewport");
         Check(large.ScopePath == "/design/mainPage" && !large.Standalone, "preview uses bound model tree");
         Check(plan.BuildJson() == before, "preview does not mutate plan");
-        var panel = plan.AddLayout("panel");
+        var panel = plan.AddLayout("box-layout");
         plan.PanelEdges["margin.left"].Number = "10";
         plan.PanelEdges["padding.left"].Number = "20";
         var preview = plan.CreatePreview(500, 300);
@@ -129,9 +129,9 @@ internal static class StyleBlueprintTests
         }
         Check(StyleBlueprint.CheckId("myPanel2", []).Warning is null, "camelCase accepted");
         var plan = new StyleBlueprint();
-        plan.AddLayout("panel", "123_panel");
+        plan.AddLayout("box-layout", "123_panel");
         var before = plan.BuildJson();
-        try { plan.AddLayout("panel", "mainGrid"); throw new Exception("Duplicate accepted"); } catch (ArgumentException) { }
+        try { plan.AddLayout("box-layout", "mainGrid"); throw new Exception("Duplicate accepted"); } catch (ArgumentException) { }
         Check(plan.BuildJson() == before, "duplicate add is atomic");
         plan.RenameId(["layouts", "0"], "newGrid");
         Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].Layout == "newGrid", "layout references updated");
@@ -159,13 +159,28 @@ internal static class StyleBlueprintTests
     private static void LayoutEditing()
     {
         var plan = new StyleBlueprint();
-        var panel = plan.AddLayout("panel");
+        var panel = plan.AddLayout("box-layout");
         Check(plan.CanEditPanel && !plan.CanEditGrid, "panel editor selection");
         plan.PanelEdges["margin.left"].Number = "10";
         plan.PanelEdges["padding.top"].Number = "4";
         plan.PanelEdges["border.right"].Number = "7";
         var json = JsonNode.Parse(plan.BuildJson())!;
         json["bindings"]!.AsArray().Add(new JsonObject { ["layout"] = panel, ["model"] = "design/mainPage" });
+        var oldBox = json.DeepClone();
+        oldBox["layouts"]![1]!["type"] = "panel";
+        oldBox["extension"] = "panel";
+        var oldPlan = StyleBlueprint.Parse(oldBox.ToJsonString());
+        oldPlan.SelectLayout(panel);
+        Check(oldPlan.CanEditPanel && oldPlan.SelectedLayoutType == "box-layout", "old box can be selected and edited");
+        oldPlan.PanelEdges["padding.top"].Number = "6";
+        var savedBox = JsonNode.Parse(oldPlan.BuildJson())!;
+        Check((string?)savedBox["layouts"]![1]!["type"] == "box-layout" &&
+            (string?)savedBox["layouts"]![1]!["padding"]!["top"] == "6px" &&
+            (string?)savedBox["extension"] == "panel", "old box export canonicalizes only layout type");
+        Check(oldPlan.CreatePreview(100, 80).Layout.ContentBounds["/design/mainPage"].Y == 6, "old box preview uses padding");
+        var compatibility = new StyleBlueprint();
+        var oldAdded = compatibility.AddLayout("panel");
+        Check(compatibility.SelectedLayoutType == "box-layout" && oldAdded.StartsWith("boxLayout"), "legacy add uses canonical type and generated ID");
         var style = StationeryStyleSettings.Parse(json.ToJsonString());
         var arranged = StationeryLayoutEngine.Arrange(style, 100, 80);
         Check(arranged.Bounds["/design/mainPage"].Width == 90 && arranged.ContentBounds["/design/mainPage"].Y == 4, "margin and padding affect layout");

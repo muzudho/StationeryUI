@@ -56,7 +56,7 @@
         }
     ],
     "layouts": [
-        { "id": "outerPanel", "type": "panel" },
+        { "id": "outerPanel", "type": "box-layout" },
         {
             "id": "mainGrid",
             "type": "grid-layout",
@@ -109,7 +109,7 @@ public sealed class StyledGame : Game
     public const string FallbackJson = """
         {"models":[{"id":"app","type":"viewport","children":[
           {"id":"nameField","type":"textBox"},{"id":"applyButton","type":"button"}]}],
-         "layouts":[{"id":"outerPanel","type":"panel"},
+         "layouts":[{"id":"outerPanel","type":"box-layout"},
           {"id":"mainGrid","type":"grid-layout",
            "row-definitions":["1rate","64px"],"column-definitions":["1rate"]}],
          "bindings":[{"layout":"outerPanel","model":"/app"},

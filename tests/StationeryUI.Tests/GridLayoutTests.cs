@@ -11,7 +11,7 @@ internal static class GridLayoutTests
             {"id":"a","type":"button"},{"id":"b","type":"button"},{"id":"c","type":"button"}
           ]}],
           "layouts":[
-            {"id":"frame","type":"panel","padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}},
+            {"id":"frame","type":"box-layout","padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}},
             {"id":"grid","type":"grid-layout","row-definitions":["1rate","3rate"],"column-definitions":["1rate","1.5rate"]}
           ],
           "bindings":[

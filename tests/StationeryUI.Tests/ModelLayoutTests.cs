@@ -1,4 +1,4 @@
-﻿using StationeryUI.Styling;
+using StationeryUI.Styling;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -14,7 +14,7 @@ internal static class ModelLayoutTests
             {"models":[{"id":"demo","type":"viewport","children":[
               {"id":"leftPage","type":"page","children":[{"id":"nameField","type":"textBox"}]},
               {"id":"rightPage","type":"page","children":[{"id":"nameField","type":"textBox"}]}
-            ]}],"layouts":[{"id":"unrelatedLayoutId","type":"panel","padding":{"left":"24px"}}],
+            ]}],"layouts":[{"id":"unrelatedLayoutId","type":"box-layout","padding":{"left":"24px"}}],
             "bindings":[{"layout":"unrelatedLayoutId","model":"/demo"}]}
             """;
         var settings = StationeryStyleSettings.Parse(source);
@@ -22,13 +22,20 @@ internal static class ModelLayoutTests
         Require(tree.Resolve("/demo/leftPage/nameField")?.Kind == "textBox", "left path");
         Require(tree.Resolve("/demo/rightPage/nameField")?.Kind == "textBox", "right path");
         Require(settings.Padding.Left == 24, "padding is found through bindings");
+        var legacy = StationeryStyleSettings.Parse(source.Replace("box-layout", "panel"));
+        Require(legacy.Layouts.Single().Type == "box-layout" && legacy.Padding == settings.Padding,
+            "legacy panel normalizes and retains bound padding");
+        var expected = StationeryLayoutEngine.Arrange(settings, 300, 200);
+        var actual = StationeryLayoutEngine.Arrange(legacy, 300, 200);
+        Require(expected.Bounds.All(p => actual.Bounds[p.Key] == p.Value) &&
+            expected.ContentBounds.All(p => actual.ContentBounds[p.Key] == p.Value), "legacy box geometry unchanged");
         foreach (var invalid in new[]
         {
             "{}", "{\"viewport\":{}}", source.Replace("\"models\"", "\"missing\""),
             source.Replace("\"layouts\"", "\"missing\""), source.Replace("\"bindings\"", "\"missing\""),
             source.Replace("\"model\":\"/demo\"", "\"model\":\"/missing\""),
             source.Replace("rightPage", "leftPage"), source.Replace("leftPage", "left-page"),
-            source.Replace("\"type\":\"panel\"", "\"type\":\"viewport\""),
+            source.Replace("\"type\":\"box-layout\"", "\"type\":\"viewport\""),
             source.Replace("\"models\":", "\"viewport\":{},\"models\":"),
             source.Replace("\"models\":", "\"model\":[],\"models\":")
         }) Reject(() => StationeryStyleSettings.Parse(invalid));

@@ -14,7 +14,7 @@ public sealed class StyleBlueprint
     public bool IsImported => imported is not null;
     public string? SelectedLayoutId { get; private set; }
     public string? SelectedLayoutType => !IsImported ? "grid-layout" : (string?)imported!["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == SelectedLayoutId)?["type"];
-    public bool CanEditPanel => SelectedLayoutType == "panel";
+    public bool CanEditPanel => SelectedLayoutType == "box-layout";
     public bool CanEditGrid => !IsImported || SelectedLayoutType == "grid-layout";
     public Dictionary<string, Track> PanelEdges { get; } = [];
     private readonly Dictionary<string, string> originalPanelNumbers = [];
@@ -69,9 +69,12 @@ public sealed class StyleBlueprint
         var plan = new StyleBlueprint { imported = JsonNode.Parse(json)!.AsObject() };
         // Normalize layout types only; preserve model IDs, labels and extension properties.
         foreach (var layout in plan.imported["layouts"]!.AsArray())
+        {
             if ((string?)layout!["type"] == "floating-layout") layout["type"] = "grid-layout";
+            if ((string?)layout!["type"] == "panel") layout["type"] = "box-layout";
+        }
         if (plan.EditableLayouts.Count > 0) plan.SelectLayout(plan.EditableLayouts[0]);
-        else if (plan.imported["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["type"] == "panel") is { } panel)
+        else if (plan.imported["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["type"] == "box-layout") is { } panel)
             plan.SelectLayout((string)panel["id"]!);
         return plan;
     }
@@ -81,7 +84,7 @@ public sealed class StyleBlueprint
         var committed = JsonNode.Parse(BuildJson())!.AsObject();
         var layout = committed["layouts"]!.AsArray().FirstOrDefault(l => (string?)l!["id"] == id)
             ?? throw new ArgumentException("レイアウトがありません。");
-        if ((string?)layout["type"] == "panel")
+        if ((string?)layout["type"] == "box-layout")
         {
             imported = committed; SelectedLayoutId = id; PanelEdges.Clear(); originalPanelNumbers.Clear();
             foreach (var group in new[] { "margin", "padding", "border" })
@@ -236,10 +239,11 @@ public sealed class StyleBlueprint
     public string AddLayout(string type, string? requestedId = null)
     {
         if (type == "floating-layout") type = "grid-layout";
-        if (type is not ("panel" or "grid-layout")) throw new ArgumentException("追加できない種類です。");
+        if (type == "panel") type = "box-layout";
+        if (type is not ("box-layout" or "grid-layout")) throw new ArgumentException("追加できない種類です。");
         var draft = JsonNode.Parse(BuildJson())!.AsObject();
         var layouts = draft["layouts"]!.AsArray();
-        var prefix = type == "panel" ? "panel" : "gridLayout";
+        var prefix = type == "box-layout" ? "boxLayout" : "gridLayout";
         var number = 1;
         while (layouts.Any(l => (string?)l!["id"] == prefix + number)) number++;
         var id = requestedId ?? prefix + number;

@@ -134,7 +134,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
   "layouts": [
     {
       "id": "demoViewport",
-      "type": "panel",
+      "type": "box-layout",
       "padding": {
         "top": "0px",
         "right": "0px",
@@ -196,7 +196,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "id": "pagePadding",
-      "type": "panel",
+      "type": "box-layout",
       "padding": {
         "top": "8px",
         "right": "8px",

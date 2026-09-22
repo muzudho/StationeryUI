@@ -76,7 +76,7 @@ internal sealed partial class DesignerGame
         idField = layoutDialog.AddTextBox("stationeryId", new(460, 312, 680, 48), "文房具Ｉｄ", id, 256);
         if (path is null)
         {
-            idConfirmButtons.Add(layoutDialog.AddButton("panel", new(460, 380, 290, 48), "panel を追加", () => layoutChoice = "panel"));
+            idConfirmButtons.Add(layoutDialog.AddButton("panel", new(460, 380, 290, 48), "box-layout を追加", () => layoutChoice = "box-layout"));
             idConfirmButtons.Add(layoutDialog.AddButton("floating", new(770, 380, 370, 48), "grid-layout を追加", () => layoutChoice = "grid-layout"));
         }
         else idConfirmButtons.Add(layoutDialog.AddButton("confirmId", new(460, 380, 680, 48), "変更を確定", () => layoutChoice = "rename"));
@@ -190,7 +190,7 @@ internal sealed partial class DesignerGame
         }
         else if (layoutSmoke == "panel")
         {
-            if (!blueprint.CanEditPanel || settings.Layouts.Single(l => l.Type == "panel").Margin.Left != 12.5)
+            if (!blueprint.CanEditPanel || settings.Layouts.Single(l => l.Type == "box-layout").Margin.Left != 12.5)
                 throw new InvalidOperationException("Panel dialog/editor failed.");
         }
         else if (!blueprint.CanEditGrid || settings.Layouts.Count != 2 || blueprint.Columns[0].Number != "2.5")

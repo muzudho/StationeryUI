@@ -31,7 +31,7 @@ public static class StationeryLayoutEngine
         if (!double.IsFinite(width) || width < 0 || !double.IsFinite(height) || height < 0)
             throw new ArgumentOutOfRangeException(nameof(width), "Window dimensions must be finite and nonnegative.");
         var layouts = settings.Layouts.ToDictionary(layout => layout.Id, StringComparer.Ordinal);
-        var panels = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "panel")
+        var panels = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "box-layout")
             .ToDictionary(binding => binding.ModelPath, binding => layouts[binding.Layout], StringComparer.Ordinal);
         var grids = settings.Bindings.Where(binding => layouts[binding.Layout].Type == "grid-layout")
             .ToDictionary(binding => binding.ModelPath, StringComparer.Ordinal);
