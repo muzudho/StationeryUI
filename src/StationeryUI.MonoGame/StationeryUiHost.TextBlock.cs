@@ -40,7 +40,7 @@ public sealed partial class StationeryUiHost
     {
         var theme = element.Theme ?? Theme;
         var height = theme.FontSize * 1.5 + 4;
-        var total = TextBlockLines(element, theme).Count * height + theme.Padding * 2;
+        var total = TextBlockLines(element, theme).Count * height + theme.Padding * 2 + BoxModelHeight(element);
         element.Scroll = Math.Clamp(element.Scroll, 0, Math.Max(0, total - element.Bounds.Height));
         var bar = Scrollbar(element, total, element.Scroll);
         if (Focus.CapturedId != element.Path) element.DraggingTextScroll = false;
@@ -78,12 +78,13 @@ public sealed partial class StationeryUiHost
         if (element.Label.Length == 0) { Fill(element.Bounds, theme.Surface); return; }
         var lines = TextBlockLines(element, theme);
         var height = theme.FontSize * 1.5 + 4;
-        var total = lines.Count * height + theme.Padding * 2;
+        var total = lines.Count * height + theme.Padding * 2 + BoxModelHeight(element);
         element.Scroll = Math.Clamp(element.Scroll, 0, Math.Max(0, total - element.Bounds.Height));
         Fill(element.Bounds, theme.Surface);
+        DrawBoxModel(element, theme);
         for (var i = 0; i < lines.Count; i++)
         {
-            var y = element.Bounds.Y + theme.Padding + i * height - element.Scroll;
+            var y = element.Bounds.Y + theme.Padding + BoxModelHeight(element) + i * height - element.Scroll;
             if (y + height > element.Bounds.Y && y < element.Bounds.Y + element.Bounds.Height)
                 DrawText(lines[i], element.Bounds.X + theme.Padding, y, theme, theme.Text);
         }

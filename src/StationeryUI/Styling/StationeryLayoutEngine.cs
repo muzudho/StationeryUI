@@ -74,7 +74,7 @@ public static class StationeryLayoutEngine
             if (layout.Type == "grid-layout")
                 foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
                     foreach (var child in binding.Children)
-                        positions.Add(child.ModelPath, Cell(layout, content, child.Row, child.Column, child.RowSpan, child.ColumnSpan));
+                        positions.Add(child.ModelPath, Inset(Cell(layout, content, child.Row, child.Column, child.RowSpan, child.ColumnSpan), child.Margin));
             if (layout.Type == "dock-layout")
                 foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
                 {
@@ -93,7 +93,7 @@ public static class StationeryLayoutEngine
                     {
                         var slotBounds = StationeryDockLayout.Arrange(dockContent,
                             layout.Slots.Select(slot => new StationeryDockBinding(slot.Id, slot.Dock!, slot.Size)).ToArray());
-                        foreach (var child in binding.DockChildren) positions[child.ModelPath] = slotBounds[child.Slot!];
+                        foreach (var child in binding.DockChildren) positions[child.ModelPath] = Inset(slotBounds[child.Slot!], child.Margin);
                     }
                 }
             foreach (var child in layout.Children)
@@ -104,10 +104,9 @@ public static class StationeryLayoutEngine
         void Visit(StationeryNode node, ScreenRectangle inherited)
         {
             var outer = positions.GetValueOrDefault(node.Path, inherited);
+            if (roots.TryGetValue(node.Path, out var rootLayout)) outer = Inset(outer, rootLayout.Margin);
             if (panels.TryGetValue(node.Path, out var box))
             {
-                var inset = box.Margin.GetContentBounds(outer.Width, outer.Height);
-                outer = inset with { X = outer.X + inset.X, Y = outer.Y + inset.Y };
                 borders[node.Path] = new(outer.X - box.Border.Left, outer.Y - box.Border.Top,
                     outer.Width + box.Border.Left + box.Border.Right, outer.Height + box.Border.Top + box.Border.Bottom);
             }

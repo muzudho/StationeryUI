@@ -58,6 +58,27 @@ internal sealed class TextCacheRenderingTests : Game
             if (!Render(cached).SequenceEqual(expected)) throw new Exception("Text changed after eviction frame.");
         }
         Console.WriteLine("PASS text cache eviction: exact rendered pixels in light/dark themes at 100%/150%.");
+        using var inspectorTarget = new RenderTarget2D(GraphicsDevice, 1000, 660);
+        using var inspector = new StationeryDeveloperView(GraphicsDevice, input, family => new WindowsTextRasterizer(family));
+        inspector.Refresh([
+            new("demo", "/demo", null, "viewport", "Demo", true, new(0, 0, 800, 600)),
+            new("body", "/demo/body", "/demo", "container", "Margin / padding", true, new(10, 10, 780, 580))
+            { BoxModel = new(new(10, 10, 10, 10), new(5, 5, 5, 5)), LayoutTypes = ["grid-layout"] }
+        ]);
+        inspector.SelectCaptured("/demo/body");
+        Directory.CreateDirectory("artifacts/text-cache-test");
+        foreach (var theme in new[] { StationeryTheme.Dark, StationeryTheme.Light })
+        {
+            inspector.Theme = theme;
+            inspector.Update(new GameTime(), false, new(), new(), 1000, 660);
+            GraphicsDevice.SetRenderTarget(inspectorTarget);
+            GraphicsDevice.Clear(Color.Black);
+            inspector.Draw();
+            GraphicsDevice.SetRenderTarget(null);
+            using var output = File.Create("artifacts/text-cache-test/box-model-" + (theme == StationeryTheme.Dark ? "dark" : "light") + ".png");
+            inspectorTarget.SaveAsPng(output, 1000, 660);
+        }
+        Console.WriteLine("PASS inspector box model renders in light/dark themes.");
         Exit();
     }
 }

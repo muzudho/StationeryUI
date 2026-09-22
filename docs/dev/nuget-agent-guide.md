@@ -65,3 +65,5 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 
 
 `bindings.layout` は `/frame/grid/inner` のように、先頭 `/` 付きのスラッシュ区切り絶対パスを指定します。最上位も `/mainGrid` と書きます。レイアウトの `id` は `mainGrid` のようなローカル名のままです。旧ドット区切り、先頭 `/` の省略、末尾 `/`、空の区間（`//`）、`.` / `..` は受け付けません。旧設定は `frame.grid` → `/frame/grid` と置き換えてください。モデル参照の既存ルールと slot のローカル Id は変更しません。
+
+margin は box / grid / dock のレイアウト、または grid / dock の slots に指定します。割り当て枠から margin を引き、padding はその内側に適用します。F12 の Compound 図へ数値を渡すため、検査データには最新の設定で DeveloperInspectionLayout.Apply を適用してください。[余白の仕様](dock-layout.md#配置枠を基準にした-margin)を参照してください。

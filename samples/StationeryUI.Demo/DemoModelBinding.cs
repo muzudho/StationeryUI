@@ -240,10 +240,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         "1rate"
       ],
       "padding": {
-        "top": "8px",
-        "right": "8px",
-        "bottom": "8px",
-        "left": "8px"
+        "top": "4px",
+        "right": "4px",
+        "bottom": "4px",
+        "left": "4px"
       },
       "slots": [
         {
@@ -291,7 +291,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "row": 3,
           "col": 1
         }
-      ]
+      ],
+      "margin": {
+        "top": "4px",
+        "right": "4px",
+        "bottom": "4px",
+        "left": "4px"
+      }
     },
     {
       "id": "splitDemoLayout",
@@ -305,10 +311,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         "1rate"
       ],
       "padding": {
-        "top": "8px",
-        "right": "8px",
-        "bottom": "8px",
-        "left": "8px"
+        "top": "4px",
+        "right": "4px",
+        "bottom": "4px",
+        "left": "4px"
       },
       "slots": [
         {
@@ -326,7 +332,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "row": 2,
           "col": 0
         }
-      ]
+      ],
+      "margin": {
+        "top": "4px",
+        "right": "4px",
+        "bottom": "4px",
+        "left": "4px"
+      }
     },
     {
       "id": "verticalSplitLayout",
@@ -543,16 +555,22 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         }
       ],
       "padding": {
-        "top": "8px",
-        "right": "8px",
-        "bottom": "8px",
-        "left": "8px"
+        "top": "4px",
+        "right": "4px",
+        "bottom": "4px",
+        "left": "4px"
       },
       "slots": [
         {
           "id": "topDemoLink",
           "row": 0,
-          "col": 0
+          "col": 0,
+          "margin": {
+            "left": "4px",
+            "top": "4px",
+            "right": "4px",
+            "bottom": "4px"
+          }
         },
         {
           "id": "title",
@@ -569,7 +587,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "row": 1,
           "col": 1
         }
-      ]
+      ],
+      "margin": {
+        "top": "4px",
+        "right": "4px",
+        "bottom": "4px",
+        "left": "4px"
+      }
     },
     {
       "id": "pageDockFullscreen",

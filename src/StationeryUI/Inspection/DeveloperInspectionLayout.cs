@@ -16,11 +16,22 @@ public static class DeveloperInspectionLayout
             .ToDictionary(cell => cell.ModelPath, cell => new StationeryInspectionCell(cell.Column, cell.Row, cell.ColumnSpan, cell.RowSpan), StringComparer.Ordinal);
         var errors = settings.Bindings.Where(b => b.LayoutError is not null).GroupBy(b => b.ModelPath)
             .ToDictionary(g => g.Key, g => string.Join("\n", g.Select(b => b.LayoutError)), StringComparer.Ordinal);
+        var roots = settings.Bindings.GroupBy(b => b.ModelPath).ToDictionary(g => g.Key, g => layouts["/" + g.First().Layout.Split('/')[1]]);
+        var margins = settings.Bindings.SelectMany(b => b.Children.Select(c => (c.ModelPath, c.Margin))
+            .Concat(b.DockChildren.Select(c => (c.ModelPath, c.Margin)))).ToDictionary(c => c.ModelPath, c => c.Margin);
+        StationeryBoxModel BoxModel(string path)
+        {
+            var margin = margins.GetValueOrDefault(path);
+            var root = roots.GetValueOrDefault(path);
+            var own = root?.Margin ?? default;
+            return new(new(margin.Top + own.Top, margin.Right + own.Right, margin.Bottom + own.Bottom, margin.Left + own.Left), root?.Padding ?? default);
+        }
         return entries.Select(entry => entry with
         {
             LayoutTypes = types.GetValueOrDefault(entry.Path),
             Cell = cells.GetValueOrDefault(entry.Path),
-            LayoutError = errors.GetValueOrDefault(entry.Path)
+            LayoutError = errors.GetValueOrDefault(entry.Path),
+            BoxModel = BoxModel(entry.Path)
         }).ToArray();
     }
 

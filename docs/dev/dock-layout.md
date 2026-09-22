@@ -174,3 +174,14 @@ developerWindow.Update(ui.Inspect(settings));
 `DrawLayoutErrors` は内部で SpriteBatch を開始・終了します。アプリ側の `SpriteBatch.End` を済ませてから呼びます。エラー全文は `Errors` と F12 の詳細欄で取得できます。画面上の見出しは予約領域でクリップされます。
 
 スタイル設定エディターは既存ドック設定の読み込み・保存で `dock` / `size` を保持し、モデル名変更時の参照も更新します。ドック専用の追加・サイズ編集 UI はまだありません。JSON で設定してください。
+
+
+## 配置枠を基準にした margin
+
+box-layout / grid-layout / dock-layout と、grid / dock の slots に `margin` を指定できます。`{"left":"10px","top":"10px","right":"10px","bottom":"10px"}` の四辺形式で、非負の px 文字列を使い、省略した辺は0pxです。bindings へは書きません。
+
+親の padding の内側を grid / dock で配置枠へ分け、その枠から margin を引きます。margin は隣の枠の位置や大きさを変えません。モデル自身のルートレイアウトにも margin があればさらに引き、次に padding を引いて子の配置領域を得ます。余白が大きすぎる場合、幅・高さは0まで縮みます。ネストした子レイアウトも自身の割り当て枠が基準です。
+
+F12 の詳細欄には margin を外側、padding を内側とする Compound 図を表示します。数値は設定上の px で、帯の幅は模式図です。モデルの配置枠とルートレイアウトの margin は合計し、padding はそのモデルのルートレイアウトの値を表示します。祖先や内部の子レイアウトの余白は合算しません。スタイル情報を渡していない従来の検査データには図を表示しません。
+
+デモ本文のグリッドは四辺 margin 4px + padding 4px とし、従来の合計8pxの余白を保ちます。レイアウトデモの戻るリンクの配置枠にも margin を設定しています。

@@ -94,6 +94,21 @@ internal static class GridLayoutTests
         try { slotPlan.DeleteNode(["layouts", "0", "children", "0", "slots", "0"]); throw new Exception("Referenced slot deleted."); }
         catch (JsonException) { }
 
+        var marginSettings = Edit(node =>
+        {
+            var grid = node["layouts"]![0]!["children"]![0]!;
+            grid["margin"] = JsonNode.Parse("""{"left":"10px","top":"20px","right":"10px","bottom":"20px"}""");
+            grid["padding"] = JsonNode.Parse("""{"left":"5px","top":"5px","right":"5px","bottom":"5px"}""");
+            grid["slots"]![0]!["margin"] = JsonNode.Parse("""{"left":"2px","top":"3px","right":"4px","bottom":"5px"}""");
+        });
+        var marginResult = StationeryLayoutEngine.Arrange(marginSettings, 100, 200);
+        Equal(new(17, 28, 22, 29.5), marginResult.Bounds["/screen/a"]);
+        Equal(new(43, 25, 42, 37.5), marginResult.Bounds["/screen/b"]);
+        foreach (var bad in new[] { "-1px", "1rate", "NaNpx" })
+            Reject(node => node["layouts"]![0]!["children"]![0]!["margin"] = new JsonObject { ["left"] = bad });
+        var collapsedMargin = Edit(node => node["layouts"]![0]!["children"]![0]!["slots"]![0]!["margin"] = new JsonObject { ["left"] = "999px" });
+        Equal(new(40, 0, 0, 50), StationeryLayoutEngine.Arrange(collapsedMargin, 100, 200).Bounds["/screen/a"]);
+
         var fixedRows = Edit(node => node["layouts"]![0]!["children"]![0]!["row-definitions"] = JsonNode.Parse("""["100px","1rate"]"""));
         Equal(new(0, 100, 40, 300), StationeryLayoutEngine.Arrange(fixedRows, 100, 400).Bounds["/screen/c"]);
         var overflow = Edit(node => node["layouts"]![0]!["children"]![0]!["column-definitions"] = JsonNode.Parse("""["200px","100px"]"""));

@@ -68,6 +68,10 @@ public sealed record StationeryInspectionEntry(string Id, string Path, string? P
     public IReadOnlyList<string>? LayoutTypes { get; init; }
     public StationeryInspectionCell? Cell { get; init; }
     public string? LayoutError { get; init; }
+    public StationeryBoxModel? BoxModel { get; init; }
 }
 
 public sealed record StationeryInspectionCell(int Column, int Row, int ColumnSpan, int RowSpan);
+
+/// <summary>Configured pixel insets: placement-slot and root-layout margins combined; root padding only.</summary>
+public sealed record StationeryBoxModel(StationeryUI.Styling.ViewportPadding Margin, StationeryUI.Styling.ViewportPadding Padding);

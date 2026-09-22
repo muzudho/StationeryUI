@@ -83,6 +83,18 @@ static class DockLayoutTests
         Equal(new(15, 96, 175, 44), padded.Bounds["/app/body/button"]);
         Equal(padded.ContentBounds["/app/body"], padded.Bounds["/app/body/button"]);
         Equal(padded.ContentBounds["/app"], padded.LayoutContentBounds["/app:/dock"]);
+        paddedJson["layouts"]![0]!["margin"] = JsonNode.Parse("""{"left":"5px","top":"7px"}""");
+        paddedJson["layouts"]![0]!["slots"]![1]!["margin"] = JsonNode.Parse("""{"left":"2px","top":"3px","bottom":"4px"}""");
+        var marginStyle = StationeryStyleSettings.Parse(paddedJson.ToJsonString());
+        var marginLayout = StationeryLayoutEngine.Arrange(marginStyle, 300, 200);
+        Equal(new(5, 7, 295, 193), marginLayout.Bounds["/app"]);
+        Equal(new(17, 30, 253, 33), marginLayout.Bounds["/app/header"]);
+        Equal(new(15, 67, 255, 30), marginLayout.Bounds["/app/tools"]);
+        var snapshot = StationeryUI.Inspection.DeveloperInspectionLayout.Apply(
+            [new("app", "/app", null, "viewport", "", true, null), new("header", "/app/header", "/app", "textBlock", "", true, null)], marginStyle);
+        var roundtrip = JsonSerializer.Deserialize<StationeryUI.Inspection.StationeryInspectionEntry[]>(JsonSerializer.Serialize(snapshot))!;
+        Check(roundtrip[0].BoxModel!.Margin.Left == 5 && roundtrip[0].BoxModel!.Padding.Top == 20 && roundtrip[1].BoxModel!.Margin.Top == 3,
+            "margin and padding survive inspector transport");
         var reverse = StationeryDockLayout.Arrange(new(10, 20, 100, 100), [new("right", "right", 30), new("top", "top", 40), new("left", "left", 10), new("center", "center")]);
         Equal(new(80, 20, 30, 100), reverse["right"]);
         Equal(new(10, 20, 70, 40), reverse["top"]);

@@ -46,6 +46,7 @@ public sealed partial class StationeryUiHost : IDisposable
     public sealed class Element
     {
         public string? ToolHint { get; set; }
+        public StationeryBoxModel? BoxModel { get; set; }
         internal Element(StationeryNode node, ScreenRectangle bounds, string label) { Node = node; Bounds = bounds; Label = label; }
         public StationeryNode Node { get; internal set; }
         public string Id => Node.Id;

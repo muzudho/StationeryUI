@@ -4,7 +4,7 @@
 
 原本の models は、demo ルートの下に topDemoPage、splitPaneDemoPage、layoutDemoPage を持つ。
 各ページの直下は `body` と `inspectorPanel` の２つのコンテナー。`pageDock`（スプリットページのみ `pageDockFullscreen`、どちらも dock-layout）で `inspectorPanel` を bottom、`body` を center に配置する。トップとレイアウトデモは bottom の size が80px、スプリットペーンデモは0px。
-topDemoPage/body には 9 部品と editDialog を定義する。本文のグリッド自身に padding: 8px（四辺）を指定し、body に結び付け、ページ自身はドックだけを持つ。
+topDemoPage/body には 9 部品と editDialog を定義する。本文のグリッド自身に margin: 4px + padding: 4px（四辺）を指定し、body に結び付け、ページ自身はドックだけを持つ。
 Id はコードの動作との接続にも使う固定名で、AI コーディング時に models と C# を合わせて生成・保守する。
 表示文字列、入力処理、保存などの動作は C# が担当する。
 JSON の type だけから任意の新しいコントロールを生成するわけではない。

@@ -66,6 +66,7 @@ public sealed class StationeryDeveloperView : IDisposable
         Model.Refresh(entries); tree.Tree = Model.Tree;
         if (previousTree != Model.Tree) RevealSelection();
         details.Label = Model.Details;
+        details.BoxModel = Model.SelectedEntry?.BoxModel;
     }
     public DeveloperViewState Capture(bool visible = true) => Model.Capture(SplitRatio, visible) with { CaptureEnabled = CaptureEnabled };
     public void Restore(DeveloperViewState? state)
@@ -82,6 +83,7 @@ public sealed class StationeryDeveloperView : IDisposable
         ui.Focus.Focus(tree.Path);
         details.Scroll = 0;
         details.Label = Model.Details;
+        details.BoxModel = Model.SelectedEntry?.BoxModel;
     }
     private void RevealSelection()
     {
@@ -114,6 +116,7 @@ public sealed class StationeryDeveloperView : IDisposable
             : "手のボタンでキャプチャー。F12 / Esc で閉じる。");
         if (before != Model.SelectedPath) { details.Scroll = 0; copy.Label = "パスをコピー"; }
         details.Label = Model.Details;
+        details.BoxModel = Model.SelectedEntry?.BoxModel;
         var hit = DeveloperCapture.HitTest(ui.Inspect(), mouse.X, mouse.Y);
         OperationLog.Record(mouse, keyboard, new(active, hit?.Path, ui.Focus.FocusedId,
             Model.SelectedPath, Model.Tree.TargetItem is { } target ? Model.PathFor(target) : null,
