@@ -16,7 +16,12 @@ internal sealed partial class Demo
     {
         activePage = page;
         popupOpen = false;
-        Window.Title = page == "topDemoPage" ? "StationeryUI — トップデモページ" : "StationeryUI — スプリットペーンデモページ";
+        Window.Title = page switch
+        {
+            "layoutDemoPage" => "StationeryUI — レイアウトデモ",
+            "splitPaneDemoPage" => "StationeryUI — スプリットペーンデモページ",
+            _ => "StationeryUI — トップデモページ"
+        };
     }
     private void CreatePages()
     {
@@ -54,10 +59,13 @@ internal sealed partial class Demo
                 "tree" => "＋／－で子ノードを開閉できます。",
                 _ => null
             };
+        CreateLayoutPage();
+        layoutLink.ToolHint = "ボックスとグリッドの入れ子を、レイアウトデモページで確認できます。";
         Navigate("topDemoPage");
     }
     private void UpdateToolHints()
     {
+        layoutToolHint.Label = layoutUi!.HoveredToolHint ?? "各セルにマウスを合わせると説明を表示します。ウィンドウのサイズ変更で伸縮、F12 で文房具の Id を確認できます。";
         topToolHint.Label = popupOpen ? "" : ui!.HoveredToolHint ?? "ツールヒント：ボタンなどにマウスを合わせると説明を表示します。";
         splitToolHint.Label = splitUi!.HoveredToolHint ?? "ツールヒント：ボタンなどにマウスを合わせると説明を表示します。";
     }

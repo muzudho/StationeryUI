@@ -15,6 +15,25 @@ internal static class PageLayoutTests
         Check(bounds.Bounds[model.Main["toolHint"].Path] == panel, "hint fills panel");
         Check(bounds.ContentBounds[model.TopPage.Path].Height == 564, "body reserves inspector and padding");
         Check(bounds.Bounds[model.SplitControls["toolHint"].Path].Height == 0, "fullscreen hides hint");
+        // Exercise the actual showcase bindings, including nested boxes and spanning grid cells.
+        foreach (var (width, height) in new[] { (1000, 780), (720, 560), (1400, 900) })
+        {
+            var showcase = StationeryLayoutEngine.Arrange(settings, width, height);
+            var owner = model.LayoutPage.Path + ":showcaseBox.layoutShowcase";
+            var box = showcase.LayoutBounds[owner + ".box"];
+            var content = showcase.Bounds[model.LayoutControls["boxContent"].Path];
+            Check(content.X == box.X + 24 && content.Y == box.Y + 24 && content.Width == box.Width - 48, "box padding surrounds its only child");
+            var grid = showcase.LayoutContentBounds[owner + ".grid"];
+            var nested = showcase.LayoutBounds[owner + ".grid.nestedGrid"];
+            Check(Math.Abs(nested.Width - grid.Width * 2 / 3) < .001 && Math.Abs(nested.Height - grid.Height * 2 / 3) < .001, "nested grid spans two rows and columns");
+            var a = showcase.Bounds[model.LayoutControls["nestedA"].Path];
+            var d = showcase.Bounds[model.LayoutControls["nestedD"].Path];
+            Check(a.X + a.Width == d.X && a.Y + a.Height == d.Y, "nested cells occupy separate quadrants");
+            var footer = showcase.Bounds[model.LayoutControls["gridFooter"].Path];
+            Check(footer.Width == grid.Width && footer.Y == nested.Y + nested.Height, "footer spans all three columns");
+            Check(showcase.Bounds[model.LayoutControls["toolHint"].Path].Height == 80, "layout page reserves inspector");
+        }
+        Check(DemoModelBinding.Create(DemoModelBinding.Fallback).Signature == model.Signature, "fallback includes showcase roles");
         var binding = json["bindings"]!.AsArray().Single(b => (string?)b!["model"] == "demo/topDemoPage" && b["inspectorModel"] is not null)!;
         var signature = model.Signature;
         binding["layout"] = "fullscreenLayout";

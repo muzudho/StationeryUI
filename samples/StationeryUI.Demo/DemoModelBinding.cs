@@ -3,7 +3,8 @@ using StationeryUI.Styling;
 using System.Text.Json;
 
 /// <summary>Connects stable code-defined roles to models nodes. Layouts wrappers never change these roles.</summary>
-internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopPage, StationeryNode SplitPage, StationeryNode Dialog,
+internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopPage, StationeryNode SplitPage, StationeryNode LayoutPage, StationeryNode Dialog,
+    IReadOnlyDictionary<string, StationeryNode> LayoutControls,
     IReadOnlyDictionary<string, StationeryNode> SplitControls,
     IReadOnlyDictionary<string, StationeryNode> Main, IReadOnlyDictionary<string, StationeryNode> DialogControls, string Signature)
 {
@@ -77,6 +78,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   "type": "textBlock"
                 }
               ]
+            },
+            {
+              "id": "layoutDemoLink",
+              "type": "link"
             }
           ]
         },
@@ -115,6 +120,66 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   "type": "textBox"
                 }
               ]
+            },
+            {
+              "id": "inspectorPanel",
+              "type": "container",
+              "children": [
+                {
+                  "id": "toolHint",
+                  "type": "textBlock"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "layoutDemoPage",
+          "type": "page",
+          "children": [
+            {
+              "id": "topDemoLink",
+              "type": "link"
+            },
+            {
+              "id": "title",
+              "type": "textBlock"
+            },
+            {
+              "id": "boxTitle",
+              "type": "textBlock"
+            },
+            {
+              "id": "boxContent",
+              "type": "textBlock"
+            },
+            {
+              "id": "gridTitle",
+              "type": "textBlock"
+            },
+            {
+              "id": "spanCell",
+              "type": "textBlock"
+            },
+            {
+              "id": "nestedA",
+              "type": "textBlock"
+            },
+            {
+              "id": "nestedB",
+              "type": "textBlock"
+            },
+            {
+              "id": "nestedC",
+              "type": "textBlock"
+            },
+            {
+              "id": "nestedD",
+              "type": "textBlock"
+            },
+            {
+              "id": "gridFooter",
+              "type": "textBlock"
             },
             {
               "id": "inspectorPanel",
@@ -213,6 +278,140 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "column-definitions": [
         "1rate"
       ]
+    },
+    {
+      "id": "showcaseBox",
+      "type": "box-layout",
+      "padding": {
+        "top": "8px",
+        "right": "8px",
+        "bottom": "8px",
+        "left": "8px"
+      },
+      "children": [
+        {
+          "id": "layoutShowcase",
+          "type": "grid-layout",
+          "row-definitions": [
+            "60px",
+            "52px",
+            "1rate"
+          ],
+          "column-definitions": [
+            "1rate",
+            "2rate"
+          ],
+          "children": [
+            {
+              "id": "box",
+              "type": "box-layout",
+              "padding": {
+                "top": "24px",
+                "right": "24px",
+                "bottom": "24px",
+                "left": "24px"
+              },
+              "margin": {
+                "top": "6px",
+                "right": "6px",
+                "bottom": "6px",
+                "left": "6px"
+              },
+              "border": {
+                "top": "2px",
+                "right": "2px",
+                "bottom": "2px",
+                "left": "2px"
+              },
+              "children": [
+                {
+                  "id": "content",
+                  "type": "grid-layout",
+                  "row-definitions": [
+                    "1rate"
+                  ],
+                  "column-definitions": [
+                    "1rate"
+                  ]
+                }
+              ],
+              "row": 2,
+              "col": 0
+            },
+            {
+              "id": "grid",
+              "type": "grid-layout",
+              "row-definitions": [
+                "1rate",
+                "1rate",
+                "1rate"
+              ],
+              "column-definitions": [
+                "1rate",
+                "1rate",
+                "1rate"
+              ],
+              "row": 2,
+              "col": 1,
+              "children": [
+                {
+                  "id": "paddedCell",
+                  "type": "box-layout",
+                  "padding": {
+                    "top": "16px",
+                    "right": "16px",
+                    "bottom": "16px",
+                    "left": "16px"
+                  },
+                  "margin": {
+                    "top": "6px",
+                    "right": "6px",
+                    "bottom": "6px",
+                    "left": "6px"
+                  },
+                  "border": {
+                    "top": "2px",
+                    "right": "2px",
+                    "bottom": "2px",
+                    "left": "2px"
+                  },
+                  "children": [
+                    {
+                      "id": "content",
+                      "type": "grid-layout",
+                      "row-definitions": [
+                        "1rate"
+                      ],
+                      "column-definitions": [
+                        "1rate"
+                      ]
+                    }
+                  ],
+                  "row": 0,
+                  "col": 0,
+                  "rowspan": 2
+                },
+                {
+                  "id": "nestedGrid",
+                  "type": "grid-layout",
+                  "row-definitions": [
+                    "1rate",
+                    "1rate"
+                  ],
+                  "column-definitions": [
+                    "1rate",
+                    "1rate"
+                  ],
+                  "row": 0,
+                  "col": 1,
+                  "rowspan": 2,
+                  "colspan": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "bindings": [
@@ -263,6 +462,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "model": "splitPaneDemoLink",
           "row": 4,
           "column": 1
+        },
+        {
+          "model": "layoutDemoLink",
+          "row": 3,
+          "col": 1
         }
       ]
     },
@@ -338,6 +542,108 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "column": 0
         }
       ]
+    },
+    {
+      "layout": "showcaseBox.layoutShowcase",
+      "parentModel": "demo/layoutDemoPage",
+      "childrenModel": [
+        {
+          "model": "topDemoLink",
+          "row": 0,
+          "col": 0
+        },
+        {
+          "model": "title",
+          "row": 0,
+          "col": 1
+        },
+        {
+          "model": "boxTitle",
+          "row": 1,
+          "col": 0
+        },
+        {
+          "model": "gridTitle",
+          "row": 1,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "layout": "showcaseBox.layoutShowcase.box.content",
+      "parentModel": "demo/layoutDemoPage",
+      "childrenModel": [
+        {
+          "model": "boxContent",
+          "row": 0,
+          "col": 0
+        }
+      ]
+    },
+    {
+      "layout": "showcaseBox.layoutShowcase.grid.paddedCell.content",
+      "parentModel": "demo/layoutDemoPage",
+      "childrenModel": [
+        {
+          "model": "spanCell",
+          "row": 0,
+          "col": 0
+        }
+      ]
+    },
+    {
+      "layout": "showcaseBox.layoutShowcase.grid.nestedGrid",
+      "parentModel": "demo/layoutDemoPage",
+      "childrenModel": [
+        {
+          "model": "nestedA",
+          "row": 0,
+          "col": 0
+        },
+        {
+          "model": "nestedB",
+          "row": 0,
+          "col": 1
+        },
+        {
+          "model": "nestedC",
+          "row": 1,
+          "col": 0
+        },
+        {
+          "model": "nestedD",
+          "row": 1,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "layout": "showcaseBox.layoutShowcase.grid",
+      "parentModel": "demo/layoutDemoPage",
+      "childrenModel": [
+        {
+          "model": "gridFooter",
+          "row": 2,
+          "col": 0,
+          "colspan": 3
+        }
+      ]
+    },
+    {
+      "layout": "workPageLayout",
+      "model": "demo/layoutDemoPage",
+      "inspectorModel": "inspectorPanel"
+    },
+    {
+      "layout": "inspectorContents",
+      "parentModel": "demo/layoutDemoPage/inspectorPanel",
+      "childrenModel": [
+        {
+          "model": "toolHint",
+          "row": 0,
+          "col": 0
+        }
+      ]
     }
   ]
 }
@@ -351,7 +657,8 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             ?? throw new JsonException("topDemoPage is required.");
         var splitPage = root.Children.SingleOrDefault(node => node.Id == "splitPaneDemoPage" && node.Kind == "page")
             ?? throw new JsonException("splitPaneDemoPage is required.");
-        foreach (var page in new[] { topPage, splitPage })
+        var layoutPage = root.Children.Single(node => node.Id == "layoutDemoPage" && node.Kind == "page");
+        foreach (var page in new[] { topPage, splitPage, layoutPage })
             if (!settings.Bindings.Any(b => b.ModelPath == page.Path && b.InspectorModel == page.Path + "/inspectorPanel"))
                 throw new JsonException($"{page.Path} requires a page layout bound to inspectorPanel.");
         var dialogs = all.Where(node => node.Id == "editDialog" && node.Kind == "dialog").ToArray();
@@ -361,12 +668,26 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         var main = Bind(all.Where(node => node.IsWithin(topPage) && !node.IsWithin(dialog)), new Dictionary<string, string>
         {
             ["toolHint"] = "textBlock", ["nameField"] = "textBox", ["memoField"] = "textBox", ["themeButton"] = "button",
-            ["scaleButton"] = "button", ["applyTitleButton"] = "button", ["openDialogButton"] = "button", ["sampleTree"] = "tree", ["splitPaneDemoLink"] = "link"
+            ["scaleButton"] = "button", ["applyTitleButton"] = "button", ["openDialogButton"] = "button", ["sampleTree"] = "tree", ["splitPaneDemoLink"] = "link", ["layoutDemoLink"] = "link"
         });
         var splitControls = Bind(Descendants(splitPage), new Dictionary<string, string>
         {
             ["toolHint"] = "textBlock", ["topDemoLink"] = "link", ["verticalSplit"] = "splitPane", ["horizontalSplit"] = "splitPane",
             ["leftPane"] = "textBox", ["rightPane"] = "textBox", ["topPane"] = "textBox", ["bottomPane"] = "textBox"
+        });
+        var layoutControls = Bind(Descendants(layoutPage), new Dictionary<string, string>
+        {
+            ["topDemoLink"] = "link", ["toolHint"] = "textBlock",
+            ["title"] = "textBlock",
+            ["boxTitle"] = "textBlock",
+            ["boxContent"] = "textBlock",
+            ["gridTitle"] = "textBlock",
+            ["spanCell"] = "textBlock",
+            ["nestedA"] = "textBlock",
+            ["nestedB"] = "textBlock",
+            ["nestedC"] = "textBlock",
+            ["nestedD"] = "textBlock",
+            ["gridFooter"] = "textBlock"
         });
         var dialogControls = Bind(all.Where(node => node.IsWithin(dialog)), new Dictionary<string, string>
         {
@@ -377,7 +698,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
             placed.Add(binding.FirstModel!); placed.Add(binding.SecondModel!);
         }
-        foreach (var node in main.Values.Concat(splitControls.Values))
+        foreach (var node in main.Values.Concat(splitControls.Values).Concat(layoutControls.Values))
             if (!placed.Contains(node.Path)) throw new JsonException($"Demo control {node.Path} needs a grid-layout cell binding.");
         if (settings.Bindings.Any(binding => root.Resolve(binding.ModelPath)!.IsWithin(dialog)) ||
             placed.Any(path => root.Resolve(path)!.IsWithin(dialog)))
@@ -391,7 +712,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             if (splitBinding.FirstModel != splitControls[expected[0]].Path || splitBinding.SecondModel != splitControls[expected[1]].Path)
                 throw new JsonException("Split content must match the demo roles.");
         }
-        var bound = main.Values.Concat(dialogControls.Values).Concat(splitControls.Values).ToHashSet();
+        var bound = main.Values.Concat(dialogControls.Values).Concat(splitControls.Values).Concat(layoutControls.Values).ToHashSet();
         foreach (var node in all)
         {
             if (bound.Contains(node))
@@ -401,7 +722,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             else if (node != root && node != dialog && node.Kind is not ("page" or "container"))
                 throw new JsonException($"The demo has no code binding for {node.Path} ({node.Kind}).");
         }
-        return new(root, topPage, splitPage, dialog, splitControls, main, dialogControls, string.Join('\n', all.Select(node => node.Path + ":" + node.Kind)));
+        return new(root, topPage, splitPage, layoutPage, dialog, layoutControls, splitControls, main, dialogControls, string.Join('\n', all.Select(node => node.Path + ":" + node.Kind)));
     }
 
     private static IReadOnlyDictionary<string, StationeryNode> Bind(IEnumerable<StationeryNode> nodes, Dictionary<string, string> roles)

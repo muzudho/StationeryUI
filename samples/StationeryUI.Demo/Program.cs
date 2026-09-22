@@ -146,6 +146,7 @@ internal sealed partial class Demo : Game
                 ui!.RebindModel(next.TopPage, element => next.Main[element.Id]);
                 popupUi!.RebindModel(next.Dialog, element => next.DialogControls[element.Id]);
                 splitUi!.RebindModel(next.SplitPage, element => next.SplitControls[element.Id]);
+                layoutUi!.RebindModel(next.LayoutPage, element => next.LayoutControls[element.Id]);
                 modelBinding = next;
             }
             appliedStyle = styles.Current;
@@ -165,6 +166,7 @@ internal sealed partial class Demo : Game
                 bounds.Width / requestedScale, bounds.Height / requestedScale);
         }
         ApplySplitStyles(arranged);
+        ApplyLayoutStyles(arranged);
         popupUi!.Viewport.Scale = Math.Min(1, Math.Min(content.Width / 800, content.Height / 320));
         popupUi.Viewport.Offset = new(content.X + (content.Width - 800 * popupUi.Viewport.Scale) / 2,
             content.Y + (content.Height - 320 * popupUi.Viewport.Scale) / 2);
@@ -205,6 +207,7 @@ internal sealed partial class Demo : Game
             ui?.Update(gameTime, false, keyboard, mouse);
             popupUi?.Update(gameTime, false, keyboard, mouse);
             splitUi?.Update(gameTime, false, keyboard, mouse);
+            layoutUi?.Update(gameTime, false, keyboard, mouse);
             base.Update(gameTime);
             return;
         }
@@ -220,6 +223,7 @@ internal sealed partial class Demo : Game
                 ui.Update(gameTime, false, keyboard, mouse);
                 popupUi.Update(gameTime, false, keyboard, mouse);
                 splitUi!.Update(gameTime, false, keyboard, mouse);
+                layoutUi!.Update(gameTime, false, keyboard, mouse);
                 base.Update(gameTime);
                 return;
             }
@@ -278,7 +282,16 @@ internal sealed partial class Demo : Game
             }
             PreparePageSmoke(smokeCase, smoke, ref keyboard, ref mouse);
             pointer = mouse.Position;
-            if (activePage == "splitPaneDemoPage")
+            if (activePage != "layoutDemoPage") layoutUi!.Update(gameTime, false, keyboard, mouse);
+            if (activePage == "layoutDemoPage")
+            {
+                ui.Update(gameTime, false, keyboard, mouse);
+                popupUi.Update(gameTime, false, keyboard, mouse);
+                splitUi!.Update(gameTime, false, keyboard, mouse);
+                layoutUi!.Update(gameTime, IsActive || smoke, keyboard, mouse);
+                if (activePage != "layoutDemoPage") layoutUi.Update(gameTime, false, keyboard, mouse);
+            }
+            else if (activePage == "splitPaneDemoPage")
             {
                 ui.Update(gameTime, false, keyboard, mouse);
                 popupUi.Update(gameTime, false, keyboard, mouse);
@@ -305,7 +318,8 @@ internal sealed partial class Demo : Game
     {
         GraphicsDevice.Clear(StationeryUiHost.Convert(ui?.Theme.Background ?? StationeryTheme.Dark.Background));
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
-        if (hasContentArea && activePage == "splitPaneDemoPage") { splitUi?.Draw(); DrawPanelBorders(splitUi); }
+        if (hasContentArea && activePage == "layoutDemoPage") { layoutUi?.Draw(); DrawPanelBorders(layoutUi); }
+        else if (hasContentArea && activePage == "splitPaneDemoPage") { splitUi?.Draw(); DrawPanelBorders(splitUi); }
         else if (hasContentArea && popupOpen)
         {
             ui?.Draw(); DrawPanelBorders(ui);
@@ -372,6 +386,7 @@ internal sealed partial class Demo : Game
     private IReadOnlyList<StationeryInspectionEntry> InspectStationery()
     {
         var entries = ui!.Inspect(hasContentArea && activePage == "topDemoPage").ToDictionary(entry => entry.Path, StringComparer.Ordinal);
+        foreach (var entry in layoutUi!.Inspect(hasContentArea && activePage == "layoutDemoPage")) entries[entry.Path] = entry;
         foreach (var entry in splitUi!.Inspect(hasContentArea && activePage == "splitPaneDemoPage")) entries[entry.Path] = entry;
         foreach (var entry in popupUi!.Inspect(hasContentArea && popupOpen && activePage == "topDemoPage")) entries[entry.Path] = entry;
         if (latestLayout is not null)
@@ -390,5 +405,5 @@ internal sealed partial class Demo : Game
         base.Dispose(disposing);
     }
 
-    protected override void UnloadContent() { splitUi?.Dispose(); popupUi?.Dispose(); badges?.Dispose(); ui?.Dispose(); input?.Dispose(); base.UnloadContent(); }
+    protected override void UnloadContent() { layoutUi?.Dispose(); splitUi?.Dispose(); popupUi?.Dispose(); badges?.Dispose(); ui?.Dispose(); input?.Dispose(); base.UnloadContent(); }
 }

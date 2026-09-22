@@ -67,6 +67,10 @@
                                     "type": "textBlock"
                                 }
                             ]
+                        },
+                        {
+                            "id": "layoutDemoLink",
+                            "type": "link"
                         }
                     ]
                 },
@@ -105,6 +109,66 @@
                                     "type": "textBox"
                                 }
                             ]
+                        },
+                        {
+                            "id": "inspectorPanel",
+                            "type": "container",
+                            "children": [
+                                {
+                                    "id": "toolHint",
+                                    "type": "textBlock"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "layoutDemoPage",
+                    "type": "page",
+                    "children": [
+                        {
+                            "id": "topDemoLink",
+                            "type": "link"
+                        },
+                        {
+                            "id": "title",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "boxTitle",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "boxContent",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "gridTitle",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "spanCell",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "nestedA",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "nestedB",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "nestedC",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "nestedD",
+                            "type": "textBlock"
+                        },
+                        {
+                            "id": "gridFooter",
+                            "type": "textBlock"
                         },
                         {
                             "id": "inspectorPanel",
@@ -203,6 +267,140 @@
             "column-definitions": [
                 "1rate"
             ]
+        },
+        {
+            "id": "showcaseBox",
+            "type": "box-layout",
+            "padding": {
+                "top": "8px",
+                "right": "8px",
+                "bottom": "8px",
+                "left": "8px"
+            },
+            "children": [
+                {
+                    "id": "layoutShowcase",
+                    "type": "grid-layout",
+                    "row-definitions": [
+                        "60px",
+                        "52px",
+                        "1rate"
+                    ],
+                    "column-definitions": [
+                        "1rate",
+                        "2rate"
+                    ],
+                    "children": [
+                        {
+                            "id": "box",
+                            "type": "box-layout",
+                            "padding": {
+                                "top": "24px",
+                                "right": "24px",
+                                "bottom": "24px",
+                                "left": "24px"
+                            },
+                            "margin": {
+                                "top": "6px",
+                                "right": "6px",
+                                "bottom": "6px",
+                                "left": "6px"
+                            },
+                            "border": {
+                                "top": "2px",
+                                "right": "2px",
+                                "bottom": "2px",
+                                "left": "2px"
+                            },
+                            "children": [
+                                {
+                                    "id": "content",
+                                    "type": "grid-layout",
+                                    "row-definitions": [
+                                        "1rate"
+                                    ],
+                                    "column-definitions": [
+                                        "1rate"
+                                    ]
+                                }
+                            ],
+                            "row": 2,
+                            "col": 0
+                        },
+                        {
+                            "id": "grid",
+                            "type": "grid-layout",
+                            "row-definitions": [
+                                "1rate",
+                                "1rate",
+                                "1rate"
+                            ],
+                            "column-definitions": [
+                                "1rate",
+                                "1rate",
+                                "1rate"
+                            ],
+                            "row": 2,
+                            "col": 1,
+                            "children": [
+                                {
+                                    "id": "paddedCell",
+                                    "type": "box-layout",
+                                    "padding": {
+                                        "top": "16px",
+                                        "right": "16px",
+                                        "bottom": "16px",
+                                        "left": "16px"
+                                    },
+                                    "margin": {
+                                        "top": "6px",
+                                        "right": "6px",
+                                        "bottom": "6px",
+                                        "left": "6px"
+                                    },
+                                    "border": {
+                                        "top": "2px",
+                                        "right": "2px",
+                                        "bottom": "2px",
+                                        "left": "2px"
+                                    },
+                                    "children": [
+                                        {
+                                            "id": "content",
+                                            "type": "grid-layout",
+                                            "row-definitions": [
+                                                "1rate"
+                                            ],
+                                            "column-definitions": [
+                                                "1rate"
+                                            ]
+                                        }
+                                    ],
+                                    "row": 0,
+                                    "col": 0,
+                                    "rowspan": 2
+                                },
+                                {
+                                    "id": "nestedGrid",
+                                    "type": "grid-layout",
+                                    "row-definitions": [
+                                        "1rate",
+                                        "1rate"
+                                    ],
+                                    "column-definitions": [
+                                        "1rate",
+                                        "1rate"
+                                    ],
+                                    "row": 0,
+                                    "col": 1,
+                                    "rowspan": 2,
+                                    "colspan": 2
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "bindings": [
@@ -253,6 +451,11 @@
                     "model": "splitPaneDemoLink",
                     "row": 4,
                     "column": 1
+                },
+                {
+                    "model": "layoutDemoLink",
+                    "row": 3,
+                    "col": 1
                 }
             ]
         },
@@ -326,6 +529,108 @@
                     "model": "toolHint",
                     "row": 0,
                     "column": 0
+                }
+            ]
+        },
+        {
+            "layout": "showcaseBox.layoutShowcase",
+            "parentModel": "demo/layoutDemoPage",
+            "childrenModel": [
+                {
+                    "model": "topDemoLink",
+                    "row": 0,
+                    "col": 0
+                },
+                {
+                    "model": "title",
+                    "row": 0,
+                    "col": 1
+                },
+                {
+                    "model": "boxTitle",
+                    "row": 1,
+                    "col": 0
+                },
+                {
+                    "model": "gridTitle",
+                    "row": 1,
+                    "col": 1
+                }
+            ]
+        },
+        {
+            "layout": "showcaseBox.layoutShowcase.box.content",
+            "parentModel": "demo/layoutDemoPage",
+            "childrenModel": [
+                {
+                    "model": "boxContent",
+                    "row": 0,
+                    "col": 0
+                }
+            ]
+        },
+        {
+            "layout": "showcaseBox.layoutShowcase.grid.paddedCell.content",
+            "parentModel": "demo/layoutDemoPage",
+            "childrenModel": [
+                {
+                    "model": "spanCell",
+                    "row": 0,
+                    "col": 0
+                }
+            ]
+        },
+        {
+            "layout": "showcaseBox.layoutShowcase.grid.nestedGrid",
+            "parentModel": "demo/layoutDemoPage",
+            "childrenModel": [
+                {
+                    "model": "nestedA",
+                    "row": 0,
+                    "col": 0
+                },
+                {
+                    "model": "nestedB",
+                    "row": 0,
+                    "col": 1
+                },
+                {
+                    "model": "nestedC",
+                    "row": 1,
+                    "col": 0
+                },
+                {
+                    "model": "nestedD",
+                    "row": 1,
+                    "col": 1
+                }
+            ]
+        },
+        {
+            "layout": "showcaseBox.layoutShowcase.grid",
+            "parentModel": "demo/layoutDemoPage",
+            "childrenModel": [
+                {
+                    "model": "gridFooter",
+                    "row": 2,
+                    "col": 0,
+                    "colspan": 3
+                }
+            ]
+        },
+        {
+            "layout": "workPageLayout",
+            "model": "demo/layoutDemoPage",
+            "inspectorModel": "inspectorPanel"
+        },
+        {
+            "layout": "inspectorContents",
+            "parentModel": "demo/layoutDemoPage/inspectorPanel",
+            "childrenModel": [
+                {
+                    "model": "toolHint",
+                    "row": 0,
+                    "col": 0
                 }
             ]
         }

@@ -2,17 +2,18 @@
 
 ## デモの文房具とコードの役割
 
-原本の models は、demo ルートの下に topDemoPage と splitPaneDemoPage を持つ。
-topDemoPage には 8 部品と editDialog を定義する。
+原本の models は、demo ルートの下に topDemoPage、splitPaneDemoPage、layoutDemoPage を持つ。
+topDemoPage には 9 部品と editDialog、およびインスペクターパネルを定義する。
 Id はコードの動作との接続にも使う固定名で、AI コーディング時に models と C# を合わせて生成・保守する。
 表示文字列、入力処理、保存などの動作は C# が担当する。
 JSON の type だけから任意の新しいコントロールを生成するわけではない。
 
 メインには nameField / memoField（textBox）、
-themeButton / scaleButton / applyTitleButton / openDialogButton（button）、sampleTree（tree）、splitPaneDemoLink（link）が各 1 個必要。
-**トップページの 8 部品すべてに grid-layout のセルへの binding が必要。**
+themeButton / scaleButton / applyTitleButton / openDialogButton（button）、sampleTree（tree）、splitPaneDemoLink / layoutDemoLink（link）が各 1 個必要。
+**トップページの 9 部品すべてに grid-layout のセルへの binding が必要。**
 splitPaneDemoPage には topDemoLink、verticalSplit、horizontalSplit と、それぞれの子のテキスト欄を定義する。
 スプリットペーンの子は split-pane の firstModel / secondModel で配置する。
+layoutDemoPage は topDemoLink、見出しと各セルの textBlock、および inspectorPanel/toolHint を持つ。showcaseBox.layoutShowcase の子にボックスとグリッドを配置し、さらにその子へドット区切りの layout パスで部品を binding する。入れ子のグリッドは rowspan: 2 / colspan: 2、最下行の部品は colspan: 3 を使う。各ページの toolHint にもセルへの binding が必要。
 ツリーの項目と開閉操作は [ツリーの使い方](../../user/tree.md) を参照。
 ダイアログには nameField（textBox）、cancelButton / saveButton（button）が各 1 個必要。
 ダイアログの配置は現時点では C# が担当するため、ダイアログやその子への binding はデモではエラーにする。
