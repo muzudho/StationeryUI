@@ -250,4 +250,4 @@ element.Bounds = new(origin.X, origin.Y,
 
 プレビューなど画面の一部分をビューポートにする場合、`Arrange` へはその領域の幅・高さを渡します。結果は `(0, 0)` 起点なので、領域の画面上の X/Y を足してから上記変換をします。クリッピングもアプリ側で接続してください。`Arrange` だけでは描画や入力のクリップを設定しません。
 
-テーマ・表示文字列・ツールヒントは C# で渡します。`ui.Theme`、`element.Theme`、`element.Label`、`element.ToolHint` を使い、インスペクターの文言には `ui.Update` 後の `ui.HoveredToolHint` を表示します。`ToolHint` を設定するだけでは下部パネルは生成されません。[インスペクターの設計](../inspector-panel-guide.md)も参照してください。
+テーマ・表示文字列・ツールヒントは C# で渡します。`ui.Theme`、`element.Theme`、`element.Label`、`element.ToolHint` を使い、インスペクターの文言には `ui.Update` 後の `ui.HoveredToolHint` を表示します。`ToolHint` を設定するだけでは下部パネルは生成されません。[インスペクターの設計](../../user/inspector-panel-guide.md)も参照してください。

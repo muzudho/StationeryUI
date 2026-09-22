@@ -1,31 +1,37 @@
-# 開発者向けドキュメント
+﻿# 開発者向けドキュメント
 
-StationeryUI自体の開発・保守を行う方向けの資料です。ライブラリーをアプリに組み込む場合は [利用者向けドキュメント](../user/README.md) を参照してください。
+文房具 UI をアプリに組み込む方と、このリポジトリーの開発・保守に貢献する方への案内です。製品の動作や用語は、必要に応じて[利用者向けドキュメント](../user/README.md)も参照してください。
 
-- [設計と境界](architecture.md)
-- [文房具 UI 製の開発者ウィンドウ](developer-window.md)
-- [コントロールのプログラム解説](control-guide.md)
-- [アンダーラインの表示規約とアクションバッジ](action-badges.md)：`Edit` / `Popup` / `Move`、文字色と下線色、ホバー表示。
-- [抽出元一覧](extraction-inventory.md)
-- [実装・引き継ぎ計画](implementation-plan.md)
-- [検証記録](validation.md)
+## アプリへ組み込む
+
+- [ライブラリーの組み込み](library-integration.md)：パッケージ参照、MonoGame への接続、テーマ、入力の所有権。
+- [スタイル設定の組み込みガイド](style-settings/README.md)：JSON の読み込み、F12 のホスト、リロード、移行。
+- [ツリーの組み込み](tree-integration.md) ／ [スプリットペーンの組み込み](split-pane-integration.md)
+- [文房具モデルと検査情報の接続](model-inspection.md)
+- [ツールヒントの接続](tool-hints.md)
+
+## 改善に貢献する
+
 - [貢献方法](CONTRIBUTING.md)
-- [開発日誌：2026年9月](log/2026/09.md)
-- [配布に関する資料](distribution/README.md)：スタイル設計ツールのリリース手順、注意点、配布記録。
+- [ビルドと検証](building.md)
+- [開発日誌 — 2026年9月](log/2026/09.md)
+- [設計と境界](architecture.md)
+- [実装・引き継ぎ計画](implementation-plan.md)
+- [抽出元一覧](extraction-inventory.md)
 
-## ビルドと検証
+## 実装を調べる
 
-リポジトリーのルートで実行します。
+- [コントロールのプログラム解説](control-guide.md)
+- [開発者ウィンドウの実装](developer-window.md)
+- [ページレイアウト](page-layouts.md)
+- [アンダーラインとアクションバッジ](action-badges.md)
+- [リスト UI 設計の目安](list-ui-guidelines.md)
+- [ライブラリーとエディターの成果物分離](style-designer.md)
+- [エディターのオートセーブ](style-designer-autosave.md)
+- [検証記録](validation.md)
 
-```powershell
-dotnet build StationeryUI.slnx -c Release
-dotnet run --project tests/StationeryUI.Tests -c Release
-dotnet run --project tests/StationeryUI.Windows.Tests -c Release
-dotnet pack StationeryUI.slnx -c Release -o artifacts/packages
-```
+## 配布する
 
-実IMEやDPIの手動確認手順は [検証記録](validation.md) を参照してください。
+- [配布・リリース資料](distribution/README.md)：作成手順、確認事項、配布記録。
 
-## 開発日誌の配置
-
-開発日誌は `docs/dev/log/YYYY/MM.md` に月単位で記録します。
+[リポジトリーの入口へ戻る](../../README.md)

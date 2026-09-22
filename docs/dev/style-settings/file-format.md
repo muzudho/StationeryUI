@@ -80,7 +80,7 @@ bindings: outerGrid のセルに contentArea を配置
 
 `layouts` 配列の中でレイアウト定義に `children` を書く方式ではありません。レイアウト定義は独立したまま、モデルの親子関係と bindings で入れ子を表現します。配置は外側から内側へ計算され、layouts 配列の順番には依存しません。
 
-現時点では、必要なモデルと対応付けを JSON・C# 側で用意します。エディターで個々のグリッド定義を調整することと、入れ子の構造そのものを GUI で作ることは別です。**セルから内側のレイアウトを追加し、models / bindings の接続を含めて編集できる GUI は今後の目標**です。[導入の意義と今後の目標](README.md)も参照してください。
+現時点では、必要なモデルと対応付けを JSON・C# 側で用意します。エディターで個々のグリッド定義を調整することと、入れ子の構造そのものを GUI で作ることは別です。**セルから内側のレイアウトを追加し、models / bindings の接続を含めて編集できる GUI は今後の目標**です。[導入の意義と今後の目標](overview.md)も参照してください。
 
 ## split-pane — 左右・上下の分割
 
@@ -112,7 +112,7 @@ bindings: outerGrid のセルに contentArea を配置
 
 `Arrange` は設定から静的な分割矩形を返します。ドラッグ可能な UI には C# で `AddSplitPane(node, bounds, label, options)` を作り、`BindSplitContent(split, first, second)` を接続します。`options` には対象 binding から引いた `StationeryLayoutNode.Split` を渡します。子は同じホストに登録された直接の子コントロールである必要があります。
 
-ドラッグ中の比率は `element.Split.Ratio` が持ちます。ホストが `Update` / `Draw` で子を再配置するので、静的な `Arrange` の値を最後に上書きしてドラッグ結果を戻さないようにします。同じ値の `Configure` は比率を保持します。設定を変えると設定側の比率へ戻ります。ドラッグ結果の JSON への書き戻しは自動ではありません。[デモの接続例](../../../samples/StationeryUI.Demo/DemoPages.cs)と[スプリットペーンの説明](../split-pane.md)を参照してください。
+ドラッグ中の比率は `element.Split.Ratio` が持ちます。ホストが `Update` / `Draw` で子を再配置するので、静的な `Arrange` の値を最後に上書きしてドラッグ結果を戻さないようにします。同じ値の `Configure` は比率を保持します。設定を変えると設定側の比率へ戻ります。ドラッグ結果の JSON への書き戻しは自動ではありません。[デモの接続例](../../../samples/StationeryUI.Demo/DemoPages.cs)と[スプリットペーンの説明](../../user/split-pane.md)を参照してください。
 
 ## ページ — 本文とインスペクター
 

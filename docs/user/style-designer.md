@@ -32,7 +32,7 @@
 - 「新規作成」：選択フォルダーに現在の設計を `my-plan.stationery-style.json` として作成する。同名があれば `my-plan-2.stationery-style.json` のように連番を付ける。フォルダー未選択時は無効となり、マウスを合わせると「先にフォルダーを選択してください」とツールヒント欄に表示する。
 - 「セーブポイントに戻す」（アプリケーションバー）：ファイル名と変更日時の一覧からバックアップを選び、「このセーブポイントに戻す」で復元する。元ファイルも復元内容に更新する。キャンセルでは変更しない。保存先が未決定の間は無効。
 
-出力は UTF-8（BOM なし）、インデントは４スペース。各行の改行が二重にならないよう正規化する。
+出力ファイルは UTF-8（BOM なし）、インデントは４スペース。
 
 「1 ページ目へ戻る」で選択画面に戻り、「現在の編集を再開」でプランを保ったまま戻れる。「新規作成」や別ファイルの読み込みは現在のプランを置き換える。
 
@@ -105,18 +105,3 @@ Tab で入力欄やボタンへ移動し、Enter／Space でボタンを操作�
 GitHub Release の Windows x64 ZIP は .NET ランタイム同梱版。ZIP を新しいフォルダーへすべて展開し、その中の `StationeryUI.StyleDesigner.exe` を起動する。別途 .NET をインストールする必要はない。EXE だけを取り出さず、DLL・licenses などを含むフォルダー全体を使う。
 
 v0.2.0 の設計ツールは未署名で配布する。Windows の保護機能によって起動可否が異なる場合がある。
-
-ソースからの起動：
-
-```powershell
-dotnet run --project samples/StationeryUI.StyleDesigner -c Release
-```
-
-リリース用の出力：
-
-```powershell
-dotnet publish samples/StationeryUI.StyleDesigner -c Release --self-contained false -o artifacts/release/style-designer
-```
-
-上記コマンドによるランタイム非同梱版は、出力フォルダー全体から `StationeryUI.StyleDesigner.exe` を起動する。こちらは Windows 用の .NET 8 Desktop Runtime が必要。
-設計ツールは文房具 UI の DLL を利用するが、文房具 UI の NuGet パッケージに設計ツールは含めない。

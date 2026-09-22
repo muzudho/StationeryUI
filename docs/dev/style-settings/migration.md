@@ -59,8 +59,8 @@ CSS と同じ指定を想像で追加しないでください。未知のプロ�
 文房具 UI のスタイル設定を、このアプリへ段階的に導入してください。
 F12 開発者ウィンドウも導入範囲に含め、一式で取り込んでください。
 
-ガイド: <StationeryUI>/docs/user/style-settings/README.md
-一式の手順: <StationeryUI>/docs/user/style-settings/full-integration.md
+ガイド: <StationeryUI>/docs/dev/style-settings/README.md
+一式の手順: <StationeryUI>/docs/dev/style-settings/full-integration.md
 使用する StationeryUI のコミットまたはパッケージ: <固定した版>
 対象画面・C# ファイル: <パス>
 設計図: <画面名>.stationery-style.json

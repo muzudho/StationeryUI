@@ -1,6 +1,6 @@
-# 文房具 UI のスタイル設定 — 他のアプリへの組み込みガイド
+﻿# スタイル設定の役割分担と導入範囲
 
-* [これはいつどのように使われるか](./use-case.md)
+* [これはいつどのように使われるか](../../user/style-settings/use-case.md)
 
 このガイドは、別リポジトリーの MonoGame アプリへ文房具 UI のスタイル設定を組み込む人と、  
 その実装を担当する AI 向けです。  
@@ -24,6 +24,8 @@
 | [スタイル設定ファイルの読み方](file-format.md) | models / layouts / bindings、Id とパス、各レイアウト、対応範囲 |
 | [オートリロードと配布](reload-and-files.md) | 設定の分離、Update / Reload、検証とエラー、ファイル配置、埋め込み |
 | [既存画面を少しずつ移行する](migration.md) | C# と JSON の分担、移行順序、確認項目、AI への引き継ぎ文 |
+| [配置結果をアプリへ渡す](layout-results.md) | Bounds / ContentBounds / BorderBounds とモデルの再接続 |
+| [デモのモデルとコードの契約](demo-contract.md) | 必須 Id、部品、検証とフォールバック |
 
 ## 最初に押さえる役割分担
 
@@ -63,4 +65,5 @@ JSON は画面構成の設計図です。**JSON を読んだだけでは、コ�
 
 デモ専用の必須 Id や部品数を、別アプリの仕様としてコピーしないでください。自分のアプリの契約に置き換えます。
 
-[デモのスタイル設定仕様](../stationery-style-settings.md) ／ [ライブラリー利用ガイド](../README.md) ／ [エディターの操作](../style-designer.md)
+[デモのスタイル設定仕様](../../user/stationery-style-settings.md) ／ [ライブラリーの組み込み](../library-integration.md) ／ [開発者向け目次](../README.md)
+

@@ -5,7 +5,7 @@
 ## 1. 版とソースを固定する
 
 1. `samples/StationeryUI.StyleDesigner/StationeryUI.StyleDesigner.csproj` の `Version`、`AssemblyVersion`、`FileVersion` を更新します。例：`0.1.1`、`0.1.1.0`、`0.1.1.0`。
-2. 利用者向け資料、開発日誌、`docs/dev/releases/style-designer-v<版>.md` のリリース本文を更新します。
+2. 利用者向け資料、開発日誌、`docs/user/releases/style-designer-v<版>.md` のリリース本文を更新します。
 3. 自動テストを実行し、対象の変更だけをコミットします。個人用メモなどをまとめて追加しないでください。
 
 ```powershell
@@ -81,7 +81,7 @@ git push --atomic origin HEAD:refs/heads/main "refs/tags/$tag"
 push 成功後に公開します。
 
 ```powershell
-gh release create $tag $zip $checksum --repo muzudho/StationeryUI --verify-tag --title "スタイル設計ツール v$version" --notes-file "docs/dev/releases/style-designer-v$version.md" --latest
+gh release create $tag $zip $checksum --repo muzudho/StationeryUI --verify-tag --title "スタイル設計ツール v$version" --notes-file "docs/user/releases/style-designer-v$version.md" --latest
 ```
 
 `--latest` はリポジトリー全体の最新リリース表示を変更します。ライブラリーと共用のため毎回意図を確認します。v0.1.0 では設計ツールを最新として公開しました。
@@ -95,7 +95,7 @@ gh release create $tag $zip $checksum --repo muzudho/StationeryUI --verify-tag -
 `Source code` は開発者向けです。
 ```
 
-機能、対象範囲、起動方法、ランタイム同梱、署名状態、検証結果、利用手順へのリンクも記載します。[初回の本文](../releases/style-designer-v0.1.0.md) を参考にしてください。
+機能、対象範囲、起動方法、ランタイム同梱、署名状態、検証結果、利用手順へのリンクも記載します。[初回の本文](../../user/releases/style-designer-v0.1.0.md) を参考にしてください。
 
 ## 5. 公開後を確認する
 

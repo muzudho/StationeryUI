@@ -6,7 +6,7 @@
 
 名前をクリックすると「操作対象」が移動する。開閉ボタンは、押してから同じボタンの上で離したときに動作する。
 「選択」は内部で保持する状態で緑の背景、「操作対象」は水色の枠で表示する。同じノードに両方を表示できる。
-既定では操作対象への移動に選択が連動する。`SelectOnInteraction = false` にすると独立し、スタイル設計ツールのように操作対象だけを使える。
+既定では操作対象への移動に選択が連動する。アプリによっては連動せず、スタイル設定エディターのように操作対象だけを使う。
 閉じた枝の中の開閉状態は保持する。操作対象の子を隠した場合、操作対象は閉じた親へ移る。選択の連動を無効にしている場合は、隠れたノードの選択状態を保持する。
 
 ## キーボードとスクロール
@@ -24,38 +24,4 @@
 つまみをマウスでドラッグすると縦スクロールできる。ドラッグ中にツリーの外へ出ても追従し、
 ボタンを離すと終了する。つまみの上下の空き部分をクリックすると、表示領域の高さ分だけ移動する。
 全項目が収まる場合はバーを表示しない。
-色・文字は StationeryUiHost のテーマに従い、Element.Theme による個別指定も使える。
-
-## C# で作る
-
-```csharp
-using StationeryUI.Controls;
-
-var tree = new TreeView();
-var stationery = tree.AddNode("stationery", "文房具");
-var writing = tree.AddNode("writing", "筆記用具", stationery);
-tree.AddNode("pencil", "鉛筆", writing);
-var paper = tree.AddNode("paper", "紙製品", stationery, expanded: false);
-tree.AddNode("notebook", "ノート", paper);
-
-var element = ui.AddTree("sampleTree", new(500, 8, 400, 200), "文房具のツリー", tree);
-```
-
-AddNode は既定で開いた状態を作る。expanded: false で閉じた状態から始められる。
-TreeView.SetExpanded / Toggle / Select でも操作できる。SelectedItem が現在の選択、TargetItem が操作対象。SetTarget で操作対象を変更し、ClearSelection / ClearTarget でそれぞれ解除する。
-VisibleRows() は表示対象のノードと深さを返す。描画領域外まで含み、閉じた枝の子孫は含まない。
-
-Id はコードで付ける識別名、Label は画面上のノード名。同じ親の下の Id は一意にする。
-別の親の下では同じ Id を使える。Id の許可文字はほかの文房具と同じ英字・数字・アンダースコア。
-F12 では /demo/topDemoPage/sampleTree/stationery/writing/pencil のような完全パスで確認できる。
-閉じた子やスクロール領域外の子は、F12 で非表示として確認できる。
-
-## スタイルとの関係
-
-デモでは models に {"id":"sampleTree","type":"tree"} を追加し、bindings で row: 0 / column: 1 に配置している。
-既存のモデルノードに接続するときは、AddTree の第 1 引数に StationeryNode を渡す。
-ツリー全体の配置は floating-layout に従い、ノード行の高さと字下げはツリー側が管理する。
-スタイルの再読み込みやモデルパスの変更で、ツリーの選択・開閉状態は失われない。
-
-現時点ではツリー内の項目は C# の TreeView.AddNode で作る。models の tree に children を定義する形式や、
-ツリー内部のノードに対するスタイル binding は未対応。F12 のツリー表示とは別の、通常画面に配置できる部品。
+色・文字の見た目はアプリのテーマによって変わる。

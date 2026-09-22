@@ -1,6 +1,6 @@
 # 文房具ＵＩのスタイル設定ファイルのユーザーズガイド
 
-別のアプリへ組み込む場合は、[スタイル設定のプログラミングガイド](style-settings/README.md)を参照してください。以下は主にこのリポジトリーのデモでの利用仕様です。
+この文書は、デモアプリのスタイル設定を編集する方向けの仕様です。アプリごとに編集可能な項目は異なります。
 
 配置対象の文房具の Id とパスは、[F12 開発者ウィンドウ](developer-window.md) で確認できる。
 bindings でこのパスを使い、モデルとレイアウトを結び付ける。
@@ -14,10 +14,7 @@ bindings でこのパスを使い、モデルとレイアウトを結び付け�
 | `App_Data/demo.stationery-config.json` | スタイルの読み込み先とオートリロード設定 |
 | `App_Data/demo.stationery-style.json` | models の文房具構造、layouts の配置設定、bindings の対応付け |
 
-開発時（Debug ビルド）はリポジトリーの `App_Data` の原本を使う。
-ビルド／publish 時には両方を出力先の `App_Data` にコピーする。
-配布時（Release ビルド）は実行ファイル横の `App_Data/demo.stationery-config.json` を使うので、配布物に両ファイルを含める。
-Debug 版でも原本のフォルダーが存在しない場合は実行ファイル横のコピーを使う。
+配布されたデモでは、実行ファイル横の `App_Data` にある設定を編集します。
 
 環境変数 `STATIONERYUI_CONFIG_PATH` を指定すると、別の読み込み設定ファイルを使える。絶対パスを推奨する。
 以前の `STATIONERYUI_STYLE_PATH` は廃止。スタイルの読み込み先は次の `styleFile` に指定する。
@@ -214,57 +211,6 @@ F5 と自動リロードは継続する。
 デモの拡大率ボタンは、セルの位置・大きさを保ったまま文字などの表示倍率を変える。
 パディングやセルの比率は変わらない。ダイアログは内側の領域に収まる倍率で中央に配置する。
 
-## デモの文房具とコードの役割
-
-原本の models は、demo ルートの下に topDemoPage と splitPaneDemoPage を持つ。
-topDemoPage には 8 部品と editDialog を定義する。
-Id はコードの動作との接続にも使う固定名で、AI コーディング時に models と C# を合わせて生成・保守する。
-表示文字列、入力処理、保存などの動作は C# が担当する。
-JSON の type だけから任意の新しいコントロールを生成するわけではない。
-
-メインには nameField / memoField（textBox）、
-themeButton / scaleButton / applyTitleButton / openDialogButton（button）、sampleTree（tree）、splitPaneDemoLink（link）が各 1 個必要。
-**トップページの 8 部品すべてに floating-layout のセルへの binding が必要。**
-splitPaneDemoPage には topDemoLink、verticalSplit、horizontalSplit と、それぞれの子のテキスト欄を定義する。
-スプリットペーンの子は split-pane の firstModel / secondModel で配置する。
-ツリーの項目と開閉操作は [ツリーの使い方](tree.md) を参照。
-ダイアログには nameField（textBox）、cancelButton / saveButton（button）が各 1 個必要。
-ダイアログの配置は現時点では C# が担当するため、ダイアログやその子への binding はデモではエラーにする。
-
-各範囲内で必要な部品を page / container で包み直せる。
-欠落・重複・型違い・未接続の部品や不正な binding がある場合、設定全体を採用せず最後の正常な状態を維持する。
-起動時に不正なスタイルだった場合は、コード内の標準モデル、5 行 × 2 列、四辺 8px を使う。
-
-models / layouts / bindings の変更はすべて自動リロード／F5 の対象。
-階層や配置を変更しても、既存コントロールのテキスト・選択範囲・テーマ・イベント処理は維持する。
-モデルを変更するとフォーカスのパスも更新し、マウスキャプチャは解除する。
-F12 は models のツリーと実際の文房具の配置座標を表示する。レイアウト専用ツリーの表示は未対応。
-
-未知のプロパティは原則無視するため、設定名は上記の綴りに合わせる。
-
-## 他の MonoGame アプリへの組み込み
-
-StationeryUI.Styling の StationeryStyleFile に、スタイル自体ではなく読み込み設定ファイルのパスを渡す。
-Update からファイルの Update を呼び、Current と現在の描画領域を配置エンジンに渡す。
-
-```csharp
-styles.Update(gameTime.ElapsedGameTime);
-var arranged = StationeryLayoutEngine.Arrange(
-    styles.Current, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-var nameBounds = arranged.Bounds["/demo/topDemoPage/nameField"];
-var innerBounds = arranged.ContentBounds["/demo"];
-```
-
-Bounds は margin を差し引いたモデルごとの外枠、ContentBounds はさらに panel のパディングを差し引いた内側。BorderBounds は panel の border が外へ広がる描画領域。いずれも完全パスをキーとする。
-結果はウィンドウのピクセル座標。StationeryUiHost.Viewport に倍率・オフセットを設定している場合は、論理座標へ変換してから Element.Bounds に渡す。
-
-Current.Models[0].CreateTree() でノードを作り、StationeryUiHost.AddTextBox / AddButton のノード指定版で結び付ける。
-モデルの更新には RebindModel を使う。任意の独自アプリでは、配置対象とコードの役割の検証も行う。
-StationeryStyleFile の validate コールバックに検証を渡すと、不正な設定の採用を防げる。
-
-Configuration は監視方針、ConfigurationFilePath と FilePath はそれぞれの読み込み先。
-layouts の配列順とモデルは独立しているため、Layouts[0] から対象モデルの設定を決めない。
-
 ## ページの表示領域とインスペクターパネル
 
 フルスクリーンはアプリのウィンドウ内いっぱいに表示する意味で、OS の全画面モードには切り替えない。
@@ -304,4 +250,4 @@ layouts の配列順とモデルは独立しているため、Layouts[0] から�
 インスペクターはページの外枠いっぱいの横幅を使い、ページ本文の padding の影響を受けない。祖先の padding でページ全体が狭められている場合は、その幅に収まる。
 デモではルートの padding を 0px にし、本文の 8px の余白を各ページの `pagePadding` に移した。これでパネルは画面の左右端まで広がる。
 
-既存のデモ用 JSON を移行するときは、両ページへ inspectorPanel と toolHint を追加し、それぞれのページレイアウトとヒントのセルを bind する。原本と C# のフォールバックは同じ構造を保つ。
+既存のデモ用 JSON では、各ページの inspectorPanel と toolHint、ページレイアウトとヒント欄の対応付けを揃える。

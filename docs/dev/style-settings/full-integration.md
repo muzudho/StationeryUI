@@ -167,4 +167,4 @@ F12 用 JSON は **InspectorGame 生成時だけ**読み込みます。オート
 
 F12 が開かないときは、まず起動引数の分岐、InspectorGame のコンパイル対象への登録、単一起動チェックの順番、`StationeryDeveloperWindow.LastError` を確認します。階層や座標が欠けるときは、スナップショットの収集対象と送信時点を確認します。
 
-操作の詳細は [F12 開発者ウィンドウ](../developer-window.md)、通信と寿命は [開発者向けの説明](../../dev/developer-window.md)を参照してください。
+操作の詳細は [F12 開発者ウィンドウ](../../user/developer-window.md)、通信と寿命は [開発者向けの説明](../developer-window.md)を参照してください。

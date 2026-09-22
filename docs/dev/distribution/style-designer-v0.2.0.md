@@ -54,4 +54,4 @@ GitHub asset の digest とローカル SHA-256 の一致、注釈付きタグ�
 
 .NET未導入のクリーンPC、macOS、Linux、Windows ARM64での実行は未検証。
 
-[リリース本文](../releases/style-designer-v0.2.0.md) ／ [配布手順](style-designer-release.md)
+[リリース本文](../../user/releases/style-designer-v0.2.0.md) ／ [配布手順](style-designer-release.md)
