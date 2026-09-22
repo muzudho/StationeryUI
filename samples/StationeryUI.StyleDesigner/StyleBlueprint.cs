@@ -155,7 +155,14 @@ public sealed class StyleBlueprint
 
     public StyleBlueprint()
     {
-        InitializeEdges(new JsonObject());
+        InitializeEdges(new JsonObject
+        {
+            ["padding"] = new JsonObject
+            {
+                ["top"] = "0px", ["right"] = "0px",
+                ["bottom"] = "0px", ["left"] = "0px"
+            }
+        });
         Resize(2, 2);
     }
 

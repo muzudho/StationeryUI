@@ -106,6 +106,7 @@ internal sealed partial class DesignerGame : Game
         gridEditorVisible = false;
         BuildSidebar();
         if (!HasLayoutTarget) return;
+        if (DirectLayoutTargetId is null) { BuildReadOnly(); return; }
         if (blueprint.CanEditPanel) { BuildPanelEditor(); return; }
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
         gridEditorVisible = true;
@@ -131,21 +132,24 @@ internal sealed partial class DesignerGame : Game
     }
     private void BuildGridInsetsEditor()
     {
-        Text("gridInsetsTitle", new(12, 480, 524, 34), "margin / padding");
-        var sides = new[] { "top", "right", "bottom", "left" };
-        var labels = new[] { "上", "右", "下", "左" };
-        for (var c = 0; c < sides.Length; c++) Text("gridSide" + c, new(120 + c * 104, 514, 100, 28), labels[c]);
-        foreach (var group in new[] { "margin", "padding" })
-        {
-            var row = group == "margin" ? 544 : 592;
-            Text("grid" + group, new(12, row, 104, 40), group);
-            for (var c = 0; c < sides.Length; c++)
-            {
-                var key = group + "." + sides[c];
-                var field = ui.AddTextBox("gridEdge" + group + c, new(120 + c * 104, row, 100, 40), key, blueprint.PanelEdges[key].Number, 20);
-                panelFields.Add((field, key));
-            }
-        }
+        Text("gridInsetsTitle", new(12, 480, 524, 34), "margin / padding (px)");
+        Text("gridMarginCaption", new(12, 516, 92, 28), "margin");
+        Text("gridPaddingCaption", new(12, 554, 92, 28), "padding");
+        AddInsetField("margin", "top", 230, 510);
+        AddInsetField("padding", "top", 230, 548);
+        AddInsetField("margin", "left", 96, 578, 80);
+        AddInsetField("padding", "left", 188, 578, 80);
+        AddInsetField("padding", "right", 310, 578, 80);
+        AddInsetField("margin", "right", 402, 578, 80);
+        AddInsetField("padding", "bottom", 230, 620);
+        AddInsetField("margin", "bottom", 230, 658);
+    }
+
+    private void AddInsetField(string group, string side, int x, int y, int width = 100)
+    {
+        var key = group + "." + side;
+        var field = ui.AddTextBox("gridEdge" + group + side, new(x, y, width, 34), side, blueprint.PanelEdges[key].Number, 18);
+        panelFields.Add((field, key));
     }
 
     private void AddTrack(StyleBlueprint.Track track, string id, ScreenRectangle bounds, string name)

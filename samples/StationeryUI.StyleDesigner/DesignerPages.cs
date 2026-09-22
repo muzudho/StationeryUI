@@ -33,6 +33,14 @@ internal sealed partial class DesignerGame
         }
     }
     private bool HasLayoutTarget => TargetLayoutId is not null;
+    private string? DirectLayoutTargetId
+    {
+        get
+        {
+            var item = styleTree?.Tree?.TargetItem;
+            return item is not null && treeLayouts.TryGetValue(item.Id, out var id) ? id : null;
+        }
+    }
     private readonly string? smokeInput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_INPUT");
 
     private enum DesignerTreeMode { Model, Layout, Json }
@@ -246,7 +254,7 @@ internal sealed partial class DesignerGame
         UpdateTreeActions();
         if (selected == lastTreeSelection) return;
         lastTreeSelection = selected;
-        var layoutId = TargetLayoutId;
+        var layoutId = DirectLayoutTargetId;
         if (layoutId is null)
         {
             Capture(); rebuild = true;
