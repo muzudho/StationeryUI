@@ -10,7 +10,11 @@ MonoGame アプリへ文房具 UI を接続する開発者向けの資料です�
 | `StationeryUI.MonoGame` | .NET 8以降 | DesktopGL 3.8.5.1への描画・入力接続 |
 | `StationeryUI.Windows` | .NET 8 Windows以降 | Windows文字描画、クリップボード、SDL2入力・合成監視 |
 
-`.nupkg` は [GitHub Release v0.2.0](https://github.com/muzudho/StationeryUI/releases/tag/v0.2.0) から入手できます。NuGet.orgへの公開は未実施です。3 つのパッケージを任意のローカルフォルダーへダウンロードし、プロジェクトの `NuGet.Config` にそのフォルダーをソースとして追加してください。両利用アプリでは `LocalPackages/StationeryUI` を同梱しています。
+v0.2.0 は NuGet.org から取得できます：[StationeryUI](https://www.nuget.org/packages/StationeryUI/0.2.0)、[StationeryUI.MonoGame](https://www.nuget.org/packages/StationeryUI.MonoGame/0.2.0)、[StationeryUI.Windows](https://www.nuget.org/packages/StationeryUI.Windows/0.2.0)。公開者は [Muzudho](https://www.nuget.org/profiles/Muzudho) です。
+
+NuGet.org が有効なプロジェクトでは、以下の参照を追加して `dotnet restore` を実行します。`StationeryUI` は依存パッケージとして復元されます。NuGet.org のソース URL は `https://api.nuget.org/v3/index.json` です。ソースを制限する `NuGet.Config` や Package Source Mapping がある場合は、この３パッケージを NuGet.org から取得できる設定にしてください。
+
+手動配布用の `.nupkg` は引き続き [GitHub Release v0.2.0](https://github.com/muzudho/StationeryUI/releases/tag/v0.2.0) から入手できます。既存アプリの `LocalPackages/StationeryUI` を使う運用も継続できます。
 
 ```xml
 <ItemGroup>

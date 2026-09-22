@@ -16,6 +16,6 @@
 - [ライブラリーの組み込み](../library-integration.md)
 - [GitHub Releases の v0.2.0](https://github.com/muzudho/StationeryUI/releases/tag/v0.2.0)
 
-2026-09-22 時点の作業記録では、GitHub Releases への配布は完了、NuGet.org への登録は未実施です。今回の資料作成では公開操作やアカウント設定を行っていません。
+2026-09-22、本人による３パッケージの NuGet.org 公開が完了しました。公開者は [Muzudho](https://www.nuget.org/profiles/Muzudho) です。NuGet.org のみを取得元にした新規復元と、参照プロジェクトのビルドを確認済みです。詳細は[配布記録](../distribution/library-v0.2.0.md)を参照してください。
 
 [開発者向け目次](../README.md)

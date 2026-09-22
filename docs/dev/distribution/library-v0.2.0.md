@@ -4,14 +4,14 @@
 
 ## 配布物
 
-[GitHub Release v0.2.0](https://github.com/muzudho/StationeryUI/releases/tag/v0.2.0) に以下を添付します。NuGet.org への公開は含みません。
+[GitHub Release v0.2.0](https://github.com/muzudho/StationeryUI/releases/tag/v0.2.0) に以下を添付済みです。その後、本人による NuGet.org への３パッケージの公開も完了しました。
 
 - `StationeryUI.0.2.0.nupkg`
 - `StationeryUI.MonoGame.0.2.0.nupkg`
 - `StationeryUI.Windows.0.2.0.nupkg`
 - `SHA256SUMS.txt`
 
-版番号は `Directory.Build.props` の 0.2.0、ソースはタグ `v0.2.0` を参照してください。3 つのパッケージを同じローカル NuGet ソースへ配置する手順は[ライブラリーの組み込み](../library-integration.md)を参照してください。
+版番号は `Directory.Build.props` の 0.2.0、ソースはタグ `v0.2.0` を参照してください。NuGet.org からの取得とローカル配布については[ライブラリーの組み込み](../library-integration.md)を参照してください。
 
 ## 主な変更
 
@@ -29,3 +29,14 @@
 - 3 パッケージのバージョン、ライブラリー間の依存バージョン、DLL の収録を確認。
 
 実 IME の候補選択、各 OS の DPI、タッチ操作、別 PC での手動検証は今回の検証に含みません。
+
+## NuGet.org 公開後の確認（2026-09-22）
+
+公開者：[Muzudho](https://www.nuget.org/profiles/Muzudho)。`StationeryUI`、`StationeryUI.MonoGame`、`StationeryUI.Windows` の 0.2.0 を確認しました。
+
+- `NuGet.Config` のソースをクリアし、`https://api.nuget.org/v3/index.json` だけを指定。
+- 空の専用パッケージ保存先と `--no-http-cache` を使い、３パッケージを厳密に `[0.2.0]` 指定して復元成功。
+- 復元メタデータで３パッケージの取得元が NuGet.org であることを確認。
+- `net8.0-windows` の参照確認用プロジェクトをビルドし、警告 0・エラー 0。実アプリでの動作検査とは別の、パッケージ参照の検証。
+
+制限環境では SSL 接続に失敗したため、許可された通常のネットワーク環境で復元を実施しました。
