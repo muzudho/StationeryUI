@@ -43,7 +43,7 @@ public sealed class DeveloperInspectionModel
             Restore(state);
         }
         foreach (var (path, entry) in entries)
-            items[path].Label = $"{entry.Id}  [{entry.Kind}]" + (entry.Visible ? "" : "  （非表示）");
+            items[path].Label = DeveloperInspectionLayout.FormatLabel(entry);
     }
 
     public bool Select(string path)

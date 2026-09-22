@@ -148,6 +148,10 @@ public sealed partial class StationeryUiHost : IDisposable
     }
 
     /// <summary>Take a snapshot on the game thread; inspectors never read mutable UI elements directly.</summary>
+    /// <summary>Includes layout types and grid cells from the current style settings.</summary>
+    public IReadOnlyList<StationeryInspectionEntry> Inspect(StationeryUI.Styling.StationeryStyleSettings settings, bool visible = true)
+        => DeveloperInspectionLayout.Apply(Inspect(visible), settings);
+
     public IReadOnlyList<StationeryInspectionEntry> Inspect(bool visible = true)
     {
         ArrangeSplitPanes();

@@ -63,4 +63,10 @@ public sealed class StationeryNode
 
 /// <summary>An immutable copy of game-thread state for the developer window.</summary>
 public sealed record StationeryInspectionEntry(string Id, string Path, string? ParentPath, string Kind,
-    string Label, bool Visible, ScreenRectangle? WindowBounds);
+    string Label, bool Visible, ScreenRectangle? WindowBounds)
+{
+    public IReadOnlyList<string>? LayoutTypes { get; init; }
+    public StationeryInspectionCell? Cell { get; init; }
+}
+
+public sealed record StationeryInspectionCell(int Column, int Row, int ColumnSpan, int RowSpan);

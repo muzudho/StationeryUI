@@ -40,6 +40,44 @@ internal static class DeveloperInspectionTests
         Check(roundtrip.CaptureSequence == 2 && roundtrip.CapturePath == model.SelectedPath && roundtrip.RestoreState!.CaptureEnabled,
             "capture command and toggle survive pipe serialization");
         model.Refresh([]); Check(model.SelectedEntry is null && model.Details.Contains("選択"), "empty snapshot");
+        CheckLayoutLabels();
+    }
+
+    private static void CheckLayoutLabels()
+    {
+        var settings = StationeryUI.Styling.StationeryStyleSettings.Parse("""
+        {
+          "models": [{"id":"demo","type":"viewport","children":[
+            {"id":"demoPage","type":"page","children":[{"id":"btn123","type":"button"}]}]}],
+          "layouts": [{"id":"grid","type":"grid-layout","row-definitions":["1rate","1rate","1rate"],
+            "column-definitions":["1rate","1rate","1rate","1rate"]}],
+          "bindings": [{"layout":"grid","parentModel":"/demo/demoPage","childrenModel":[
+            {"model":"btn123","col":1,"row":0,"colspan":3,"rowspan":2}]}]
+        }
+        """);
+        StationeryInspectionEntry[] entries = [
+            new("demo", "/demo", null, "viewport", "", true, null),
+            new("demoPage", "/demo/demoPage", "/demo", "page", "", true, null),
+            new("btn123", "/demo/demoPage/btn123", "/demo/demoPage", "button", "", true, null)
+        ];
+        var enriched = DeveloperInspectionLayout.Apply(entries, settings);
+        var packet = new DeveloperInspectionMessage(enriched.ToArray(), 1, null);
+        var received = System.Text.Json.JsonSerializer.Deserialize<DeveloperInspectionMessage>(System.Text.Json.JsonSerializer.Serialize(packet))!;
+        var model = new DeveloperInspectionModel(); model.Refresh(received.Entries);
+        model.Select("/demo/demoPage");
+        Check(model.Tree.SelectedItem!.Label == "(demoPage : Page) (gridLayout)", "layout owner label and serialization");
+        model.Select("/demo/demoPage/btn123");
+        Check(model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 0, 3, 2)", "column row column-span row-span order");
+        var tree = model.Tree;
+        var changed = enriched.Select(e => e.Id == "btn123" ? e with { Cell = new(1, 1, 1, 1), Visible = false } : e).ToArray();
+        model.Refresh(changed);
+        Check(model.Tree == tree && model.SelectedPath == "/demo/demoPage/btn123"
+            && model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 1, 1, 1)  （非表示）", "live placement label preserves selection");
+        Check(DeveloperInspectionLayout.FormatLabel(entries[0]) == "(demo : Viewport) (—)", "legacy snapshots remain displayable");
+        var cleared = DeveloperInspectionLayout.Apply(enriched, settings with { Bindings = [] });
+        Check(cleared.All(e => e.LayoutTypes is null && e.Cell is null), "removed bindings clear old metadata");
+        Check(DeveloperInspectionLayout.FormatLabel(enriched[2] with { LayoutTypes = ["box-layout", "grid-layout"] })
+            == "(btn123 : Button) (boxLayout, gridLayout)", "layout types take precedence over a cell");
     }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
 }

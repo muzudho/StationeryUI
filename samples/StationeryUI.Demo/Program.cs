@@ -396,7 +396,7 @@ internal sealed partial class Demo : Game
         var root = modelBinding.Root;
         entries[root.Path] = new(root.Id, root.Path, null, root.Kind, "デモ画面", true,
             new ScreenRectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height));
-        return entries.Values.ToArray();
+        return DeveloperInspectionLayout.Apply(entries.Values.ToArray(), styles.Current);
     }
 
     protected override void Dispose(bool disposing)
