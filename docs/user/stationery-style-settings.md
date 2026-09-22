@@ -69,6 +69,38 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
 旧トップレベルの viewport / model / layout は廃止。旧形式との混在もエラー。
 モデルの type: viewport は継続するが、レイアウトの型は box-layout / grid-layout / split-pane を使う。
 
+### セルキーでモデルを配置する
+
+`layouts` の `cells` は配置枠だけを定義します。セルに名前を付ける `slots` は使用しません。`bindings.childrenModel` の `cell` で配置枠を選びます。
+
+GridLayout は `row` と `col` を 1 始まりで指定します。レイアウト定義側の `cells` は従来どおり内部の 0 始まりの配置値ですが、binding のセルキーは 1 始まりです。
+
+```json
+"cells": [
+    { "row": 0, "col": 1, "colspan": 2 }
+],
+"childrenModel": [
+    { "model": "content", "cell": { "row": 1, "col": 2 } }
+]
+```
+
+DockLayout は方向ごとの出現順を 1 始まりで指定します。`top` が２つあれば `top=1` と `top=2` です。`center` は通常１つなので `index: 1` を使います。
+
+```json
+"cells": [
+    { "dock": "top", "size": "40px" },
+    { "dock": "top", "size": "30px" },
+    { "dock": "center", "size": "remaining" }
+],
+"childrenModel": [
+    { "model": "header", "cell": { "dock": "top", "index": 1 } },
+    { "model": "subHeader", "cell": { "dock": "top", "index": 2 } },
+    { "model": "body", "cell": { "dock": "center", "index": 1 } }
+]
+```
+
+セルキーはレイアウト定義から毎回計算するため、セルの追加・削除・並び替えで番号が変わります。永続的な識別子ではありません。旧形式の `slots` と binding の `slot` は互換読み込みだけを行います。
+
 以下は形式を説明する小さな例。実際のデモでは原本の二つのページと、その中の文房具も必要。
 
 ```json
@@ -109,21 +141,11 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
             "cells": [
                 {
                     "row": 0,
-                    "col": 0,
-                    "slots": [
-                        {
-                            "id": "nameField"
-                        }
-                    ]
+                    "col": 0
                 },
                 {
                     "row": 0,
-                    "col": 1,
-                    "slots": [
-                        {
-                            "id": "memoField"
-                        }
-                    ]
+                    "col": 1
                 }
             ]
         }
@@ -135,11 +157,11 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
             "childrenModel": [
                 {
                     "model": "nameField",
-                    "slot": "nameField"
+                    "cell": { "row": 1, "col": 1 }
                 },
                 {
                     "model": "memoField",
-                    "slot": "memoField"
+                    "cell": { "row": 1, "col": 2 }
                 }
             ]
         }
@@ -162,7 +184,7 @@ bindings.layout には先頭 `/` 付きのスラッシュ区切りの完全パ�
 
 box-layout には layout と model を指定する。
 grid-layout には layout、parentModel、childrenModel を指定する。
-childrenModel の各要素は slot と model の対応だけを持つ。slot は参照先レイアウトの cells 内の slots の Id、model は parentModel からたどる相対パス。行・列・span は layouts.cells に定義する。
+childrenModel の各要素は cell と model の対応を持つ。GridLayout の cell は 1 始まりの row・col、DockLayout の cell は方向ごとの 1 始まりの index。model は parentModel からたどる相対パス。行・列・span は layouts.cells に定義する。
 
 - parentModel: demo、model: nameField → /demo/nameField。
 - parentModel: demo、model: inputs/nameField → /demo/inputs/nameField。
@@ -267,20 +289,10 @@ F5 と自動リロードは継続する。
                 {
                     "dock": "bottom",
                     "size": "80px",
-                    "slots": [
-                        {
-                            "id": "inspectorPanel"
-                        }
-                    ]
                 },
                 {
                     "dock": "center",
-                    "size": "remaining",
-                    "slots": [
-                        {
-                            "id": "body"
-                        }
-                    ]
+                    "size": "remaining"
                 }
             ]
         }
@@ -292,11 +304,11 @@ F5 と自動リロードは継続する。
             "childrenModel": [
                 {
                     "model": "inspectorPanel",
-                    "slot": "inspectorPanel"
+                    "cell": { "dock": "bottom", "index": 1 }
                 },
                 {
                     "model": "body",
-                    "slot": "body"
+                    "cell": { "dock": "center", "index": 1 }
                 }
             ]
         }
@@ -316,4 +328,4 @@ layouts.cells にある bottom の `size` を `0px` に変えると、下端を�
 
 旧 `fullscreen-layout` / `work-page-layout` も互換用として利用できるが、現在のデモでは使わない。[ドック配置の詳しい仕様](../dev/dock-layout.md)を参照。
 
-margin は box-layout / grid-layout / dock-layout に指定できる。cells と slots は余白を持たない。基準は親の padding 内で割り当てられた配置枠。省略した辺は0pxで、非負の px 文字列を指定する。F12 の詳細欄では margin と padding の四辺を Compound 図で確認できる。[余白の計算と図の読み方](../dev/dock-layout.md#配置枠を基準にした-margin)を参照。
+margin は box-layout / grid-layout / dock-layout に指定できる。cells は余白を持たない。基準は親の padding 内で割り当てられた配置枠。省略した辺は0pxで、非負の px 文字列を指定する。F12 の詳細欄では margin と padding の四辺を Compound 図で確認できる。[余白の計算と図の読み方](../dev/dock-layout.md#配置枠を基準にした-margin)を参照。

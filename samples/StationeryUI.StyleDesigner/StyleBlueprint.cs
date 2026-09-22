@@ -223,8 +223,9 @@ public sealed class StyleBlueprint
                 if (!Kinds.Contains(cell.Kind)) throw new JsonException("未対応の文房具の種類です。");
                 var id = $"cellR{row + 1}C{column + 1}";
                 models.Add(new JsonObject { ["id"] = id, ["type"] = cell.Kind, ["label"] = cell.Label });
-                cells.Add(new JsonObject { ["row"] = row, ["col"] = column, ["slots"] = new JsonArray(new JsonObject { ["id"] = id }) });
-                bindings.Add(new JsonObject { ["model"] = id, ["slot"] = id });
+                cells.Add(new JsonObject { ["row"] = row, ["col"] = column });
+                bindings.Add(new JsonObject { ["model"] = id,
+                    ["cell"] = new JsonObject { ["row"] = row + 1, ["col"] = column + 1 } });
             }
         var root = new JsonObject
         {

@@ -61,14 +61,14 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 
 スタイルを生成・編集する AI エージェントは、１ノードにつきルートレイアウトを最大１つにしてください。box / grid / dock はどれも `padding` を持てます。複合配置はレイアウトの `children` または子コンテナーでネストします。同じノードに余白用 box と配置用 grid を別ルートとして重ねないでください。省略値と移行方法は [ドック配置の仕様](dock-layout.md)を参照してください。
 
-配置は layouts の cells に定義してください。各セル内の slots には Id だけを書きます。grid の row / col / rowspan / colspan、dock の dock / size を bindings に書かないでください。bindings.childrenModel は slot と model の参照だけです。旧形式の移行と枠の検証規則は [配置枠とモデルの対応](dock-layout.md#配置枠とモデルの対応)を参照してください。
+配置は layouts の cells に定義してください。セルに slots は書きません。GridLayout は binding の `cell: {"row": 1, "col": 2}`、DockLayout は `cell: {"dock": "top", "index": 2}` でモデルと対応させます。番号は 1 始まりで、DockLayout は方向ごとに数えます。旧形式の slot は互換読み込みだけを行います。詳しくは [セルキーとモデルの対応](style-settings/file-format.md#セルキーとモデルの対応)を参照してください。
 
 
 `bindings.layout` は `/frame/grid/inner` のように、先頭 `/` 付きのスラッシュ区切り絶対パスを指定します。最上位も `/mainGrid` と書きます。レイアウトの `id` は `mainGrid` のようなローカル名のままです。旧ドット区切り、先頭 `/` の省略、末尾 `/`、空の区間（`//`）、`.` / `..` は受け付けません。旧設定は `frame.grid` → `/frame/grid` と置き換えてください。モデル参照の既存ルールと slot のローカル Id は変更しません。
 
 margin は box / grid / dock のレイアウトに指定します。cells と slots には余白を指定できません。割り当て枠から margin を引き、padding はその内側に適用します。F12 の Compound 図へ数値を渡すため、検査データには最新の設定で DeveloperInspectionLayout.Apply を適用してください。[余白の仕様](dock-layout.md#配置枠を基準にした-margin)を参照してください。
 
-cells は layouts 内に定義し、その各セル内の slots は id だけを持ちます。１セル０～１個で、配置・余白を slots に書かないでください。モデルとの対応は bindings に残します。[cells と slots の移行仕様](dock-layout.md#cells-と-slots)を参照してください。
+cells は layouts 内に定義し、モデルとの対応は GridLayout の `row`・`col`、DockLayout の方向・`index` で指定します。１セル０～１モデルで、配置・余白を binding の別フィールドに重複して書きません。番号は 1 始まりで永続性を持ちません。[セルキーとモデルの対応](style-settings/file-format.md#セルキーとモデルの対応)を参照してください。
 
 
 ## 開発者ウィンドウのモデル／レイアウト切り替え

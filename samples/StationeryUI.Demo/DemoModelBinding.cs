@@ -250,84 +250,39 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "cells": [
         {
           "row": 0,
-          "col": 0,
-          "slots": [
-            {
-              "id": "nameField"
-            }
-          ]
+          "col": 0
         },
         {
           "row": 1,
-          "col": 0,
-          "slots": [
-            {
-              "id": "memoField"
-            }
-          ]
+          "col": 0
         },
         {
           "row": 2,
-          "col": 0,
-          "slots": [
-            {
-              "id": "themeButton"
-            }
-          ]
+          "col": 0
         },
         {
           "row": 2,
-          "col": 1,
-          "slots": [
-            {
-              "id": "scaleButton"
-            }
-          ]
+          "col": 1
         },
         {
           "row": 3,
-          "col": 0,
-          "slots": [
-            {
-              "id": "applyTitleButton"
-            }
-          ]
+          "col": 0
         },
         {
           "row": 4,
-          "col": 0,
-          "slots": [
-            {
-              "id": "openDialogButton"
-            }
-          ]
+          "col": 0
         },
         {
           "row": 0,
-          "col": 1,
-          "slots": [
-            {
-              "id": "sampleTree"
-            }
-          ]
+          "col": 1
         },
         {
           "row": 4,
-          "col": 1,
-          "slots": [
-            {
-              "id": "splitPaneDemoLink"
-            }
-          ]
+          "col": 1
         },
         {
           "row": 3,
-          "col": 1,
-          "slots": [
-            {
-              "id": "layoutDemoLink"
-            }
-          ]
+          "col": 1
         }
       ]
     },
@@ -357,30 +312,15 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "cells": [
         {
           "row": 0,
-          "col": 0,
-          "slots": [
-            {
-              "id": "topDemoLink"
-            }
-          ]
+          "col": 0
         },
         {
           "row": 1,
-          "col": 0,
-          "slots": [
-            {
-              "id": "verticalSplit"
-            }
-          ]
+          "col": 0
         },
         {
           "row": 2,
-          "col": 0,
-          "slots": [
-            {
-              "id": "horizontalSplit"
-            }
-          ]
+          "col": 0
         }
       ]
     },
@@ -406,21 +346,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "cells": [
         {
           "dock": "bottom",
-          "size": "80px",
-          "slots": [
-            {
-              "id": "inspectorPanel"
-            }
-          ]
+          "size": "80px"
         },
         {
           "dock": "center",
-          "size": "remaining",
-          "slots": [
-            {
-              "id": "body"
-            }
-          ]
+          "size": "remaining"
         }
       ]
     },
@@ -436,12 +366,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "cells": [
         {
           "row": 0,
-          "col": 0,
-          "slots": [
-            {
-              "id": "toolHint"
-            }
-          ]
+          "col": 0
         }
       ]
     },
@@ -492,12 +417,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
               "cells": [
                 {
                   "row": 0,
-                  "col": 0,
-                  "slots": [
-                    {
-                      "id": "boxContent"
-                    }
-                  ]
+                  "col": 0
                 }
               ]
             }
@@ -555,12 +475,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   "cells": [
                     {
                       "row": 0,
-                      "col": 0,
-                      "slots": [
-                        {
-                          "id": "spanCell"
-                        }
-                      ]
+                      "col": 0
                     }
                   ]
                 }
@@ -587,39 +502,19 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
               "cells": [
                 {
                   "row": 0,
-                  "col": 0,
-                  "slots": [
-                    {
-                      "id": "nestedA"
-                    }
-                  ]
+                  "col": 0
                 },
                 {
                   "row": 0,
-                  "col": 1,
-                  "slots": [
-                    {
-                      "id": "nestedB"
-                    }
-                  ]
+                  "col": 1
                 },
                 {
                   "row": 1,
-                  "col": 0,
-                  "slots": [
-                    {
-                      "id": "nestedC"
-                    }
-                  ]
+                  "col": 0
                 },
                 {
                   "row": 1,
-                  "col": 1,
-                  "slots": [
-                    {
-                      "id": "nestedD"
-                    }
-                  ]
+                  "col": 1
                 }
               ]
             }
@@ -628,12 +523,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             {
               "row": 2,
               "col": 0,
-              "colspan": 3,
-              "slots": [
-                {
-                  "id": "gridFooter"
-                }
-              ]
+              "colspan": 3
             }
           ]
         }
@@ -653,39 +543,19 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "cells": [
         {
           "row": 0,
-          "col": 0,
-          "slots": [
-            {
-              "id": "topDemoLink"
-            }
-          ]
+          "col": 0
         },
         {
           "row": 0,
-          "col": 1,
-          "slots": [
-            {
-              "id": "title"
-            }
-          ]
+          "col": 1
         },
         {
           "row": 1,
-          "col": 0,
-          "slots": [
-            {
-              "id": "boxTitle"
-            }
-          ]
+          "col": 0
         },
         {
           "row": 1,
-          "col": 1,
-          "slots": [
-            {
-              "id": "gridTitle"
-            }
-          ]
+          "col": 1
         }
       ]
     },
@@ -695,21 +565,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "cells": [
         {
           "dock": "bottom",
-          "size": "0px",
-          "slots": [
-            {
-              "id": "inspectorPanel"
-            }
-          ]
+          "size": "0px"
         },
         {
           "dock": "center",
-          "size": "remaining",
-          "slots": [
-            {
-              "id": "body"
-            }
-          ]
+          "size": "remaining"
         }
       ]
     }
@@ -721,39 +581,66 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "nameField",
-          "slot": "nameField"
+          "cell": {
+            "row": 1,
+            "col": 1
+          }
         },
         {
           "model": "memoField",
-          "slot": "memoField"
+          "cell": {
+            "row": 2,
+            "col": 1
+          }
         },
         {
           "model": "themeButton",
-          "slot": "themeButton"
+          "cell": {
+            "row": 3,
+            "col": 1
+          }
         },
         {
           "model": "scaleButton",
-          "slot": "scaleButton"
+          "cell": {
+            "row": 3,
+            "col": 2
+          }
         },
         {
           "model": "applyTitleButton",
-          "slot": "applyTitleButton"
+          "cell": {
+            "row": 4,
+            "col": 1
+          }
         },
         {
           "model": "openDialogButton",
-          "slot": "openDialogButton"
+          "cell": {
+            "row": 5,
+            "col": 1
+          }
         },
         {
           "model": "sampleTree",
-          "slot": "sampleTree"
+          "cell": {
+            "row": 1,
+            "col": 2
+          }
         },
         {
           "model": "splitPaneDemoLink",
-          "slot": "splitPaneDemoLink"
+          "cell": {
+            "row": 5,
+            "col": 2
+          }
         },
         {
           "model": "layoutDemoLink",
-          "slot": "layoutDemoLink"
+          "cell": {
+            "row": 4,
+            "col": 2
+          }
         }
       ]
     },
@@ -763,15 +650,24 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "topDemoLink",
-          "slot": "topDemoLink"
+          "cell": {
+            "row": 1,
+            "col": 1
+          }
         },
         {
           "model": "verticalSplit",
-          "slot": "verticalSplit"
+          "cell": {
+            "row": 2,
+            "col": 1
+          }
         },
         {
           "model": "horizontalSplit",
-          "slot": "horizontalSplit"
+          "cell": {
+            "row": 3,
+            "col": 1
+          }
         }
       ]
     },
@@ -793,11 +689,17 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "inspectorPanel",
-          "slot": "inspectorPanel"
+          "cell": {
+            "dock": "bottom",
+            "index": 1
+          }
         },
         {
           "model": "body",
-          "slot": "body"
+          "cell": {
+            "dock": "center",
+            "index": 1
+          }
         }
       ]
     },
@@ -807,7 +709,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "toolHint",
-          "slot": "toolHint"
+          "cell": {
+            "row": 1,
+            "col": 1
+          }
         }
       ]
     },
@@ -817,11 +722,17 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "inspectorPanel",
-          "slot": "inspectorPanel"
+          "cell": {
+            "dock": "bottom",
+            "index": 1
+          }
         },
         {
           "model": "body",
-          "slot": "body"
+          "cell": {
+            "dock": "center",
+            "index": 1
+          }
         }
       ]
     },
@@ -831,7 +742,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "toolHint",
-          "slot": "toolHint"
+          "cell": {
+            "row": 1,
+            "col": 1
+          }
         }
       ]
     },
@@ -841,19 +755,31 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "topDemoLink",
-          "slot": "topDemoLink"
+          "cell": {
+            "row": 1,
+            "col": 1
+          }
         },
         {
           "model": "title",
-          "slot": "title"
+          "cell": {
+            "row": 1,
+            "col": 2
+          }
         },
         {
           "model": "boxTitle",
-          "slot": "boxTitle"
+          "cell": {
+            "row": 2,
+            "col": 1
+          }
         },
         {
           "model": "gridTitle",
-          "slot": "gridTitle"
+          "cell": {
+            "row": 2,
+            "col": 2
+          }
         }
       ]
     },
@@ -863,7 +789,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "boxContent",
-          "slot": "boxContent"
+          "cell": {
+            "row": 1,
+            "col": 1
+          }
         }
       ]
     },
@@ -873,7 +802,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "spanCell",
-          "slot": "spanCell"
+          "cell": {
+            "row": 1,
+            "col": 1
+          }
         }
       ]
     },
@@ -883,19 +815,31 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "nestedA",
-          "slot": "nestedA"
+          "cell": {
+            "row": 1,
+            "col": 1
+          }
         },
         {
           "model": "nestedB",
-          "slot": "nestedB"
+          "cell": {
+            "row": 1,
+            "col": 2
+          }
         },
         {
           "model": "nestedC",
-          "slot": "nestedC"
+          "cell": {
+            "row": 2,
+            "col": 1
+          }
         },
         {
           "model": "nestedD",
-          "slot": "nestedD"
+          "cell": {
+            "row": 2,
+            "col": 2
+          }
         }
       ]
     },
@@ -905,7 +849,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "gridFooter",
-          "slot": "gridFooter"
+          "cell": {
+            "row": 3,
+            "col": 1
+          }
         }
       ]
     },
@@ -915,11 +862,17 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "inspectorPanel",
-          "slot": "inspectorPanel"
+          "cell": {
+            "dock": "bottom",
+            "index": 1
+          }
         },
         {
           "model": "body",
-          "slot": "body"
+          "cell": {
+            "dock": "center",
+            "index": 1
+          }
         }
       ]
     },
@@ -929,7 +882,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "toolHint",
-          "slot": "toolHint"
+          "cell": {
+            "row": 1,
+            "col": 1
+          }
         }
       ]
     }

@@ -37,6 +37,7 @@ internal static class GridLayoutTests
 
     public static void Run()
     {
+        CellKeysWithoutSlots();
         var settings = StationeryStyleSettings.Parse(Source);
         if (settings.Layouts.Single(l => l.Id == "grid").Path != "/frame/grid" ||
             settings.Layouts.Single(l => l.Id == "grid").ParentPath != "/frame")
@@ -198,6 +199,26 @@ internal static class GridLayoutTests
         Equal(new(50, 0, 50, 200), reused.Bounds["/screen/right/a"]);
     }
 
+    private static void CellKeysWithoutSlots()
+    {
+        const string source = """
+        {"models":[{"id":"screen","type":"viewport","children":[{"id":"a","type":"button"},{"id":"b","type":"button"},{"id":"dockParent","type":"container","children":[{"id":"c","type":"button"},{"id":"d","type":"button"}]}]}],
+         "layouts":[{"id":"grid","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate","1rate"],
+                     "cells":[{"row":0,"col":0},{"row":0,"col":1}]},
+                    {"id":"dock","type":"dock-layout","cells":[{"dock":"top","size":"10px"},{"dock":"top","size":"20px"}] }],
+         "bindings":[{"layout":"/grid","parentModel":"screen","childrenModel":[
+             {"model":"a","cell":{"row":1,"col":1}},{"model":"b","cell":{"row":1,"col":2}}]},
+                     {"layout":"/dock","parentModel":"screen/dockParent","childrenModel":[
+             {"model":"c","cell":{"dock":"top","index":1}},{"model":"d","cell":{"dock":"top","index":2}}]}]}
+        """;
+        var settings = StationeryStyleSettings.Parse(source);
+        Require(settings.Bindings[0].Children[0].Row == 0 && settings.Bindings[0].Children[1].Column == 1,
+            "grid cell key uses one-based external coordinates");
+        Require(settings.Bindings[1].DockChildren[1].CellIndex == 1, "dock cell key counts repeated directions");
+        RejectText(source.Replace("\"index\":2", "\"index\":3"));
+        RejectText(source.Replace("\"row\":1,\"col\":1", "\"row\":0,\"col\":1"));
+    }
+
     private static void AddElementMargin(JsonNode node, string margin)
     {
         node["layouts"]!.AsArray().Add(JsonNode.Parse("""{"id":"elementMargin","type":"box-layout","padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}}"""));
@@ -214,6 +235,12 @@ internal static class GridLayoutTests
         try { Edit(edit); } catch (JsonException) { return; }
         throw new Exception("Expected invalid grid-layout or binding to be rejected.");
     }
+    private static void RejectText(string source)
+    {
+        try { StationeryStyleSettings.Parse(source); } catch (JsonException) { return; }
+        throw new Exception("Expected invalid cell key to be rejected.");
+    }
+    private static void Require(bool condition, string message) { if (!condition) throw new Exception(message); }
     private static void Equal(ScreenRectangle expected, ScreenRectangle actual)
     {
         if (Math.Abs(expected.X - actual.X) > .00001 || Math.Abs(expected.Y - actual.Y) > .00001 ||

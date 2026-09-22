@@ -102,7 +102,7 @@ public static class StationeryLayoutEngine
                         var cellBounds = StationeryDockLayout.Arrange(dockContent,
                             layout.Cells.Select((cell, index) => new StationeryDockBinding(index.ToString(System.Globalization.CultureInfo.InvariantCulture), cell.Dock!, cell.Size)).ToArray());
                         foreach (var (cell, index) in layout.Cells.Select((cell, index) => (cell, index)))
-                            foreach (var child in binding.DockChildren.Where(child => cell.Slots.Any(slot => slot.Id == child.Slot)))
+                            foreach (var child in binding.DockChildren.Where(child => child.CellIndex == index))
                                 positions[child.ModelPath] = cellBounds[index.ToString(System.Globalization.CultureInfo.InvariantCulture)];
                     }
                 }

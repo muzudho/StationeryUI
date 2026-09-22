@@ -59,7 +59,7 @@ public sealed record StationeryLayoutCell(int Row = 0, int Column = 0, int RowSp
 }
 public sealed record StationeryCellBinding(string ModelPath, int Row, int Column, int RowSpan = 1, int ColumnSpan = 1);
 public sealed record StationeryDockBinding(string ModelPath, string Dock, double Size = 0)
-{ public string? Slot { get; init; } }
+{ public string? Slot { get; init; } public int CellIndex { get; init; } = -1; }
 /// <summary>References are resolved to canonical model paths when a complete settings snapshot is parsed.</summary>
 public sealed record StationeryLayoutBinding(string Layout, string ModelPath, IReadOnlyList<StationeryCellBinding> Children,
     string? FirstModel = null, string? SecondModel = null, string? InspectorModel = null)
@@ -306,11 +306,16 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                     foreach (var child in ReadArray(item, "childrenModel", path).EnumerateArray())
                     {
                         var childPath = $"{path}.childrenModel[{dockChildren.Count}]";
-                        var slot = ResolveSlot(child, layout, childPath, assigned);
+                        var slot = ResolveCell(child, layout, childPath, assigned);
                         var node = ResolveModel(modelTree, ReadString(child, "model", childPath), dockParent);
                         if (node.Parent != dockParent) throw new JsonException($"{childPath}: dock elements must be direct children of {dockParent.Path}.");
                         if (!placedModels.Add(node.Path)) throw new JsonException($"Model {node.Path} is placed more than once.");
-                        dockChildren.Add(new(node.Path, slot.Dock!, slot.Size) { Slot = ReadString(child, "slot", childPath) });
+                        var cellIndex = layout.Cells.ToList().IndexOf(slot);
+                        dockChildren.Add(new(node.Path, slot.Dock!, slot.Size)
+                        {
+                            Slot = child.TryGetProperty("slot", out var legacySlot) ? legacySlot.GetString() : null,
+                            CellIndex = cellIndex
+                        });
                     }
                 }
                 catch (JsonException ex) when (recoverDockErrors)
@@ -367,14 +372,14 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 throw new JsonException($"{parent.Path} cannot be a layout parent.");
             if (!grids.Add(parent.Path + ":" + layout.Path)) throw new JsonException($"Multiple grid layouts for {parent.Path}.");
             var children = new List<StationeryCellBinding>();
-            var assignedSlots = new HashSet<string>(StringComparer.Ordinal);
+            var assignedCells = new HashSet<string>(StringComparer.Ordinal);
             foreach (var child in ReadArray(item, "childrenModel", path).EnumerateArray())
             {
                 var childPath = $"{path}.childrenModel[{children.Count}]";
                 RequireObject(child, childPath);
                 var node = ResolveModel(modelTree, ReadString(child, "model", childPath), parent);
                 if (node == parent || !node.IsWithin(parent)) throw new JsonException($"{node.Path} must be a descendant of {parent.Path}.");
-                var slot = ResolveSlot(child, layout, childPath, assignedSlots);
+                var slot = ResolveCell(child, layout, childPath, assignedCells);
                 if (!placedModels.Add(node.Path)) throw new JsonException($"Model {node.Path} is placed more than once.");
                 children.Add(new(node.Path, slot.Row, slot.Column, slot.RowSpan, slot.ColumnSpan));
             }
@@ -390,14 +395,40 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         return new(Array.AsReadOnly(new[] { model }), layouts.AsReadOnly(), bindings.AsReadOnly());
     }
 
-    private static StationeryLayoutCell ResolveSlot(JsonElement child, StationeryLayoutNode layout, string path, HashSet<string> assigned)
+    private static StationeryLayoutCell ResolveCell(JsonElement child, StationeryLayoutNode layout, string path, HashSet<string> assigned)
     {
         RequireObject(child, path);
-        if (new[] { "row", "col", "column", "rowspan", "colspan", "dock", "size", "margin", "padding" }.Any(k => child.TryGetProperty(k, out _)))
-            throw new JsonException($"{path}: placement belongs in layouts.cells; bindings contain only slot and model references.");
+        if (child.EnumerateObject().Any(p => p.Name is not ("model" or "slot" or "cell")))
+            throw new JsonException($"{path}: placement belongs in layouts.cells; use the cell object to select a layout cell.");
+        if (child.TryGetProperty("cell", out var cell))
+        {
+            RequireObject(cell, path + ".cell");
+            if (layout.Type == "grid-layout")
+            {
+                if (cell.EnumerateObject().Any(p => p.Name is not ("row" or "col")))
+                    throw new JsonException($"{path}.cell: grid cell keys are row and col.");
+                var row = ReadInteger(cell, "row", path + ".cell", 1, 1) - 1;
+                var col = ReadInteger(cell, "col", path + ".cell", 1, 1) - 1;
+                var candidate = layout.Cells.FirstOrDefault(c => c.Row == row && c.Column == col);
+                if (candidate is null) throw new JsonException($"{path}: unknown cell row={row + 1}, col={col + 1} in {layout.Path}.");
+                var key = $"row={row + 1},col={col + 1}";
+                if (!assigned.Add(key)) throw new JsonException($"{path}: cell '{key}' is assigned more than once.");
+                return candidate;
+            }
+            if (cell.EnumerateObject().Any(p => p.Name is not ("dock" or "index")))
+                throw new JsonException($"{path}.cell: dock cell keys are dock and index.");
+            var direction = ReadString(cell, "dock", path + ".cell");
+            var index = ReadInteger(cell, "index", path + ".cell", 1, 1);
+            var candidates = layout.Cells.Where(c => c.Dock == direction).ToArray();
+            if (index > candidates.Length) throw new JsonException($"{path}: unknown cell {direction}={index} in {layout.Path}.");
+            var dockCandidate = candidates[index - 1];
+            if (!assigned.Add($"{direction}={index}")) throw new JsonException($"{path}: cell '{direction}={index}' is assigned more than once.");
+            return dockCandidate;
+        }
+        // Legacy slot references remain readable while styles migrate.
         var id = ReadString(child, "slot", path);
         var slot = layout.Cells.FirstOrDefault(c => c.Slots.Any(s => s.Id == id)) ?? throw new JsonException($"{path}: unknown slot '{id}' in {layout.Path}.");
-        if (!assigned.Add(id)) throw new JsonException($"{path}: slot '{id}' is assigned more than once.");
+        if (!assigned.Add("legacy:" + id)) throw new JsonException($"{path}: slot '{id}' is assigned more than once.");
         return slot;
     }
 
