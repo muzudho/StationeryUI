@@ -39,7 +39,7 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 
 ## ドック配置と設定エラー
 
-`dock-layout` を使う場合は [ドック配置の設定例](dock-layout.md)を読んでください。レイアウトの各 `slots` に `dock` / `size` を設定し、`center` には `remaining` を指定します。エラー時に代替配置する `StationeryStyleFile` を使うアプリは、子の描画後に `ui.DrawLayoutErrors(layoutResult)` を呼び、`LastError` と F12 の検査情報も更新してください。JSON 自体の構文エラーなどは直前の状態を維持します。
+`dock-layout` を使う場合は [ドック配置の設定例](dock-layout.md)を読んでください。レイアウトの各 `cells` に `dock` / `size` を設定し、`center` には `remaining` を指定します。エラー時に代替配置する `StationeryStyleFile` を使うアプリは、子の描画後に `ui.DrawLayoutErrors(layoutResult)` を呼び、`LastError` と F12 の検査情報も更新してください。JSON 自体の構文エラーなどは直前の状態を維持します。
 
 ## ツリーへレイアウト情報を渡す
 
@@ -61,9 +61,11 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 
 スタイルを生成・編集する AI エージェントは、１ノードにつきルートレイアウトを最大１つにしてください。box / grid / dock はどれも `padding` を持てます。複合配置はレイアウトの `children` または子コンテナーでネストします。同じノードに余白用 box と配置用 grid を別ルートとして重ねないでください。省略値と移行方法は [ドック配置の仕様](dock-layout.md)を参照してください。
 
-配置は layouts の slots に定義してください。grid の row / col / rowspan / colspan、dock の dock / size を bindings に書かないでください。bindings.childrenModel は slot と model の参照だけです。旧形式の移行と枠の検証規則は [配置枠とモデルの対応](dock-layout.md#配置枠とモデルの対応)を参照してください。
+配置は layouts の cells に定義してください。各セル内の slots には Id だけを書きます。grid の row / col / rowspan / colspan、dock の dock / size を bindings に書かないでください。bindings.childrenModel は slot と model の参照だけです。旧形式の移行と枠の検証規則は [配置枠とモデルの対応](dock-layout.md#配置枠とモデルの対応)を参照してください。
 
 
 `bindings.layout` は `/frame/grid/inner` のように、先頭 `/` 付きのスラッシュ区切り絶対パスを指定します。最上位も `/mainGrid` と書きます。レイアウトの `id` は `mainGrid` のようなローカル名のままです。旧ドット区切り、先頭 `/` の省略、末尾 `/`、空の区間（`//`）、`.` / `..` は受け付けません。旧設定は `frame.grid` → `/frame/grid` と置き換えてください。モデル参照の既存ルールと slot のローカル Id は変更しません。
 
-margin は box / grid / dock のレイアウト、または grid / dock の slots に指定します。割り当て枠から margin を引き、padding はその内側に適用します。F12 の Compound 図へ数値を渡すため、検査データには最新の設定で DeveloperInspectionLayout.Apply を適用してください。[余白の仕様](dock-layout.md#配置枠を基準にした-margin)を参照してください。
+margin は box / grid / dock のレイアウトに指定します。cells と slots には余白を指定できません。割り当て枠から margin を引き、padding はその内側に適用します。F12 の Compound 図へ数値を渡すため、検査データには最新の設定で DeveloperInspectionLayout.Apply を適用してください。[余白の仕様](dock-layout.md#配置枠を基準にした-margin)を参照してください。
+
+cells は layouts 内に定義し、その各セル内の slots は id だけを持ちます。１セル０～１個で、配置・余白を slots に書かないでください。モデルとの対応は bindings に残します。[cells と slots の移行仕様](dock-layout.md#cells-と-slots)を参照してください。

@@ -100,24 +100,32 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
                 "1rate",
                 "1.5rate"
             ],
-            "slots": [
-                {
-                    "id": "nameField",
-                    "row": 0,
-                    "col": 0
-                },
-                {
-                    "id": "memoField",
-                    "row": 0,
-                    "col": 1
-                }
-            ],
             "padding": {
                 "top": "32px",
                 "right": "32px",
                 "bottom": "8px",
                 "left": "32px"
-            }
+            },
+            "cells": [
+                {
+                    "row": 0,
+                    "col": 0,
+                    "slots": [
+                        {
+                            "id": "nameField"
+                        }
+                    ]
+                },
+                {
+                    "row": 0,
+                    "col": 1,
+                    "slots": [
+                        {
+                            "id": "memoField"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "bindings": [
@@ -154,7 +162,7 @@ bindings.layout には先頭 `/` 付きのスラッシュ区切りの完全パ�
 
 box-layout には layout と model を指定する。
 grid-layout には layout、parentModel、childrenModel を指定する。
-childrenModel の各要素は slot と model の対応だけを持つ。slot は参照先レイアウトの slots の Id、model は parentModel からたどる相対パス。行・列・span は layouts.slots に定義する。
+childrenModel の各要素は slot と model の対応だけを持つ。slot は参照先レイアウトの cells 内の slots の Id、model は parentModel からたどる相対パス。行・列・span は layouts.cells に定義する。
 
 - parentModel: demo、model: nameField → /demo/nameField。
 - parentModel: demo、model: inputs/nameField → /demo/inputs/nameField。
@@ -172,7 +180,7 @@ padding は四辺の非負 px 文字列で、省略した辺は box では従来
 別のモデルであれば、同じレイアウト定義を再利用できる。
 
 配置したコンテナーにさらにレイアウトを結び付けることで、入れ子の配置もできる。
-layouts / bindings の配列順には依存せず、外側のモデルから内側へ計算する。ただしドックの角の優先順は layouts.slots の配列順で決まる。
+layouts / bindings の配列順には依存せず、外側のモデルから内側へ計算する。ただしドックの角の優先順は layouts.cells の配列順で決まる。
 セルに配置していないモデルは親の内側領域を引き継ぐ。
 モデルの階層を変更したら bindings のパスも更新する。レイアウトの変更だけでは文房具のパスは変わらない。
 
@@ -255,16 +263,24 @@ F5 と自動リロードは継続する。
         {
             "id": "pageDock",
             "type": "dock-layout",
-            "slots": [
+            "cells": [
                 {
-                    "id": "inspectorPanel",
                     "dock": "bottom",
-                    "size": "80px"
+                    "size": "80px",
+                    "slots": [
+                        {
+                            "id": "inspectorPanel"
+                        }
+                    ]
                 },
                 {
-                    "id": "body",
                     "dock": "center",
-                    "size": "remaining"
+                    "size": "remaining",
+                    "slots": [
+                        {
+                            "id": "body"
+                        }
+                    ]
                 }
             ]
         }
@@ -288,7 +304,7 @@ F5 と自動リロードは継続する。
 }
 ```
 
-layouts.slots にある bottom の `size` を `0px` に変えると、下端を非表示にして本文へ領域を戻せる。`models` や本文のセル配置は同じまま使う。四辺は配列順に確保し、center は最後に残りを使う。
+layouts.cells にある bottom の `size` を `0px` に変えると、下端を非表示にして本文へ領域を戻せる。`models` や本文のセル配置は同じまま使う。四辺は配列順に確保し、center は最後に残りを使う。
 読み込み用設定の `autoReload` が有効なら保存後に反映され、文房具 Id や入力値、ツリーの開閉状態を保持する。
 
 ページ直下の `body` と `inspectorPanel` は container。デモは `inspectorPanel` 内に読み取り専用の `toolHint` を置き、grid-layout の binding でパネル全体へ広げている。
@@ -300,4 +316,4 @@ layouts.slots にある bottom の `size` を `0px` に変えると、下端を�
 
 旧 `fullscreen-layout` / `work-page-layout` も互換用として利用できるが、現在のデモでは使わない。[ドック配置の詳しい仕様](../dev/dock-layout.md)を参照。
 
-margin は box-layout / grid-layout / dock-layout と grid / dock の slots に指定できる。基準は親の padding 内で割り当てられた配置枠。省略した辺は0pxで、非負の px 文字列を指定する。F12 の詳細欄では margin と padding の四辺を Compound 図で確認できる。[余白の計算と図の読み方](../dev/dock-layout.md#配置枠を基準にした-margin)を参照。
+margin は box-layout / grid-layout / dock-layout に指定できる。cells と slots は余白を持たない。基準は親の padding 内で割り当てられた配置枠。省略した辺は0pxで、非負の px 文字列を指定する。F12 の詳細欄では margin と padding の四辺を Compound 図で確認できる。[余白の計算と図の読み方](../dev/dock-layout.md#配置枠を基準にした-margin)を参照。

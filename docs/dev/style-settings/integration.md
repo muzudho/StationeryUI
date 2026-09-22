@@ -72,24 +72,32 @@
             "column-definitions": [
                 "1rate"
             ],
-            "slots": [
-                {
-                    "id": "nameField",
-                    "row": 0,
-                    "col": 0
-                },
-                {
-                    "id": "applyButton",
-                    "row": 1,
-                    "col": 0
-                }
-            ],
             "padding": {
                 "top": "8px",
                 "right": "8px",
                 "bottom": "8px",
                 "left": "8px"
-            }
+            },
+            "cells": [
+                {
+                    "row": 0,
+                    "col": 0,
+                    "slots": [
+                        {
+                            "id": "nameField"
+                        }
+                    ]
+                },
+                {
+                    "row": 1,
+                    "col": 0,
+                    "slots": [
+                        {
+                            "id": "applyButton"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "bindings": [
@@ -168,24 +176,32 @@ public sealed class StyledGame : Game
               "column-definitions": [
                 "1rate"
               ],
-              "slots": [
-                {
-                  "id": "nameField",
-                  "row": 0,
-                  "col": 0
-                },
-                {
-                  "id": "applyButton",
-                  "row": 1,
-                  "col": 0
-                }
-              ],
               "padding": {
                 "top": "8px",
                 "right": "8px",
                 "bottom": "8px",
                 "left": "8px"
-              }
+              },
+              "cells": [
+                {
+                  "row": 0,
+                  "col": 0,
+                  "slots": [
+                    {
+                      "id": "nameField"
+                    }
+                  ]
+                },
+                {
+                  "row": 1,
+                  "col": 0,
+                  "slots": [
+                    {
+                      "id": "applyButton"
+                    }
+                  ]
+                }
+              ]
             }
           ],
           "bindings": [

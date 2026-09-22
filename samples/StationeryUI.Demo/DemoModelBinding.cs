@@ -245,59 +245,95 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         "bottom": "4px",
         "left": "4px"
       },
-      "slots": [
-        {
-          "id": "nameField",
-          "row": 0,
-          "col": 0
-        },
-        {
-          "id": "memoField",
-          "row": 1,
-          "col": 0
-        },
-        {
-          "id": "themeButton",
-          "row": 2,
-          "col": 0
-        },
-        {
-          "id": "scaleButton",
-          "row": 2,
-          "col": 1
-        },
-        {
-          "id": "applyTitleButton",
-          "row": 3,
-          "col": 0
-        },
-        {
-          "id": "openDialogButton",
-          "row": 4,
-          "col": 0
-        },
-        {
-          "id": "sampleTree",
-          "row": 0,
-          "col": 1
-        },
-        {
-          "id": "splitPaneDemoLink",
-          "row": 4,
-          "col": 1
-        },
-        {
-          "id": "layoutDemoLink",
-          "row": 3,
-          "col": 1
-        }
-      ],
       "margin": {
         "top": "4px",
         "right": "4px",
         "bottom": "4px",
         "left": "4px"
-      }
+      },
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "slots": [
+            {
+              "id": "nameField"
+            }
+          ]
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "slots": [
+            {
+              "id": "memoField"
+            }
+          ]
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "slots": [
+            {
+              "id": "themeButton"
+            }
+          ]
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "slots": [
+            {
+              "id": "scaleButton"
+            }
+          ]
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "slots": [
+            {
+              "id": "applyTitleButton"
+            }
+          ]
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "slots": [
+            {
+              "id": "openDialogButton"
+            }
+          ]
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "slots": [
+            {
+              "id": "sampleTree"
+            }
+          ]
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "slots": [
+            {
+              "id": "splitPaneDemoLink"
+            }
+          ]
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "slots": [
+            {
+              "id": "layoutDemoLink"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "splitDemoLayout",
@@ -316,29 +352,41 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         "bottom": "4px",
         "left": "4px"
       },
-      "slots": [
-        {
-          "id": "topDemoLink",
-          "row": 0,
-          "col": 0
-        },
-        {
-          "id": "verticalSplit",
-          "row": 1,
-          "col": 0
-        },
-        {
-          "id": "horizontalSplit",
-          "row": 2,
-          "col": 0
-        }
-      ],
       "margin": {
         "top": "4px",
         "right": "4px",
         "bottom": "4px",
         "left": "4px"
-      }
+      },
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "slots": [
+            {
+              "id": "topDemoLink"
+            }
+          ]
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "slots": [
+            {
+              "id": "verticalSplit"
+            }
+          ]
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "slots": [
+            {
+              "id": "horizontalSplit"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "verticalSplitLayout",
@@ -359,16 +407,24 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     {
       "id": "pageDock",
       "type": "dock-layout",
-      "slots": [
+      "cells": [
         {
-          "id": "inspectorPanel",
           "dock": "bottom",
-          "size": "80px"
+          "size": "80px",
+          "slots": [
+            {
+              "id": "inspectorPanel"
+            }
+          ]
         },
         {
-          "id": "body",
           "dock": "center",
-          "size": "remaining"
+          "size": "remaining",
+          "slots": [
+            {
+              "id": "body"
+            }
+          ]
         }
       ]
     },
@@ -381,11 +437,15 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "column-definitions": [
         "1rate"
       ],
-      "slots": [
+      "cells": [
         {
-          "id": "toolHint",
           "row": 0,
-          "col": 0
+          "col": 0,
+          "slots": [
+            {
+              "id": "toolHint"
+            }
+          ]
         }
       ]
     },
@@ -433,11 +493,15 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
               "column-definitions": [
                 "1rate"
               ],
-              "slots": [
+              "cells": [
                 {
-                  "id": "boxContent",
                   "row": 0,
-                  "col": 0
+                  "col": 0,
+                  "slots": [
+                    {
+                      "id": "boxContent"
+                    }
+                  ]
                 }
               ]
             }
@@ -492,11 +556,15 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   "column-definitions": [
                     "1rate"
                   ],
-                  "slots": [
+                  "cells": [
                     {
-                      "id": "spanCell",
                       "row": 0,
-                      "col": 0
+                      "col": 0,
+                      "slots": [
+                        {
+                          "id": "spanCell"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -520,36 +588,56 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
               "col": 1,
               "rowspan": 2,
               "colspan": 2,
-              "slots": [
+              "cells": [
                 {
-                  "id": "nestedA",
                   "row": 0,
-                  "col": 0
+                  "col": 0,
+                  "slots": [
+                    {
+                      "id": "nestedA"
+                    }
+                  ]
                 },
                 {
-                  "id": "nestedB",
                   "row": 0,
-                  "col": 1
+                  "col": 1,
+                  "slots": [
+                    {
+                      "id": "nestedB"
+                    }
+                  ]
                 },
                 {
-                  "id": "nestedC",
                   "row": 1,
-                  "col": 0
+                  "col": 0,
+                  "slots": [
+                    {
+                      "id": "nestedC"
+                    }
+                  ]
                 },
                 {
-                  "id": "nestedD",
                   "row": 1,
-                  "col": 1
+                  "col": 1,
+                  "slots": [
+                    {
+                      "id": "nestedD"
+                    }
+                  ]
                 }
               ]
             }
           ],
-          "slots": [
+          "cells": [
             {
-              "id": "gridFooter",
               "row": 2,
               "col": 0,
-              "colspan": 3
+              "colspan": 3,
+              "slots": [
+                {
+                  "id": "gridFooter"
+                }
+              ]
             }
           ]
         }
@@ -560,56 +648,90 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         "bottom": "4px",
         "left": "4px"
       },
-      "slots": [
-        {
-          "id": "topDemoLink",
-          "row": 0,
-          "col": 0,
-          "margin": {
-            "left": "4px",
-            "top": "4px",
-            "right": "4px",
-            "bottom": "4px"
-          }
-        },
-        {
-          "id": "title",
-          "row": 0,
-          "col": 1
-        },
-        {
-          "id": "boxTitle",
-          "row": 1,
-          "col": 0
-        },
-        {
-          "id": "gridTitle",
-          "row": 1,
-          "col": 1
-        }
-      ],
       "margin": {
         "top": "4px",
         "right": "4px",
         "bottom": "4px",
         "left": "4px"
-      }
+      },
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "slots": [
+            {
+              "id": "topDemoLink"
+            }
+          ]
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "slots": [
+            {
+              "id": "title"
+            }
+          ]
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "slots": [
+            {
+              "id": "boxTitle"
+            }
+          ]
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "slots": [
+            {
+              "id": "gridTitle"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "pageDockFullscreen",
       "type": "dock-layout",
-      "slots": [
+      "cells": [
         {
-          "id": "inspectorPanel",
           "dock": "bottom",
-          "size": "0px"
+          "size": "0px",
+          "slots": [
+            {
+              "id": "inspectorPanel"
+            }
+          ]
         },
         {
-          "id": "body",
           "dock": "center",
-          "size": "remaining"
+          "size": "remaining",
+          "slots": [
+            {
+              "id": "body"
+            }
+          ]
         }
       ]
+    },
+    {
+      "id": "elementMargin1",
+      "type": "box-layout",
+      "padding": {
+        "top": "0px",
+        "right": "0px",
+        "bottom": "0px",
+        "left": "0px"
+      },
+      "margin": {
+        "left": "4px",
+        "top": "4px",
+        "right": "4px",
+        "bottom": "4px"
+      }
     }
   ],
   "bindings": [
@@ -834,6 +956,10 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           "slot": "toolHint"
         }
       ]
+    },
+    {
+      "layout": "/elementMargin1",
+      "model": "demo/layoutDemoPage/body/topDemoLink"
     }
   ]
 }

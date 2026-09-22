@@ -19,7 +19,7 @@ internal static class GridLayoutTests
                   "type":"grid-layout",
                   "row-definitions":["1rate","3rate"],
                   "column-definitions":["1rate","1.5rate"],
-                  "slots":[{"id":"slot1","row":0,"column":0},{"id":"slot2","row":0,"column":1},{"id":"slot3","row":1,"column":0}]
+                  "cells":[{"row":0,"column":0,"slots":[{"id":"slot1"}]},{"row":0,"column":1,"slots":[{"id":"slot2"}]},{"row":1,"column":0,"slots":[{"id":"slot3"}]}]
                 }
               ]
             }
@@ -71,12 +71,20 @@ internal static class GridLayoutTests
             node["bindings"]![1]!["layout"] = "/grid";
         });
 
-        Reject(node => node["layouts"]![0]!["children"]![0]!["slots"]![0]!["row"] = 2);
-        Reject(node => node["layouts"]![0]!["children"]![0]!["slots"]![1]!["column"] = 0);
-        Reject(node => node["layouts"]![0]!["children"]![0]!["slots"]![1]!["id"] = "slot1");
+        Reject(node => node["layouts"]![0]!["children"]![0]!["cells"]![0]!["row"] = 2);
+        Reject(node => node["layouts"]![0]!["children"]![0]!["cells"]![1]!["column"] = 0);
+        Reject(node => node["layouts"]![0]!["children"]![0]!["cells"]![1]!["slots"]![0]!["id"] = "slot1");
         Reject(node => node["bindings"]![1]!["childrenModel"]![0]!["slot"] = "missing");
         Reject(node => node["bindings"]![1]!["childrenModel"]![1]!["slot"] = "slot1");
         Reject(node => node["bindings"]![1]!["childrenModel"]![0]!.AsObject().Remove("slot"));
+        foreach (var field in new[] { "row", "col", "rowspan", "colspan", "dock", "size", "margin", "padding", "model" })
+            Reject(node => node["layouts"]![0]!["children"]![0]!["cells"]![0]!["slots"]![0]![field] = "forbidden");
+        foreach (var field in new[] { "margin", "padding", "id" })
+            Reject(node => node["layouts"]![0]!["children"]![0]!["cells"]![0]![field] = "forbidden");
+        Reject(node => node["layouts"]![0]!["children"]![0]!["cells"]![0]!["slots"]!.AsArray().Add(new JsonObject { ["id"] = "alias" }));
+        Reject(node => node["layouts"]![0]!["children"]![0]!["slots"] = new JsonArray());
+        Reject(node => node["bindings"]![1]!["cells"] = new JsonArray());
+        if (typeof(StationeryLayoutSlot).GetProperties().Any(p => p.Name != "Id")) throw new Exception("Slots must only hold an Id.");
         var reordered = Edit(node => node["bindings"]![1]!["childrenModel"] = new JsonArray(
             node["bindings"]![1]!["childrenModel"]!.AsArray().Reverse().Select(c => c!.DeepClone()).ToArray()));
         Equal(result.Bounds["/screen/b"], StationeryLayoutEngine.Arrange(reordered, 100, 200).Bounds["/screen/b"]);
@@ -88,10 +96,10 @@ internal static class GridLayoutTests
         catch (ArgumentException) { }
         if (emptySlotPlan.BuildJson() != beforeResize) throw new Exception("Rejected resize mutated the design.");
         var slotPlan = StationeryUI.StyleDesigner.StyleBlueprint.Parse(Source);
-        slotPlan.RenameId(["layouts", "0", "children", "0", "slots", "0"], "firstCell");
+        slotPlan.RenameId(["layouts", "0", "children", "0", "cells", "0", "slots", "0"], "firstCell");
         var renamed = JsonNode.Parse(slotPlan.BuildJson())!;
         if ((string?)renamed["bindings"]![1]!["childrenModel"]![0]!["slot"] != "firstCell") throw new Exception("Slot rename must update binding references.");
-        try { slotPlan.DeleteNode(["layouts", "0", "children", "0", "slots", "0"]); throw new Exception("Referenced slot deleted."); }
+        try { slotPlan.DeleteNode(["layouts", "0", "children", "0", "cells", "0", "slots", "0"]); throw new Exception("Referenced slot deleted."); }
         catch (JsonException) { }
 
         var marginSettings = Edit(node =>
@@ -99,14 +107,14 @@ internal static class GridLayoutTests
             var grid = node["layouts"]![0]!["children"]![0]!;
             grid["margin"] = JsonNode.Parse("""{"left":"10px","top":"20px","right":"10px","bottom":"20px"}""");
             grid["padding"] = JsonNode.Parse("""{"left":"5px","top":"5px","right":"5px","bottom":"5px"}""");
-            grid["slots"]![0]!["margin"] = JsonNode.Parse("""{"left":"2px","top":"3px","right":"4px","bottom":"5px"}""");
+            AddElementMargin(node, """{"left":"2px","top":"3px","right":"4px","bottom":"5px"}""");
         });
         var marginResult = StationeryLayoutEngine.Arrange(marginSettings, 100, 200);
         Equal(new(17, 28, 22, 29.5), marginResult.Bounds["/screen/a"]);
         Equal(new(43, 25, 42, 37.5), marginResult.Bounds["/screen/b"]);
         foreach (var bad in new[] { "-1px", "1rate", "NaNpx" })
             Reject(node => node["layouts"]![0]!["children"]![0]!["margin"] = new JsonObject { ["left"] = bad });
-        var collapsedMargin = Edit(node => node["layouts"]![0]!["children"]![0]!["slots"]![0]!["margin"] = new JsonObject { ["left"] = "999px" });
+        var collapsedMargin = Edit(node => AddElementMargin(node, """{"left":"999px"}"""));
         Equal(new(40, 0, 0, 50), StationeryLayoutEngine.Arrange(collapsedMargin, 100, 200).Bounds["/screen/a"]);
 
         var fixedRows = Edit(node => node["layouts"]![0]!["children"]![0]!["row-definitions"] = JsonNode.Parse("""["100px","1rate"]"""));
@@ -168,9 +176,15 @@ internal static class GridLayoutTests
               "type":"grid-layout",
               "row-definitions":["1rate"],
               "column-definitions":["1rate","1rate"],
-              "slots":[{"id":"slot1","row":0,"column":0},{"id":"slot2","row":0,"column":1}]
+              "cells":[{"row":0,"column":0,"slots":[{"id":"slot1"}]},{"row":0,"column":1,"slots":[{"id":"slot2"}]}]
             },
-            {"id":"unit","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate"],"slots":[{"id":"slot1","row":0,"column":0}]}
+            {
+              "id":"unit",
+              "type":"grid-layout",
+              "row-definitions":["1rate"],
+              "column-definitions":["1rate"],
+              "cells":[{"row":0,"column":0,"slots":[{"id":"slot1"}]}]
+            }
           ],
           "bindings":[
             {"layout":"/unit","parentModel":"/screen/right","childrenModel":[{"model":"a","slot":"slot1"}]},
@@ -182,6 +196,13 @@ internal static class GridLayoutTests
         var reused = StationeryLayoutEngine.Arrange(nested, 100, 200);
         Equal(new(0, 0, 50, 200), reused.Bounds["/screen/left/a"]);
         Equal(new(50, 0, 50, 200), reused.Bounds["/screen/right/a"]);
+    }
+
+    private static void AddElementMargin(JsonNode node, string margin)
+    {
+        node["layouts"]!.AsArray().Add(JsonNode.Parse("""{"id":"elementMargin","type":"box-layout","padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}}"""));
+        node["layouts"]!.AsArray().Last()!["margin"] = JsonNode.Parse(margin);
+        node["bindings"]!.AsArray().Add(JsonNode.Parse("""{"layout":"/elementMargin","model":"screen/a"}"""));
     }
 
     private static StationeryStyleSettings Edit(Action<JsonNode> edit)

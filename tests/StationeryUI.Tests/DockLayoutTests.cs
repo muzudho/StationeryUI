@@ -24,15 +24,21 @@ static class DockLayoutTests
             {
               "id":"dock",
               "type":"dock-layout",
-              "slots":[
-                {"id":"slot1","dock":"center","size":"remaining"},
-                {"id":"slot2","dock":"top","size":"40px"},
-                {"id":"slot3","dock":"top","size":"30px"},
-                {"id":"slot4","dock":"right","size":"80px"},
-                {"id":"slot5","dock":"bottom","size":"20px"}
+              "cells":[
+                {"dock":"center","size":"remaining","slots":[{"id":"slot1"}]},
+                {"dock":"top","size":"40px","slots":[{"id":"slot2"}]},
+                {"dock":"top","size":"30px","slots":[{"id":"slot3"}]},
+                {"dock":"right","size":"80px","slots":[{"id":"slot4"}]},
+                {"dock":"bottom","size":"20px","slots":[{"id":"slot5"}]}
               ]
             },
-            {"id":"grid","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate"],"slots":[{"id":"slot1","row":0,"col":0}]}
+            {
+              "id":"grid",
+              "type":"grid-layout",
+              "row-definitions":["1rate"],
+              "column-definitions":["1rate"],
+              "cells":[{"row":0,"col":0,"slots":[{"id":"slot1"}]}]
+            }
           ],
           "bindings":[
             {
@@ -68,6 +74,9 @@ static class DockLayoutTests
         var withEmptySlot = StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(reorder.ToJsonString()), 300, 200);
         Equal(result.Bounds["/app/body"], withEmptySlot.Bounds["/app/body"]);
         Equal(new(0, 0, 0, 0), withEmptySlot.Bounds["/app/header"]);
+        // An unnamed cell still participates in docking; a slot is only its optional name.
+        reorder["layouts"]![0]!["cells"]![1]!.AsObject().Remove("slots");
+        Equal(result.Bounds["/app/body"], StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(reorder.ToJsonString()), 300, 200).Bounds["/app/body"]);
         foreach (var bad in new[] { "missing", "slot1" })
         {
             var invalid = JsonNode.Parse(Source)!; invalid["bindings"]![0]!["childrenModel"]![1]!["slot"] = bad;
@@ -84,7 +93,8 @@ static class DockLayoutTests
         Equal(padded.ContentBounds["/app/body"], padded.Bounds["/app/body/button"]);
         Equal(padded.ContentBounds["/app"], padded.LayoutContentBounds["/app:/dock"]);
         paddedJson["layouts"]![0]!["margin"] = JsonNode.Parse("""{"left":"5px","top":"7px"}""");
-        paddedJson["layouts"]![0]!["slots"]![1]!["margin"] = JsonNode.Parse("""{"left":"2px","top":"3px","bottom":"4px"}""");
+        paddedJson["layouts"]!.AsArray().Add(JsonNode.Parse("""{"id":"headerMargin","type":"box-layout","margin":{"left":"2px","top":"3px","bottom":"4px"},"padding":{"left":"0px","top":"0px","right":"0px","bottom":"0px"}}"""));
+        paddedJson["bindings"]!.AsArray().Add(JsonNode.Parse("""{"layout":"/headerMargin","model":"app/header"}"""));
         var marginStyle = StationeryStyleSettings.Parse(paddedJson.ToJsonString());
         var marginLayout = StationeryLayoutEngine.Arrange(marginStyle, 300, 200);
         Equal(new(5, 7, 295, 193), marginLayout.Bounds["/app"]);
@@ -114,7 +124,7 @@ static class DockLayoutTests
         {"id":"frame","type":"box-layout","padding":{"top":"8px","right":"8px","bottom":"8px","left":"8px"},
           "children":[{"id":"dock","type":"dock-layout"}]}
         """);
-        nestedJson["layouts"]![0]!["children"]![0]!["slots"] = JsonNode.Parse(Source)!["layouts"]![0]!["slots"]!.DeepClone();
+        nestedJson["layouts"]![0]!["children"]![0]!["cells"] = JsonNode.Parse(Source)!["layouts"]![0]!["cells"]!.DeepClone();
         nestedJson["bindings"]![0]!["layout"] = "/frame/dock";
         var nested = StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(nestedJson.ToJsonString()), 300, 200);
         Equal(new(8, 8, 284, 40), nested.Bounds["/app/header"]);

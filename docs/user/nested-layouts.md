@@ -76,11 +76,15 @@
                             "column-definitions": [
                                 "1rate"
                             ],
-                            "slots": [
+                            "cells": [
                                 {
-                                    "id": "message",
                                     "row": 0,
-                                    "col": 0
+                                    "col": 0,
+                                    "slots": [
+                                        {
+                                            "id": "message"
+                                        }
+                                    ]
                                 }
                             ]
                         }
@@ -116,7 +120,7 @@
 
 同じモデルを基準に、同じレイアウトツリーの複数のグリッドへ binding を書けます。その場合は各 binding の `parentModel` を揃えます。親レイアウトにも binding を重複して書く必要はありません。別のモデルを基準に同じツリーを使うと、独立した配置になります。
 
-文房具の配置枠は `layouts.slots` に定義します。枠は `id`、開始位置の `row` と `col` が必須で、`rowspan`・`colspan` の省略時は1です。`bindings.childrenModel` は `slot` と `model` の対応だけを書きます。従来の `column` も `col` の別名として使えますが、両方を同時に指定するとエラーです。
+文房具の配置枠は `layouts.cells` に定義します。セルは開始位置の `row` と `col` が必須で、`rowspan`・`colspan` の省略時は1です。セル内の `slots` に `id` だけを指定します。`bindings.childrenModel` は `slot` と `model` の対応だけを書きます。従来の `column` も `col` の別名として使えますが、両方を同時に指定するとエラーです。
 
 ## エディターで操作する
 

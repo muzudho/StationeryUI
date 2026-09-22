@@ -26,7 +26,7 @@ F12 では /demo/topDemoPage/sampleTree/stationery/writing/pencil のような�
 
 ## スタイルとの関係
 
-デモでは models に {"id":"sampleTree","type":"tree"} を追加し、layouts.slots に row: 0 / col: 1 の枠を定義し、bindings で sampleTree をその枠に対応付けている。
+デモでは models に {"id":"sampleTree","type":"tree"} を追加し、layouts.cells に row: 0 / col: 1 の枠を定義し、bindings で sampleTree をその枠に対応付けている。
 既存のモデルノードに接続するときは、AddTree の第 1 引数に StationeryNode を渡す。
 ツリー全体の配置は grid-layout に従い、ノード行の高さと字下げはツリー側が管理する。
 スタイルの再読み込みやモデルパスの変更で、ツリーの選択・開閉状態は失われない。

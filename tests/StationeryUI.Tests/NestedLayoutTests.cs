@@ -41,7 +41,7 @@ internal static class NestedLayoutTests
                           "type":"grid-layout",
                           "row-definitions":["1rate"],
                           "column-definitions":["1rate","3rate"],
-                          "slots":[{"id":"slot1","row":0,"col":0},{"id":"slot2","row":0,"col":1}]
+                          "cells":[{"row":0,"col":0,"slots":[{"id":"slot1"}]},{"row":0,"col":1,"slots":[{"id":"slot2"}]}]
                         }
                       ]
                     },
@@ -53,10 +53,10 @@ internal static class NestedLayoutTests
                       "colspan":2,
                       "row-definitions":["1rate"],
                       "column-definitions":["1rate","1rate"],
-                      "slots":[{"id":"slot1","row":0,"col":0,"colspan":2}]
+                      "cells":[{"row":0,"col":0,"colspan":2,"slots":[{"id":"slot1"}]}]
                     }
                   ],
-                  "slots":[{"id":"slot1","row":0,"col":2,"rowspan":2}]
+                  "cells":[{"row":0,"col":2,"rowspan":2,"slots":[{"id":"slot1"}]}]
                 }
               ]
             }
@@ -111,13 +111,21 @@ internal static class NestedLayoutTests
               "type":"grid-layout",
               "row-definitions":["1rate"],
               "column-definitions":["1rate","3rate"],
-              "slots":[{"id":"slot1","row":0,"col":0},{"id":"slot2","row":0,"col":1}]
+              "cells":[{"row":0,"col":0,"slots":[{"id":"slot1"}]},{"row":0,"col":1,"slots":[{"id":"slot2"}]}]
             },
             {
               "id":"frame",
               "type":"box-layout",
               "padding":{"top":"2px","right":"2px","bottom":"2px","left":"2px"},
-              "children":[{"id":"grid","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate"],"slots":[{"id":"slot1","row":0,"col":0}]}]
+              "children":[
+                {
+                  "id":"grid",
+                  "type":"grid-layout",
+                  "row-definitions":["1rate"],
+                  "column-definitions":["1rate"],
+                  "cells":[{"row":0,"col":0,"slots":[{"id":"slot1"}]}]
+                }
+              ]
             }
           ],
           "bindings":[

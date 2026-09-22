@@ -43,7 +43,7 @@ internal static class PageLayoutTests
         Check(DemoModelBinding.Create(DemoModelBinding.Fallback).Signature == model.Signature, "fallback includes showcase roles");
         var binding = json["bindings"]!.AsArray().Single(b => (string?)b!["parentModel"] == "demo/topDemoPage")!;
         var inspector = binding["childrenModel"]![0]!;
-        var inspectorSlot = json["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "pageDock")!["slots"]![0]!;
+        var inspectorSlot = json["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "pageDock")!["cells"]![0]!;
         var signature = model.Signature;
         inspectorSlot["size"] = "0px";
         var full = StationeryStyleSettings.Parse(json.ToJsonString());

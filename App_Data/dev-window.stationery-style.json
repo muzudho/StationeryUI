@@ -80,30 +80,46 @@
                     },
                     "row": 0,
                     "col": 0,
-                    "slots": [
+                    "cells": [
                         {
-                            "id": "instructions",
                             "row": 0,
-                            "col": 0
+                            "col": 0,
+                            "slots": [
+                                {
+                                    "id": "instructions"
+                                }
+                            ]
                         },
                         {
-                            "id": "inspectorSplit",
                             "row": 1,
-                            "col": 0
+                            "col": 0,
+                            "slots": [
+                                {
+                                    "id": "inspectorSplit"
+                                }
+                            ]
                         },
                         {
-                            "id": "copyPath",
                             "row": 2,
-                            "col": 0
+                            "col": 0,
+                            "slots": [
+                                {
+                                    "id": "copyPath"
+                                }
+                            ]
                         }
                     ]
                 }
             ],
-            "slots": [
+            "cells": [
                 {
-                    "id": "inspectorPanel",
                     "row": 1,
-                    "col": 0
+                    "col": 0,
+                    "slots": [
+                        {
+                            "id": "inspectorPanel"
+                        }
+                    ]
                 }
             ]
         },
@@ -122,11 +138,15 @@
                 "bottom": "8px",
                 "left": "8px"
             },
-            "slots": [
+            "cells": [
                 {
-                    "id": "toolHint",
                     "row": 0,
-                    "col": 0
+                    "col": 0,
+                    "slots": [
+                        {
+                            "id": "toolHint"
+                        }
+                    ]
                 }
             ]
         },

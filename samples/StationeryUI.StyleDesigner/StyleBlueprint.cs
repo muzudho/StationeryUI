@@ -169,7 +169,7 @@ public sealed class StyleBlueprint
             var settings = StationeryStyleSettings.Parse(BuildJson());
             var selectedLayout = settings.Layouts.Single(l => l.Path == SelectedLayoutId);
             if (selectedLayout.Children.Any(c => c.RowSpan > rows - c.Row || c.ColumnSpan > columns - c.Column) ||
-                selectedLayout.Slots.Any(c => c.RowSpan > rows - c.Row || c.ColumnSpan > columns - c.Column))
+                selectedLayout.Cells.Any(c => c.RowSpan > rows - c.Row || c.ColumnSpan > columns - c.Column))
                 throw new ArgumentException("Nested layout or slot would be outside the resized grid.");
             if (settings.Bindings.Where(b => b.Layout == SelectedLayoutId).SelectMany(b => b.Children).Any(c => c.RowSpan > rows - c.Row || c.ColumnSpan > columns - c.Column))
                 throw new ArgumentException("配置済みの文房具が表の外に出ます。既存の bindings を保つため、このサイズには縮小できません。");
@@ -215,7 +215,7 @@ public sealed class StyleBlueprint
         }
         var models = new JsonArray();
         var bindings = new JsonArray();
-        var slots = new JsonArray();
+        var cells = new JsonArray();
         for (var row = 0; row < Rows.Count; row++)
             for (var column = 0; column < Columns.Count; column++)
             {
@@ -223,7 +223,7 @@ public sealed class StyleBlueprint
                 if (!Kinds.Contains(cell.Kind)) throw new JsonException("未対応の文房具の種類です。");
                 var id = $"cellR{row + 1}C{column + 1}";
                 models.Add(new JsonObject { ["id"] = id, ["type"] = cell.Kind, ["label"] = cell.Label });
-                slots.Add(new JsonObject { ["id"] = id, ["row"] = row, ["col"] = column });
+                cells.Add(new JsonObject { ["row"] = row, ["col"] = column, ["slots"] = new JsonArray(new JsonObject { ["id"] = id }) });
                 bindings.Add(new JsonObject { ["model"] = id, ["slot"] = id });
             }
         var root = new JsonObject
@@ -235,7 +235,7 @@ public sealed class StyleBlueprint
             }),
             ["layouts"] = new JsonArray(new JsonObject
             {
-                ["id"] = "mainGrid", ["type"] = "grid-layout", ["slots"] = slots,
+                ["id"] = "mainGrid", ["type"] = "grid-layout", ["cells"] = cells,
                 ["row-definitions"] = new JsonArray(Rows.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
                 ["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>())
             }),
@@ -335,8 +335,10 @@ public sealed class StyleBlueprint
     public string? NodeId(IReadOnlyList<string> path)
     {
         if (path.Count < 2 || path[0] is not ("models" or "layouts")) return null;
-        // Model nodes, layout definitions and named placement slots.
-        if (path.Count % 2 != 0 || path.Where((_, i) => i > 0 && i % 2 == 0).Any(p => p != "children" && !(path[0] == "layouts" && p == "slots" && path[^2] == "slots"))) return null;
+        // Only layouts/models and slots inside a cell can carry editable identities.
+        IReadOnlyList<string> ownerPath = path[0] == "layouts" && path.Count >= 6 && path[^2] == "slots" && path[^4] == "cells"
+            ? path.Take(path.Count - 4).ToArray() : path;
+        if (ownerPath.Count % 2 != 0 || ownerPath.Where((_, i) => i > 0 && i % 2 == 0).Any(p => p != "children")) return null;
         return NodeAt(JsonNode.Parse(BuildJson())!, path) is JsonObject obj ? (string?)obj["id"] : null;
     }
 
@@ -363,7 +365,7 @@ public sealed class StyleBlueprint
         {
             if (path.Count >= 2 && path[^2] == "slots")
             {
-                var owner = node.Parent!.Parent!;
+                var owner = node.Parent!.Parent!.Parent!.Parent!;
                 var layoutPath = LayoutNodes(draft).Single(l => ReferenceEquals(l.Node, owner)).Path;
                 foreach (var binding in draft["bindings"]!.AsArray().Where(b => (string?)b!["layout"] == layoutPath))
                     foreach (var child in binding!["childrenModel"]!.AsArray())

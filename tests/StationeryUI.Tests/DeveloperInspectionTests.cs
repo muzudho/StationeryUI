@@ -54,7 +54,7 @@ internal static class DeveloperInspectionTests
               "type":"grid-layout",
               "row-definitions":["1rate","1rate","1rate"],
               "column-definitions":["1rate","1rate","1rate","1rate"],
-              "slots":[{"id":"slot1","row":0,"col":1,"rowspan":2,"colspan":3}]
+              "cells":[{"row":0,"col":1,"rowspan":2,"colspan":3,"slots":[{"id":"slot1"}]}]
             }
           ],
           "bindings":[{"layout":"/grid","parentModel":"/demo/demoPage","childrenModel":[{"model":"btn123","slot":"slot1"}]}]

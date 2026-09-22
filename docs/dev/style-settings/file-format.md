@@ -4,13 +4,24 @@
 
 
 
+
+## cells と slots
+
+`cells` は **layouts 内**のセル定義です。bindings 内には追加しません。例えばグリッドは `"cells": [{"row":0,"col":1,"slots":[{"id":"input"}]}]` とします。ドックはセルに `dock` と `size` を書き、cells の配列順が角の優先順です。
+
+slots はセルに名前を付けるだけです。１セルにつき Id は最大１個とし、slots の省略または空配列で名前なしのセルを定義できます。名前がなくてもセルは領域を確保します。Id は同じレイアウト内で一意です。slots 内の id 以外の項目はすべてエラーになります。セルにも margin / padding は書けません。余白は配置されるモデル自身の box / grid / dock レイアウトに指定してください。
+
+bindings は従来どおり `"childrenModel":[{"slot":"input","model":"nameField"}]` という対応付けだけです。モデルの Id と slot Id は一致させる必要はありません。
+
+旧レイアウト直下の slots は受け付けません。row / col / span または dock / size を cells へ移し、id はそのセルの slots 内に残してください。旧 slot の margin は中身のレイアウトへ移します。デモの戻るリンクは余白用 box-layout へ移行済みです。F12 の Compound 図もそのモデル自身のレイアウトの余白を表示します。
+
 ## 配置枠とモデルの対応
 
-配置情報は `layouts` に集めます。grid-layout の `slots` に `id`・`row`・`col`・必要な span、dock-layout の `slots` に `id`・`dock`・`size` を書きます。`bindings.childrenModel` は `{"slot":"input", "model":"nameField"}` のような対応だけを持ちます。枠名とモデル Id は別物なので、一致させる必要はありません。
+配置情報は `layouts` に集めます。grid-layout の `cells` に `row`・`col`・必要な span、dock-layout の `cells` に `dock`・`size` を書きます。各セルの `slots` は `[{"id":"input"}]` のように Id だけを持ちます。`bindings.childrenModel` は `{"slot":"input", "model":"nameField"}` のような対応だけを持ちます。枠名とモデル Id は別物なので、一致させる必要はありません。
 
-枠名は同じレイアウト内で一意です。異なるレイアウトでは同じ枠名を再利用できます。未知の枠、同じ枠への二重割り当て、同じモデルの二重配置はエラーです。グリッドの枠は、モデルを割り当てていなくても範囲外・重複・子レイアウトとの重なりを検証します。未割り当ての枠は空き領域として残り、ドックではそのサイズを確保します。ドックの配置順は slots の順で決まり、bindings の並べ替えでは変わりません。
+枠名は同じレイアウト内で一意です。異なるレイアウトでは同じ枠名を再利用できます。未知の枠、同じ枠への二重割り当て、同じモデルの二重配置はエラーです。グリッドの枠は、モデルを割り当てていなくても範囲外・重複・子レイアウトとの重なりを検証します。未割り当ての枠は空き領域として残り、ドックではそのサイズを確保します。ドックの配置順は cells の順で決まり、bindings の並べ替えでは変わりません。
 
-旧形式の `bindings.childrenModel` にある行・列・span・dock・size は読み込みエラーになります。これらを参照先レイアウトの slots に移し、各枠へ Id を付け、binding 側は slot と model だけにしてください。共有していたレイアウトで配置が異なる場合は、レイアウト定義を分けます。デモでは下端80px用の pageDock と0px用の pageDockFullscreen を使います。
+旧形式の `bindings.childrenModel` にある行・列・span・dock・size は読み込みエラーになります。これらを参照先レイアウトの cells に移し、セル内の slots で Id を付け、binding 側は slot と model だけにしてください。共有していたレイアウトで配置が異なる場合は、レイアウト定義を分けます。デモでは下端80px用の pageDock と0px用の pageDockFullscreen を使います。
 
 split-pane の firstModel / secondModel と旧ページレイアウトの inspectorModel は、組み込みの配置枠への対応です。方向・比率・高さなどの配置定義は従来どおり layouts にだけ書きます。１ノードが持つルートレイアウトは最大１つのままです。
 
@@ -24,7 +35,7 @@ split-pane の firstModel / secondModel と旧ページレイアウトの inspec
 
 ## models → bindings → layouts の順にたどる
 
-たとえば `/app/nameField` の配置を知りたい場合、`models` でそのノードを確認し、`bindings.childrenModel` の `slot` を確認し、`layout` が指す `layouts` の `slots` から行・列を調べます。`layouts[0]` がルート用という規則はありません。
+たとえば `/app/nameField` の配置を知りたい場合、`models` でそのノードを確認し、`bindings.childrenModel` の `slot` を確認し、`layout` が指す `layouts` の cells 内で、その slot Id を持つセルの行・列を調べます。`layouts[0]` がルート用という規則はありません。
 
 | セクション | 意味 | C# での対応 |
 | --- | --- | --- |
@@ -50,7 +61,7 @@ split-pane の firstModel / secondModel と旧ページレイアウトの inspec
 
 ## dock-layout — 配列順に四辺を配置
 
-`layouts.slots` の各枠に `id`、`dock`、`size` を指定し、`bindings.childrenModel` には `slot` と `model` だけを書きます。四辺は slots の配列順、`center` は最後に残りを使用します。方向の重複と任意個数に対応します。`row-definitions` / `column-definitions` は使いません。[完全な設定例とエラー時の代替配置](../dock-layout.md)を参照してください。
+`layouts.cells` に `dock`・`size` を指定し、各セルの slots には id だけを書き、`bindings.childrenModel` には `slot` と `model` だけを書きます。四辺は cells の配列順、`center` は最後に残りを使用します。方向の重複と任意個数に対応します。`row-definitions` / `column-definitions` は使いません。[完全な設定例とエラー時の代替配置](../dock-layout.md)を参照してください。
 
 ## box-layout — 余白と外枠
 
@@ -85,7 +96,7 @@ padding は省略した辺が **8px**、margin / border は省略した辺が **
 }
 ```
 
-binding は `layout`、`parentModel`、`childrenModel` を使い、子には `model` と `slot` だけを指定します。行・列は参照先レイアウトの `slots` に `id`、`row`、`col`（別名 `column`）として定義します。`rowspan`・`colspan` は省略時1で、複数セルに跨る範囲を指定できます。行・列番号は **0 始まり**です。範囲の重複と範囲外はエラーです。空きセルへ自動拡張しません。[ネストとセル範囲指定](nested-layouts-proposal.md)を参照してください。
+binding は `layout`、`parentModel`、`childrenModel` を使い、子には `model` と `slot` だけを指定します。行・列は参照先レイアウトの `cells` に `row`、`col`（別名 `column`）として定義します。セル内の slots には id だけを書きます。`rowspan`・`colspan` は省略時1で、複数セルに跨る範囲を指定できます。行・列番号は **0 始まり**です。範囲の重複と範囲外はエラーです。空きセルへ自動拡張しません。[ネストとセル範囲指定](nested-layouts-proposal.md)を参照してください。
 
 `px` の固定分を先に確保し、残りを `rate` の比で分けます。幅740pxで `["240px", "1rate", "1.5rate"]` なら 240px / 200px / 300px です。固定分が領域を超えたら固定部分を比例縮小し、rate 部分は0になります。固定値だけで領域を埋めない場合は末尾に空白を残します。
 
@@ -179,10 +190,10 @@ binding は `{ "layout": "/workPage", "model": "/app/editorPage", "inspectorMode
 
 ## 配置枠を基準にした margin
 
-box-layout / grid-layout / dock-layout と、grid / dock の slots に `margin` を指定できます。`{"left":"10px","top":"10px","right":"10px","bottom":"10px"}` の四辺形式で、非負の px 文字列を使い、省略した辺は0pxです。bindings へは書きません。
+box-layout / grid-layout / dock-layout に `margin` を指定できます。cells と slots は margin・padding を持ちません。`{"left":"10px","top":"10px","right":"10px","bottom":"10px"}` の四辺形式で、非負の px 文字列を使い、省略した辺は0pxです。bindings へは書きません。
 
-親の padding の内側を grid / dock で配置枠へ分け、その枠から margin を引きます。margin は隣の枠の位置や大きさを変えません。モデル自身のルートレイアウトにも margin があればさらに引き、次に padding を引いて子の配置領域を得ます。余白が大きすぎる場合、幅・高さは0まで縮みます。ネストした子レイアウトも自身の割り当て枠が基準です。
+親の padding の内側を grid / dock で配置枠へ分け、その枠から margin を引きます。margin は隣の枠の位置や大きさを変えません。モデル自身のルートレイアウトの margin を引き、次に padding を引いて子の配置領域を得ます。余白が大きすぎる場合、幅・高さは0まで縮みます。ネストした子レイアウトも自身の割り当て枠が基準です。
 
-F12 の詳細欄には margin を外側、padding を内側とする Compound 図を表示します。数値は設定上の px で、帯の幅は模式図です。モデルの配置枠とルートレイアウトの margin は合計し、padding はそのモデルのルートレイアウトの値を表示します。祖先や内部の子レイアウトの余白は合算しません。スタイル情報を渡していない従来の検査データには図を表示しません。
+F12 の詳細欄には margin を外側、padding を内側とする Compound 図を表示します。数値は設定上の px で、帯の幅は模式図です。margin と padding はそのモデル自身のルートレイアウトの値を表示します。祖先や内部の子レイアウトの余白は合算しません。スタイル情報を渡していない従来の検査データには図を表示しません。
 
-デモ本文のグリッドは四辺 margin 4px + padding 4px とし、従来の合計8pxの余白を保ちます。レイアウトデモの戻るリンクの配置枠にも margin を設定しています。
+デモ本文のグリッドは四辺 margin 4px + padding 4px とし、従来の合計8pxの余白を保ちます。レイアウトデモの戻るリンク自身に余白用 box-layout を持たせ、margin 4px・padding 0px を設定しています。

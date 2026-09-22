@@ -74,7 +74,7 @@ public static class StationeryLayoutEngine
             if (layout.Type == "grid-layout")
                 foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
                     foreach (var child in binding.Children)
-                        positions.Add(child.ModelPath, Inset(Cell(layout, content, child.Row, child.Column, child.RowSpan, child.ColumnSpan), child.Margin));
+                        positions.Add(child.ModelPath, Cell(layout, content, child.Row, child.Column, child.RowSpan, child.ColumnSpan));
             if (layout.Type == "dock-layout")
                 foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
                 {
@@ -91,9 +91,11 @@ public static class StationeryLayoutEngine
                     }
                     else
                     {
-                        var slotBounds = StationeryDockLayout.Arrange(dockContent,
-                            layout.Slots.Select(slot => new StationeryDockBinding(slot.Id, slot.Dock!, slot.Size)).ToArray());
-                        foreach (var child in binding.DockChildren) positions[child.ModelPath] = Inset(slotBounds[child.Slot!], child.Margin);
+                        var cellBounds = StationeryDockLayout.Arrange(dockContent,
+                            layout.Cells.Select((cell, index) => new StationeryDockBinding(index.ToString(System.Globalization.CultureInfo.InvariantCulture), cell.Dock!, cell.Size)).ToArray());
+                        foreach (var (cell, index) in layout.Cells.Select((cell, index) => (cell, index)))
+                            foreach (var child in binding.DockChildren.Where(child => cell.Slots.Any(slot => slot.Id == child.Slot)))
+                                positions[child.ModelPath] = cellBounds[index.ToString(System.Globalization.CultureInfo.InvariantCulture)];
                     }
                 }
             foreach (var child in layout.Children)
