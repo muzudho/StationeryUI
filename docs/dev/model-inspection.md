@@ -38,3 +38,11 @@ ui.Focus.Focus(name.Path);
 [開発者向け目次](README.md)
 
 子としての配置と親としてのレイアウトの両方がある場合は `(content : Container) (1, 0, 1, 1 : gridLayout)` と表示する。セル情報がないドック配置などでは左側は `-` になる。
+
+
+## 開発者ウィンドウのモデル／レイアウト切り替え
+
+ツリー上部でモデルツリーとレイアウトツリーを切り替える。モデルツリーは `(Id : 種類)` のみ、レイアウトツリーは配置情報付きのラベルと実際のネストしたレイアウト定義を表示する。
+`DeveloperInspectionLayout.Apply(entries, settings)`（または `ui.Inspect(settings)`）でスナップショットへ `LayoutNodes` と `LayoutParentPath` を付与する。既存のモデル配列へレイアウトを直接追加しないため、画面のキャプチャー判定はモデルだけを対象にする。
+レイアウトの識別子は `ownerModelPath + ":" + layout.Path`。そのノードの `BoxModel` は定義自身の margin・padding を表す。付加情報のないスナップショットも表示できるが、定義の入れ子は表示できない。
+`DeveloperViewState` には表示モードと両ツリーの選択・開閉状態を保存する。操作ログの `TreeMode` は Model=0、Layout=1。

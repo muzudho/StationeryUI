@@ -3,12 +3,33 @@ namespace StationeryUI.Inspection;
 using StationeryUI.Controls;
 using System.Globalization;
 
-public sealed record DeveloperViewState(string? SelectedPath, string[] CollapsedPaths, double SplitRatio = .4, bool Visible = true, bool CaptureEnabled = false);
+public enum DeveloperTreeMode { Model, Layout }
+
+public sealed record DeveloperViewState(string? SelectedPath, string[] CollapsedPaths, double SplitRatio = .4, bool Visible = true, bool CaptureEnabled = false)
+{
+    public DeveloperTreeMode TreeMode { get; init; }
+    public DeveloperViewState? OtherTreeState { get; init; }
+}
 public sealed record DeveloperInspectionMessage(StationeryInspectionEntry[] Entries, long ShowSequence, DeveloperViewState? RestoreState, string? CapturePath = null, long CaptureSequence = 0);
 
 /// <summary>Read-only inspector model. Refreshes snapshots without losing tree expansion or selection.</summary>
 public sealed class DeveloperInspectionModel
 {
+    private IReadOnlyList<StationeryInspectionEntry> source = [];
+    private DeveloperViewState? otherTreeState;
+    public DeveloperTreeMode TreeMode { get; private set; }
+    public void SetTreeMode(DeveloperTreeMode mode)
+    {
+        if (TreeMode == mode) return;
+        var previous = Capture() with { OtherTreeState = null };
+        var restore = otherTreeState;
+        TreeMode = mode;
+        otherTreeState = previous;
+        Refresh(source);
+        foreach (var item in items.Values) Tree.SetExpanded(item, true);
+        RestoreSelection(restore ?? previous);
+    }
+
     private Dictionary<string, StationeryInspectionEntry> entries = new(StringComparer.Ordinal);
     private Dictionary<string, TreeItem> items = new(StringComparer.Ordinal);
     private Dictionary<TreeItem, string> paths = [];
@@ -19,6 +40,10 @@ public sealed class DeveloperInspectionModel
 
     public void Refresh(IReadOnlyList<StationeryInspectionEntry> snapshot)
     {
+        source = snapshot;
+        if (TreeMode == DeveloperTreeMode.Layout)
+            snapshot = snapshot.Select(entry => entry with { ParentPath = entry.LayoutParentPath ?? entry.ParentPath })
+                .Concat(snapshot.SelectMany(entry => entry.LayoutNodes ?? [])).ToArray();
         var next = snapshot.ToDictionary(entry => entry.Path, StringComparer.Ordinal);
         var changed = entries.Count != next.Count || next.Any(pair => !entries.TryGetValue(pair.Key, out var old) || old.ParentPath != pair.Value.ParentPath);
         var state = Capture();
@@ -40,10 +65,11 @@ public sealed class DeveloperInspectionModel
                 }
                 if (!progress) throw new ArgumentException("Inspection hierarchy contains a cycle.", nameof(snapshot));
             }
-            Restore(state);
+            RestoreSelection(state);
         }
         foreach (var (path, entry) in entries)
-            items[path].Label = DeveloperInspectionLayout.FormatLabel(entry);
+            items[path].Label = TreeMode == DeveloperTreeMode.Layout
+                ? DeveloperInspectionLayout.FormatLabel(entry) : DeveloperInspectionLayout.FormatModelLabel(entry);
     }
 
     public bool Select(string path)
@@ -52,8 +78,14 @@ public sealed class DeveloperInspectionModel
         Tree.Select(item); Tree.SetTarget(item); return true;
     }
     public DeveloperViewState Capture(double splitRatio = .4, bool visible = true)
-        => new(SelectedPath, items.Where(pair => pair.Value.Children.Count > 0 && !pair.Value.IsExpanded).Select(pair => pair.Key).ToArray(), splitRatio, visible);
+        => new(SelectedPath, items.Where(pair => pair.Value.Children.Count > 0 && !pair.Value.IsExpanded).Select(pair => pair.Key).ToArray(), splitRatio, visible) { TreeMode = TreeMode, OtherTreeState = otherTreeState };
     public void Restore(DeveloperViewState? state)
+    {
+        if (state is not null) SetTreeMode(state.TreeMode);
+        otherTreeState = state?.OtherTreeState;
+        RestoreSelection(state);
+    }
+    private void RestoreSelection(DeveloperViewState? state)
     {
         if (state?.SelectedPath is not { } selected || !Select(selected)) Tree.Move(0);
         foreach (var path in state?.CollapsedPaths ?? [])
@@ -66,6 +98,8 @@ public sealed class DeveloperInspectionModel
         get
         {
             if (SelectedEntry is not { } entry) return "文房具を選択してください。";
+            if (entry.Kind == "layout" && entry.Path.IndexOf(':') is var separator && separator >= 0)
+                return $"レイアウト Id: {entry.Id}\n\nレイアウトパス: {entry.Label}\n\n所有モデル: {entry.Path[..separator]}\n\n識別パス: {entry.Path}\n\n種類: {string.Join(", ", entry.LayoutTypes ?? [])}\n\n位置: 未取得";
             var bounds = entry.WindowBounds is { } b
                 ? string.Create(CultureInfo.InvariantCulture, $"X={b.X:0.##}\nY={b.Y:0.##}\n幅={b.Width:0.##}\n高さ={b.Height:0.##}") : "—";
             return $"文房具 Id: {entry.Id}\n\nId path: {IdPath}\n\n完全パス: {entry.Path}\n\n種類: {entry.Kind}\n名前: {entry.Label}\n表示: {(entry.Visible ? "表示中" : "非表示")}\n\nウィンドウ内の位置（px）:\n{bounds}"

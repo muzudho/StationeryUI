@@ -16,7 +16,7 @@ public sealed class StationeryDeveloperView : IDisposable
     private readonly StationeryUiHost ui;
     private readonly ITextInputService input;
     public DeveloperOperationLog OperationLog { get; } = new();
-    private readonly StationeryUiHost.Element header, split, tree, details, copy, capture, toolHint;
+    private readonly StationeryUiHost.Element header, split, tree, details, copy, capture, toolHint, modelTreeButton, layoutTreeButton;
     public ScreenRectangle InspectorPanelBounds { get; private set; }
     public ScreenRectangle ToolHintBounds => toolHint.Bounds;
     public string ToolHintText => toolHint.Label;
@@ -27,6 +27,8 @@ public sealed class StationeryDeveloperView : IDisposable
     public StationeryTheme Theme { get => ui.Theme; set => ui.Theme = value; }
     public double SplitRatio => split.Split!.Ratio;
     public ScreenRectangle SplitBounds => split.Bounds;
+    public ScreenRectangle ModelTreeButtonBounds => modelTreeButton.Bounds;
+    public ScreenRectangle LayoutTreeButtonBounds => layoutTreeButton.Bounds;
     public ScreenRectangle TreeBounds => tree.Bounds;
     public ScreenRectangle CopyBounds => copy.Bounds;
     public ScreenRectangle DetailsBounds => details.Bounds;
@@ -57,8 +59,22 @@ public sealed class StationeryDeveloperView : IDisposable
         split.ToolHint = "仕切りをドラッグ、または左右キーで階層と詳細の幅を調整します。";
         details.ToolHint = "詳細はスクロールできます。Ctrl+C で詳細全体をコピーします。";
         copy.ToolHint = "選択した文房具の完全パスをクリップボードへコピーします。";
+        modelTreeButton = ui.AddButton(splitNode.AddChild("modelTreeMode", "button"), new(), "モデルツリー",
+            () => SetTreeMode(DeveloperTreeMode.Model));
+        layoutTreeButton = ui.AddButton(splitNode.AddChild("layoutTreeMode", "button"), new(), "レイアウトツリー",
+            () => SetTreeMode(DeveloperTreeMode.Layout));
         ui.BindSplitContent(split, tree, details);
         ui.Focus.Focus(tree.Path);
+    }
+    public void SetTreeMode(DeveloperTreeMode mode)
+    {
+        Model.SetTreeMode(mode);
+        tree.Tree = Model.Tree;
+        tree.TreeHorizontalScroll = 0;
+        details.Scroll = 0;
+        RevealSelection();
+        details.Label = Model.Details;
+        details.BoxModel = Model.SelectedEntry?.BoxModel;
     }
     public void Refresh(IReadOnlyList<StationeryInspectionEntry> entries)
     {
@@ -72,6 +88,7 @@ public sealed class StationeryDeveloperView : IDisposable
     public void Restore(DeveloperViewState? state)
     {
         Model.Restore(state);
+        tree.Tree = Model.Tree;
         CaptureEnabled = state?.CaptureEnabled ?? false;
         RevealSelection();
         if (state is not null && double.IsFinite(state.SplitRatio)) split.Split!.SetRatio(state.SplitRatio);
@@ -104,7 +121,14 @@ public sealed class StationeryDeveloperView : IDisposable
         header.Bounds = layout.ContentBounds[header.Path];
         capture.Bounds = new(header.Bounds.X, header.Bounds.Y, 48, 48);
         header.Bounds = new(header.Bounds.X + 56, header.Bounds.Y, Math.Max(0, header.Bounds.Width - 56), header.Bounds.Height);
-        split.Bounds = layout.ContentBounds[split.Path];
+        var splitArea = layout.ContentBounds[split.Path];
+        var toolbarHeight = Math.Min(48, splitArea.Height);
+        var buttonWidth = Math.Min(260, splitArea.Width / 2);
+        modelTreeButton.Bounds = new(splitArea.X, splitArea.Y, buttonWidth, toolbarHeight);
+        layoutTreeButton.Bounds = new(splitArea.X + buttonWidth, splitArea.Y, buttonWidth, toolbarHeight);
+        modelTreeButton.Label = (Model.TreeMode == DeveloperTreeMode.Model ? "● " : "") + "モデルツリー";
+        layoutTreeButton.Label = (Model.TreeMode == DeveloperTreeMode.Layout ? "● " : "") + "レイアウトツリー";
+        split.Bounds = new(splitArea.X, splitArea.Y + toolbarHeight, splitArea.Width, Math.Max(0, splitArea.Height - toolbarHeight));
         copy.Bounds = layout.ContentBounds[copy.Path];
         InspectorPanelBounds = layout.Bounds["/developerViewport/developerWindow/inspectorPanel"];
         toolHint.Bounds = layout.ContentBounds[toolHint.Path];
@@ -122,7 +146,7 @@ public sealed class StationeryDeveloperView : IDisposable
             Model.SelectedPath, Model.Tree.TargetItem is { } target ? Model.PathFor(target) : null,
             CaptureEnabled, SplitRatio, tree.TreeScroll, details.Scroll,
             string.Join("\n", Model.Capture().CollapsedPaths.OrderBy(path => path, StringComparer.Ordinal)), width, height)
-            { TreeHorizontalScroll = tree.TreeHorizontalScroll });
+            { TreeHorizontalScroll = tree.TreeHorizontalScroll, TreeMode = Model.TreeMode });
     }
     private StationeryLayoutResult? latestLayout;
     public void Draw()

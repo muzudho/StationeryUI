@@ -69,3 +69,11 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 margin は box / grid / dock のレイアウトに指定します。cells と slots には余白を指定できません。割り当て枠から margin を引き、padding はその内側に適用します。F12 の Compound 図へ数値を渡すため、検査データには最新の設定で DeveloperInspectionLayout.Apply を適用してください。[余白の仕様](dock-layout.md#配置枠を基準にした-margin)を参照してください。
 
 cells は layouts 内に定義し、その各セル内の slots は id だけを持ちます。１セル０～１個で、配置・余白を slots に書かないでください。モデルとの対応は bindings に残します。[cells と slots の移行仕様](dock-layout.md#cells-と-slots)を参照してください。
+
+
+## 開発者ウィンドウのモデル／レイアウト切り替え
+
+ツリー上部でモデルツリーとレイアウトツリーを切り替える。モデルツリーは `(Id : 種類)` のみ、レイアウトツリーは配置情報付きのラベルと実際のネストしたレイアウト定義を表示する。
+`DeveloperInspectionLayout.Apply(entries, settings)`（または `ui.Inspect(settings)`）でスナップショットへ `LayoutNodes` と `LayoutParentPath` を付与する。既存のモデル配列へレイアウトを直接追加しないため、画面のキャプチャー判定はモデルだけを対象にする。
+レイアウトの識別子は `ownerModelPath + ":" + layout.Path`。そのノードの `BoxModel` は定義自身の margin・padding を表す。付加情報のないスナップショットも表示できるが、定義の入れ子は表示できない。
+`DeveloperViewState` には表示モードと両ツリーの選択・開閉状態を保存する。操作ログの `TreeMode` は Model=0、Layout=1。

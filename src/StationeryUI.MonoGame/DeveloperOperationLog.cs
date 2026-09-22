@@ -93,4 +93,5 @@ public sealed record DeveloperOperationState(bool InputEnabled, string? HitPath,
     double TreeScroll, double DetailsScroll, string CollapsedPaths, int Width, int Height)
 {
     public double TreeHorizontalScroll { get; init; }
+    public StationeryUI.Inspection.DeveloperTreeMode TreeMode { get; init; }
 }

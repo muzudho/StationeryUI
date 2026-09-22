@@ -1,5 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using StationeryUI.Inspection;
 using StationeryUI.MonoGame;
 using StationeryUI.Theming;
 using StationeryUI.Windows;
@@ -63,7 +65,13 @@ internal sealed class TextCacheRenderingTests : Game
         inspector.Refresh([
             new("demo", "/demo", null, "viewport", "Demo", true, new(0, 0, 800, 600)),
             new("body", "/demo/body", "/demo", "container", "Margin / padding", true, new(10, 10, 780, 580))
-            { BoxModel = new(new(10, 10, 10, 10), new(5, 5, 5, 5)), LayoutTypes = ["grid-layout"] }
+            { BoxModel = new(new(10, 10, 10, 10), new(5, 5, 5, 5)), LayoutTypes = ["grid-layout"],
+              LayoutNodes = [
+                new("grid", "/demo/body:/grid", "/demo/body", "layout", "/grid", true, null)
+                { LayoutTypes = ["grid-layout"], BoxModel = new(new(10, 10, 10, 10), new(5, 5, 5, 5)) },
+                new("box", "/demo/body:/grid/box", "/demo/body:/grid", "layout", "/grid/box", true, null)
+                { LayoutTypes = ["box-layout"], Cell = new(0, 0, 1, 1), BoxModel = new(new(6, 6, 6, 6), new(24, 24, 24, 24)) }
+              ] }
         ]);
         inspector.SelectCaptured("/demo/body");
         Directory.CreateDirectory("artifacts/text-cache-test");
@@ -78,7 +86,30 @@ internal sealed class TextCacheRenderingTests : Game
             using var output = File.Create("artifacts/text-cache-test/box-model-" + (theme == StationeryTheme.Dark ? "dark" : "light") + ".png");
             inspectorTarget.SaveAsPng(output, 1000, 660);
         }
-        Console.WriteLine("PASS inspector box model renders in light/dark themes.");
+        void Click(StationeryUI.Canvas.ScreenRectangle bounds)
+        {
+            var x = (int)(bounds.X + bounds.Width / 2);
+            var y = (int)(bounds.Y + bounds.Height / 2);
+            inspector.Update(new GameTime(), true, new(), new(x, y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released), 1000, 660);
+            inspector.Update(new GameTime(), true, new(), new(x, y, 0, ButtonState.Pressed, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released), 1000, 660);
+            inspector.Update(new GameTime(), true, new(), new(x, y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released), 1000, 660);
+        }
+        Click(inspector.LayoutTreeButtonBounds);
+        if (inspector.Model.TreeMode != DeveloperTreeMode.Layout || !inspector.Model.Select("/demo/body:/grid/box"))
+            throw new Exception("Layout tree button did not expose nested layouts.");
+        inspector.Update(new GameTime(), true, new(), new(), 1000, 660);
+        if (inspector.TreeBounds.Y < inspector.LayoutTreeButtonBounds.Y + inspector.LayoutTreeButtonBounds.Height)
+            throw new Exception("Toolbar overlaps tree.");
+        GraphicsDevice.SetRenderTarget(inspectorTarget);
+        GraphicsDevice.Clear(Color.Black);
+        inspector.Draw();
+        GraphicsDevice.SetRenderTarget(null);
+        using (var output = File.Create("artifacts/text-cache-test/layout-tree.png"))
+            inspectorTarget.SaveAsPng(output, 1000, 660);
+        Click(inspector.ModelTreeButtonBounds);
+        if (inspector.Model.TreeMode != DeveloperTreeMode.Model || inspector.Model.Tree.SelectedItem!.Label != "(body : Container)")
+            throw new Exception("Model tree button did not restore simple model labels.");
+        Console.WriteLine("PASS inspector box model and tree mode buttons, nested layouts and selection restore.");
         Exit();
     }
 }

@@ -41,6 +41,7 @@ internal static class DeveloperInspectionTests
             "capture command and toggle survive pipe serialization");
         model.Refresh([]); Check(model.SelectedEntry is null && model.Details.Contains("選択"), "empty snapshot");
         CheckLayoutLabels();
+        CheckNestedLayouts();
     }
 
     private static void CheckLayoutLabels()
@@ -70,9 +71,25 @@ internal static class DeveloperInspectionTests
         var received = System.Text.Json.JsonSerializer.Deserialize<DeveloperInspectionMessage>(System.Text.Json.JsonSerializer.Serialize(packet))!;
         var model = new DeveloperInspectionModel(); model.Refresh(received.Entries);
         model.Select("/demo/demoPage");
+        Check(model.Tree.SelectedItem!.Label == "(demoPage : Page)", "model tree hides placement");
+        model.SetTreeMode(DeveloperTreeMode.Layout);
         Check(model.Tree.SelectedItem!.Label == "(demoPage : Page) (- : gridLayout)", "layout owner label and serialization");
         model.Select("/demo/demoPage/btn123");
         Check(model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 0, 3, 2 : -)", "column row column-span row-span order");
+        Check(model.Tree.SelectedItem!.Parent!.Label == "(grid : Layout) (- : gridLayout)", "bound model is under actual layout");
+        model.Select("/demo/demoPage:/grid");
+        model.Tree.Toggle(model.Tree.SelectedItem!);
+        model.SetTreeMode(DeveloperTreeMode.Model);
+        Check(model.SelectedPath == "/demo/demoPage" && !model.Select("/demo/demoPage:/grid"), "model tree omits layout nodes");
+        model.SetTreeMode(DeveloperTreeMode.Layout);
+        Check(model.SelectedPath == "/demo/demoPage:/grid" && model.Capture().CollapsedPaths.Contains("/demo/demoPage:/grid"), "layout selection and collapse survive switching");
+        var saved = System.Text.Json.JsonSerializer.Deserialize<DeveloperViewState>(System.Text.Json.JsonSerializer.Serialize(model.Capture()))!;
+        var reopened = new DeveloperInspectionModel();
+        reopened.Refresh(received.Entries); reopened.Restore(saved);
+        Check(reopened.TreeMode == DeveloperTreeMode.Layout && reopened.SelectedPath == model.SelectedPath, "mode survives transport and reopen");
+        reopened.SetTreeMode(DeveloperTreeMode.Model);
+        Check(reopened.SelectedPath == "/demo/demoPage", "other tree selection survives reopen");
+        model.Select("/demo/demoPage/btn123");
         var tree = model.Tree;
         var changed = enriched.Select(e => e.Id == "btn123" ? e with { Cell = new(1, 1, 1, 1), Visible = false } : e).ToArray();
         model.Refresh(changed);
@@ -83,6 +100,29 @@ internal static class DeveloperInspectionTests
         Check(cleared.All(e => e.LayoutTypes is null && e.Cell is null), "removed bindings clear old metadata");
         Check(DeveloperInspectionLayout.FormatLabel(enriched[2] with { LayoutTypes = ["grid-layout"] })
             == "(btn123 : Button) (1, 0, 3, 2 : gridLayout)", "child placement and parent layout appear together");
+    }
+    private static void CheckNestedLayouts()
+    {
+        var directory = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !System.IO.File.Exists(System.IO.Path.Combine(directory.FullName, "App_Data", "demo.stationery-style.json")))
+            directory = directory.Parent;
+        var settings = StationeryUI.Styling.StationeryStyleSettings.Parse(System.IO.File.ReadAllText(
+            System.IO.Path.Combine(directory!.FullName, "App_Data", "demo.stationery-style.json")));
+        const string owner = "/demo/layoutDemoPage/body";
+        StationeryInspectionEntry[] entries = [
+            new("body", owner, null, "container", "", true, null),
+            new("boxContent", owner + "/boxContent", owner, "textBlock", "", true, null)
+        ];
+        var model = new DeveloperInspectionModel();
+        model.Refresh(DeveloperInspectionLayout.Apply(entries, settings));
+        model.SetTreeMode(DeveloperTreeMode.Layout);
+        Check(model.Select(owner + "/boxContent"), "nested model selectable by capture path");
+        Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner + ":/layoutShowcase/box/content", "model under nested content layout");
+        Check(model.Select(owner + ":/layoutShowcase/box"), "hidden intermediate box is inspectable");
+        Check(model.SelectedEntry!.BoxModel!.Padding.Left == 24 && model.SelectedEntry.BoxModel.Margin.Left == 6, "intermediate layout owns its own insets");
+        model.SetTreeMode(DeveloperTreeMode.Model);
+        model.Select(owner + "/boxContent");
+        Check(model.Tree.SelectedItem!.Parent!.Label == "(body : Container)", "model hierarchy unchanged");
     }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
 }

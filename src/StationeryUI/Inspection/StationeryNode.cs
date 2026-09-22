@@ -65,6 +65,8 @@ public sealed class StationeryNode
 public sealed record StationeryInspectionEntry(string Id, string Path, string? ParentPath, string Kind,
     string Label, bool Visible, ScreenRectangle? WindowBounds)
 {
+    public IReadOnlyList<StationeryInspectionEntry>? LayoutNodes { get; init; }
+    public string? LayoutParentPath { get; init; }
     public IReadOnlyList<string>? LayoutTypes { get; init; }
     public StationeryInspectionCell? Cell { get; init; }
     public string? LayoutError { get; init; }
