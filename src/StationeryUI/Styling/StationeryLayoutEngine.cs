@@ -39,7 +39,7 @@ public static class StationeryLayoutEngine
         var layouts = settings.Layouts.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
         var owners = settings.Bindings.GroupBy(b => b.ModelPath).ToDictionary(g => g.Key, g => g.ToArray());
         var roots = owners.ToDictionary(pair => pair.Key,
-            pair => pair.Value.Select(b => layouts[b.Layout.Split('.')[0]]).Distinct().Single());
+            pair => pair.Value.Select(b => layouts[("/" + b.Layout.Split('/')[1])]).Distinct().Single());
         var panels = roots.Where(pair => pair.Value.Type == "box-layout").ToDictionary(pair => pair.Key, pair => pair.Value);
         var pages = settings.Bindings.Where(b => b.InspectorModel is not null).ToDictionary(b => b.ModelPath);
         var positions = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
@@ -133,7 +133,7 @@ public static class StationeryLayoutEngine
                 positions.Add(splitBinding.SecondModel!, splitBounds.Second);
             }
             if (owners.TryGetValue(node.Path, out var ownerBindings))
-                foreach (var layout in ownerBindings.Select(b => layouts[b.Layout.Split('.')[0]]).Distinct())
+                foreach (var layout in ownerBindings.Select(b => layouts[("/" + b.Layout.Split('/')[1])]).Distinct())
                     if (layout.Type is "box-layout" or "grid-layout" or "dock-layout") ArrangeLayout(layout, node.Path, outer, content);
             // An unbound dock child must not cover every sibling; other nested bindings still take precedence.
             var inheritedChild = ownerBindings?.Any(b => layouts[b.Layout].Type == "dock-layout") == true

@@ -94,7 +94,7 @@
     ],
     "bindings": [
         {
-            "layout": "mainGrid",
+            "layout": "/mainGrid",
             "parentModel": "/app",
             "childrenModel": [
                 {
@@ -190,7 +190,7 @@ public sealed class StyledGame : Game
           ],
           "bindings": [
             {
-              "layout": "mainGrid",
+              "layout": "/mainGrid",
               "parentModel": "/app",
               "childrenModel": [
                 {

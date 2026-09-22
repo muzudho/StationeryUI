@@ -20,6 +20,6 @@
 
 ## ネストを組み込む
 
-- [レイアウトのネストとセル範囲指定](nested-layouts-proposal.md)：`children`、ドット区切りのパス、`row`・`col`・`rowspan`・`colspan` の実装と配置基準。
+- [レイアウトのネストとセル範囲指定](nested-layouts-proposal.md)：`children`、先頭 `/` 付きのスラッシュ区切りのパス、`row`・`col`・`rowspan`・`colspan` の実装と配置基準。
 
 [ライブラリーの組み込み](../library-integration.md) ／ [開発者向け目次](../README.md)

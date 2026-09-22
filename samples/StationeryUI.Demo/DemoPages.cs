@@ -80,7 +80,7 @@ internal sealed partial class Demo
             if (element.Split is not null)
             {
                 var binding = styles.Current.Bindings.Single(b => b.ModelPath == element.Path && b.FirstModel is not null);
-                element.Split.Configure(styles.Current.Layouts.Single(l => l.Id == binding.Layout).Split!);
+                element.Split.Configure(styles.Current.Layouts.Single(l => l.Path == binding.Layout).Split!);
             }
         }
     }

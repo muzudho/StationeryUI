@@ -141,7 +141,7 @@
     ],
     "bindings": [
         {
-            "layout": "windowLayout",
+            "layout": "/windowLayout",
             "parentModel": "developerViewport/developerWindow",
             "childrenModel": [
                 {
@@ -151,7 +151,7 @@
             ]
         },
         {
-            "layout": "inspectorContents",
+            "layout": "/inspectorContents",
             "parentModel": "developerViewport/developerWindow/inspectorPanel",
             "childrenModel": [
                 {
@@ -161,7 +161,7 @@
             ]
         },
         {
-            "layout": "windowLayout.windowRows",
+            "layout": "/windowLayout/windowRows",
             "parentModel": "developerViewport/developerWindow",
             "childrenModel": [
                 {
@@ -179,7 +179,7 @@
             ]
         },
         {
-            "layout": "inspectorColumns",
+            "layout": "/inspectorColumns",
             "model": "developerViewport/developerWindow/inspectorSplit",
             "firstModel": "stationeryTree",
             "secondModel": "details"

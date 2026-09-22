@@ -103,7 +103,7 @@ internal sealed partial class DesignerGame
         else idConfirmButtons.Add(layoutDialog.AddButton("confirmId", new(460, 380, 680, 48), "変更を確定", () => layoutChoice = "rename"));
         var json = JsonNode.Parse(blueprint.BuildJson())!;
         var editedPath = path is null ? null : blueprint.LayoutPathFor(path);
-        var parentPath = path is null ? addParentLayout : editedPath is not null && editedPath.Contains('.') ? editedPath[..editedPath.LastIndexOf('.')] : null;
+        var parentPath = path is null ? addParentLayout : editedPath is not null && editedPath.LastIndexOf('/') > 0 ? editedPath[..editedPath.LastIndexOf('/')] : null;
         var needsPlacement = (string?)StyleBlueprint.FindLayout(json, parentPath)?["type"] == "grid-layout";
         if (needsPlacement)
         {
@@ -243,7 +243,7 @@ internal sealed partial class DesignerGame
         if (layoutDialog is not null || styleTree!.Tree!.SelectedItem is not null)
             throw new InvalidOperationException($"Dialog open: {layoutDialog is not null}; selection: {styleTree!.Tree!.SelectedItem?.Id}; message: {message}");
         var settings = StationeryUI.Styling.StationeryStyleSettings.Parse(blueprint.BuildJson());
-        if (layoutSmoke == "rename" && blueprint.SelectedLayoutId != "renamedLayout") throw new InvalidOperationException("Rename Id button failed.");
+        if (layoutSmoke == "rename" && blueprint.SelectedLayoutId != "/renamedLayout") throw new InvalidOperationException("Rename Id button failed.");
         if (layoutSmoke == "delete")
         {
             if (settings.Layouts.Count != 1) throw new InvalidOperationException("Delete button failed.");

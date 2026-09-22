@@ -25,9 +25,9 @@ internal static class GridLayoutTests
             }
           ],
           "bindings":[
-            {"layout":"frame","model":"screen"},
+            {"layout":"/frame","model":"screen"},
             {
-              "layout":"frame.grid",
+              "layout":"/frame/grid",
               "parentModel":"screen",
               "childrenModel":[{"model":"a","slot":"slot1"},{"model":"b","slot":"slot2"},{"model":"c","slot":"slot3"}]
             }
@@ -38,6 +38,11 @@ internal static class GridLayoutTests
     public static void Run()
     {
         var settings = StationeryStyleSettings.Parse(Source);
+        if (settings.Layouts.Single(l => l.Id == "grid").Path != "/frame/grid" ||
+            settings.Layouts.Single(l => l.Id == "grid").ParentPath != "/frame")
+            throw new Exception("Layout paths and parent paths must use absolute slash paths.");
+        foreach (var invalidPath in new[] { "frame.grid", "frame/grid", "/frame.grid", "/frame/grid/", "/frame//grid", "/frame/./grid", "/frame/../grid", "/", "" })
+            Reject(node => node["bindings"]![1]!["layout"] = invalidPath);
         var result = StationeryLayoutEngine.Arrange(settings, 100, 200);
         var legacy = StationeryStyleSettings.Parse(Source.Replace("grid-layout", "floating-layout"));
         if (legacy.Layouts.Single(l => l.Id == "grid").Type != "grid-layout")
@@ -63,7 +68,7 @@ internal static class GridLayoutTests
             var grid = node["layouts"]![0]!["children"]![0]!.DeepClone();
             node["layouts"]![0]!.AsObject().Remove("children");
             node["layouts"]!.AsArray().Add(grid);
-            node["bindings"]![1]!["layout"] = "grid";
+            node["bindings"]![1]!["layout"] = "/grid";
         });
 
         Reject(node => node["layouts"]![0]!["children"]![0]!["slots"]![0]!["row"] = 2);
@@ -116,7 +121,7 @@ internal static class GridLayoutTests
         Reject(node => node["layouts"]![0]!["children"]![0]!["row-definitions"] = new JsonArray("0rate", "0px"));
         Reject(node => node["layouts"]![0]!["children"]![0]!["padding"] = JsonNode.Parse("""{"left":"-1px"}"""));
         Reject(node => node["layouts"]![0]!["children"]![0]!["id"] = "frame");
-        Reject(node => node["bindings"]![1]!["layout"] = "unknown");
+        Reject(node => node["bindings"]![1]!["layout"] = "/unknown");
         Reject(node => node["bindings"]![1]!["parentModel"] = "unknown");
         Reject(node => node["bindings"]![1]!["childrenModel"]![0]!["model"] = "unknown");
         Reject(node => node["bindings"]![1]!["childrenModel"]![0]!["model"] = "/screen");
@@ -153,9 +158,9 @@ internal static class GridLayoutTests
             {"id":"unit","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate"],"slots":[{"id":"slot1","row":0,"column":0}]}
           ],
           "bindings":[
-            {"layout":"unit","parentModel":"/screen/right","childrenModel":[{"model":"a","slot":"slot1"}]},
-            {"layout":"pair","parentModel":"screen","childrenModel":[{"model":"left","slot":"slot1"},{"model":"right","slot":"slot2"}]},
-            {"layout":"unit","parentModel":"/screen/left","childrenModel":[{"model":"/screen/left/a","slot":"slot1"}]}
+            {"layout":"/unit","parentModel":"/screen/right","childrenModel":[{"model":"a","slot":"slot1"}]},
+            {"layout":"/pair","parentModel":"screen","childrenModel":[{"model":"left","slot":"slot1"},{"model":"right","slot":"slot2"}]},
+            {"layout":"/unit","parentModel":"/screen/left","childrenModel":[{"model":"/screen/left/a","slot":"slot1"}]}
           ]
         }
         """);

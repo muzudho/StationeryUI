@@ -19,7 +19,7 @@ public sealed class StyleBlueprint
         {
             foreach (var node in array)
             {
-                var path = parent is null ? (string)node!["id"]! : parent + "." + (string)node!["id"]!;
+                var path = parent is null ? "/" + (string)node!["id"]! : parent + "/" + (string)node!["id"]!;
                 yield return (path, node!);
                 if (node!["children"] is JsonArray children)
                     foreach (var child in Visit(children, path)) yield return child;
@@ -33,7 +33,7 @@ public sealed class StyleBlueprint
     public bool CanEditGrid => !IsImported || SelectedLayoutType == "grid-layout";
     public Dictionary<string, Track> PanelEdges { get; } = [];
     private readonly Dictionary<string, string> originalPanelNumbers = [];
-    public IReadOnlyList<string> EditableLayouts => imported is null ? ["mainGrid"] : LayoutNodes(imported)
+    public IReadOnlyList<string> EditableLayouts => imported is null ? ["/mainGrid"] : LayoutNodes(imported)
         .Where(l => (string?)l.Node["type"] == "grid-layout" && l.Node["row-definitions"]!.AsArray().Count <= 8 && l.Node["column-definitions"]!.AsArray().Count <= 8)
         .Select(l => l.Path).ToArray();
 
@@ -46,12 +46,12 @@ public sealed class StyleBlueprint
     {
         var json = BuildJson();
         var settings = StationeryStyleSettings.Parse(json);
-        var selectedId = IsImported ? SelectedLayoutId : "mainGrid";
-        var binding = settings.Bindings.FirstOrDefault(b => b.Layout.Split('.')[0] == selectedId?.Split('.')[0]);
+        var selectedId = IsImported ? SelectedLayoutId : "/mainGrid";
+        var binding = settings.Bindings.FirstOrDefault(b => ("/" + b.Layout.Split('/')[1]) == (selectedId is null ? null : "/" + selectedId.Split('/')[1]));
         var standalone = selectedId is not null && binding is null;
         if (standalone)
         {
-            var layout = FindLayout(JsonNode.Parse(json)!, selectedId!.Split('.')[0])!.DeepClone();
+            var layout = FindLayout(JsonNode.Parse(json)!, "/" + selectedId!.Split('/')[1])!.DeepClone();
             var root = new JsonObject
             {
                 ["models"] = new JsonArray(new JsonObject { ["id"] = "previewRoot", ["type"] = "viewport" }),
@@ -240,7 +240,7 @@ public sealed class StyleBlueprint
                 ["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>())
             }),
             ["bindings"] = new JsonArray(new JsonObject
-            { ["layout"] = "mainGrid", ["parentModel"] = "design/mainPage", ["childrenModel"] = bindings })
+            { ["layout"] = "/mainGrid", ["parentModel"] = "design/mainPage", ["childrenModel"] = bindings })
         };
         return Serialize(root);
     }
@@ -288,7 +288,7 @@ public sealed class StyleBlueprint
         layouts.Add(added);
         Serialize(draft);
         imported = draft; SelectedLayoutId = null;
-        var fullPath = parentPath is null ? id : parentPath + "." + id;
+        var fullPath = parentPath is null ? "/" + id : parentPath + "/" + id;
         SelectLayout(fullPath);
         return fullPath;
     }
@@ -358,7 +358,7 @@ public sealed class StyleBlueprint
         var node = NodeAt(draft, path);
         var oldId = (string)node["id"]!;
         if (oldId == id) return;
-        var selected = IsImported ? SelectedLayoutId : "mainGrid";
+        var selected = IsImported ? SelectedLayoutId : "/mainGrid";
         if (path[0] == "layouts")
         {
             if (path.Count >= 2 && path[^2] == "slots")
@@ -372,7 +372,7 @@ public sealed class StyleBlueprint
             }
             var oldPath = LayoutNodes(draft).Single(l => ReferenceEquals(l.Node, node)).Path;
             var newPath = oldPath[..^oldId.Length] + id;
-            string RewriteLayout(string value) => value == oldPath || value.StartsWith(oldPath + ".", StringComparison.Ordinal)
+            string RewriteLayout(string value) => value == oldPath || value.StartsWith(oldPath + "/", StringComparison.Ordinal)
                 ? newPath + value[oldPath.Length..] : value;
             foreach (var binding in draft["bindings"]!.AsArray())
                 binding!["layout"] = RewriteLayout((string)binding["layout"]!);

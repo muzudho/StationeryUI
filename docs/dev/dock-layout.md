@@ -18,9 +18,9 @@ split-pane の firstModel / secondModel と旧ページレイアウトの inspec
 
 各モデルノードが持てるルートレイアウトは最大１つです。`box-layout` / `grid-layout` / `dock-layout` はどれも `padding` を指定できます。例えば `"padding": {"top":"8px","right":"8px","bottom":"8px","left":"8px"}` とします。値は非負の px 文字列です。省略した辺は box-layout では従来どおり8px、grid-layout / dock-layout では0pxです。padding を引いた内側に子を配置し、領域が足りない場合は０サイズまで縮めます。
 
-複合配置はレイアウトの `children` でネストします。同じルートツリー内の `frame.grid` などへ複数 binding を書いても、所有するレイアウトは１つです。dock の各領域をさらに分割するときは子コンテナーに grid などを持たせます。別々のルートを同一ノードへ binding すると、読み込み時にエラーになります。実行中のリロードでは直前の有効な設定を維持します。
+複合配置はレイアウトの `children` でネストします。同じルートツリー内の `/frame/grid` などへ複数 binding を書いても、所有するレイアウトは１つです。dock の各領域をさらに分割するときは子コンテナーに grid などを持たせます。別々のルートを同一ノードへ binding すると、読み込み時にエラーになります。実行中のリロードでは直前の有効な設定を維持します。
 
-旧設定で余白用 box と配置用 grid を併用していた場合は、box の padding を grid へ移して box の binding を削除してください。margin / border も必要なら、box の `children` に grid を入れ、binding の layout を `boxId.gridId` に変更します。
+旧設定で余白用 box と配置用 grid を併用していた場合は、box の padding を grid へ移して box の binding を削除してください。margin / border も必要なら、box の `children` に grid を入れ、binding の layout を `/boxId/gridId` に変更します。
 
 ## 配置の規則
 
@@ -108,7 +108,7 @@ split-pane の firstModel / secondModel と旧ページレイアウトの inspec
     ],
     "bindings": [
         {
-            "layout": "frame",
+            "layout": "/frame",
             "parentModel": "app",
             "childrenModel": [
                 {
@@ -126,7 +126,7 @@ split-pane の firstModel / secondModel と旧ページレイアウトの inspec
             ]
         },
         {
-            "layout": "bodyGrid",
+            "layout": "/bodyGrid",
             "parentModel": "app/body",
             "childrenModel": [
                 {

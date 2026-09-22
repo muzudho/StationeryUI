@@ -14,7 +14,7 @@ themeButton / scaleButton / applyTitleButton / openDialogButton（button）、sa
 **トップページの 9 部品すべてに grid-layout のセルへの binding が必要。**
 splitPaneDemoPage には topDemoLink、verticalSplit、horizontalSplit と、それぞれの子のテキスト欄を定義する。
 スプリットペーンの子は split-pane の firstModel / secondModel で配置する。
-layoutDemoPage/body は topDemoLink、見出しと各セルの textBlock を持ち、ページ直下に inspectorPanel/toolHint を置く。layoutShowcase の子にボックスとグリッドを配置し、さらにその子へドット区切りの layout パスで部品を binding する。これらの parentModel は demo/layoutDemoPage/body。入れ子のグリッドは rowspan: 2 / colspan: 2、最下行の部品は colspan: 3 を使う。各ページの toolHint にもセルへの binding が必要。
+layoutDemoPage/body は topDemoLink、見出しと各セルの textBlock を持ち、ページ直下に inspectorPanel/toolHint を置く。layoutShowcase の子にボックスとグリッドを配置し、さらにその子へ先頭 `/` 付きのスラッシュ区切りの layout パスで部品を binding する。これらの parentModel は demo/layoutDemoPage/body。入れ子のグリッドは rowspan: 2 / colspan: 2、最下行の部品は colspan: 3 を使う。各ページの toolHint にもセルへの binding が必要。
 ツリーの項目と開閉操作は [ツリーの使い方](../../user/tree.md) を参照。
 ダイアログには nameField（textBox）、cancelButton / saveButton（button）が各 1 個必要。
 ダイアログの配置は現時点では C# が担当するため、ダイアログやその子への binding はデモではエラーにする。

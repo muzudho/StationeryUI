@@ -57,7 +57,7 @@ internal static class DeveloperInspectionTests
               "slots":[{"id":"slot1","row":0,"col":1,"rowspan":2,"colspan":3}]
             }
           ],
-          "bindings":[{"layout":"grid","parentModel":"/demo/demoPage","childrenModel":[{"model":"btn123","slot":"slot1"}]}]
+          "bindings":[{"layout":"/grid","parentModel":"/demo/demoPage","childrenModel":[{"model":"btn123","slot":"slot1"}]}]
         }
         """);
         StationeryInspectionEntry[] entries = [

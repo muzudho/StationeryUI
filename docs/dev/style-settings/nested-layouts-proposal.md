@@ -4,7 +4,7 @@
 
 ## 解析結果
 
-`StationeryStyleSettings.Layouts` は、親から子の順に並ぶ全レイアウトの一覧です。`StationeryLayoutNode.Id` はローカル名、`Path` はドット区切りの完全パス、`ParentPath` は親の完全パスです。`Children` でも直接の子を辿れます。
+`StationeryStyleSettings.Layouts` は、親から子の順に並ぶ全レイアウトの一覧です。`StationeryLayoutNode.Id` はローカル名、`Path` は先頭 `/` 付きのスラッシュ区切りの完全パス、`ParentPath` は親の完全パスです。`Children` でも直接の子を辿れます。
 
 binding の `Layout` と比較するときは、`Id` ではなく `Path` を使用します。セル指定は `Row`・`Column`・`RowSpan`・`ColumnSpan` に格納します。文房具のセル割り当てである `StationeryCellBinding` も span を持ちます。
 
@@ -14,7 +14,7 @@ binding の `ModelPath` ごとに、参照先を含む最上位のレイアウ�
 
 同じツリーを別のモデルへ適用すれば別インスタンスになります。親への binding と子への binding が異なるモデルを基準にしている場合も、別インスタンスです。同一モデルに適用できるルートレイアウトは最大１つです。独立したボックスとグリッドの併用もエラーになります。同じルートの子孫への複数 binding は、その１つのツリー内の配置指定として扱います。
 
-モデルの `Bounds`・`ContentBounds` に加え、配置結果には `LayoutBounds`・`LayoutContentBounds`・`LayoutBorderBounds` があります。キーは `モデルの完全パス:レイアウトの完全パス`、例は `/demo:frame.grid.inner` です。ネストしたグリッドのセルを描く際は、その `LayoutContentBounds` を `ArrangeGridCells` へ渡してください。
+モデルの `Bounds`・`ContentBounds` に加え、配置結果には `LayoutBounds`・`LayoutContentBounds`・`LayoutBorderBounds` があります。キーは `モデルの完全パス:レイアウトの完全パス`、例は `/demo:/frame/grid/inner` です。ネストしたグリッドのセルを描く際は、その `LayoutContentBounds` を `ArrangeGridCells` へ渡してください。
 
 ## エディターと検証
 

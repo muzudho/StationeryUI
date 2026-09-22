@@ -10,7 +10,7 @@ public static class DeveloperInspectionLayout
     {
         var layouts = settings.Layouts.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
         var types = settings.Bindings.GroupBy(binding => binding.ModelPath, StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => group.Select(binding => layouts[binding.Layout.Split('.')[0]].Type)
+            .ToDictionary(group => group.Key, group => group.Select(binding => layouts[("/" + binding.Layout.Split('/')[1])].Type)
                 .Distinct(StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
         var cells = settings.Bindings.SelectMany(binding => binding.Children)
             .ToDictionary(cell => cell.ModelPath, cell => new StationeryInspectionCell(cell.Column, cell.Row, cell.ColumnSpan, cell.RowSpan), StringComparer.Ordinal);

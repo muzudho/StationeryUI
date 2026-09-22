@@ -29,7 +29,7 @@ internal sealed partial class DesignerGame
         }
     }
     private bool HasLayoutTarget => TargetLayoutId is { } id
-        && id == (blueprint.IsImported ? blueprint.SelectedLayoutId : "mainGrid");
+        && id == (blueprint.IsImported ? blueprint.SelectedLayoutId : "/mainGrid");
     private readonly string? smokeInput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_INPUT");
 
     private void BuildWelcome()
@@ -72,7 +72,7 @@ internal sealed partial class DesignerGame
     {
         editingPage = hasDraft = true; sidebarActive = false; applicationBarActive = false; rebuild = false;
         message = text; treeJson = null; lastTreeSelection = null;
-        revealLayout = blueprint.IsImported ? blueprint.SelectedLayoutId : "mainGrid";
+        revealLayout = blueprint.IsImported ? blueprint.SelectedLayoutId : "/mainGrid";
         if (!string.IsNullOrEmpty(smokeOutput) && saveSession is null) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-style.json");
         BuildUi();
         var scale = BodyScale;
@@ -128,7 +128,7 @@ internal sealed partial class DesignerGame
                 var ids = new List<string>();
                 for (JsonNode? ancestor = value; ancestor is not null; ancestor = ancestor.Parent)
                     if (ancestor is JsonObject objWithId && objWithId["id"] is JsonValue localId) ids.Insert(0, localId.GetValue<string>());
-                treeLayouts[item.Id] = string.Join(".", ids);
+                treeLayouts[item.Id] = "/" + string.Join("/", ids);
             }
             if (value is JsonObject properties)
             {

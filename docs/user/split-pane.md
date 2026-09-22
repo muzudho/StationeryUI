@@ -51,7 +51,7 @@ px は画面上のピクセルで、表示倍率によって仕切りが太く�
 
 ```json
 {
-    "layout": "verticalSplitLayout",
+    "layout": "/verticalSplitLayout",
     "model": "demo/splitPaneDemoPage/verticalSplit",
     "firstModel": "leftPane",
     "secondModel": "rightPane"

@@ -91,7 +91,7 @@
     ],
     "bindings": [
         {
-            "layout": "demoViewport.mainGrid.inspectorContents",
+            "layout": "/demoViewport/mainGrid/inspectorContents",
             "parentModel": "demo",
             "childrenModel": [
                 {
@@ -112,7 +112,7 @@
 
 レイアウト Id は**同じ親の下で一意**にします。別の親なら同じ Id を使えます。Id 自体には英字・数字・アンダースコアを使用し、ドットは含めません。
 
-`bindings.layout` は最上位からのドット区切りの完全パスです。モデルのパスに使う `/` とは別です。上の例では `demoViewport.mainGrid.inspectorContents` を指定し、`inspectorContents` だけでは参照できません。
+`bindings.layout` は最上位からの先頭 `/` 付きのスラッシュ区切りの完全パスです。モデルと同じ区切り方ですが、レイアウト定義のツリーを参照します。上の例では `/demoViewport/mainGrid/inspectorContents` を指定し、`inspectorContents` だけでは参照できません。
 
 同じモデルを基準に、同じレイアウトツリーの複数のグリッドへ binding を書けます。その場合は各 binding の `parentModel` を揃えます。親レイアウトにも binding を重複して書く必要はありません。別のモデルを基準に同じツリーを使うと、独立した配置になります。
 

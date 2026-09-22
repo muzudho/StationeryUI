@@ -590,11 +590,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
   ],
   "bindings": [
     {
-      "layout": "demoViewport",
+      "layout": "/demoViewport",
       "model": "demo"
     },
     {
-      "layout": "topDemoLayout",
+      "layout": "/topDemoLayout",
       "parentModel": "demo/topDemoPage/body",
       "childrenModel": [
         {
@@ -636,7 +636,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "splitDemoLayout",
+      "layout": "/splitDemoLayout",
       "parentModel": "demo/splitPaneDemoPage/body",
       "childrenModel": [
         {
@@ -654,19 +654,19 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "verticalSplitLayout",
+      "layout": "/verticalSplitLayout",
       "model": "demo/splitPaneDemoPage/body/verticalSplit",
       "firstModel": "leftPane",
       "secondModel": "rightPane"
     },
     {
-      "layout": "horizontalSplitLayout",
+      "layout": "/horizontalSplitLayout",
       "model": "demo/splitPaneDemoPage/body/horizontalSplit",
       "firstModel": "topPane",
       "secondModel": "bottomPane"
     },
     {
-      "layout": "pageDock",
+      "layout": "/pageDock",
       "parentModel": "demo/topDemoPage",
       "childrenModel": [
         {
@@ -680,7 +680,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "inspectorContents",
+      "layout": "/inspectorContents",
       "parentModel": "demo/topDemoPage/inspectorPanel",
       "childrenModel": [
         {
@@ -690,7 +690,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "pageDockFullscreen",
+      "layout": "/pageDockFullscreen",
       "parentModel": "demo/splitPaneDemoPage",
       "childrenModel": [
         {
@@ -704,7 +704,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "inspectorContents",
+      "layout": "/inspectorContents",
       "parentModel": "demo/splitPaneDemoPage/inspectorPanel",
       "childrenModel": [
         {
@@ -714,7 +714,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "layoutShowcase",
+      "layout": "/layoutShowcase",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
@@ -736,7 +736,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "layoutShowcase.box.content",
+      "layout": "/layoutShowcase/box/content",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
@@ -746,7 +746,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "layoutShowcase.grid.paddedCell.content",
+      "layout": "/layoutShowcase/grid/paddedCell/content",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
@@ -756,7 +756,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "layoutShowcase.grid.nestedGrid",
+      "layout": "/layoutShowcase/grid/nestedGrid",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
@@ -778,7 +778,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "layoutShowcase.grid",
+      "layout": "/layoutShowcase/grid",
       "parentModel": "demo/layoutDemoPage/body",
       "childrenModel": [
         {
@@ -788,7 +788,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "pageDock",
+      "layout": "/pageDock",
       "parentModel": "demo/layoutDemoPage",
       "childrenModel": [
         {
@@ -802,7 +802,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ]
     },
     {
-      "layout": "inspectorContents",
+      "layout": "/inspectorContents",
       "parentModel": "demo/layoutDemoPage/inspectorPanel",
       "childrenModel": [
         {

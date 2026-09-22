@@ -18,7 +18,7 @@ internal static class PageLayoutTests
         foreach (var page in new[] { model.TopPage, model.SplitPage, model.LayoutPage })
         {
             var owner = settings.Bindings.Where(b => b.ModelPath == page.Path).ToArray();
-            Check(owner.Length == 1 && owner[0].Layout == (page == model.SplitPage ? "pageDockFullscreen" : "pageDock"), "each page owns only the shared dock layout");
+            Check(owner.Length == 1 && owner[0].Layout == (page == model.SplitPage ? "/pageDockFullscreen" : "/pageDock"), "each page owns only the shared dock layout");
             Check(owner[0].DockChildren[0].Dock == "bottom" && owner[0].DockChildren[1].Dock == "center", "inspector precedes center body");
         }
         Check(bounds.Bounds[model.SplitControls["toolHint"].Path].Height == 0, "fullscreen hides hint");
@@ -26,12 +26,12 @@ internal static class PageLayoutTests
         foreach (var (width, height) in new[] { (1000, 780), (720, 560), (1400, 900) })
         {
             var showcase = StationeryLayoutEngine.Arrange(settings, width, height);
-            var owner = model.LayoutPage.Path + "/body:layoutShowcase";
-            var box = showcase.LayoutBounds[owner + ".box"];
+            var owner = model.LayoutPage.Path + "/body:/layoutShowcase";
+            var box = showcase.LayoutBounds[owner + "/box"];
             var content = showcase.Bounds[model.LayoutControls["boxContent"].Path];
             Check(content.X == box.X + 24 && content.Y == box.Y + 24 && content.Width == box.Width - 48, "box padding surrounds its only child");
-            var grid = showcase.LayoutContentBounds[owner + ".grid"];
-            var nested = showcase.LayoutBounds[owner + ".grid.nestedGrid"];
+            var grid = showcase.LayoutContentBounds[owner + "/grid"];
+            var nested = showcase.LayoutBounds[owner + "/grid/nestedGrid"];
             Check(Math.Abs(nested.Width - grid.Width * 2 / 3) < .001 && Math.Abs(nested.Height - grid.Height * 2 / 3) < .001, "nested grid spans two rows and columns");
             var a = showcase.Bounds[model.LayoutControls["nestedA"].Path];
             var d = showcase.Bounds[model.LayoutControls["nestedD"].Path];
@@ -86,7 +86,7 @@ internal static class PageLayoutTests
         const string source = """
         {"models":[{"id":"app","type":"viewport","children":[{"id":"page","type":"page","children":[{"id":"inspector","type":"container"}]}]}],
          "layouts":[{"id":"pageLayout","type":"work-page-layout","inspectorHeight":"80px"}],
-         "bindings":[{"layout":"pageLayout","model":"app/page","inspectorModel":"inspector"}]}
+         "bindings":[{"layout":"/pageLayout","model":"app/page","inspectorModel":"inspector"}]}
         """;
         var settings = StationeryStyleSettings.Parse(source);
         Check(StationeryLayoutEngine.Arrange(settings, 1000, 660).Bounds["/app/page/inspector"].Height == 80, "legacy work page remains supported");

@@ -62,10 +62,10 @@ internal static class NestedLayoutTests
             }
           ],
           "bindings":[
-            {"layout":"frame","model":"demo"},
-            {"layout":"frame.grid","parentModel":"demo","childrenModel":[{"model":"d","slot":"slot1"}]},
-            {"layout":"frame.grid.box.inner","parentModel":"demo","childrenModel":[{"model":"a","slot":"slot1"},{"model":"b","slot":"slot2"}]},
-            {"layout":"frame.grid.inner","parentModel":"demo","childrenModel":[{"model":"c","slot":"slot1"}]}
+            {"layout":"/frame","model":"demo"},
+            {"layout":"/frame/grid","parentModel":"demo","childrenModel":[{"model":"d","slot":"slot1"}]},
+            {"layout":"/frame/grid/box/inner","parentModel":"demo","childrenModel":[{"model":"a","slot":"slot1"},{"model":"b","slot":"slot2"}]},
+            {"layout":"/frame/grid/inner","parentModel":"demo","childrenModel":[{"model":"c","slot":"slot1"}]}
           ]
         }
         """;
@@ -121,9 +121,9 @@ internal static class NestedLayoutTests
             }
           ],
           "bindings":[
-            {"layout":"outer","parentModel":"app","childrenModel":[{"model":"left","slot":"slot1"},{"model":"right","slot":"slot2"}]},
-            {"layout":"frame.grid","parentModel":"app/left","childrenModel":[{"model":"name","slot":"slot1"}]},
-            {"layout":"frame.grid","parentModel":"app/right","childrenModel":[{"model":"name","slot":"slot1"}]}
+            {"layout":"/outer","parentModel":"app","childrenModel":[{"model":"left","slot":"slot1"},{"model":"right","slot":"slot2"}]},
+            {"layout":"/frame/grid","parentModel":"app/left","childrenModel":[{"model":"name","slot":"slot1"}]},
+            {"layout":"/frame/grid","parentModel":"app/right","childrenModel":[{"model":"name","slot":"slot1"}]}
           ]
         }
         """);
@@ -140,7 +140,7 @@ internal static class NestedLayoutTests
         Reject(s => Grid(s)["children"]![0]!["column"] = 0);
         Reject(s => Grid(s)["children"]![1]!["row"] = 1);
         Reject(s => Grid(s)["children"]![1]!["id"] = "box");
-        Reject(s => s["bindings"]![2]!["layout"] = "inner");
+        Reject(s => s["bindings"]![2]!["layout"] = "/inner");
         Reject(s => s["bindings"]![1]!["childrenModel"]![0]!["col"] = 1);
         Reject(s => s["layouts"]![0]!["row"] = 0);
         Reject(s => s["layouts"]![0]!["children"] = null);
@@ -148,20 +148,20 @@ internal static class NestedLayoutTests
         Reject(s => s["bindings"]![3]!["childrenModel"]![0]!["rowspan"] = 2);
 
         var plan = StyleBlueprint.Parse(Source);
-        plan.SelectLayout("frame.grid.box.inner");
+        plan.SelectLayout("/frame/grid/box/inner");
         Check(plan.SelectedLayoutType == "grid-layout" && plan.EditableLayouts.Count == 3, "nested grids are editable");
         Equal(new(45, 15, 30, 110), plan.CreatePreview(400, 300).Cells[0].Bounds);
         plan.Columns[0].Number = "3";
         var saved = plan.BuildJson();
-        Check(StyleBlueprint.FindLayout(JsonNode.Parse(saved)!, "frame.grid.box.inner")!["colspan"] is null, "box child has no placement invented");
+        Check(StyleBlueprint.FindLayout(JsonNode.Parse(saved)!, "/frame/grid/box/inner")!["colspan"] is null, "box child has no placement invented");
         Equal(new(45, 15, 60, 110), plan.CreatePreview(400, 300).Cells[0].Bounds);
         var before = plan.BuildJson();
-        try { plan.SelectLayout("frame.grid"); plan.Resize(1, 1); throw new Exception("resize accepted"); } catch (ArgumentException) { }
-        plan.SelectLayout("frame.grid.box.inner");
+        try { plan.SelectLayout("/frame/grid"); plan.Resize(1, 1); throw new Exception("resize accepted"); } catch (ArgumentException) { }
+        plan.SelectLayout("/frame/grid/box/inner");
         plan.RenameId(["layouts","0","children","0","children","0"], "renamed");
-        Check(plan.SelectedLayoutId == "frame.grid.renamed.inner", "renaming parent updates selected descendant");
-        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings.Any(b => b.Layout == "frame.grid.renamed.inner"), "rename updates descendant bindings");
-        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings.Any(b => b.Layout == "frame.grid.inner"), "rename does not affect same local ID elsewhere");
+        Check(plan.SelectedLayoutId == "/frame/grid/renamed/inner", "renaming parent updates selected descendant");
+        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings.Any(b => b.Layout == "/frame/grid/renamed/inner"), "rename updates descendant bindings");
+        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings.Any(b => b.Layout == "/frame/grid/inner"), "rename does not affect same local ID elsewhere");
         before = plan.BuildJson();
         try { plan.DeleteNode(["layouts","0","children","0","children","0"]); throw new Exception("bound subtree deleted"); } catch (JsonException) { }
         Check(plan.BuildJson() == before, "invalid delete is atomic");
@@ -170,22 +170,22 @@ internal static class NestedLayoutTests
         {"models":[{"id":"app","type":"viewport"}],"layouts":[],"bindings":[]}
         """);
         empty.AddLayout("box-layout", "root");
-        empty.AddLayout("grid-layout", "cells", "root");
-        empty.AddLayout("box-layout", "item", "root.cells", 0, 0, 2, 1);
-        empty.AddLayout("grid-layout", "inside", "root.cells.item");
-        empty.AddLayout("box-layout", "other", "root.cells", 0, 1, 2, 1);
+        empty.AddLayout("grid-layout", "cells", "/root");
+        empty.AddLayout("box-layout", "item", "/root/cells", 0, 0, 2, 1);
+        empty.AddLayout("grid-layout", "inside", "/root/cells/item");
+        empty.AddLayout("box-layout", "other", "/root/cells", 0, 1, 2, 1);
         var roundtrip = StyleBlueprint.Parse(empty.BuildJson());
-        roundtrip.SelectLayout("root.cells.item.inside");
+        roundtrip.SelectLayout("/root/cells/item/inside");
         Check(roundtrip.CreatePreview(300, 200).Standalone, "unbound nested subtree preview");
         before = empty.BuildJson();
-        try { empty.AddLayout("grid-layout", "extra", "root"); throw new Exception("second box child accepted"); } catch (JsonException) { }
+        try { empty.AddLayout("grid-layout", "extra", "/root"); throw new Exception("second box child accepted"); } catch (JsonException) { }
         Check(empty.BuildJson() == before, "box child cap enforced atomically");
-        try { empty.SetPlacement("root.cells.other", 1, 0); throw new Exception("overlap accepted"); } catch (JsonException) { }
+        try { empty.SetPlacement("/root/cells/other", 1, 0); throw new Exception("overlap accepted"); } catch (JsonException) { }
         Check(empty.BuildJson() == before, "placement failure is atomic");
         empty.DeleteNode(["layouts","0","children","0","children","1"]);
-        empty.SetPlacement("root.cells.item", 0, 0, 2, 2);
+        empty.SetPlacement("/root/cells/item", 0, 0, 2, 2);
         roundtrip = StyleBlueprint.Parse(empty.BuildJson());
-        Check(StationeryStyleSettings.Parse(roundtrip.BuildJson()).Layouts.Single(l => l.Path == "root.cells.item").ColumnSpan == 2, "span changes survive save and reopen");
+        Check(StationeryStyleSettings.Parse(roundtrip.BuildJson()).Layouts.Single(l => l.Path == "/root/cells/item").ColumnSpan == 2, "span changes survive save and reopen");
     }
     private static JsonNode Grid(JsonNode root) => root["layouts"]![0]!["children"]![0]!;
     private static void Reject(Action<JsonNode> edit)

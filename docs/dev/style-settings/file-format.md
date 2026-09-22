@@ -18,9 +18,9 @@ split-pane の firstModel / secondModel と旧ページレイアウトの inspec
 
 各モデルノードが持てるルートレイアウトは最大１つです。`box-layout` / `grid-layout` / `dock-layout` はどれも `padding` を指定できます。例えば `"padding": {"top":"8px","right":"8px","bottom":"8px","left":"8px"}` とします。値は非負の px 文字列です。省略した辺は box-layout では従来どおり8px、grid-layout / dock-layout では0pxです。padding を引いた内側に子を配置し、領域が足りない場合は０サイズまで縮めます。
 
-複合配置はレイアウトの `children` でネストします。同じルートツリー内の `frame.grid` などへ複数 binding を書いても、所有するレイアウトは１つです。dock の各領域をさらに分割するときは子コンテナーに grid などを持たせます。別々のルートを同一ノードへ binding すると、読み込み時にエラーになります。実行中のリロードでは直前の有効な設定を維持します。
+複合配置はレイアウトの `children` でネストします。同じルートツリー内の `/frame/grid` などへ複数 binding を書いても、所有するレイアウトは１つです。dock の各領域をさらに分割するときは子コンテナーに grid などを持たせます。別々のルートを同一ノードへ binding すると、読み込み時にエラーになります。実行中のリロードでは直前の有効な設定を維持します。
 
-旧設定で余白用 box と配置用 grid を併用していた場合は、box の padding を grid へ移して box の binding を削除してください。margin / border も必要なら、box の `children` に grid を入れ、binding の layout を `boxId.gridId` に変更します。
+旧設定で余白用 box と配置用 grid を併用していた場合は、box の padding を grid へ移して box の binding を削除してください。margin / border も必要なら、box の `children` に grid を入れ、binding の layout を `/boxId/gridId` に変更します。
 
 ## models → bindings → layouts の順にたどる
 
@@ -40,7 +40,7 @@ split-pane の firstModel / secondModel と旧ページレイアウトの inspec
 
 - Id は空でない `[A-Za-z0-9_]+`。大小文字を区別します。camelCase を推奨します。
 - 同じ親の直下のモデル Id は一意にします。異なる親の下なら同じ Id を使えます。
-- レイアウト Id は同じ親の下で一意にします。モデル Id とは別の名前空間です。`bindings.layout` は `frame.grid.inner` のようなドット区切りの完全パスで参照します。
+- レイアウト Id は同じ親の下で一意にします。モデル Id とは別の名前空間です。`bindings.layout` は `/frame/grid/inner` のような先頭 `/` 付きのスラッシュ区切りの完全パスで参照します。
 - `model` / `parentModel` はルートからのパスです。`app/pageA` と `/app/pageA` は同じ参照です。
 - `childrenModel[].model` は `parentModel` からの相対パス、または `/` で始まる完全パスです。
 - `firstModel` / `secondModel` / `inspectorModel` も、その binding の `model` からの相対パスか完全パスです。
@@ -66,7 +66,7 @@ split-pane の firstModel / secondModel と旧ページレイアウトの inspec
 }
 ```
 
-これは `layouts` の1要素です。対応する binding は `{ "layout": "contentPanel", "model": "/app" }` です。
+これは `layouts` の1要素です。対応する binding は `{ "layout": "/contentPanel", "model": "/app" }` です。
 
 割り当て矩形から margin を引くと `Bounds`、そこから padding を引くと `ContentBounds` です。border は **全体サイズにも子の配置サイズにも含めず**、外側へ広がる `BorderBounds` になります。実際の線は `ui.DrawPanelBorders(result)` などで描画します。JSON の border を指定しただけでは描画されません。
 
@@ -129,7 +129,7 @@ bindings: outerGrid のセルに contentArea を配置
 
 ```json
 {
-    "layout": "editorSplit",
+    "layout": "/editorSplit",
     "model": "/app/editorSplit",
     "firstModel": "leftPane",
     "secondModel": "rightPane"
@@ -154,7 +154,7 @@ bindings: outerGrid のセルに contentArea を配置
 }
 ```
 
-binding は `{ "layout": "workPage", "model": "/app/editorPage", "inspectorModel": "inspectorPanel" }` の形です。対象は `page`、inspectorModel はその直下の `container` にします。fullscreen-layout でも inspectorModel は必要で、高さ0になります。切り替えるときは binding の layout Id を変えます。
+binding は `{ "layout": "/workPage", "model": "/app/editorPage", "inspectorModel": "inspectorPanel" }` の形です。対象は `page`、inspectorModel はその直下の `container` にします。fullscreen-layout でも inspectorModel は必要で、高さ0になります。切り替えるときは binding の layout Id を変えます。
 
 インスペクターはページの横幅いっぱいに配置され、ページ本文の padding の影響を受けません。祖先の余白は影響します。work-page-layout の inspectorHeight は省略時80px、低い画面では収まる高さへ縮みます。本文を子コンテナーにし、そのコンテナーのレイアウトに余白や行・列を指定します。同じページへ別のルートレイアウトは適用できません。ページレイアウト自体に padding やトラック定義は書けません。
 
@@ -172,3 +172,6 @@ binding は `{ "layout": "workPage", "model": "/app/editorPage", "inspectorModel
 | 任意の window.width / height によるウィンドウ変更 | 汎用パーサーは適用しない。開発者ウィンドウ専用の拡張とは別 |
 
 旧ルートキー `viewport` / `model` / `layout` はエラーになります。未知のプロパティは原則無視されるため、`color` や `gap` を追加してエラーが出ないことは「対応している」証拠になりません。レイアウト間の組み合わせも、アプリ側の `validate` で実際の配置まで検証してください。
+
+
+`bindings.layout` は `/frame/grid/inner` のように、先頭 `/` 付きのスラッシュ区切り絶対パスを指定します。最上位も `/mainGrid` と書きます。レイアウトの `id` は `mainGrid` のようなローカル名のままです。旧ドット区切り、先頭 `/` の省略、末尾 `/`、空の区間（`//`）、`.` / `..` は受け付けません。旧設定は `frame.grid` → `/frame/grid` と置き換えてください。モデル参照の既存ルールと slot のローカル Id は変更しません。

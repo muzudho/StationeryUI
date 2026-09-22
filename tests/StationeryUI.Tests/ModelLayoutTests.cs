@@ -15,7 +15,7 @@ internal static class ModelLayoutTests
               {"id":"leftPage","type":"page","children":[{"id":"nameField","type":"textBox"}]},
               {"id":"rightPage","type":"page","children":[{"id":"nameField","type":"textBox"}]}
             ]}],"layouts":[{"id":"unrelatedLayoutId","type":"box-layout","padding":{"left":"24px"}}],
-            "bindings":[{"layout":"unrelatedLayoutId","model":"/demo"}]}
+            "bindings":[{"layout":"/unrelatedLayoutId","model":"/demo"}]}
             """;
         var settings = StationeryStyleSettings.Parse(source);
         var tree = settings.Models[0].CreateTree();

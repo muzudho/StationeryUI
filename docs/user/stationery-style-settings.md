@@ -122,7 +122,7 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
     ],
     "bindings": [
         {
-            "layout": "demoPage",
+            "layout": "/demoPage",
             "parentModel": "demo",
             "childrenModel": [
                 {
@@ -148,7 +148,7 @@ layouts の id はモデルへの参照ではない。例えば demoViewport は
 bindings の model: demo によって初めてモデルと結び付く。
 レイアウト Id も英字・数字・アンダースコアを使い、同じ親の下で一意にする。
 box-layout は children に0～1個、grid-layout は0～複数個の子レイアウトを置ける。モデル参照や contents は置かない。
-bindings.layout にはドット区切りの完全パスを指定する。子の row・col・rowspan・colspan の指定例は[レイアウトをネストする](nested-layouts.md)を参照。
+bindings.layout には先頭 `/` 付きのスラッシュ区切りの完全パスを指定する。子の row・col・rowspan・colspan の指定例は[レイアウトをネストする](nested-layouts.md)を参照。
 
 ## bindings の参照と組み合わせ
 
@@ -271,7 +271,7 @@ F5 と自動リロードは継続する。
     ],
     "bindings": [
         {
-            "layout": "pageDock",
+            "layout": "/pageDock",
             "parentModel": "demo/topDemoPage",
             "childrenModel": [
                 {

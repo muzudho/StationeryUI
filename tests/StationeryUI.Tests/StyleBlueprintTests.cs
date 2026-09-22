@@ -69,23 +69,23 @@ internal static class StyleBlueprintTests
         var source = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json")))!;
         source["extraMetadata"] = new JsonObject { ["memo"] = "既存の拡張情報" };
         var imported = StyleBlueprint.Parse(source.ToJsonString());
-        Check(imported.IsImported && imported.SelectedLayoutId == "topDemoLayout", "opens existing layout");
+        Check(imported.IsImported && imported.SelectedLayoutId == "/topDemoLayout", "opens existing layout");
         imported.Columns[0].Number = "2.5";
         var edited = JsonNode.Parse(imported.BuildJson())!;
         foreach (var key in new[] { "models", "bindings", "extraMetadata" })
             Check(JsonNode.DeepEquals(source[key], edited[key]), "preserves " + key);
         Check(JsonNode.DeepEquals(source["layouts"]![0], edited["layouts"]![0]), "preserves unrelated panel");
         Check(imported.CellDescription(0, 0) == "nameField", "existing model references in table");
-        imported.SelectLayout("splitDemoLayout");
+        imported.SelectLayout("/splitDemoLayout");
         imported.Rows[0].Number = "72";
-        imported.SelectLayout("topDemoLayout");
+        imported.SelectLayout("/topDemoLayout");
         Check(imported.Columns[0].Number == "2.5", "selection retains earlier layout edits");
         Check(StationeryStyleSettings.Parse(imported.BuildJson()).Layouts.Single(l => l.Id == "splitDemoLayout").Rows[0].Value == 72, "other edit retained");
         try { imported.Resize(1, 1); throw new Exception("Invalid shrink accepted."); } catch (ArgumentException) { }
         Check(imported.Rows.Count == 5 && imported.Columns.Count == 2, "rejected shrink is atomic");
         imported.Columns[0].Number = "invalid";
-        Reject(() => imported.SelectLayout("splitDemoLayout"));
-        Check(imported.SelectedLayoutId == "topDemoLayout", "invalid draft not discarded on selection");
+        Reject(() => imported.SelectLayout("/splitDemoLayout"));
+        Check(imported.SelectedLayoutId == "/topDemoLayout", "invalid draft not discarded on selection");
         var readOnly = StyleBlueprint.Parse("{\"models\":[{\"id\":\"root\",\"type\":\"viewport\"}],\"layouts\":[],\"bindings\":[],\"window\":{\"width\":1000}}");
         Check(!readOnly.CanEditGrid && JsonNode.Parse(readOnly.BuildJson())!["window"]!["width"]!.GetValue<int>() == 1000, "non-grid document stays intact");
         Reject(() => StyleBlueprint.Parse("{"));
@@ -112,7 +112,7 @@ internal static class StyleBlueprintTests
         preview = plan.CreatePreview(500, 300);
         Check(preview.Standalone && preview.Cells[0].Bounds.Width == 0 && preview.Cells[1].Bounds.Width == 500, "empty zero-width tracks remain configurable");
         var imported = StyleBlueprint.Open(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
-        imported.SelectLayout("splitDemoLayout");
+        imported.SelectLayout("/splitDemoLayout");
         preview = imported.CreatePreview(700, 500);
         Check(preview.ScopePath.EndsWith("/splitPaneDemoPage", StringComparison.Ordinal), "preview chooses bound page");
         Check(preview.Settings.Layouts.Any(l => l.Type == "split-pane"), "preview retains split and other layout definitions");
@@ -134,7 +134,7 @@ internal static class StyleBlueprintTests
         try { plan.AddLayout("box-layout", "mainGrid"); throw new Exception("Duplicate accepted"); } catch (ArgumentException) { }
         Check(plan.BuildJson() == before, "duplicate add is atomic");
         plan.RenameId(["layouts", "0"], "newGrid");
-        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].Layout == "newGrid", "layout references updated");
+        Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].Layout == "/newGrid", "layout references updated");
         plan.RenameId(["models", "0", "children", "0"], "renamedPage");
         Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].ModelPath == "/design/renamedPage", "model parent references updated");
         plan.RenameId(["models", "0", "children", "0", "children", "0"], "newCell");
@@ -181,7 +181,7 @@ internal static class StyleBlueprintTests
         Check(oldPlan.CreatePreview(100, 80).Layout.ContentBounds["/design/mainPage"].Y == 6, "old box preview uses padding");
         var compatibility = new StyleBlueprint();
         var oldAdded = compatibility.AddLayout("panel");
-        Check(compatibility.SelectedLayoutType == "box-layout" && oldAdded.StartsWith("boxLayout"), "legacy add uses canonical type and generated ID");
+        Check(compatibility.SelectedLayoutType == "box-layout" && oldAdded.StartsWith("/boxLayout"), "legacy add uses canonical type and generated ID");
         var style = StationeryStyleSettings.Parse(json.ToJsonString());
         var arranged = StationeryLayoutEngine.Arrange(style, 100, 80);
         Check(arranged.Bounds["/design/mainPage"].Width == 90 && arranged.ContentBounds["/design/mainPage"].Y == 4, "margin and padding affect layout");

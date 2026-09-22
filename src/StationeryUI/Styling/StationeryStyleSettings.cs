@@ -40,7 +40,7 @@ public sealed record StationeryLayoutNode(string Id, string Type, ViewportPaddin
 {
     public IReadOnlyList<StationeryLayoutSlot> Slots { get; init; } = [];
     public string? SlotError { get; init; }
-    public string Path { get; init; } = Id;
+    public string Path { get; init; } = "/" + Id;
     public string? ParentPath { get; init; }
     public int Row { get; init; }
     public int Column { get; init; }
@@ -67,7 +67,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
     public static StationeryStyleSettings Default { get; } = Parse("""
         {"models":[{"id":"demo","type":"viewport"}],
          "layouts":[{"id":"rootPanel","type":"box-layout"}],
-         "bindings":[{"layout":"rootPanel","model":"demo"}]}
+         "bindings":[{"layout":"/rootPanel","model":"demo"}]}
         """);
 
     // Convenience for consumers interested only in root padding; never depends on layouts array order.
@@ -77,8 +77,8 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         {
             var rootPath = "/" + Models[0].Id;
             var binding = Bindings.FirstOrDefault(binding => binding.ModelPath == rootPath &&
-                Layouts.Any(layout => layout.Path == binding.Layout.Split('.')[0] && layout.Type is "box-layout" or "grid-layout" or "dock-layout"));
-            return binding is null ? default : Layouts.Single(layout => layout.Path == binding.Layout.Split('.')[0]).Padding;
+                Layouts.Any(layout => layout.Path == ("/" + binding.Layout.Split('/')[1]) && layout.Type is "box-layout" or "grid-layout" or "dock-layout"));
+            return binding is null ? default : Layouts.Single(layout => layout.Path == ("/" + binding.Layout.Split('/')[1])).Padding;
         }
     }
 
@@ -108,7 +108,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             RequireObject(item, path);
             var id = ReadString(item, "id", path);
             ValidateId(id, path);
-            path = parentPath is null ? id : parentPath + "." + id;
+            path = parentPath is null ? "/" + id : parentPath + "/" + id;
             if (!layoutIds.Add(path)) throw new JsonException($"Duplicate layout Id '{id}'.");
             var type = ReadString(item, "type", path);
             if (type == "floating-layout") type = "grid-layout"; // Legacy JSON spelling.
@@ -263,6 +263,8 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             if (new[] { "row", "col", "column", "rowspan", "colspan", "dock", "size" }.Any(k => item.TryGetProperty(k, out _)))
                 throw new JsonException($"{path}: placement belongs in layouts, not bindings.");
             var layoutId = ReadString(item, "layout", path);
+            if (!layoutId.StartsWith('/') || layoutId.Contains('.'))
+                throw new JsonException($"{path}.layout must be an absolute slash-separated path, for example /frame/grid.");
             var layout = layouts.FirstOrDefault(layout => layout.Path == layoutId)
                 ?? throw new JsonException($"{path}: unknown layout '{layoutId}'.");
             if (layout.Type == "dock-layout")
@@ -358,7 +360,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         // A model owns at most one root tree; bindings to descendants of that tree are valid.
         foreach (var group in bindings.GroupBy(b => b.ModelPath))
         {
-            var roots = group.Select(b => b.Layout.Split('.')[0]).Distinct().ToArray();
+            var roots = group.Select(b => ("/" + b.Layout.Split('/')[1])).Distinct().ToArray();
             if (roots.Length > 1)
                 throw new JsonException($"{group.Key}: a node can own at most one layout tree. Nest layouts instead of binding multiple roots.");
         }
