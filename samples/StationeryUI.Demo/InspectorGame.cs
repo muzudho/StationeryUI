@@ -110,6 +110,8 @@ internal sealed class InspectorGame : Game
             shown = false; SDL_HideWindow(Window.Handle);
         }
         previous = keyboard;
+        view!.OperationLog.HostIsActive = IsActive;
+        view.OperationLog.InputSource = testInput is null ? "mouse-keyboard" : "synthetic-test";
         view!.Update(gameTime, shown && (IsActive || testInput is not null), keyboard, mouse, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
         packet?.Response.TrySetResult(view.Capture(shown));
         reportElapsed += gameTime.ElapsedGameTime.TotalSeconds;

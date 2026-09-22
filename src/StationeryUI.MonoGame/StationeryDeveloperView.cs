@@ -15,6 +15,7 @@ public sealed class StationeryDeveloperView : IDisposable
 {
     private readonly StationeryUiHost ui;
     private readonly ITextInputService input;
+    public DeveloperOperationLog OperationLog { get; } = new();
     private readonly StationeryUiHost.Element header, split, tree, details, copy, capture, toolHint;
     public ScreenRectangle InspectorPanelBounds { get; private set; }
     public ScreenRectangle ToolHintBounds => toolHint.Bounds;
@@ -113,6 +114,11 @@ public sealed class StationeryDeveloperView : IDisposable
             : "手のボタンでキャプチャー。F12 / Esc で閉じる。");
         if (before != Model.SelectedPath) { details.Scroll = 0; copy.Label = "パスをコピー"; }
         details.Label = Model.Details;
+        var hit = DeveloperCapture.HitTest(ui.Inspect(), mouse.X, mouse.Y);
+        OperationLog.Record(mouse, keyboard, new(active, hit?.Path, ui.Focus.FocusedId,
+            Model.SelectedPath, Model.Tree.TargetItem is { } target ? Model.PathFor(target) : null,
+            CaptureEnabled, SplitRatio, tree.TreeScroll, details.Scroll,
+            string.Join("\n", Model.Capture().CollapsedPaths.OrderBy(path => path, StringComparer.Ordinal)), width, height));
     }
     private StationeryLayoutResult? latestLayout;
     public void Draw()
@@ -121,5 +127,5 @@ public sealed class StationeryDeveloperView : IDisposable
         ui.DrawCaptureIcon(capture.Bounds, CaptureEnabled, ui.Focus.FocusedId == capture.Path);
         if (latestLayout is not null) ui.DrawPanelBorders(latestLayout);
     }
-    public void Dispose() => ui.Dispose();
+    public void Dispose() { OperationLog.Dispose(); ui.Dispose(); }
 }

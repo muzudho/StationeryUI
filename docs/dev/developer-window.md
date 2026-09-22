@@ -57,6 +57,18 @@ F12 / Esc は開発者ウィンドウを隠す。検査対象で F12 を押す�
 コピーは入力サービス経由で行い、失敗時はコピーボタンに再試行の案内を出す。
 詳細は AddTextBlock による読み取り専用表示で、文字入力や削除を検査対象に反映しない。
 
+## 通常操作のログ
+
+`StationeryDeveloperView` は `DeveloperOperationLog` を所有し、`Update` ごとの入力と処理後の状態を比較して、変化したフレームを JSON Lines で記録する。従来の `STATIONERYUI_INSPECTOR_TEST_OUTPUT` による `report.json` は最新状態の検証用出力で、通常操作の履歴ではない。操作ログは検証用環境変数なしでも有効。
+
+Windows の既定保存先は `%LOCALAPPDATA%\StationeryUI\Logs`。`STATIONERYUI_OPERATION_LOG_DIR` で変更できる。実際のパスは `view.OperationLog.FilePath`、保存失敗は `view.OperationLog.LastError` と `Trace` で確認できる。書き込み失敗でウィンドウ操作を停止しない。各行は直ちにフラッシュし、8 MiB で `.jsonl.1` へローテーションする（直前の一世代を保持）。
+
+独自の開発者ウィンドウホストでも `StationeryDeveloperView.Update` を呼べば記録される。呼び出す直前に `view.OperationLog.HostIsActive = IsActive` を設定すると、実際の `Game.IsActive` と、`Update` に渡した `active`（ログの `After.InputEnabled`）を区別できる。設定しない場合 `HostIsActive` は `null`。合成入力を使うテストは `InputSource = "synthetic-test"` を設定する。デモの `InspectorGame` は両方を設定済み。
+
+ログには UTC 時刻・プロセス ID・連番、マウス座標と各ボタン、ホイール差分、操作用キー、処理前後の選択・操作対象・フォーカス・枝の開閉・スクロール・仕切り・キャプチャー状態を含める。`HitPath` はポインター下の開発者 UI 部品（例：ツリー）、`SelectedPath` / `TargetPath` は検査対象の文房具の完全パス。`Before` は直前に観測した状態で、外部からのキャプチャー選択などによる変更も含む。ログだけでマウス操作が原因と断定しない。
+
+背景への入力漏れを調べるときは、このログとゲーム側の入力ログを UTC 時刻で照合する。開発者ウィンドウのログのみでは、背景側の `IsActive` やクリック実行は分からない。
+
 ## 検証
 
 コアでは DeveloperInspectionTests が、同名 Id の区別、ライブ座標、構造変更、削除、選択・開閉状態の保持を検査する。
