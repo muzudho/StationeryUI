@@ -103,6 +103,50 @@ protected override void UnloadContent()
 
 上記では通常のMonoGame名前空間 `Microsoft.Xna.Framework`、`Microsoft.Xna.Framework.Input` も必要です。エントリーポイントに `[STAThread]` を付けてください。
 
+## 非アクティブなウィンドウのマウス入力
+
+別ウィンドウや F12 開発者ウィンドウがアクティブな間は、背後のゲーム画面へのマウス入力を無視してください。`StationeryUiHost.Update` の `active` には所有する `Game.IsActive` を渡します。非アクティブ中も `Update(..., false, ...)` を呼ぶことで、ドラッグ・ポインターキャプチャーの解除と入力履歴の同期が行われます。`StationeryUiHost` はウィンドウのアクティブ状態を自動取得しないため、`true` 固定ではこの抑止が働きません。
+
+**ゲーム側の独自入力も別途抑止が必要です。** `PointerConsumed` は非アクティブ時に `false` へ戻るため、それだけを見てゲームのクリック処理へ進まないでください。独自のプレビュー選択、ホイール処理、右クリック、ドラッグ、`GameComponent` やイベント経由の入力にも同じ条件を適用します。
+
+以下は独自入力へ進む条件と履歴同期の例です。先の基本例の `Update` に組み込みます。`gameDragging` は利用アプリが持つドラッグ状態の例です。
+
+```csharp
+private MouseState previousGameMouse;
+private bool gameWasActive;
+private bool gameDragging;
+
+protected override void Update(GameTime gameTime)
+{
+    var keyboard = Keyboard.GetState();
+    var mouse = Mouse.GetState();
+    var active = IsActive;
+    ui.Update(gameTime, active, keyboard, mouse);
+
+    if (!active || !gameWasActive)
+    {
+        gameDragging = false;
+        previousGameMouse = mouse;
+    }
+    else if (!ui.PointerConsumed)
+    {
+        var clicked = mouse.LeftButton == ButtonState.Pressed
+            && previousGameMouse.LeftButton == ButtonState.Released;
+        var wheelDelta = mouse.ScrollWheelValue - previousGameMouse.ScrollWheelValue;
+        // ここでゲーム側のクリック・ホイールなどを処理する。
+    }
+
+    previousGameMouse = mouse;
+    gameWasActive = active;
+    // GameComponent 側にも IsActive の確認を入れる。
+    base.Update(gameTime);
+}
+```
+
+非アクティブ中の履歴を更新し、復帰した最初のフレームも差分を基準化することで、別ウィンドウでのクリックやホイール移動を復帰後の操作として扱わないようにします。ドラッグの開始には押下の瞬間を使い、押されているだけで再開しないでください。F12 のキャプチャー中やモーダル表示中も、ゲーム側の入力へ進まないよう条件を組み合わせます。入力以外の更新・描画を止める必要はありません。
+
+導入後は別ウィンドウをゲーム画面に重ね、クリック・ホイール・ドラッグで背後の UI が変化しないこと、ドラッグ途中の切り替えで操作がキャンセルされること、復帰直後に誤操作せず次のクリックから通常操作できることを確認してください。
+
 ## F12 開発者ウィンドウと［指でつまむ］機能の組み込み
 
 NuGet パッケージを導入する際は、F12 開発者ウィンドウの［指でつまむ］（キャプチャー）機能も利用アプリへ接続してください。**開発者ウィンドウを表示するだけでは、元の画面のクリック判定と桃色の枠の描画は動きません。** アイコンはキャプチャーモードを切り替え、利用アプリが対象を判定して選択を通知し、枠を描画します。

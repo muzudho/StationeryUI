@@ -139,6 +139,8 @@ internal sealed partial class DesignerGame : Game
     protected override void Update(GameTime gameTime)
     {
         var scale = BodyScale;
+        if (utilityDialog is not null || restoreDialog is not null || layoutDialog is not null)
+            previewWasActive = false;
         if (utilityDialog is not null) { UpdateUtilityDialog(gameTime); base.Update(gameTime); return; }
         if (restoreDialog is not null) { UpdateRestoreDialog(gameTime); base.Update(gameTime); return; }
         if (layoutDialog is not null) { UpdateLayoutDialog(gameTime, scale); base.Update(gameTime); return; }
@@ -150,13 +152,13 @@ internal sealed partial class DesignerGame : Game
         var mouse = Mouse.GetState(); var keyboard = Keyboard.GetState();
         PrepareDesignerSmoke(ref mouse, ref keyboard);
         inspectorMouse = mouse;
-        inspector.Update(gameTime, IsActive || !string.IsNullOrEmpty(smokeOutput), new(), mouse);
-        if (editingPage && mouse.LeftButton == ButtonState.Pressed) sidebarActive = mouse.X < 320 * scale;
         var active = IsActive || !string.IsNullOrEmpty(smokeOutput);
+        inspector.Update(gameTime, active, new(), mouse);
+        if (active && editingPage && mouse.LeftButton == ButtonState.Pressed) sidebarActive = mouse.X < 320 * scale;
         if (editingPage)
         {
             ArrangeApplicationBar();
-            if (mouse.LeftButton == ButtonState.Pressed) applicationBarActive = mouse.Y < ApplicationBarHeight;
+            if (active && mouse.LeftButton == ButtonState.Pressed) applicationBarActive = mouse.Y < ApplicationBarHeight;
             applicationBar.Update(gameTime, active, applicationBarActive ? keyboard : new(), mouse);
         }
         if (editingPage && sidebar is not null)
@@ -171,7 +173,7 @@ internal sealed partial class DesignerGame : Game
         if (!gridEditorVisible)
         {
             Capture();
-            try { var json = blueprint.BuildJson(); AutoSave(json, gameTime); RefreshTree(json); UpdateLivePreview(json, mouse); status.Label = message; }
+            try { var json = blueprint.BuildJson(); AutoSave(json, gameTime); RefreshTree(json); UpdateLivePreview(json, mouse, active); status.Label = message; }
             catch (JsonException ex) { invalidDraft = true; saveSession?.RestartTimer(); status.Label = "入力を確認してください：" + ex.Message; }
             base.Update(gameTime); return;
         }
@@ -182,7 +184,7 @@ internal sealed partial class DesignerGame : Game
             var json = blueprint.BuildJson();
             AutoSave(json, gameTime);
             RefreshTree(json);
-            UpdateLivePreview(json, mouse);
+            UpdateLivePreview(json, mouse, active);
             status.Label = message;
         }
         catch (JsonException ex)

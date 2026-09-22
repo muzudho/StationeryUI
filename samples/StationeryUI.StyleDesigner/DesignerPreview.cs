@@ -14,6 +14,7 @@ internal sealed partial class DesignerGame
     private StyleBlueprint.Preview? previewSnapshot;
     private string? previewKey;
     private bool previewMouseDown;
+    private bool previewWasActive;
     private ScreenRectangle previewWindow;
 
     private void ResetLivePreview()
@@ -26,7 +27,7 @@ internal sealed partial class DesignerGame
         livePreviewTitle = Text("livePreviewTitle", new(560, 8, 708, 36), "編集プレビュー");
     }
 
-    private void UpdateLivePreview(string json, MouseState mouse)
+    private void UpdateLivePreview(string json, MouseState mouse, bool active = false)
     {
         if (!HasLayoutTarget) { ResetLivePreview(); return; }
         var origin = ui.Viewport.ToWindow(new ScreenRectangle(560, 48, 1, 1));
@@ -118,7 +119,8 @@ internal sealed partial class DesignerGame
         livePreview!.Viewport.Offset = new(previewWindow.X, previewWindow.Y);
         livePreviewTitle!.Label = $"{TargetLayoutId} — プレビュー {width}×{height}px" + (previewSnapshot!.Standalone ? "（未割り当ての定義）" : "");
         var down = mouse.LeftButton == ButtonState.Pressed;
-        if (down && !previewMouseDown && blueprint.CanEditGrid)
+        // Ignore background input and the click that brings this window back to the foreground.
+        if (active && previewWasActive && down && !previewMouseDown && blueprint.CanEditGrid)
         {
             var x = mouse.X - previewWindow.X; var y = mouse.Y - previewWindow.Y;
             if (x >= 0 && y >= 0 && x < width && y < height)
@@ -130,6 +132,7 @@ internal sealed partial class DesignerGame
                     }
         }
         previewMouseDown = down;
+        previewWasActive = active;
     }
 
     private void DrawLivePreview()

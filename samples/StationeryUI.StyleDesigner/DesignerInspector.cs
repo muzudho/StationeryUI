@@ -77,7 +77,7 @@ internal sealed partial class DesignerGame
         saveBar.Bounds = saveBarTrack.Bounds with { Width = saveX * (saveSession?.Progress ?? 0) };
         saveBar.Theme = theme with { Surface = saveError is not null ? new(210, 65, 65) : invalidDraft ? new(210, 155, 45) : theme.Accent };
         string? hint = null;
-        if (inspectorMouse.Y < y)
+        if ((IsActive || !string.IsNullOrEmpty(smokeOutput)) && inspectorMouse.Y < y)
         {
             if (utilityDialog is not null) hint = utilityDialog.HoveredToolHint;
             else if (restoreDialog is not null) hint = restoreDialog.HoveredToolHint;

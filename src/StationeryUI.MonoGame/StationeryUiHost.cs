@@ -165,6 +165,9 @@ public sealed partial class StationeryUiHost : IDisposable
         Visit(Root);
         return result;
     }
+    /// <summary>Updates layout and input. Pass the owning Game.IsActive (and any modal input gate) as active.</summary>
+    /// <remarks>Keep calling with active=false while inactive to cancel drags and synchronize input history.
+    /// The host ignores input then; the application must also gate its own mouse handlers and GameComponents.</remarks>
     public void Update(GameTime time, bool active, KeyboardState keyboard, MouseState mouse)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
