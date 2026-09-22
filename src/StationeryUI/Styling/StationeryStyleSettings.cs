@@ -38,6 +38,8 @@ public sealed record StationeryLayoutNode(string Id, string Type, ViewportPaddin
     IReadOnlyList<LayoutTrack> Rows, IReadOnlyList<LayoutTrack> Columns, SplitPaneOptions? Split = null, double InspectorHeight = 0,
     ViewportPadding Margin = default, ViewportPadding Border = default)
 {
+    public IReadOnlyList<StationeryLayoutSlot> Slots { get; init; } = [];
+    public string? SlotError { get; init; }
     public string Path { get; init; } = Id;
     public string? ParentPath { get; init; }
     public int Row { get; init; }
@@ -46,8 +48,11 @@ public sealed record StationeryLayoutNode(string Id, string Type, ViewportPaddin
     public int ColumnSpan { get; init; } = 1;
     public IReadOnlyList<StationeryLayoutNode> Children { get; init; } = [];
 }
+public sealed record StationeryLayoutSlot(string Id, int Row = 0, int Column = 0, int RowSpan = 1, int ColumnSpan = 1,
+    string? Dock = null, double Size = 0);
 public sealed record StationeryCellBinding(string ModelPath, int Row, int Column, int RowSpan = 1, int ColumnSpan = 1);
-public sealed record StationeryDockBinding(string ModelPath, string Dock, double Size = 0);
+public sealed record StationeryDockBinding(string ModelPath, string Dock, double Size = 0)
+{ public string? Slot { get; init; } }
 /// <summary>References are resolved to canonical model paths when a complete settings snapshot is parsed.</summary>
 public sealed record StationeryLayoutBinding(string Layout, string ModelPath, IReadOnlyList<StationeryCellBinding> Children,
     string? FirstModel = null, string? SecondModel = null, string? InspectorModel = null)
@@ -139,7 +144,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             {
                 padding = ReadEdges("padding");
                 if (item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
-                    throw new JsonException($"{path}: dock-layout uses dock/size on childrenModel, not track definitions.");
+                    throw new JsonException($"{path}: dock-layout uses dock/size on slots, not track definitions.");
             }
             else if (type == "box-layout")
             {
@@ -187,13 +192,57 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 ? ReadArray(item, "children", path).EnumerateArray().Select(c => ReadLayout(c, path, type)).ToArray() : [];
             if (type == "box-layout" && children.Length > 1) throw new JsonException($"{path}: box-layout allows at most one child.");
             if (children.Length > 0 && type is not ("box-layout" or "grid-layout")) throw new JsonException($"{path}: children require box-layout or grid-layout.");
-            if (type == "grid-layout")
+            var slots = new List<StationeryLayoutSlot>();
+            string? slotError = null;
+            try
             {
+                if (item.TryGetProperty("slots", out _) && type is not ("grid-layout" or "dock-layout"))
+                    throw new JsonException($"{path}: slots require grid-layout or dock-layout.");
+                var ids = new HashSet<string>(StringComparer.Ordinal);
                 var occupied = new List<StationeryCellBinding>();
-                foreach (var child in children) ValidateCell(new(child.Path, child.Row, child.Column, child.RowSpan, child.ColumnSpan), rows.Count, columns.Count, occupied, path);
+                // Check nested layout cells even when the grid has no model slots.
+                if (type == "grid-layout")
+                {
+                    foreach (var child in children) ValidateCell(new(child.Path, child.Row, child.Column, child.RowSpan, child.ColumnSpan), rows.Count, columns.Count, occupied, path);
+                }
+                if (item.TryGetProperty("slots", out _))
+                    foreach (var slot in ReadArray(item, "slots", path).EnumerateArray())
+                    {
+                        var slotPath = $"{path}.slots[{slots.Count}]";
+                        RequireObject(slot, slotPath);
+                        var slotId = ReadString(slot, "id", slotPath); ValidateId(slotId, slotPath);
+                        if (!ids.Add(slotId)) throw new JsonException($"{slotPath}: duplicate slot '{slotId}'.");
+                        if (slot.TryGetProperty("model", out _) || slot.TryGetProperty("parentModel", out _))
+                            throw new JsonException($"{slotPath}: model references belong in bindings.");
+                        if (type == "grid-layout")
+                        {
+                            if (slot.TryGetProperty("dock", out _) || slot.TryGetProperty("size", out _)) throw new JsonException($"{slotPath}: grid slots use cell coordinates.");
+                            var cell = new StationeryCellBinding(slotId, ReadIndex(slot, "row", slotPath, rows.Count), ReadColumn(slot, slotPath, true),
+                                ReadInteger(slot, "rowspan", slotPath, 1, 1), ReadInteger(slot, "colspan", slotPath, 1, 1));
+                            ValidateCell(cell, rows.Count, columns.Count, occupied, slotPath);
+                            slots.Add(new(slotId, cell.Row, cell.Column, cell.RowSpan, cell.ColumnSpan));
+                        }
+                        else
+                        {
+                            if (new[] { "row", "col", "column", "rowspan", "colspan" }.Any(k => slot.TryGetProperty(k, out _))) throw new JsonException($"{slotPath}: dock slots use dock and size.");
+                            var dock = ReadString(slot, "dock", slotPath);
+                            if (dock is not ("top" or "right" or "bottom" or "left" or "center")) throw new JsonException($"{slotPath}.dock must be top, right, bottom, left or center.");
+                            var size = ReadString(slot, "size", slotPath);
+                            double pixels = 0;
+                            if (dock == "center")
+                            {
+                                if (slots.Any(s => s.Dock == "center")) throw new JsonException($"{slotPath}: dock-layout allows at most one center.");
+                                if (size != "remaining") throw new JsonException($"{slotPath}.size must be remaining for center.");
+                            }
+                            else pixels = ReadLength(slot.GetProperty("size"), slotPath + ".size", false).Value;
+                            slots.Add(new(slotId, Dock: dock, Size: pixels));
+                        }
+                    }
             }
+            catch (JsonException ex) when (recoverDockErrors && type == "dock-layout")
+            { slotError = ex.Message; slots.Clear(); }
             return new(id, type, padding, rows, columns, split, inspectorHeight, margin, border)
-            { Path = path, ParentPath = parentPath, Row = row, Column = col, RowSpan = rowSpan, ColumnSpan = colSpan, Children = Array.AsReadOnly(children) };
+            { Slots = slots.AsReadOnly(), SlotError = slotError, Path = path, ParentPath = parentPath, Row = row, Column = col, RowSpan = rowSpan, ColumnSpan = colSpan, Children = Array.AsReadOnly(children) };
         }
         void Flatten(StationeryLayoutNode layout)
         {
@@ -211,6 +260,8 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         {
             var path = $"bindings[{bindings.Count}]";
             RequireObject(item, path);
+            if (new[] { "row", "col", "column", "rowspan", "colspan", "dock", "size" }.Any(k => item.TryGetProperty(k, out _)))
+                throw new JsonException($"{path}: placement belongs in layouts, not bindings.");
             var layoutId = ReadString(item, "layout", path);
             var layout = layouts.FirstOrDefault(layout => layout.Path == layoutId)
                 ?? throw new JsonException($"{path}: unknown layout '{layoutId}'.");
@@ -225,30 +276,18 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 var alreadyPlaced = placedModels.ToHashSet(StringComparer.Ordinal);
                 try
                 {
-                    var center = false;
+                    if (layout.SlotError is { } error) throw new JsonException(error);
+                    var assigned = new HashSet<string>(StringComparer.Ordinal);
                     foreach (var child in ReadArray(item, "childrenModel", path).EnumerateArray())
                     {
                         var childPath = $"{path}.childrenModel[{dockChildren.Count}]";
-                        RequireObject(child, childPath);
-                        if (new[] { "row", "col", "column", "rowspan", "colspan" }.Any(name => child.TryGetProperty(name, out _)))
-                            throw new JsonException($"{childPath}: dock placement uses dock and size, not grid coordinates.");
+                        var slot = ResolveSlot(child, layout, childPath, assigned);
                         var node = ResolveModel(modelTree, ReadString(child, "model", childPath), dockParent);
                         if (node.Parent != dockParent) throw new JsonException($"{childPath}: dock elements must be direct children of {dockParent.Path}.");
                         if (!placedModels.Add(node.Path)) throw new JsonException($"Model {node.Path} is placed more than once.");
-                        var dock = ReadString(child, "dock", childPath);
-                        if (dock is not ("top" or "right" or "bottom" or "left" or "center")) throw new JsonException($"{childPath}.dock must be top, right, bottom, left or center.");
-                        var size = ReadString(child, "size", childPath);
-                        double pixels = 0;
-                        if (dock == "center")
-                        {
-                            if (center) throw new JsonException($"{childPath}: dock-layout allows at most one center.");
-                            if (size != "remaining") throw new JsonException($"{childPath}.size must be remaining for center.");
-                            center = true;
-                        }
-                        else pixels = ReadLength(child.GetProperty("size"), childPath + ".size", false).Value;
-                        dockChildren.Add(new(node.Path, dock, pixels));
+                        dockChildren.Add(new(node.Path, slot.Dock!, slot.Size) { Slot = slot.Id });
                     }
-                    }
+                }
                 catch (JsonException ex) when (recoverDockErrors)
                 {
                     layoutError = ex.Message;
@@ -303,20 +342,16 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 throw new JsonException($"{parent.Path} cannot be a layout parent.");
             if (!grids.Add(parent.Path + ":" + layout.Path)) throw new JsonException($"Multiple grid layouts for {parent.Path}.");
             var children = new List<StationeryCellBinding>();
-            var cells = layout.Children.Select(c => new StationeryCellBinding(c.Path, c.Row, c.Column, c.RowSpan, c.ColumnSpan)).ToList();
+            var assignedSlots = new HashSet<string>(StringComparer.Ordinal);
             foreach (var child in ReadArray(item, "childrenModel", path).EnumerateArray())
             {
                 var childPath = $"{path}.childrenModel[{children.Count}]";
                 RequireObject(child, childPath);
                 var node = ResolveModel(modelTree, ReadString(child, "model", childPath), parent);
                 if (node == parent || !node.IsWithin(parent)) throw new JsonException($"{node.Path} must be a descendant of {parent.Path}.");
-                var row = ReadIndex(child, "row", childPath, layout.Rows.Count);
-                var column = ReadColumn(child, childPath, true);
-                var rowSpan = ReadInteger(child, "rowspan", childPath, 1, 1);
-                var colSpan = ReadInteger(child, "colspan", childPath, 1, 1);
-                ValidateCell(new(node.Path, row, column, rowSpan, colSpan), layout.Rows.Count, layout.Columns.Count, cells, path);
+                var slot = ResolveSlot(child, layout, childPath, assignedSlots);
                 if (!placedModels.Add(node.Path)) throw new JsonException($"Model {node.Path} is placed more than once.");
-                children.Add(new(node.Path, row, column, rowSpan, colSpan));
+                children.Add(new(node.Path, slot.Row, slot.Column, slot.RowSpan, slot.ColumnSpan));
             }
             bindings.Add(new(layoutId, parent.Path, children.AsReadOnly()));
         }
@@ -328,6 +363,17 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 throw new JsonException($"{group.Key}: a node can own at most one layout tree. Nest layouts instead of binding multiple roots.");
         }
         return new(Array.AsReadOnly(new[] { model }), layouts.AsReadOnly(), bindings.AsReadOnly());
+    }
+
+    private static StationeryLayoutSlot ResolveSlot(JsonElement child, StationeryLayoutNode layout, string path, HashSet<string> assigned)
+    {
+        RequireObject(child, path);
+        if (new[] { "row", "col", "column", "rowspan", "colspan", "dock", "size" }.Any(k => child.TryGetProperty(k, out _)))
+            throw new JsonException($"{path}: placement belongs in layouts.slots; bindings contain only slot and model references.");
+        var id = ReadString(child, "slot", path);
+        var slot = layout.Slots.FirstOrDefault(s => s.Id == id) ?? throw new JsonException($"{path}: unknown slot '{id}' in {layout.Path}.");
+        if (!assigned.Add(id)) throw new JsonException($"{path}: slot '{id}' is assigned more than once.");
+        return slot;
     }
 
     private static StationeryUI.Inspection.StationeryNode ResolveModel(StationeryUI.Inspection.StationeryNode root,

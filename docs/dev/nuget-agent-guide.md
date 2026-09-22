@@ -39,7 +39,7 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 
 ## ドック配置と設定エラー
 
-`dock-layout` を使う場合は [ドック配置の設定例](dock-layout.md)を読んでください。各 `childrenModel` に `dock` / `size` を設定し、`center` には `remaining` を指定します。エラー時に代替配置する `StationeryStyleFile` を使うアプリは、子の描画後に `ui.DrawLayoutErrors(layoutResult)` を呼び、`LastError` と F12 の検査情報も更新してください。JSON 自体の構文エラーなどは直前の状態を維持します。
+`dock-layout` を使う場合は [ドック配置の設定例](dock-layout.md)を読んでください。レイアウトの各 `slots` に `dock` / `size` を設定し、`center` には `remaining` を指定します。エラー時に代替配置する `StationeryStyleFile` を使うアプリは、子の描画後に `ui.DrawLayoutErrors(layoutResult)` を呼び、`LastError` と F12 の検査情報も更新してください。JSON 自体の構文エラーなどは直前の状態を維持します。
 
 ## ツリーへレイアウト情報を渡す
 
@@ -60,3 +60,5 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 実装箇所と確認結果を利用者へ報告してください。GUI を操作できず実機確認していない場合は、その点を明記します。枠が出ない場合の確認点は [ライブラリーの組み込み](library-integration.md#桃色の枠が出ない場合)にあります。
 
 スタイルを生成・編集する AI エージェントは、１ノードにつきルートレイアウトを最大１つにしてください。box / grid / dock はどれも `padding` を持てます。複合配置はレイアウトの `children` または子コンテナーでネストします。同じノードに余白用 box と配置用 grid を別ルートとして重ねないでください。省略値と移行方法は [ドック配置の仕様](dock-layout.md)を参照してください。
+
+配置は layouts の slots に定義してください。grid の row / col / rowspan / colspan、dock の dock / size を bindings に書かないでください。bindings.childrenModel は slot と model の参照だけです。旧形式の移行と枠の検証規則は [配置枠とモデルの対応](dock-layout.md#配置枠とモデルの対応)を参照してください。

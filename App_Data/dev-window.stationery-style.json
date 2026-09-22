@@ -79,6 +79,30 @@
                         "left": "8px"
                     },
                     "row": 0,
+                    "col": 0,
+                    "slots": [
+                        {
+                            "id": "instructions",
+                            "row": 0,
+                            "col": 0
+                        },
+                        {
+                            "id": "inspectorSplit",
+                            "row": 1,
+                            "col": 0
+                        },
+                        {
+                            "id": "copyPath",
+                            "row": 2,
+                            "col": 0
+                        }
+                    ]
+                }
+            ],
+            "slots": [
+                {
+                    "id": "inspectorPanel",
+                    "row": 1,
                     "col": 0
                 }
             ]
@@ -97,7 +121,14 @@
                 "right": "8px",
                 "bottom": "8px",
                 "left": "8px"
-            }
+            },
+            "slots": [
+                {
+                    "id": "toolHint",
+                    "row": 0,
+                    "col": 0
+                }
+            ]
         },
         {
             "id": "inspectorColumns",
@@ -115,8 +146,7 @@
             "childrenModel": [
                 {
                     "model": "inspectorPanel",
-                    "row": 1,
-                    "col": 0
+                    "slot": "inspectorPanel"
                 }
             ]
         },
@@ -126,8 +156,7 @@
             "childrenModel": [
                 {
                     "model": "toolHint",
-                    "row": 0,
-                    "column": 0
+                    "slot": "toolHint"
                 }
             ]
         },
@@ -137,18 +166,15 @@
             "childrenModel": [
                 {
                     "model": "instructions",
-                    "row": 0,
-                    "column": 0
+                    "slot": "instructions"
                 },
                 {
                     "model": "inspectorSplit",
-                    "row": 1,
-                    "column": 0
+                    "slot": "inspectorSplit"
                 },
                 {
                     "model": "copyPath",
-                    "row": 2,
-                    "column": 0
+                    "slot": "copyPath"
                 }
             ]
         },

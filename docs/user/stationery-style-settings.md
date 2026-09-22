@@ -78,37 +78,61 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
             "id": "demo",
             "type": "viewport",
             "children": [
-                { "id": "nameField", "type": "textBox" },
-                { "id": "memoField", "type": "textBox" }
+                {
+                    "id": "nameField",
+                    "type": "textBox"
+                },
+                {
+                    "id": "memoField",
+                    "type": "textBox"
+                }
             ]
         }
     ],
     "layouts": [
         {
-            "id": "demoViewport",
-            "type": "box-layout",
+            "id": "demoPage",
+            "type": "grid-layout",
+            "row-definitions": [
+                "1rate"
+            ],
+            "column-definitions": [
+                "1rate",
+                "1.5rate"
+            ],
+            "slots": [
+                {
+                    "id": "nameField",
+                    "row": 0,
+                    "col": 0
+                },
+                {
+                    "id": "memoField",
+                    "row": 0,
+                    "col": 1
+                }
+            ],
             "padding": {
                 "top": "32px",
                 "right": "32px",
                 "bottom": "8px",
                 "left": "32px"
             }
-        },
-        {
-            "id": "demoPage",
-            "type": "grid-layout",
-            "row-definitions": ["1rate"],
-            "column-definitions": ["1rate", "1.5rate"]
         }
     ],
     "bindings": [
-        { "layout": "demoViewport", "model": "demo" },
         {
             "layout": "demoPage",
             "parentModel": "demo",
             "childrenModel": [
-                { "model": "nameField", "row": 0, "column": 0 },
-                { "model": "memoField", "row": 0, "column": 1 }
+                {
+                    "model": "nameField",
+                    "slot": "nameField"
+                },
+                {
+                    "model": "memoField",
+                    "slot": "memoField"
+                }
             ]
         }
     ]
@@ -130,7 +154,7 @@ bindings.layout にはドット区切りの完全パスを指定する。子の 
 
 box-layout には layout と model を指定する。
 grid-layout には layout、parentModel、childrenModel を指定する。
-childrenModel の各要素の model は、parentModel からたどる相対パス。
+childrenModel の各要素は slot と model の対応だけを持つ。slot は参照先レイアウトの slots の Id、model は parentModel からたどる相対パス。行・列・span は layouts.slots に定義する。
 
 - parentModel: demo、model: nameField → /demo/nameField。
 - parentModel: demo、model: inputs/nameField → /demo/inputs/nameField。
@@ -148,7 +172,7 @@ padding は四辺の非負 px 文字列で、省略した辺は box では従来
 別のモデルであれば、同じレイアウト定義を再利用できる。
 
 配置したコンテナーにさらにレイアウトを結び付けることで、入れ子の配置もできる。
-layouts / bindings の配列順には依存せず、外側のモデルから内側へ計算する。
+layouts / bindings の配列順には依存せず、外側のモデルから内側へ計算する。ただしドックの角の優先順は layouts.slots の配列順で決まる。
 セルに配置していないモデルは親の内側領域を引き継ぐ。
 モデルの階層を変更したら bindings のパスも更新する。レイアウトの変更だけでは文房具のパスは変わらない。
 
@@ -221,29 +245,50 @@ F5 と自動リロードは継続する。
 | `dock-layout` の bottom が `0px` | 本文がページ全体を使い、インスペクターは非表示 |
 | `dock-layout` の bottom が `80px` | 本文の下に高さ80pxのインスペクターを確保 |
 
-デモの３ページは共通の `pageDock` を使う。トップとレイアウトデモの下端は80px、スプリットペーンデモは0px。原本は `App_Data/demo.stationery-style.json`。
+デモのトップとレイアウトページは `pageDock`、スプリットページは `pageDockFullscreen` を使う。トップとレイアウトデモの下端は80px、スプリットペーンデモは0px。原本は `App_Data/demo.stationery-style.json`。
 
 関連部分の抜粋：
 
 ```json
 {
     "layouts": [
-        { "id": "pageDock", "type": "dock-layout" }
+        {
+            "id": "pageDock",
+            "type": "dock-layout",
+            "slots": [
+                {
+                    "id": "inspectorPanel",
+                    "dock": "bottom",
+                    "size": "80px"
+                },
+                {
+                    "id": "body",
+                    "dock": "center",
+                    "size": "remaining"
+                }
+            ]
+        }
     ],
     "bindings": [
         {
             "layout": "pageDock",
             "parentModel": "demo/topDemoPage",
             "childrenModel": [
-                { "model": "inspectorPanel", "dock": "bottom", "size": "80px" },
-                { "model": "body", "dock": "center", "size": "remaining" }
+                {
+                    "model": "inspectorPanel",
+                    "slot": "inspectorPanel"
+                },
+                {
+                    "model": "body",
+                    "slot": "body"
+                }
             ]
         }
     ]
 }
 ```
 
-bottom の `size` を `0px` に変えると、下端を非表示にして本文へ領域を戻せる。`models` や本文のセル配置は同じまま使う。四辺は配列順に確保し、center は最後に残りを使う。
+layouts.slots にある bottom の `size` を `0px` に変えると、下端を非表示にして本文へ領域を戻せる。`models` や本文のセル配置は同じまま使う。四辺は配列順に確保し、center は最後に残りを使う。
 読み込み用設定の `autoReload` が有効なら保存後に反映され、文房具 Id や入力値、ツリーの開閉状態を保持する。
 
 ページ直下の `body` と `inspectorPanel` は container。デモは `inspectorPanel` 内に読み取り専用の `toolHint` を置き、grid-layout の binding でパネル全体へ広げている。

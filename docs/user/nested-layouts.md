@@ -32,20 +32,36 @@
         {
             "id": "demo",
             "type": "viewport",
-            "children": [{ "id": "message", "type": "textBlock" }]
+            "children": [
+                {
+                    "id": "message",
+                    "type": "textBlock"
+                }
+            ]
         }
     ],
     "layouts": [
         {
             "id": "demoViewport",
             "type": "box-layout",
-            "padding": { "top": "8px", "right": "8px", "bottom": "8px", "left": "8px" },
+            "padding": {
+                "top": "8px",
+                "right": "8px",
+                "bottom": "8px",
+                "left": "8px"
+            },
             "children": [
                 {
                     "id": "mainGrid",
                     "type": "grid-layout",
-                    "row-definitions": ["1rate", "2rate"],
-                    "column-definitions": ["100px", "1rate"],
+                    "row-definitions": [
+                        "1rate",
+                        "2rate"
+                    ],
+                    "column-definitions": [
+                        "100px",
+                        "1rate"
+                    ],
                     "children": [
                         {
                             "id": "inspectorContents",
@@ -54,8 +70,19 @@
                             "col": 0,
                             "rowspan": 2,
                             "colspan": 2,
-                            "row-definitions": ["1rate"],
-                            "column-definitions": ["1rate"]
+                            "row-definitions": [
+                                "1rate"
+                            ],
+                            "column-definitions": [
+                                "1rate"
+                            ],
+                            "slots": [
+                                {
+                                    "id": "message",
+                                    "row": 0,
+                                    "col": 0
+                                }
+                            ]
                         }
                     ]
                 }
@@ -66,7 +93,12 @@
         {
             "layout": "demoViewport.mainGrid.inspectorContents",
             "parentModel": "demo",
-            "childrenModel": [{ "model": "message", "row": 0, "col": 0 }]
+            "childrenModel": [
+                {
+                    "model": "message",
+                    "slot": "message"
+                }
+            ]
         }
     ]
 }
@@ -84,7 +116,7 @@
 
 同じモデルを基準に、同じレイアウトツリーの複数のグリッドへ binding を書けます。その場合は各 binding の `parentModel` を揃えます。親レイアウトにも binding を重複して書く必要はありません。別のモデルを基準に同じツリーを使うと、独立した配置になります。
 
-文房具を配置する `bindings.childrenModel` にも `rowspan`・`colspan` を指定できます。こちらは開始位置の `row` と `col` が必須、span の省略時は1です。従来の `column` も `col` の別名として使えますが、両方を同時に指定するとエラーです。
+文房具の配置枠は `layouts.slots` に定義します。枠は `id`、開始位置の `row` と `col` が必須で、`rowspan`・`colspan` の省略時は1です。`bindings.childrenModel` は `slot` と `model` の対応だけを書きます。従来の `column` も `col` の別名として使えますが、両方を同時に指定するとエラーです。
 
 ## エディターで操作する
 

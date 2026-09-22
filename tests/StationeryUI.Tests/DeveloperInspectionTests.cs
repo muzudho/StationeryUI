@@ -47,12 +47,17 @@ internal static class DeveloperInspectionTests
     {
         var settings = StationeryUI.Styling.StationeryStyleSettings.Parse("""
         {
-          "models": [{"id":"demo","type":"viewport","children":[
-            {"id":"demoPage","type":"page","children":[{"id":"btn123","type":"button"}]}]}],
-          "layouts": [{"id":"grid","type":"grid-layout","row-definitions":["1rate","1rate","1rate"],
-            "column-definitions":["1rate","1rate","1rate","1rate"]}],
-          "bindings": [{"layout":"grid","parentModel":"/demo/demoPage","childrenModel":[
-            {"model":"btn123","col":1,"row":0,"colspan":3,"rowspan":2}]}]
+          "models":[{"id":"demo","type":"viewport","children":[{"id":"demoPage","type":"page","children":[{"id":"btn123","type":"button"}]}]}],
+          "layouts":[
+            {
+              "id":"grid",
+              "type":"grid-layout",
+              "row-definitions":["1rate","1rate","1rate"],
+              "column-definitions":["1rate","1rate","1rate","1rate"],
+              "slots":[{"id":"slot1","row":0,"col":1,"rowspan":2,"colspan":3}]
+            }
+          ],
+          "bindings":[{"layout":"grid","parentModel":"/demo/demoPage","childrenModel":[{"model":"btn123","slot":"slot1"}]}]
         }
         """);
         StationeryInspectionEntry[] entries = [

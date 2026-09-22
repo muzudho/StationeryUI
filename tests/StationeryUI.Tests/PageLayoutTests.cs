@@ -18,7 +18,7 @@ internal static class PageLayoutTests
         foreach (var page in new[] { model.TopPage, model.SplitPage, model.LayoutPage })
         {
             var owner = settings.Bindings.Where(b => b.ModelPath == page.Path).ToArray();
-            Check(owner.Length == 1 && owner[0].Layout == "pageDock", "each page owns only the shared dock layout");
+            Check(owner.Length == 1 && owner[0].Layout == (page == model.SplitPage ? "pageDockFullscreen" : "pageDock"), "each page owns only the shared dock layout");
             Check(owner[0].DockChildren[0].Dock == "bottom" && owner[0].DockChildren[1].Dock == "center", "inspector precedes center body");
         }
         Check(bounds.Bounds[model.SplitControls["toolHint"].Path].Height == 0, "fullscreen hides hint");
@@ -43,12 +43,13 @@ internal static class PageLayoutTests
         Check(DemoModelBinding.Create(DemoModelBinding.Fallback).Signature == model.Signature, "fallback includes showcase roles");
         var binding = json["bindings"]!.AsArray().Single(b => (string?)b!["parentModel"] == "demo/topDemoPage")!;
         var inspector = binding["childrenModel"]![0]!;
+        var inspectorSlot = json["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "pageDock")!["slots"]![0]!;
         var signature = model.Signature;
-        inspector["size"] = "0px";
+        inspectorSlot["size"] = "0px";
         var full = StationeryStyleSettings.Parse(json.ToJsonString());
         Check(DemoModelBinding.Create(full).Signature == signature, "binding switch preserves identities");
         Check(StationeryLayoutEngine.Arrange(full, 1000, 660).ContentBounds[model.TopPage.Path + "/body"].Height == 644, "zero-height dock gives body available height");
-        inspector["size"] = "80px";
+        inspectorSlot["size"] = "80px";
         foreach (var size in new[] { 0, 1, 40, 80, 81, 660 })
         {
             var result = StationeryLayoutEngine.Arrange(settings, 500, size);

@@ -7,18 +7,30 @@ internal static class GridLayoutTests
 {
     private const string Source = """
         {
-          "models":[{"id":"screen","type":"viewport","children":[
-            {"id":"a","type":"button"},{"id":"b","type":"button"},{"id":"c","type":"button"}
-          ]}],
+          "models":[{"id":"screen","type":"viewport","children":[{"id":"a","type":"button"},{"id":"b","type":"button"},{"id":"c","type":"button"}]}],
           "layouts":[
-            {"id":"frame","type":"box-layout","padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"},"children":[
-            {"id":"grid","type":"grid-layout","row-definitions":["1rate","3rate"],"column-definitions":["1rate","1.5rate"]}]}
+            {
+              "id":"frame",
+              "type":"box-layout",
+              "padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"},
+              "children":[
+                {
+                  "id":"grid",
+                  "type":"grid-layout",
+                  "row-definitions":["1rate","3rate"],
+                  "column-definitions":["1rate","1.5rate"],
+                  "slots":[{"id":"slot1","row":0,"column":0},{"id":"slot2","row":0,"column":1},{"id":"slot3","row":1,"column":0}]
+                }
+              ]
+            }
           ],
           "bindings":[
             {"layout":"frame","model":"screen"},
-            {"layout":"frame.grid","parentModel":"screen","childrenModel":[
-              {"model":"a","row":0,"column":0},{"model":"b","row":0,"column":1},{"model":"c","row":1,"column":0}
-            ]}
+            {
+              "layout":"frame.grid",
+              "parentModel":"screen",
+              "childrenModel":[{"model":"a","slot":"slot1"},{"model":"b","slot":"slot2"},{"model":"c","slot":"slot3"}]
+            }
           ]
         }
         """;
@@ -53,6 +65,29 @@ internal static class GridLayoutTests
             node["layouts"]!.AsArray().Add(grid);
             node["bindings"]![1]!["layout"] = "grid";
         });
+
+        Reject(node => node["layouts"]![0]!["children"]![0]!["slots"]![0]!["row"] = 2);
+        Reject(node => node["layouts"]![0]!["children"]![0]!["slots"]![1]!["column"] = 0);
+        Reject(node => node["layouts"]![0]!["children"]![0]!["slots"]![1]!["id"] = "slot1");
+        Reject(node => node["bindings"]![1]!["childrenModel"]![0]!["slot"] = "missing");
+        Reject(node => node["bindings"]![1]!["childrenModel"]![1]!["slot"] = "slot1");
+        Reject(node => node["bindings"]![1]!["childrenModel"]![0]!.AsObject().Remove("slot"));
+        var reordered = Edit(node => node["bindings"]![1]!["childrenModel"] = new JsonArray(
+            node["bindings"]![1]!["childrenModel"]!.AsArray().Reverse().Select(c => c!.DeepClone()).ToArray()));
+        Equal(result.Bounds["/screen/b"], StationeryLayoutEngine.Arrange(reordered, 100, 200).Bounds["/screen/b"]);
+        var unbound = JsonNode.Parse(Source)!;
+        unbound["bindings"]![1]!["childrenModel"] = new JsonArray();
+        var emptySlotPlan = StationeryUI.StyleDesigner.StyleBlueprint.Parse(unbound.ToJsonString());
+        var beforeResize = emptySlotPlan.BuildJson();
+        try { emptySlotPlan.Resize(1, 1); throw new Exception("Unbound slots outside resized grid accepted."); }
+        catch (ArgumentException) { }
+        if (emptySlotPlan.BuildJson() != beforeResize) throw new Exception("Rejected resize mutated the design.");
+        var slotPlan = StationeryUI.StyleDesigner.StyleBlueprint.Parse(Source);
+        slotPlan.RenameId(["layouts", "0", "children", "0", "slots", "0"], "firstCell");
+        var renamed = JsonNode.Parse(slotPlan.BuildJson())!;
+        if ((string?)renamed["bindings"]![1]!["childrenModel"]![0]!["slot"] != "firstCell") throw new Exception("Slot rename must update binding references.");
+        try { slotPlan.DeleteNode(["layouts", "0", "children", "0", "slots", "0"]); throw new Exception("Referenced slot deleted."); }
+        catch (JsonException) { }
 
         var fixedRows = Edit(node => node["layouts"]![0]!["children"]![0]!["row-definitions"] = JsonNode.Parse("""["100px","1rate"]"""));
         Equal(new(0, 100, 40, 300), StationeryLayoutEngine.Arrange(fixedRows, 100, 400).Bounds["/screen/c"]);
@@ -96,18 +131,34 @@ internal static class GridLayoutTests
         Reject(node => node.AsObject().Remove("bindings"));
 
         var nested = StationeryStyleSettings.Parse("""
-            {"models":[{"id":"screen","type":"viewport","children":[
-              {"id":"left","type":"container","children":[{"id":"a","type":"button"}]},
-              {"id":"right","type":"container","children":[{"id":"a","type":"button"}]}
-            ]}],"layouts":[
-              {"id":"pair","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate","1rate"]},
-              {"id":"unit","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate"]}
-            ],"bindings":[
-              {"layout":"unit","parentModel":"/screen/right","childrenModel":[{"model":"a","row":0,"column":0}]},
-              {"layout":"pair","parentModel":"screen","childrenModel":[{"model":"left","row":0,"column":0},{"model":"right","row":0,"column":1}]},
-              {"layout":"unit","parentModel":"/screen/left","childrenModel":[{"model":"/screen/left/a","row":0,"column":0}]}
-            ]}
-            """);
+        {
+          "models":[
+            {
+              "id":"screen",
+              "type":"viewport",
+              "children":[
+                {"id":"left","type":"container","children":[{"id":"a","type":"button"}]},
+                {"id":"right","type":"container","children":[{"id":"a","type":"button"}]}
+              ]
+            }
+          ],
+          "layouts":[
+            {
+              "id":"pair",
+              "type":"grid-layout",
+              "row-definitions":["1rate"],
+              "column-definitions":["1rate","1rate"],
+              "slots":[{"id":"slot1","row":0,"column":0},{"id":"slot2","row":0,"column":1}]
+            },
+            {"id":"unit","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate"],"slots":[{"id":"slot1","row":0,"column":0}]}
+          ],
+          "bindings":[
+            {"layout":"unit","parentModel":"/screen/right","childrenModel":[{"model":"a","slot":"slot1"}]},
+            {"layout":"pair","parentModel":"screen","childrenModel":[{"model":"left","slot":"slot1"},{"model":"right","slot":"slot2"}]},
+            {"layout":"unit","parentModel":"/screen/left","childrenModel":[{"model":"/screen/left/a","slot":"slot1"}]}
+          ]
+        }
+        """);
         var reused = StationeryLayoutEngine.Arrange(nested, 100, 200);
         Equal(new(0, 0, 50, 200), reused.Bounds["/screen/left/a"]);
         Equal(new(50, 0, 50, 200), reused.Bounds["/screen/right/a"]);

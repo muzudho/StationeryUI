@@ -3,6 +3,17 @@
 JSON の型名は `dock-layout`、開発者ウィンドウでの表示名は `dockLayout` です。`work-page-layout` は互換性のため残ります。
 
 
+
+## 配置枠とモデルの対応
+
+配置情報は `layouts` に集めます。grid-layout の `slots` に `id`・`row`・`col`・必要な span、dock-layout の `slots` に `id`・`dock`・`size` を書きます。`bindings.childrenModel` は `{"slot":"input", "model":"nameField"}` のような対応だけを持ちます。枠名とモデル Id は別物なので、一致させる必要はありません。
+
+枠名は同じレイアウト内で一意です。異なるレイアウトでは同じ枠名を再利用できます。未知の枠、同じ枠への二重割り当て、同じモデルの二重配置はエラーです。グリッドの枠は、モデルを割り当てていなくても範囲外・重複・子レイアウトとの重なりを検証します。未割り当ての枠は空き領域として残り、ドックではそのサイズを確保します。ドックの配置順は slots の順で決まり、bindings の並べ替えでは変わりません。
+
+旧形式の `bindings.childrenModel` にある行・列・span・dock・size は読み込みエラーになります。これらを参照先レイアウトの slots に移し、各枠へ Id を付け、binding 側は slot と model だけにしてください。共有していたレイアウトで配置が異なる場合は、レイアウト定義を分けます。デモでは下端80px用の pageDock と0px用の pageDockFullscreen を使います。
+
+split-pane の firstModel / secondModel と旧ページレイアウトの inspectorModel は、組み込みの配置枠への対応です。方向・比率・高さなどの配置定義は従来どおり layouts にだけ書きます。１ノードが持つルートレイアウトは最大１つのままです。
+
 ## １ノード１レイアウトと共通の padding
 
 各モデルノードが持てるルートレイアウトは最大１つです。`box-layout` / `grid-layout` / `dock-layout` はどれも `padding` を指定できます。例えば `"padding": {"top":"8px","right":"8px","bottom":"8px","left":"8px"}` とします。値は非負の px 文字列です。省略した辺は box-layout では従来どおり8px、grid-layout / dock-layout では0pxです。padding を引いた内側に子を配置し、領域が足りない場合は０サイズまで縮めます。
@@ -13,15 +24,15 @@ JSON の型名は `dock-layout`、開発者ウィンドウでの表示名は `do
 
 ## 配置の規則
 
-- `childrenModel` は空配列でもよく、要素数の上限はありません。同じ方向を複数指定できます。
+- `slots` は空配列でもよく、要素数の上限はありません。同じ方向を複数指定できます。
 - `top` / `bottom` の `size` は高さ、`left` / `right` の `size` は幅です。非負の `px` 文字列を指定します。`rate` は使いません。
-- 四辺は配列順に**残っている領域**から確保します。先の要素が角を取り、後の要素はその分短くなります。
+- 四辺は `layouts.slots` の配列順に**残っている領域**から確保します。先の要素が角を取り、後の要素はその分短くなります。
 - `center` は最大１個で、`size` は `"remaining"`。配列のどこにあっても四辺を配置した最後に残り全部を使います。
 - 指定サイズが残りより大きいときは、残りのサイズまで切り詰めます。領域が尽きた後は幅または高さが０になります。
 - `center` がない場合、残りは空き領域です。binding に含めなかった親直下の子も、他の配置指定がなければ０サイズになります。
 - 子は `parentModel` の直下のモデルを参照します。同じモデルの二重配置は禁止です。孫は子コンテナー側のレイアウトで配置します。
 
-`row-definitions` / `column-definitions` はグリッド用です。ドックには置かず、各要素の `dock` / `size` を使います。モデルへの配置指定は既存のグリッドと同じく `bindings` に記述し、`layouts` には配置方式を定義します。
+`row-definitions` / `column-definitions` はグリッド用です。ドックには置かず、各要素の `dock` / `size` を使います。配置枠は `layouts.slots` に `id`・`dock`・`size` を定義します。`bindings.childrenModel` は `slot` と `model` の対応だけを持ちます。空の枠も領域を確保し、binding の配列順は配置へ影響しません。
 
 ## 最小の設定例
 
@@ -29,35 +40,106 @@ JSON の型名は `dock-layout`、開発者ウィンドウでの表示名は `do
 
 ```json
 {
-  "models": [{
-    "id": "app", "type": "viewport",
-    "children": [
-      { "id": "header", "type": "textBlock" },
-      { "id": "inspector", "type": "container" },
-      { "id": "body", "type": "container", "children": [
-        { "id": "button", "type": "button" }
-      ] }
+    "models": [
+        {
+            "id": "app",
+            "type": "viewport",
+            "children": [
+                {
+                    "id": "header",
+                    "type": "textBlock"
+                },
+                {
+                    "id": "inspector",
+                    "type": "container"
+                },
+                {
+                    "id": "body",
+                    "type": "container",
+                    "children": [
+                        {
+                            "id": "button",
+                            "type": "button"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "layouts": [
+        {
+            "id": "frame",
+            "type": "dock-layout",
+            "slots": [
+                {
+                    "id": "header",
+                    "dock": "top",
+                    "size": "40px"
+                },
+                {
+                    "id": "inspector",
+                    "dock": "bottom",
+                    "size": "80px"
+                },
+                {
+                    "id": "body",
+                    "dock": "center",
+                    "size": "remaining"
+                }
+            ]
+        },
+        {
+            "id": "bodyGrid",
+            "type": "grid-layout",
+            "row-definitions": [
+                "1rate"
+            ],
+            "column-definitions": [
+                "1rate"
+            ],
+            "slots": [
+                {
+                    "id": "button",
+                    "row": 0,
+                    "col": 0
+                }
+            ]
+        }
+    ],
+    "bindings": [
+        {
+            "layout": "frame",
+            "parentModel": "app",
+            "childrenModel": [
+                {
+                    "model": "header",
+                    "slot": "header"
+                },
+                {
+                    "model": "inspector",
+                    "slot": "inspector"
+                },
+                {
+                    "model": "body",
+                    "slot": "body"
+                }
+            ]
+        },
+        {
+            "layout": "bodyGrid",
+            "parentModel": "app/body",
+            "childrenModel": [
+                {
+                    "model": "button",
+                    "slot": "button"
+                }
+            ]
+        }
     ]
-  }],
-  "layouts": [
-    { "id": "frame", "type": "dock-layout" },
-    { "id": "bodyGrid", "type": "grid-layout",
-      "row-definitions": ["1rate"], "column-definitions": ["1rate"] }
-  ],
-  "bindings": [
-    { "layout": "frame", "parentModel": "app", "childrenModel": [
-      { "model": "header", "dock": "top", "size": "40px" },
-      { "model": "inspector", "dock": "bottom", "size": "80px" },
-      { "model": "body", "dock": "center", "size": "remaining" }
-    ] },
-    { "layout": "bodyGrid", "parentModel": "app/body", "childrenModel": [
-      { "model": "button", "row": 0, "col": 0 }
-    ] }
-  ]
 }
 ```
 
-ドックと別のルートグリッドで同じ親の全域を取り合う指定はエラーです。中央の `body` のような子コンテナーへグリッドを適用してください。余白はドック自身の `padding` に指定できます。同じ親に別のルート `box-layout` を付けることはできません。ドックを `box-layout` や `grid-layout` の子レイアウトとして定義することもできます。ドック自身の配置先は `bindings.childrenModel` で指定します。
+ドックと別のルートグリッドで同じ親の全域を取り合う指定はエラーです。中央の `body` のような子コンテナーへグリッドを適用してください。余白はドック自身の `padding` に指定できます。同じ親に別のルート `box-layout` を付けることはできません。ドックを `box-layout` や `grid-layout` の子レイアウトとして定義することもできます。ドック内の配置は `layouts.slots`、枠とモデルの対応は `bindings.childrenModel` で指定します。
 
 `work-page-layout` から移行する場合は、本文コンテナーを作り、下端のインスペクターを `bottom`、本文を `center` にします。従来のページレイアウトとは同じ親に重ねません。既存ファイルを自動で書き換えることはありません。
 

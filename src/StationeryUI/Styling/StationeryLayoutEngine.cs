@@ -85,7 +85,16 @@ public static class StationeryLayoutEngine
                         errors.Add(new(owner, layout.Path, error, content with { Height = headerHeight }));
                         dockContent = content with { Y = content.Y + headerHeight, Height = content.Height - headerHeight };
                     }
-                    foreach (var (path, dockArea) in StationeryDockLayout.Arrange(dockContent, binding.DockChildren)) positions[path] = dockArea;
+                    if (binding.LayoutError is not null)
+                    {
+                        foreach (var (path, dockArea) in StationeryDockLayout.Arrange(dockContent, binding.DockChildren)) positions[path] = dockArea;
+                    }
+                    else
+                    {
+                        var slotBounds = StationeryDockLayout.Arrange(dockContent,
+                            layout.Slots.Select(slot => new StationeryDockBinding(slot.Id, slot.Dock!, slot.Size)).ToArray());
+                        foreach (var child in binding.DockChildren) positions[child.ModelPath] = slotBounds[child.Slot!];
+                    }
                 }
             foreach (var child in layout.Children)
                 ArrangeLayout(child, owner, layout.Type == "grid-layout"

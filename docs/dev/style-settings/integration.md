@@ -50,28 +50,61 @@
             "id": "app",
             "type": "viewport",
             "children": [
-                { "id": "nameField", "type": "textBox" },
-                { "id": "applyButton", "type": "button" }
+                {
+                    "id": "nameField",
+                    "type": "textBox"
+                },
+                {
+                    "id": "applyButton",
+                    "type": "button"
+                }
             ]
         }
     ],
     "layouts": [
-        { "id": "outerPanel", "type": "box-layout" },
         {
             "id": "mainGrid",
             "type": "grid-layout",
-            "row-definitions": ["1rate", "64px"],
-            "column-definitions": ["1rate"]
+            "row-definitions": [
+                "1rate",
+                "64px"
+            ],
+            "column-definitions": [
+                "1rate"
+            ],
+            "slots": [
+                {
+                    "id": "nameField",
+                    "row": 0,
+                    "col": 0
+                },
+                {
+                    "id": "applyButton",
+                    "row": 1,
+                    "col": 0
+                }
+            ],
+            "padding": {
+                "top": "8px",
+                "right": "8px",
+                "bottom": "8px",
+                "left": "8px"
+            }
         }
     ],
     "bindings": [
-        { "layout": "outerPanel", "model": "/app" },
         {
             "layout": "mainGrid",
             "parentModel": "/app",
             "childrenModel": [
-                { "model": "nameField", "row": 0, "column": 0 },
-                { "model": "applyButton", "row": 1, "column": 0 }
+                {
+                    "model": "nameField",
+                    "slot": "nameField"
+                },
+                {
+                    "model": "applyButton",
+                    "slot": "applyButton"
+                }
             ]
         }
     ]
@@ -107,15 +140,71 @@ public sealed class StyledGame : Game
     private string? reportedError;
 
     public const string FallbackJson = """
-        {"models":[{"id":"app","type":"viewport","children":[
-          {"id":"nameField","type":"textBox"},{"id":"applyButton","type":"button"}]}],
-         "layouts":[{"id":"outerPanel","type":"box-layout"},
-          {"id":"mainGrid","type":"grid-layout",
-           "row-definitions":["1rate","64px"],"column-definitions":["1rate"]}],
-         "bindings":[{"layout":"outerPanel","model":"/app"},
-          {"layout":"mainGrid","parentModel":"/app","childrenModel":[
-           {"model":"nameField","row":0,"column":0},
-           {"model":"applyButton","row":1,"column":0}]}]}
+        {
+          "models": [
+            {
+              "id": "app",
+              "type": "viewport",
+              "children": [
+                {
+                  "id": "nameField",
+                  "type": "textBox"
+                },
+                {
+                  "id": "applyButton",
+                  "type": "button"
+                }
+              ]
+            }
+          ],
+          "layouts": [
+            {
+              "id": "mainGrid",
+              "type": "grid-layout",
+              "row-definitions": [
+                "1rate",
+                "64px"
+              ],
+              "column-definitions": [
+                "1rate"
+              ],
+              "slots": [
+                {
+                  "id": "nameField",
+                  "row": 0,
+                  "col": 0
+                },
+                {
+                  "id": "applyButton",
+                  "row": 1,
+                  "col": 0
+                }
+              ],
+              "padding": {
+                "top": "8px",
+                "right": "8px",
+                "bottom": "8px",
+                "left": "8px"
+              }
+            }
+          ],
+          "bindings": [
+            {
+              "layout": "mainGrid",
+              "parentModel": "/app",
+              "childrenModel": [
+                {
+                  "model": "nameField",
+                  "slot": "nameField"
+                },
+                {
+                  "model": "applyButton",
+                  "slot": "applyButton"
+                }
+              ]
+            }
+          ]
+        }
         """;
 
     public StyledGame()

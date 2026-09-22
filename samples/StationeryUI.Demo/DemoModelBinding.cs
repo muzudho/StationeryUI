@@ -244,7 +244,54 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         "right": "8px",
         "bottom": "8px",
         "left": "8px"
-      }
+      },
+      "slots": [
+        {
+          "id": "nameField",
+          "row": 0,
+          "col": 0
+        },
+        {
+          "id": "memoField",
+          "row": 1,
+          "col": 0
+        },
+        {
+          "id": "themeButton",
+          "row": 2,
+          "col": 0
+        },
+        {
+          "id": "scaleButton",
+          "row": 2,
+          "col": 1
+        },
+        {
+          "id": "applyTitleButton",
+          "row": 3,
+          "col": 0
+        },
+        {
+          "id": "openDialogButton",
+          "row": 4,
+          "col": 0
+        },
+        {
+          "id": "sampleTree",
+          "row": 0,
+          "col": 1
+        },
+        {
+          "id": "splitPaneDemoLink",
+          "row": 4,
+          "col": 1
+        },
+        {
+          "id": "layoutDemoLink",
+          "row": 3,
+          "col": 1
+        }
+      ]
     },
     {
       "id": "splitDemoLayout",
@@ -262,7 +309,24 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         "right": "8px",
         "bottom": "8px",
         "left": "8px"
-      }
+      },
+      "slots": [
+        {
+          "id": "topDemoLink",
+          "row": 0,
+          "col": 0
+        },
+        {
+          "id": "verticalSplit",
+          "row": 1,
+          "col": 0
+        },
+        {
+          "id": "horizontalSplit",
+          "row": 2,
+          "col": 0
+        }
+      ]
     },
     {
       "id": "verticalSplitLayout",
@@ -282,7 +346,19 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     },
     {
       "id": "pageDock",
-      "type": "dock-layout"
+      "type": "dock-layout",
+      "slots": [
+        {
+          "id": "inspectorPanel",
+          "dock": "bottom",
+          "size": "80px"
+        },
+        {
+          "id": "body",
+          "dock": "center",
+          "size": "remaining"
+        }
+      ]
     },
     {
       "id": "inspectorContents",
@@ -292,6 +368,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       ],
       "column-definitions": [
         "1rate"
+      ],
+      "slots": [
+        {
+          "id": "toolHint",
+          "row": 0,
+          "col": 0
+        }
       ]
     },
     {
@@ -337,6 +420,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
               ],
               "column-definitions": [
                 "1rate"
+              ],
+              "slots": [
+                {
+                  "id": "boxContent",
+                  "row": 0,
+                  "col": 0
+                }
               ]
             }
           ],
@@ -389,6 +479,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   ],
                   "column-definitions": [
                     "1rate"
+                  ],
+                  "slots": [
+                    {
+                      "id": "spanCell",
+                      "row": 0,
+                      "col": 0
+                    }
                   ]
                 }
               ],
@@ -410,7 +507,37 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
               "row": 0,
               "col": 1,
               "rowspan": 2,
-              "colspan": 2
+              "colspan": 2,
+              "slots": [
+                {
+                  "id": "nestedA",
+                  "row": 0,
+                  "col": 0
+                },
+                {
+                  "id": "nestedB",
+                  "row": 0,
+                  "col": 1
+                },
+                {
+                  "id": "nestedC",
+                  "row": 1,
+                  "col": 0
+                },
+                {
+                  "id": "nestedD",
+                  "row": 1,
+                  "col": 1
+                }
+              ]
+            }
+          ],
+          "slots": [
+            {
+              "id": "gridFooter",
+              "row": 2,
+              "col": 0,
+              "colspan": 3
             }
           ]
         }
@@ -420,7 +547,45 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         "right": "8px",
         "bottom": "8px",
         "left": "8px"
-      }
+      },
+      "slots": [
+        {
+          "id": "topDemoLink",
+          "row": 0,
+          "col": 0
+        },
+        {
+          "id": "title",
+          "row": 0,
+          "col": 1
+        },
+        {
+          "id": "boxTitle",
+          "row": 1,
+          "col": 0
+        },
+        {
+          "id": "gridTitle",
+          "row": 1,
+          "col": 1
+        }
+      ]
+    },
+    {
+      "id": "pageDockFullscreen",
+      "type": "dock-layout",
+      "slots": [
+        {
+          "id": "inspectorPanel",
+          "dock": "bottom",
+          "size": "0px"
+        },
+        {
+          "id": "body",
+          "dock": "center",
+          "size": "remaining"
+        }
+      ]
     }
   ],
   "bindings": [
@@ -434,48 +599,39 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "nameField",
-          "row": 0,
-          "column": 0
+          "slot": "nameField"
         },
         {
           "model": "memoField",
-          "row": 1,
-          "column": 0
+          "slot": "memoField"
         },
         {
           "model": "themeButton",
-          "row": 2,
-          "column": 0
+          "slot": "themeButton"
         },
         {
           "model": "scaleButton",
-          "row": 2,
-          "column": 1
+          "slot": "scaleButton"
         },
         {
           "model": "applyTitleButton",
-          "row": 3,
-          "column": 0
+          "slot": "applyTitleButton"
         },
         {
           "model": "openDialogButton",
-          "row": 4,
-          "column": 0
+          "slot": "openDialogButton"
         },
         {
           "model": "sampleTree",
-          "row": 0,
-          "column": 1
+          "slot": "sampleTree"
         },
         {
           "model": "splitPaneDemoLink",
-          "row": 4,
-          "column": 1
+          "slot": "splitPaneDemoLink"
         },
         {
           "model": "layoutDemoLink",
-          "row": 3,
-          "col": 1
+          "slot": "layoutDemoLink"
         }
       ]
     },
@@ -485,18 +641,15 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "topDemoLink",
-          "row": 0,
-          "column": 0
+          "slot": "topDemoLink"
         },
         {
           "model": "verticalSplit",
-          "row": 1,
-          "column": 0
+          "slot": "verticalSplit"
         },
         {
           "model": "horizontalSplit",
-          "row": 2,
-          "column": 0
+          "slot": "horizontalSplit"
         }
       ]
     },
@@ -518,13 +671,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "inspectorPanel",
-          "dock": "bottom",
-          "size": "80px"
+          "slot": "inspectorPanel"
         },
         {
           "model": "body",
-          "dock": "center",
-          "size": "remaining"
+          "slot": "body"
         }
       ]
     },
@@ -534,24 +685,21 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "toolHint",
-          "row": 0,
-          "column": 0
+          "slot": "toolHint"
         }
       ]
     },
     {
-      "layout": "pageDock",
+      "layout": "pageDockFullscreen",
       "parentModel": "demo/splitPaneDemoPage",
       "childrenModel": [
         {
           "model": "inspectorPanel",
-          "dock": "bottom",
-          "size": "0px"
+          "slot": "inspectorPanel"
         },
         {
           "model": "body",
-          "dock": "center",
-          "size": "remaining"
+          "slot": "body"
         }
       ]
     },
@@ -561,8 +709,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "toolHint",
-          "row": 0,
-          "column": 0
+          "slot": "toolHint"
         }
       ]
     },
@@ -572,23 +719,19 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "topDemoLink",
-          "row": 0,
-          "col": 0
+          "slot": "topDemoLink"
         },
         {
           "model": "title",
-          "row": 0,
-          "col": 1
+          "slot": "title"
         },
         {
           "model": "boxTitle",
-          "row": 1,
-          "col": 0
+          "slot": "boxTitle"
         },
         {
           "model": "gridTitle",
-          "row": 1,
-          "col": 1
+          "slot": "gridTitle"
         }
       ]
     },
@@ -598,8 +741,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "boxContent",
-          "row": 0,
-          "col": 0
+          "slot": "boxContent"
         }
       ]
     },
@@ -609,8 +751,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "spanCell",
-          "row": 0,
-          "col": 0
+          "slot": "spanCell"
         }
       ]
     },
@@ -620,23 +761,19 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "nestedA",
-          "row": 0,
-          "col": 0
+          "slot": "nestedA"
         },
         {
           "model": "nestedB",
-          "row": 0,
-          "col": 1
+          "slot": "nestedB"
         },
         {
           "model": "nestedC",
-          "row": 1,
-          "col": 0
+          "slot": "nestedC"
         },
         {
           "model": "nestedD",
-          "row": 1,
-          "col": 1
+          "slot": "nestedD"
         }
       ]
     },
@@ -646,9 +783,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "gridFooter",
-          "row": 2,
-          "col": 0,
-          "colspan": 3
+          "slot": "gridFooter"
         }
       ]
     },
@@ -658,13 +793,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "inspectorPanel",
-          "dock": "bottom",
-          "size": "80px"
+          "slot": "inspectorPanel"
         },
         {
           "model": "body",
-          "dock": "center",
-          "size": "remaining"
+          "slot": "body"
         }
       ]
     },
@@ -674,8 +807,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
       "childrenModel": [
         {
           "model": "toolHint",
-          "row": 0,
-          "col": 0
+          "slot": "toolHint"
         }
       ]
     }

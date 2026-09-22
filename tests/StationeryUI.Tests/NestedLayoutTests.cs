@@ -7,29 +7,68 @@ using System.Text.Json.Nodes;
 internal static class NestedLayoutTests
 {
     public const string Source = """
-    {
-      "models":[{"id":"demo","type":"viewport","children":[
-        {"id":"a","type":"button"},{"id":"b","type":"button"},
-        {"id":"c","type":"button"},{"id":"d","type":"button"}]}],
-      "layouts":[{"id":"frame","type":"box-layout",
-        "padding":{"top":"10px","right":"20px","bottom":"30px","left":"40px"},
-        "children":[{"id":"grid","type":"grid-layout",
-          "row-definitions":["50px","1rate","2rate"],"column-definitions":["60px","1rate","3rate"],
-          "children":[
-            {"id":"box","type":"box-layout","row":0,"col":0,"rowspan":2,"colspan":2,
-              "padding":{"top":"5px","right":"5px","bottom":"5px","left":"5px"},
-              "children":[{"id":"inner","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate","3rate"]}]},
-            {"id":"inner","type":"grid-layout","row":2,"col":1,"colspan":2,
-              "row-definitions":["1rate"],"column-definitions":["1rate","1rate"]}
-          ]}]}],
-      "bindings":[
-        {"layout":"frame","model":"demo"},
-        {"layout":"frame.grid","parentModel":"demo","childrenModel":[{"model":"d","row":0,"col":2,"rowspan":2}]},
-        {"layout":"frame.grid.box.inner","parentModel":"demo","childrenModel":[{"model":"a","row":0,"col":0},{"model":"b","row":0,"col":1}]},
-        {"layout":"frame.grid.inner","parentModel":"demo","childrenModel":[{"model":"c","row":0,"col":0,"colspan":2}]}
-      ]
-    }
-    """;
+        {
+          "models":[
+            {
+              "id":"demo",
+              "type":"viewport",
+              "children":[{"id":"a","type":"button"},{"id":"b","type":"button"},{"id":"c","type":"button"},{"id":"d","type":"button"}]
+            }
+          ],
+          "layouts":[
+            {
+              "id":"frame",
+              "type":"box-layout",
+              "padding":{"top":"10px","right":"20px","bottom":"30px","left":"40px"},
+              "children":[
+                {
+                  "id":"grid",
+                  "type":"grid-layout",
+                  "row-definitions":["50px","1rate","2rate"],
+                  "column-definitions":["60px","1rate","3rate"],
+                  "children":[
+                    {
+                      "id":"box",
+                      "type":"box-layout",
+                      "row":0,
+                      "col":0,
+                      "rowspan":2,
+                      "colspan":2,
+                      "padding":{"top":"5px","right":"5px","bottom":"5px","left":"5px"},
+                      "children":[
+                        {
+                          "id":"inner",
+                          "type":"grid-layout",
+                          "row-definitions":["1rate"],
+                          "column-definitions":["1rate","3rate"],
+                          "slots":[{"id":"slot1","row":0,"col":0},{"id":"slot2","row":0,"col":1}]
+                        }
+                      ]
+                    },
+                    {
+                      "id":"inner",
+                      "type":"grid-layout",
+                      "row":2,
+                      "col":1,
+                      "colspan":2,
+                      "row-definitions":["1rate"],
+                      "column-definitions":["1rate","1rate"],
+                      "slots":[{"id":"slot1","row":0,"col":0,"colspan":2}]
+                    }
+                  ],
+                  "slots":[{"id":"slot1","row":0,"col":2,"rowspan":2}]
+                }
+              ]
+            }
+          ],
+          "bindings":[
+            {"layout":"frame","model":"demo"},
+            {"layout":"frame.grid","parentModel":"demo","childrenModel":[{"model":"d","slot":"slot1"}]},
+            {"layout":"frame.grid.box.inner","parentModel":"demo","childrenModel":[{"model":"a","slot":"slot1"},{"model":"b","slot":"slot2"}]},
+            {"layout":"frame.grid.inner","parentModel":"demo","childrenModel":[{"model":"c","slot":"slot1"}]}
+          ]
+        }
+        """;
     public static void Run()
     {
         var settings = StationeryStyleSettings.Parse(Source);
@@ -55,17 +94,38 @@ internal static class NestedLayoutTests
         Equal(layout.Bounds["/demo/a"], StationeryLayoutEngine.Arrange(inferred, 400, 300).Bounds["/demo/a"]);
         Check(inferred.Padding.Left == 40, "ancestor padding is inferred from descendant binding");
         var reused = StationeryStyleSettings.Parse("""
-        {"models":[{"id":"app","type":"viewport","children":[
-          {"id":"left","type":"container","children":[{"id":"name","type":"textBox"}]},
-          {"id":"right","type":"container","children":[{"id":"name","type":"textBox"}]}]}],
-         "layouts":[
-          {"id":"outer","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate","3rate"]},
-          {"id":"frame","type":"box-layout","padding":{"top":"2px","right":"2px","bottom":"2px","left":"2px"},
-            "children":[{"id":"grid","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate"]}]}],
-         "bindings":[
-          {"layout":"outer","parentModel":"app","childrenModel":[{"model":"left","row":0,"col":0},{"model":"right","row":0,"col":1}]},
-          {"layout":"frame.grid","parentModel":"app/left","childrenModel":[{"model":"name","row":0,"col":0}]},
-          {"layout":"frame.grid","parentModel":"app/right","childrenModel":[{"model":"name","row":0,"col":0}]}]}
+        {
+          "models":[
+            {
+              "id":"app",
+              "type":"viewport",
+              "children":[
+                {"id":"left","type":"container","children":[{"id":"name","type":"textBox"}]},
+                {"id":"right","type":"container","children":[{"id":"name","type":"textBox"}]}
+              ]
+            }
+          ],
+          "layouts":[
+            {
+              "id":"outer",
+              "type":"grid-layout",
+              "row-definitions":["1rate"],
+              "column-definitions":["1rate","3rate"],
+              "slots":[{"id":"slot1","row":0,"col":0},{"id":"slot2","row":0,"col":1}]
+            },
+            {
+              "id":"frame",
+              "type":"box-layout",
+              "padding":{"top":"2px","right":"2px","bottom":"2px","left":"2px"},
+              "children":[{"id":"grid","type":"grid-layout","row-definitions":["1rate"],"column-definitions":["1rate"],"slots":[{"id":"slot1","row":0,"col":0}]}]
+            }
+          ],
+          "bindings":[
+            {"layout":"outer","parentModel":"app","childrenModel":[{"model":"left","slot":"slot1"},{"model":"right","slot":"slot2"}]},
+            {"layout":"frame.grid","parentModel":"app/left","childrenModel":[{"model":"name","slot":"slot1"}]},
+            {"layout":"frame.grid","parentModel":"app/right","childrenModel":[{"model":"name","slot":"slot1"}]}
+          ]
+        }
         """);
         var reusedLayout = StationeryLayoutEngine.Arrange(reused, 400, 100);
         Equal(new(2, 2, 96, 96), reusedLayout.Bounds["/app/left/name"]);
@@ -106,7 +166,9 @@ internal static class NestedLayoutTests
         try { plan.DeleteNode(["layouts","0","children","0","children","0"]); throw new Exception("bound subtree deleted"); } catch (JsonException) { }
         Check(plan.BuildJson() == before, "invalid delete is atomic");
 
-        var empty = StyleBlueprint.Parse("""{"models":[{"id":"app","type":"viewport"}],"layouts":[],"bindings":[]} """);
+        var empty = StyleBlueprint.Parse("""
+        {"models":[{"id":"app","type":"viewport"}],"layouts":[],"bindings":[]}
+        """);
         empty.AddLayout("box-layout", "root");
         empty.AddLayout("grid-layout", "cells", "root");
         empty.AddLayout("box-layout", "item", "root.cells", 0, 0, 2, 1);
