@@ -65,19 +65,19 @@ internal static class DeveloperInspectionTests
         var received = System.Text.Json.JsonSerializer.Deserialize<DeveloperInspectionMessage>(System.Text.Json.JsonSerializer.Serialize(packet))!;
         var model = new DeveloperInspectionModel(); model.Refresh(received.Entries);
         model.Select("/demo/demoPage");
-        Check(model.Tree.SelectedItem!.Label == "(demoPage : Page) (gridLayout)", "layout owner label and serialization");
+        Check(model.Tree.SelectedItem!.Label == "(demoPage : Page) (- : gridLayout)", "layout owner label and serialization");
         model.Select("/demo/demoPage/btn123");
-        Check(model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 0, 3, 2)", "column row column-span row-span order");
+        Check(model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 0, 3, 2 : -)", "column row column-span row-span order");
         var tree = model.Tree;
         var changed = enriched.Select(e => e.Id == "btn123" ? e with { Cell = new(1, 1, 1, 1), Visible = false } : e).ToArray();
         model.Refresh(changed);
         Check(model.Tree == tree && model.SelectedPath == "/demo/demoPage/btn123"
-            && model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 1, 1, 1)  （非表示）", "live placement label preserves selection");
-        Check(DeveloperInspectionLayout.FormatLabel(entries[0]) == "(demo : Viewport) (—)", "legacy snapshots remain displayable");
+            && model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 1, 1, 1 : -)  （非表示）", "live placement label preserves selection");
+        Check(DeveloperInspectionLayout.FormatLabel(entries[0]) == "(demo : Viewport) (- : -)", "legacy snapshots remain displayable");
         var cleared = DeveloperInspectionLayout.Apply(enriched, settings with { Bindings = [] });
         Check(cleared.All(e => e.LayoutTypes is null && e.Cell is null), "removed bindings clear old metadata");
-        Check(DeveloperInspectionLayout.FormatLabel(enriched[2] with { LayoutTypes = ["box-layout", "grid-layout"] })
-            == "(btn123 : Button) (boxLayout, gridLayout)", "layout types take precedence over a cell");
+        Check(DeveloperInspectionLayout.FormatLabel(enriched[2] with { LayoutTypes = ["grid-layout"] })
+            == "(btn123 : Button) (1, 0, 3, 2 : gridLayout)", "child placement and parent layout appear together");
     }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
 }

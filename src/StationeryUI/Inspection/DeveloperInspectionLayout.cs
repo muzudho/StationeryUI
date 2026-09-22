@@ -35,8 +35,9 @@ public static class DeveloperInspectionLayout
                 "fullscreen-layout" => "fullscreenLayout", "work-page-layout" => "workPageLayout",
                 "split-pane" => "splitPane", _ => type
             }))
-            : entry.Cell is { } cell
-                ? FormattableString.Invariant($"{cell.Column}, {cell.Row}, {cell.ColumnSpan}, {cell.RowSpan}") : "—";
-        return $"({entry.Id} : {kind}) ({layout})" + (entry.LayoutError is null ? "" : " （レイアウトエラー）") + (entry.Visible ? "" : "  （非表示）");
+            : "-";
+        var placement = entry.Cell is { } cell
+            ? FormattableString.Invariant($"{cell.Column}, {cell.Row}, {cell.ColumnSpan}, {cell.RowSpan}") : "-";
+        return $"({entry.Id} : {kind}) ({placement} : {layout})" + (entry.LayoutError is null ? "" : " （レイアウトエラー）") + (entry.Visible ? "" : "  （非表示）");
     }
 }
