@@ -181,7 +181,13 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                 },
                 {
                   "id": "spanCell",
-                  "type": "textBlock"
+                  "type": "textBlock",
+                  "margin": {
+                    "top": "16px",
+                    "right": "16px",
+                    "bottom": "16px",
+                    "left": "16px"
+                  }
                 },
                 {
                   "id": "nestedA",

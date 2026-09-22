@@ -28,7 +28,10 @@ public sealed class DeveloperInspectionModel
         otherTreeState = previous;
         Refresh(source);
         foreach (var item in items.Values) Tree.SetExpanded(item, true);
-        RestoreSelection(restore ?? previous);
+        var selection = restore?.SelectedPath is not null ? restore : previous;
+        if (mode == DeveloperTreeMode.Model && selection.SelectedPath is { } layoutPath && layoutPath.IndexOf(':') is var separator && separator >= 0)
+            selection = selection with { SelectedPath = layoutPath[..separator] };
+        RestoreSelection(selection);
     }
 
     private Dictionary<string, StationeryInspectionEntry> entries = new(StringComparer.Ordinal);

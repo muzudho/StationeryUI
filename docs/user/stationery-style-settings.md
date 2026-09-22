@@ -327,6 +327,7 @@ layouts.cells にある bottom の `size` を `0px` に変えると、下端を�
 デモではルートの padding を 0px にし、本文の8pxの余白を body の grid-layout 自身の `margin` 4px + `padding` 4px に分けて指定する。これでパネルは画面の左右端まで広がる。
 
 レイアウトデモの `spanCell` は、親 grid の rowspan 2 のセルへ直接配置している。セルの直下に子モデルを置く例として、余白だけを持つ box-layout や 1×1 の中間 grid-layout は挟んでいない。
+`spanCell` 自身には四辺 16px の margin を指定し、親セルの内側に余白を作る例にしている。
 
 旧 `fullscreen-layout` / `work-page-layout` も互換用として利用できるが、現在のデモでは使わない。[ドック配置の詳しい仕様](../dev/dock-layout.md)を参照。
 
