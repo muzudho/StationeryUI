@@ -22,6 +22,7 @@ public sealed partial class StationeryUiHost : IDisposable
     private readonly Texture2D pixel;
     private readonly RasterizerState clipState = new() { ScissorTestEnable = true };
     private readonly Dictionary<(string Text, string Font, int Size), Texture2D> textures = [];
+    private readonly List<Texture2D> retiredTextTextures = [];
     private readonly List<Element> elements = [];
     private readonly Dictionary<Keys, double> repeats = [];
     private KeyboardState previousKeyboard;
@@ -405,7 +406,13 @@ public sealed partial class StationeryUiHost : IDisposable
                 sprites.End();
             }
         }
-        finally { graphics.ScissorRectangle = oldScissor; }
+        finally
+        {
+            // SpriteBatch queues Draw calls until End. Evicted text may still be in
+            // that queue, so keep its GPU resource alive until drawing has finished.
+            ReleaseRetiredTextTextures();
+            graphics.ScissorRectangle = oldScissor;
+        }
     }
     private void DrawText(string text, double x, double y, StationeryTheme theme, ButtonColor color)
     {
@@ -418,7 +425,9 @@ public sealed partial class StationeryUiHost : IDisposable
         {
             if (textures.Count >= 128)
             {
-                var oldest = textures.First(); oldest.Value.Dispose(); textures.Remove(oldest.Key);
+                var oldest = textures.First();
+                retiredTextTextures.Add(oldest.Value);
+                textures.Remove(oldest.Key);
             }
             using var stream = new MemoryStream(rasterizerFactory(theme.FontFamily).RasterizePng(text, pixelSize, false));
             texture = Texture2D.FromStream(graphics, stream);
@@ -440,11 +449,17 @@ public sealed partial class StationeryUiHost : IDisposable
     private static Rectangle RectangleOf(ScreenRectangle b) => new((int)Math.Round(b.X), (int)Math.Round(b.Y), Math.Max(1, (int)Math.Round(b.Width)), Math.Max(1, (int)Math.Round(b.Height)));
     public static Color Convert(ButtonColor c) => new(c.R, c.G, c.B, c.A);
     private static bool Contains(ScreenRectangle b, ScreenPoint p) => p.X >= b.X && p.Y >= b.Y && p.X < b.X + b.Width && p.Y < b.Y + b.Height;
+    private void ReleaseRetiredTextTextures()
+    {
+        foreach (var texture in retiredTextTextures) texture.Dispose();
+        retiredTextTextures.Clear();
+    }
     public void Dispose()
     {
         if (disposed) return;
         editing?.Session?.Blur();
         foreach (var texture in textures.Values) texture.Dispose();
+        ReleaseRetiredTextTextures();
         textures.Clear(); sprites.Dispose(); pixel.Dispose(); clipState.Dispose(); disposed = true;
     }
 }

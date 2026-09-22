@@ -5,8 +5,13 @@ using StationeryUI.Windows;
 internal static class Program
 {
     [STAThread]
-    private static int Main()
+    private static int Main(string[] args)
     {
+        if (args.Contains("--text-cache"))
+        {
+            try { using var game = new TextCacheRenderingTests(); game.Run(); return 0; }
+            catch (Exception ex) { Console.Error.WriteLine(ex); return 1; }
+        }
         nint window=0;
         try
         {
