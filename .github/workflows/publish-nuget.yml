@@ -1,0 +1,35 @@
+name: Publish NuGet packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet run --project tests/StationeryUI.Tests -c Release
+      - run: |
+          mkdir -p artifacts/nuget
+          dotnet pack src/StationeryUI/StationeryUI.csproj -c Release --no-restore -o artifacts/nuget
+          dotnet pack src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj -c Release --no-restore -o artifacts/nuget
+          dotnet pack src/StationeryUI.Windows/StationeryUI.Windows.csproj -c Release --no-restore -o artifacts/nuget
+      - name: NuGet login (OIDC trusted publishing)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: muzudho
+      - name: Push packages
+        run: |
+          dotnet nuget push artifacts/nuget/StationeryUI.*.nupkg --api-key '${{ steps.login.outputs.NUGET_API_KEY }}' --source https://api.nuget.org/v3/index.json --skip-duplicate

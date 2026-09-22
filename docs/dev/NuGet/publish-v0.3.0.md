@@ -9,3 +9,16 @@
 同一 ID・同一版は再公開できません。公開後に問題が見つかったら、修正して `0.3.1` など新しい版を作ります。API キーは環境変数など端末内だけで扱い、リポジトリーへ保存しません。
 
 デザイナーは NuGet に含めません。`scripts/Publish-StyleDesigner.ps1 -Version 0.3.0` で作成した Windows x64 ZIP を、GitHub Release `style-designer-v0.3.0` に添付します。
+
+## 推奨：Trusted Publishing
+
+API キーを長期間保存する代わりに、GitHub Actions の OIDC を使います。NuGet.org にサインインし、アカウントの **Trusted Publishing** で次のポリシーを 1 件登録します。
+
+| 項目 | 値 |
+|---|---|
+| Repository owner | `muzudho` |
+| Repository | `StationeryUI` |
+| Workflow file | `publish-nuget.yml` |
+| Environment | 空欄 |
+
+登録後、`v0.3.0` タグを GitHub へ push すると `.github/workflows/publish-nuget.yml` がテスト、パッケージ作成、短期認証、NuGet.org 公開を行います。短期キーはワークフロー実行時に発行され、リポジトリーへ保存されません。
