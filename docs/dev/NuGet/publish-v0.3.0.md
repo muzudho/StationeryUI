@@ -22,3 +22,9 @@ API キーを長期間保存する代わりに、GitHub Actions の OIDC を使�
 | Environment | 空欄 |
 
 登録後、`v0.3.0` タグを GitHub へ push すると `.github/workflows/publish-nuget.yml` がテスト、パッケージ作成、短期認証、NuGet.org 公開を行います。短期キーはワークフロー実行時に発行され、リポジトリーへ保存されません。
+
+## 公開実績
+
+2026-09-23、`v0.3.0` タグの push で GitHub Actions を実行し、Trusted Publishing による OIDC ログインと NuGet push に成功しました。初回実行は `StationeryUI.Windows` の assets 不足で失敗したため、`dotnet restore StationeryUI.slnx` を pack 前に追加して再実行しました。API キーを保存する必要はありません。
+
+デザイナーは `style-designer-v0.3.0` Release に ZIP と `SHA256SUMS.txt` を添付しました。公開済みの版は修正せず、問題があれば次の版を作成します。
