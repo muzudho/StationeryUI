@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework.Input;
 using StationeryUI.Canvas;
 using StationeryUI.Controls;
+using StationeryUI.Inspection;
 using StationeryUI.MonoGame;
 using StationeryUI.StyleDesigner;
 using StationeryUI.Styling;
@@ -144,5 +145,42 @@ internal sealed partial class DesignerGame
         var shifted = new StationeryLayoutResult(layout.Bounds.ToDictionary(p => p.Key, p => Shift(p.Value)), layout.ContentBounds)
         { BorderBounds = layout.BorderBounds.ToDictionary(p => p.Key, p => Shift(p.Value)) };
         livePreview.DrawPanelBorders(shifted, path => path == previewSnapshot.ScopePath || path.StartsWith(previewSnapshot.ScopePath + "/", StringComparison.Ordinal) || previewSnapshot.ScopePath.StartsWith(path + "/", StringComparison.Ordinal), previewWindow);
+        var selectedPath = SelectedPreviewModelPath();
+        var component = selectedPath is not null && layout.Bounds.TryGetValue(selectedPath, out var selectedBounds) ? Shift(selectedBounds) : (ScreenRectangle?)null;
+        var margin = selectedPath is not null && layout.MarginBounds.TryGetValue(selectedPath, out var selectedMargin) ? Shift(selectedMargin) : (ScreenRectangle?)null;
+        var partitions = ParentPreviewPartitions();
+        ScreenPoint ShiftPoint(ScreenPoint point) => new(point.X + previewWindow.X, point.Y + previewWindow.Y);
+        livePreview.DrawPreviewGuides(margin, component, partitions.Select(line => new StationeryInspectionLine(ShiftPoint(line.Start), ShiftPoint(line.End))).ToArray());
+    }
+
+    private string? SelectedPreviewModelPath()
+    {
+        var item = styleTree?.Tree?.TargetItem;
+        if (item is null) return null;
+        var path = designerTreeMode == DesignerTreeMode.Json ? null : semanticTree.PathFor(item);
+        if (path is null) return null;
+        var separator = path.IndexOf(':');
+        return separator >= 0 ? path[..separator] : path;
+    }
+
+    private IReadOnlyList<StationeryInspectionLine> ParentPreviewPartitions()
+    {
+        if (previewSnapshot is null || TargetLayoutId is null) return [];
+        var settings = previewSnapshot.Settings;
+        var target = settings.Layouts.FirstOrDefault(layout => layout.Path == TargetLayoutId);
+        if (target is null) return [];
+        var parentPath = target.ParentPath;
+        if (parentPath is null)
+        {
+            var owner = settings.Bindings.FirstOrDefault(binding => binding.Layout == target.Path)?.ModelPath;
+            if (owner is not null)
+                parentPath = settings.Bindings.FirstOrDefault(binding =>
+                    binding.Children.Any(child => child.ModelPath == owner) ||
+                    binding.DockChildren.Any(child => child.ModelPath == owner))?.Layout;
+        }
+        if (parentPath is null) return [];
+        var parentBinding = settings.Bindings.FirstOrDefault(binding => binding.Layout == parentPath);
+        if (parentBinding is null || !previewSnapshot.Layout.LayoutContentBounds.TryGetValue(parentBinding.ModelPath + ":" + parentPath, out var content)) return [];
+        return DeveloperInspectionPartitions.Create(settings.Layouts.Single(layout => layout.Path == parentPath), content);
     }
 }

@@ -405,12 +405,12 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             }
             bindings.Add(new(layoutId, parent.Path, children.AsReadOnly()));
         }
-        // A model owns at most one root tree; bindings to descendants of that tree are valid.
+        // A model is associated with at most one root tree; bindings to descendants of that tree are valid.
         foreach (var group in bindings.GroupBy(b => b.ModelPath))
         {
             var roots = group.Select(b => ("/" + b.Layout.Split('/')[1])).Distinct().ToArray();
             if (roots.Length > 1)
-                throw new JsonException($"{group.Key}: a node can own at most one layout tree. Nest layouts instead of binding multiple roots.");
+                throw new JsonException($"{group.Key}: a node can be associated with at most one layout tree. Nest layouts instead of binding multiple roots.");
         }
         return new(Array.AsReadOnly(new[] { model }), layouts.AsReadOnly(), bindings.AsReadOnly());
     }

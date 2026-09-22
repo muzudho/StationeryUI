@@ -48,7 +48,7 @@ public sealed class DeveloperInspectionModel
         mergedLayoutPaths = new(StringComparer.Ordinal);
         if (TreeMode == DeveloperTreeMode.Layout)
         {
-            // A model owns at most one root layout. Keep its model identity and move
+            // A model is associated with at most one root layout. Keep its model identity and move
             // the root layout's children directly beneath that model.
             foreach (var owner in snapshot)
             {

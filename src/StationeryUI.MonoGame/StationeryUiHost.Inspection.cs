@@ -67,6 +67,54 @@ public sealed partial class StationeryUiHost
         finally { sprites.End(); }
     }
 
+    /// <summary>Draws the style designer's component, margin and parent-layout guides.</summary>
+    public void DrawPreviewGuides(ScreenRectangle? marginBounds, ScreenRectangle? componentBounds,
+        IReadOnlyList<StationeryUI.Inspection.StationeryInspectionLine> partitions)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        sprites.Begin(blendState: BlendState.NonPremultiplied);
+        try
+        {
+            var pink = new Color(255, 105, 180);
+            var cyan = new Color(80, 200, 255);
+            void Strip(ScreenRectangle bounds, Color color)
+            {
+                if (bounds.Width > 0 && bounds.Height > 0) sprites.Draw(pixel, RectangleOf(bounds), color);
+            }
+            if (componentBounds is { Width: > 0, Height: > 0 } component)
+            {
+                const double thickness = 3;
+                Strip(new(component.X, component.Y, component.Width, thickness), cyan);
+                Strip(new(component.X, component.Y + component.Height - thickness, component.Width, thickness), cyan);
+                Strip(new(component.X, component.Y, thickness, component.Height), cyan);
+                Strip(new(component.X + component.Width - thickness, component.Y, thickness, component.Height), cyan);
+            }
+            if (marginBounds is { Width: > 0, Height: > 0 } margin && componentBounds is { } inner && margin != inner)
+            {
+                const double thickness = 1;
+                if (inner.Y > margin.Y) Strip(new(margin.X, margin.Y, margin.Width, thickness), cyan);
+                if (inner.Y + inner.Height < margin.Y + margin.Height)
+                    Strip(new(margin.X, margin.Y + margin.Height - thickness, margin.Width, thickness), cyan);
+                if (inner.X > margin.X) Strip(new(margin.X, margin.Y, thickness, margin.Height), cyan);
+                if (inner.X + inner.Width < margin.X + margin.Width)
+                    Strip(new(margin.X + margin.Width - thickness, margin.Y, thickness, margin.Height), cyan);
+            }
+            foreach (var line in partitions)
+            {
+                var vertical = line.Start.X == line.End.X;
+                var length = vertical ? line.End.Y - line.Start.Y : line.End.X - line.Start.X;
+                for (double offset = 0; offset < length; offset += 10)
+                {
+                    var dash = Math.Min(5, length - offset);
+                    var rect = vertical ? new ScreenRectangle(line.Start.X - 1, line.Start.Y + offset, 2, dash)
+                        : new ScreenRectangle(line.Start.X + offset, line.Start.Y - 1, dash, 2);
+                    Strip(rect, pink);
+                }
+            }
+        }
+        finally { sprites.End(); }
+    }
+
     /// <summary>A font-independent pinching hand icon with a latched pink background.</summary>
     public void DrawCaptureIcon(ScreenRectangle bounds, bool enabled, bool focused = false)
     {
