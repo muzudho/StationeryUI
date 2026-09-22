@@ -132,9 +132,12 @@ internal sealed partial class DesignerGame : Game
     }
     private void BuildGridInsetsEditor()
     {
-        Text("gridInsetsTitle", new(12, 480, 524, 34), "margin / padding (px)");
-        Text("gridMarginCaption", new(12, 516, 92, 28), "margin");
-        Text("gridPaddingCaption", new(12, 554, 92, 28), "padding");
+        // Text blocks include the theme's vertical padding in their scrollable
+        // content height. Keep these one-line labels tall enough that they do
+        // not accidentally acquire a vertical scrollbar.
+        Text("gridInsetsTitle", new(12, 480, 524, 40), "margin / padding (px)");
+        Text("gridMarginCaption", new(12, 516, 92, 40), "margin");
+        Text("gridPaddingCaption", new(12, 558, 92, 40), "padding");
         AddInsetField("margin", "top", 230, 510);
         AddInsetField("padding", "top", 230, 548);
         AddInsetField("margin", "left", 96, 578, 80);
