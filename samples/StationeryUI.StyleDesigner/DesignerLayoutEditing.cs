@@ -273,23 +273,4 @@ internal sealed partial class DesignerGame
         return true;
     }
 
-    private void BuildPanelEditor()
-    {
-        var sides = new[] { "top", "right", "bottom", "left" };
-        var sideLabels = new[] { "上", "右", "下", "左" };
-        for (var c = 0; c < sides.Length; c++) Text("side" + c, new(120 + c * 104, 136, 100, 40), sideLabels[c] + " (px)");
-        var groups = new[] { "margin", "padding" };
-        for (var r = 0; r < groups.Length; r++)
-        {
-            Text("group" + r, new(12, 180 + r * 72, 104, 44), groups[r]);
-            for (var c = 0; c < sides.Length; c++)
-            {
-                var key = groups[r] + "." + sides[c];
-                var field = ui.AddTextBox("edge" + r + c, new(120 + c * 104, 180 + r * 72, 100, 44), key, blueprint.PanelEdges[key].Number, 24);
-                panelFields.Add((field, key));
-            }
-        }
-        BuildLivePreviewHeader();
-        BuildSidebar();
-    }
 }

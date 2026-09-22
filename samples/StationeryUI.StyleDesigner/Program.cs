@@ -35,6 +35,7 @@ internal sealed partial class DesignerGame : Game
     private StationeryUiHost ui = null!;
     private StationeryUiHost.Element columns = null!, rows = null!, status = null!, output = null!;
     private readonly List<(StationeryUiHost.Element Field, StationeryUiHost.Element Unit, StyleBlueprint.Track Track)> tracks = [];
+    private StationeryCompoundInput? compoundInput;
     private int selectedRow, selectedColumn;
     private bool rebuild;
     private string message = "列数・行数とサイズを指定し、エクスポートから保存先を設定できます。";
@@ -107,7 +108,13 @@ internal sealed partial class DesignerGame : Game
         BuildSidebar();
         if (!HasLayoutTarget) return;
         if (DirectLayoutTargetId is null) { BuildReadOnly(); return; }
-        if (blueprint.CanEditPanel) { BuildPanelEditor(); return; }
+        if (blueprint.CanEditPanel)
+        {
+            BuildGridInsetsEditor(new(12, 136, 524, 226));
+            BuildLivePreviewHeader();
+            BuildSidebar();
+            return;
+        }
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
         gridEditorVisible = true;
         Text("columnTracksTitle", new(12, 8, 252, 36), "列の幅");
@@ -126,35 +133,15 @@ internal sealed partial class DesignerGame : Game
             Text($"rowIndex{r}", new(280, 100 + r * 44, 36, 40), (r + 1).ToString());
             AddTrack(blueprint.Rows[r], $"row{r}", new(372, 100 + r * 44, 164, 40), $"行 {r + 1} の高さ");
         }
-        BuildGridInsetsEditor();
+        BuildGridInsetsEditor(new(12, 480, 524, 226));
         BuildLivePreviewHeader();
         BuildSidebar();
     }
-    private void BuildGridInsetsEditor()
+    private void BuildGridInsetsEditor(ScreenRectangle bounds)
     {
-        // Text blocks include the theme's vertical padding in their scrollable
-        // content height. Keep these one-line labels tall enough that they do
-        // not accidentally acquire a vertical scrollbar.
-        Text("gridInsetsTitle", new(12, 480, 524, 40), "margin / padding (px)");
-        // TextBlock reserves room for a possible scrollbar when wrapping. Give
-        // the captions enough width that these short labels stay on one line.
-        Text("gridMarginCaption", new(12, 516, 130, 40), "margin");
-        Text("gridPaddingCaption", new(12, 558, 130, 40), "padding");
-        AddInsetField("margin", "top", 230, 510);
-        AddInsetField("padding", "top", 230, 548);
-        AddInsetField("margin", "left", 96, 578, 80);
-        AddInsetField("padding", "left", 188, 578, 80);
-        AddInsetField("padding", "right", 310, 578, 80);
-        AddInsetField("margin", "right", 402, 578, 80);
-        AddInsetField("padding", "bottom", 230, 620);
-        AddInsetField("margin", "bottom", 230, 658);
-    }
-
-    private void AddInsetField(string group, string side, int x, int y, int width = 100)
-    {
-        var key = group + "." + side;
-        var field = ui.AddTextBox("gridEdge" + group + side, new(x, y, width, 34), side, blueprint.PanelEdges[key].Number, 18);
-        panelFields.Add((field, key));
+        var values = blueprint.PanelEdges.ToDictionary(pair => pair.Key, pair => pair.Value.Number, StringComparer.Ordinal);
+        compoundInput = ui.AddCompoundInsetsEditor("compound", bounds, values);
+        panelFields.AddRange(compoundInput.Fields.Select(pair => (pair.Value, pair.Key)));
     }
 
     private void AddTrack(StyleBlueprint.Track track, string id, ScreenRectangle bounds, string name)

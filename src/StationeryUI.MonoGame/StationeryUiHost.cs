@@ -102,6 +102,11 @@ public sealed partial class StationeryUiHost : IDisposable
         elements.Add(element);
         return element;
     }
+
+    /// <summary>Adds the shared visual margin/padding editor used by style tools.</summary>
+    public StationeryCompoundInput AddCompoundInsetsEditor(string idPrefix, ScreenRectangle bounds,
+        IReadOnlyDictionary<string, string> values)
+        => new(this, idPrefix, bounds, values);
     public Element AddButton(string id, ScreenRectangle bounds, string label, Action clicked, StationeryNode? parent = null)
         => AddButton(AddNode(id, "button", parent), bounds, label, clicked);
 
