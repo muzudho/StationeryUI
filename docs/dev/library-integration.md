@@ -103,6 +103,93 @@ protected override void UnloadContent()
 
 上記では通常のMonoGame名前空間 `Microsoft.Xna.Framework`、`Microsoft.Xna.Framework.Input` も必要です。エントリーポイントに `[STAThread]` を付けてください。
 
+## F12 開発者ウィンドウと［指でつまむ］機能の組み込み
+
+NuGet パッケージを導入する際は、F12 開発者ウィンドウの［指でつまむ］（キャプチャー）機能も利用アプリへ接続してください。**開発者ウィンドウを表示するだけでは、元の画面のクリック判定と桃色の枠の描画は動きません。** アイコンはキャプチャーモードを切り替え、利用アプリが対象を判定して選択を通知し、枠を描画します。
+
+まず [開発者ウィンドウのホスト組み込み](developer-window.md#ホストの組み込み)に従い、エントリーポイントの `--stationery-inspector <パイプ名>` 分岐と `InspectorGame` 相当のホストを用意します。NuGet の参照だけでは、このアプリ側の起動処理は追加されません。すでに F12 で開発者ウィンドウが開くアプリでは、次の入力・描画の接続を確認してください。
+
+以下は、上の例の `ui` 一つを検査する場合です。`using StationeryUI.Inspection;` と `using System.Linq;` を追加し、フィールドと `Update` / `Draw` を次のように組み込みます。すでに `StationeryDeveloperWindow` を持つ場合は、そのインスタンスを使います。
+
+```csharp
+private readonly StationeryDeveloperWindow developerWindow = new();
+private bool previousDeveloperKey;
+private bool captureMouseDown;
+private double inspectionElapsed;
+
+protected override void Update(GameTime gameTime)
+{
+    var keyboard = Keyboard.GetState();
+    var mouse = Mouse.GetState();
+    var developerKey = keyboard.IsKeyDown(Keys.F12);
+    if (IsActive && developerKey && !previousDeveloperKey)
+        developerWindow.Show(ui.Inspect());
+    previousDeveloperKey = developerKey;
+
+    inspectionElapsed += gameTime.ElapsedGameTime.TotalSeconds;
+    if (developerWindow.IsOpen && inspectionElapsed >= .25)
+    {
+        developerWindow.Update(ui.Inspect());
+        inspectionElapsed = 0;
+    }
+
+    var captureDown = mouse.LeftButton == ButtonState.Pressed;
+    if (developerWindow.CaptureEnabled && IsActive)
+    {
+        if (captureDown && !captureMouseDown)
+        {
+            var hit = DeveloperCapture.HitTest(ui.Inspect(), mouse.X, mouse.Y);
+            if (hit is not null) developerWindow.SelectCaptured(hit.Path);
+        }
+        captureMouseDown = captureDown;
+        // キャプチャー中は通常の UI 操作へ入力を渡さない。
+        ui.Update(gameTime, false, keyboard, mouse);
+        base.Update(gameTime);
+        return;
+    }
+    captureMouseDown = captureDown;
+
+    ui.Update(gameTime, IsActive, keyboard, mouse);
+    // ゲーム側の通常入力処理もキャプチャー分岐より後に置く。
+    base.Update(gameTime);
+}
+
+protected override void Draw(GameTime gameTime)
+{
+    GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background));
+    ui.Draw();
+    base.Draw(gameTime);
+
+    // 画面の描画を終えた後、選択中の部品に桃色の枠を重ねる。
+    if (developerWindow.IsOpen && developerWindow.SelectedPath is { } selected)
+    {
+        var entry = ui.Inspect().FirstOrDefault(e => e.Path == selected && e.Visible);
+        if (entry?.WindowBounds is { } bounds)
+            ui.DrawInspectionOutline(bounds);
+    }
+}
+
+protected override void Dispose(bool disposing)
+{
+    if (disposing) developerWindow.Dispose();
+    base.Dispose(disposing);
+}
+```
+
+`LoadContent` / `UnloadContent` は上の例と共通です。`Inspect()` はゲームスレッドで呼びます。`DrawInspectionOutline` は内部で `SpriteBatch.Begin` / `End` を呼ぶため、アプリ側の `SpriteBatch.End` を済ませてから呼んでください。`base.Update` から入力を処理する `GameComponent` があるアプリでは、その入力処理もキャプチャー中は抑止します。
+
+複数の `StationeryUiHost` やモーダル画面を持つ場合は、表示・クリック判定・枠の描画に同じ検査ツリーを使います。[デモの実装](../../samples/StationeryUI.Demo/Program.cs)の `InspectStationery()` が接続例です。モーダル表示中は `DeveloperCapture.HitTest(entries, mouse.X, mouse.Y, dialog.Path)` のように `scope` へダイアログの完全パスを渡し、背後の部品を選ばないようにします。
+
+### 桃色の枠が出ない場合
+
+- ［指でつまむ］を有効にし、元のアプリ画面をアクティブにして対象をクリックします。枠は選択した部品の範囲に表示されます。ポインターに追従するカーソルではありません。
+- `CaptureEnabled` を読み、クリック時に `DeveloperCapture.HitTest` → `SelectCaptured` を呼んでいるか確認します。
+- 対象が検査スナップショットにあり、`Visible` が `true`、`WindowBounds` が正の幅・高さを持つか確認します。自作描画の部品は [モデルと検査情報の接続](model-inspection.md)に従って登録します。
+- マウス座標と `WindowBounds` は同じウィンドウ内のピクセル座標で照合します。UI の論理座標へ変換して渡したり、枠へ `Viewport.Scale` を二重に適用したりしないでください。
+- `SelectedPath` に対応する部品へ `DrawInspectionOutline` を呼び、その後の画面クリアや描画で枠を覆っていないか確認します。
+
+導入後は「F12 → ［指でつまむ］ → 元の画面の部品をクリック」で、桃色の枠とツリーの選択が一致し、そのクリックで通常のボタン操作が実行されないことを確認します。アイコンをもう一度押すと通常操作に戻ります。
+
 ## 外観の変更
 
 ```csharp
