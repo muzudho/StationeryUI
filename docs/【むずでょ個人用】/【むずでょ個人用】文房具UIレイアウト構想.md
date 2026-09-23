@@ -34,17 +34,17 @@ X, Y は、基本的にビューポート内での相対座標だ。
 * `Cells` - 子ノードのコレクション
 
 ```plaintext
-┌── Your Element ─────────┐
-│Padding 　　　　　　　　　　　　　　│
-│　┌─ ContentSize  ──────┐　│
-│　│Margin  　　　　　　　　　　│　│
-│　│　┌─ Child Element  ─┐　│　│
-│　│　│　　　　　　　　　　│　│　│
-│　│　└──────────┘　│　│
-│　│　　　　　　　　　　　　　　│　│
-│　└──────────────┘　│
-│　　　　　　　　　　　　　　　　　　│
-└──────────────────┘
+┌── Your Element Bounds  ────────┐
+│Padding 　　　　　　　　　　　　　　　　　│
+│　┌─ ContentSize  ─────────┐　│
+│　│Margin  　　　　　　　　　　　　　│　│
+│　│　┌─ Child Element Bounds ─┐　│　│
+│　│　│　　　　　　　　　　　　　│　│　│
+│　│　└─────────────┘　│　│
+│　│　　　　　　　　　　　　　　　　　│　│
+│　└─────────────────┘　│
+│　　　　　　　　　　　　　　　　　　　　　│
+└─────────────────────┘
 ```
 
 
@@ -304,6 +304,8 @@ Height = 20px （垂直の controlLength）
 例えば、子ノードの四方の Margin が 20px の場合、子ノードの Bounds は 740px x 540px です。  
 
 あとは繰り返しです。  
+
+
 
 
 ## 廃止方針
