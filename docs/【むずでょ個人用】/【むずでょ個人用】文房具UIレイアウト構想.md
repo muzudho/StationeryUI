@@ -9,11 +9,12 @@
 
 コントロールは、以下のプロパティを持つ。  
 
-* `Bounds` - MonoGame の `Rectangle` 型。
+* `Bounds` - MonoGame の `Rectangle` 型。実際に使われる座標。
 	* `X`
 	* `Y`
 	* `Width`
 	* `Height`
+* `LayoutHandle` - ［レイアウト・ハンドル］。後述。
 
 X, Y は、基本的にビューポート内での相対座標だ。  
 左上が原点で、Y 軸は下向きに伸びる。  
@@ -164,13 +165,13 @@ X, Y は、基本的にビューポート内での相対座標だ。
 例：  
 
 ```plaintext
-* (root) viewPort - BoxLayout
-	* (inbox) topDemoPage - DockLayout
-		* (top) applicationBar
-		* (center) mainContent - GridLayout
-			* (1y 1x 1w 1h) leftMenu - BoxLayout
-			* (1y 2x 2w 1h) rightContent - BoxLayout
-		* (bottom) inspectorPanel - BoxLayout
+* root: viewPort - BoxLayout
+	* inbox: topDemoPage - DockLayout
+		* top: applicationBar
+		* center: mainContent - GridLayout
+			* 1y.1x.1w.1h: leftMenu - BoxLayout
+			* 1y.2x.2w.1h: rightContent - BoxLayout
+		* bottom: inspectorPanel - BoxLayout
 ```
 
 👆　上記の１行が［レイアウトノード］です。  
@@ -178,20 +179,57 @@ X, Y は、基本的にビューポート内での相対座標だ。
 解説：  
 
 ```plaintext
-* (root) `viewPort` - BoxLayout
+* root: viewPort - BoxLayout
 ```
 
-👆　`(root)` は、最上位のノードを示します。  
+👆　`root:` は、最上位のノードを示します。  
 `viewPort` は、ノードの名前です。  
 `BoxLayout` は、レイアウトの種類です。  
 
-`(inbox)` は、ボックスレイアウトが持つ唯一の子ノードを示します。  
+`inbox:` は、ボックスレイアウトが持つ唯一の子ノードを示します。  
 
-`(top)` は、ドックレイアウトが持つ上側の子ノードを示します。  
-他に、`(right)`, `(bottom)`, `(left)`, `(center)` も同様です。  
+`top:` は、ドックレイアウトが持つ上側の子ノードを示します。  
+他に、`right:`, `bottom:`, `left:`, `center:` も同様です。  
 
-`(1y 1x 1w 1h)` は、グリッドレイアウトが持つ子ノードの位置とサイズを示します。  
+`1y.1x.1w.1h:` は、グリッドレイアウトが持つ子ノードの位置とサイズを示します。  
 `1y` は、上から１行目に配置することを意味します。  
 `1x` は、左から１列目に配置することを意味します。  
 `1w` は、横幅が１列分であることを意味します。  
 `1h` は、縦幅が１行分であることを意味します。
+
+## バインディングズ
+
+まず、 JSON 設定方法を示します。  
+
+```json
+{
+    "bindings": {
+		"viewPort": "root:viewPort",
+		"topDemoPage": "root:viewPort/inbox:topDemoPage",
+		"nameField": "root:viewPort/inbox:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu"
+	}
+}
+```
+
+👆　書式は、  
+
+```plaintext
+"レイアウト・ハンドル": "レイアウトノードのパス"
+```
+
+です。  
+
+［レイアウト・ハンドル］は、任意の文字列です。  
+使える文字は、半角英数字記号です。空白、改行は使えません。  
+
+コントロールは、［レイアウト・ハンドル］を１つ持つことができます。  
+
+
+## ソルバー
+
+［レイアウトノードのパス］を辿ると、X, Y, Width, Height が決まります。  
+これを［コントロール］に上書き（反映）させるのが、ソルバーの仕事です。  
+
+例えば、ページを開いたとき、またはウィンドウのサイズが変わったときに、ソルバーを呼び出すことで、  
+コントロールの Bounds を更新します。  
+
