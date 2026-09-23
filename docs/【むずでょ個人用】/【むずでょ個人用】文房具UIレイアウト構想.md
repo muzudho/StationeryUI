@@ -112,6 +112,35 @@ X, Y は、基本的にビューポート内での相対座標だ。
 }
 ```
 
+計算例：  
+
+左上を `(0, 0)` とし、コンテンツサイズが 300px x 200px で、子が以下のように指定されている場合、  
+
+```plaintext
+"margin" : {
+	"horizontal": {
+		"controlLength" : "80px",
+		"align" : "right"
+	},
+	"vertical": {
+		"controlLength" : "20px",
+		"align" : "center"
+	},
+}
+```
+
+水平方向の余白は、300px - 80px = 220px。  
+右寄せなので、左側の余白は 220px、右側の余白は 0px。  
+
+垂直方向の余白は、200px - 20px = 180px。  
+中央寄せなので、上側の余白は 90px、下側の余白は 90px。
+
+子要素の Bounds は、以下のように計算される。  
+X = 220px （左側の余白）  
+Y = 90px （上側の余白）  
+Width = 80px （水平の controlLength）  
+Height = 20px （垂直の controlLength）  
+
 解説：  
 
 指定方法は、2種類ある。  
