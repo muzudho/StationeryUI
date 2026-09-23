@@ -210,7 +210,10 @@ Height = 20px （垂直の controlLength）
 	* 詳しくは： 📖 [layouts セクションのグリッド・レイアウト](../dev/structure/style-settings-file/layouts/grid-layout.md)
 * ドック・レイアウト（DockLayout） - 四辺と中央に子要素を積む。四辺には０～複数個積める。中央は子要素を０～１個持つ。
 	* 詳しくは： 📖 [layouts セクションのドック・レイアウト](../dev/structure/style-settings-file/layouts/dock-layout.md)
-
+	* 詳しくは： 📖 [layouts セクションのドック・レイアウト（詳細）](../dev/structure/style-settings-file/layouts/dock-layout-detail.md)
+* その他
+	* 詳しくは： 📖 [ネステッド・レイアウト](../dev/structure/style-settings-file/layouts/nested-layouts.md)
+		* グリッドのセルを跨ぐ考え方
 
 ## レイアウトツリー
 
