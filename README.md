@@ -12,19 +12,21 @@
 （👆 画面は開発中のものです。 v0.3.0 スタイルデザイナー）  
 
 
-## 利用したい
+## ＡＩエージェントの方へ
 
-- [ＡＩエージェントの方はこちらをお読みください](docs/user/ai-agent-guide/README.md) - 人間は読まなくて構いません。
-- [これはいつどのように使われるか](docs/user/use-cases/overview.md) - シナリオ形式の読み物。
-    - [文房具ＵＩフレームワークをすぐ使いたい](docs/user/get-started/framework.md)
-	- **[スタイルデザイナーをすぐ使いたい — 最新のリリース](https://github.com/muzudho/StationeryUI/releases/latest)**：Assets からスタイル設定エディターの ZIP を入手。
-- [これはどのような製品か](docs/user/products.md)：エディターと文房具 UI の役割・対応範囲。
-- **[利用者向けドキュメント](docs/user/README.md)**：製品の説明、使われる場面、起動と操作。
+- [ＡＩエージェントの方はこちらをお読みください](docs/ai-agent/README.md) - 人間は読まなくて構いません。
 
-## 開発に貢献したい
+## 人間の方へ
 
-- [開発日誌 — 2026年9月](docs/dev/log/2026/09.md)：最新の活動の様子を見る。
-- **[開発者向けドキュメント](docs/dev/README.md)**：開発への案内。
+- 利用したい
+	- [これはいつどのように使われるか](docs/user/use-cases/overview.md) - シナリオ形式の読み物。
+		- [文房具ＵＩフレームワークをすぐ使いたい](docs/user/get-started/framework.md)
+		- **[スタイルデザイナーをすぐ使いたい — 最新のリリース](https://github.com/muzudho/StationeryUI/releases/latest)**：Assets からスタイル設定エディターの ZIP を入手。
+	- [これはどのような製品か](docs/user/products.md)：エディターと文房具 UI の役割・対応範囲。
+	- **[利用者向けドキュメント](docs/user/README.md)**：製品の説明、使われる場面、起動と操作。
+- 開発に貢献したい
+	- [開発日誌 — 2026年9月](docs/dev/log/2026/09.md)：最新の活動の様子を見る。
+	- **[開発者向けドキュメント](docs/dev/README.md)**：開発への案内。
 
 ## ライセンス
 
