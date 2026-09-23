@@ -15,17 +15,10 @@
 ## 利用したい
 
 - [これはいつどのように使われるか](docs/user/use-cases/overview.md) - シナリオ形式の読み物。
-	- **[すぐ使いたい — 最新のリリース](https://github.com/muzudho/StationeryUI/releases/latest)**：Assets からスタイル設定エディターの ZIP を入手。
+    - [文房具ＵＩフレームワークをすぐ使いたい](docs/user/get-started/framework.md)
+	- **[スタイルデザイナーをすぐ使いたい — 最新のリリース](https://github.com/muzudho/StationeryUI/releases/latest)**：Assets からスタイル設定エディターの ZIP を入手。
 - [これはどのような製品か](docs/user/products.md)：エディターと文房具 UI の役割・対応範囲。
 - **[利用者向けドキュメント](docs/user/README.md)**：製品の説明、使われる場面、起動と操作。
-
-## NuGet から組み込む方・AI エージェントへ
-
-パッケージを導入したら、まず [AI エージェント向け導入手順](docs/dev/nuget-agent-guide.md)を読んでください。F12 開発者ウィンドウの［指でつまむ］機能は、利用アプリ側でクリック判定・選択通知・桃色の枠の描画を接続する必要があります。
-
-別ウィンドウを操作中に背後のゲームが反応しないよう、`Game.IsActive` をすべての UI とゲーム側のマウス入力処理に反映してください。非アクティブ時の入力抑止と復帰時の扱いも、同梱の導入手順に記載しています。
-
-この手順と組み込みコードは NuGet パッケージ内の `docs/dev/` にも同梱します。インストール先の `<パッケージ ID>/<バージョン>/README.md` から参照できます。インストールしただけで AI が自動的に読む仕組みではないため、導入を担当するエージェントにはこの README と `docs/dev/nuget-agent-guide.md` を読むよう指示してください。
 
 ## 開発に貢献したい
 

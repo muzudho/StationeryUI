@@ -118,19 +118,19 @@ internal sealed partial class DesignerGame : Game
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
         gridEditorVisible = true;
         // Property panel above the grid editors
-        propNodeName = Text("propNodeName", new(12, 8, 524, 24), "文房具Ｉｄ: -");
-        propKind = Text("propKind", new(12, 32, 524, 24), "種類: -");
-        propPosition = Text("propPosition", new(12, 56, 524, 24), "コンテナー内の位置: -");
-        propLayout = Text("propLayout", new(12, 80, 524, 24), "コンテナーとしてのレイアウト: -");
+        propNodeName = Text("propNodeName", new(12, 8, 524, 32), "文房具Ｉｄ: -");
+        propKind = Text("propKind", new(12, 40, 524, 32), "種類: -");
+        propPosition = Text("propPosition", new(12, 72, 524, 32), "コンテナー内の位置: -");
+        propLayout = Text("propLayout", new(12, 104, 524, 32), "コンテナーとしてのレイアウト: -");
 
-        Text("columnTracksTitle", new(12, 112, 252, 36), "列の幅");
-        Text("rowTracksTitle", new(280, 112, 256, 36), "行の高さ");
-        Text("columnsLabel", new(12, 152, 88, 44), "列数");
-        columns = ui.AddTextBox("columns", new(104, 152, 160, 44), "列数", blueprint.Columns.Count.ToString());
-        Text("rowsLabel", new(280, 152, 88, 44), "行数");
-        rows = ui.AddTextBox("rows", new(372, 152, 164, 44), "行数", blueprint.Rows.Count.ToString());
+        Text("columnTracksTitle", new(12, 144, 252, 36), "列の幅");
+        Text("rowTracksTitle", new(280, 144, 256, 36), "行の高さ");
+        Text("columnsLabel", new(12, 184, 88, 44), "列数");
+        columns = ui.AddTextBox("columns", new(104, 184, 160, 44), "列数", blueprint.Columns.Count.ToString());
+        Text("rowsLabel", new(280, 184, 88, 44), "行数");
+        rows = ui.AddTextBox("rows", new(372, 184, 164, 44), "行数", blueprint.Rows.Count.ToString());
         // Tracks start below the property and header area
-        var trackBaseY = 204;
+        var trackBaseY = 236;
         for (var c = 0; c < blueprint.Columns.Count; c++)
         {
             Text($"columnIndex{c}", new(12, trackBaseY + c * 44, 36, 40), (c + 1).ToString());
@@ -141,7 +141,7 @@ internal sealed partial class DesignerGame : Game
             Text($"rowIndex{r}", new(280, trackBaseY + r * 44, 36, 40), (r + 1).ToString());
             AddTrack(blueprint.Rows[r], $"row{r}", new(372, trackBaseY + r * 44, 164, 40), $"行 {r + 1} の高さ");
         }
-        BuildGridInsetsEditor(new(12, 480 + 104, 524, 226));
+        BuildGridInsetsEditor(new(12, 480 + 128, 524, 226));
         BuildLivePreviewHeader();
         BuildSidebar();
     }

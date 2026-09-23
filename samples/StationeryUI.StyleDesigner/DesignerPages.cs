@@ -177,35 +177,13 @@ internal sealed partial class DesignerGame
             if (semanticTree.Select(semanticLayoutPath)) revealLayout = null;
         }
         else if (previous is not null) semanticTree.Select(previous);
-        // Create a copy of the semantic tree that shows only the local node name (nodeName) as the label
-        TreeView CloneWithNodeNames(TreeView src)
+        foreach (var row in semanticTree.Tree.VisibleRows())
         {
-            var next = new TreeView { SelectOnInteraction = src.SelectOnInteraction };
-            TreeItem? FindInNext(TreeItem? parent, string id)
-            {
-                if (parent is null) return next.Roots.FirstOrDefault(r => r.Id == id);
-                return parent.Children.FirstOrDefault(c => c.Id == id);
-            }
-            TreeItem? AddRec(TreeItem item, TreeItem? parent)
-            {
-                var path = semanticTree.PathFor(item);
-                var nodeName = path is not null ? enriched.FirstOrDefault(e => e.Path == path)?.Id ?? item.Label : item.Label;
-                var added = next.AddNode(item.Id, nodeName, parent, item.IsExpanded);
-                foreach (var child in item.Children) AddRec(child, added);
-                return added;
-            }
-            foreach (var root in src.Roots) AddRec(root, null);
-            // restore target/selection if possible
-            if (src.TargetItem is { } target)
-            {
-                var match = next.Roots.SelectMany(r => r.Children.Prepend(r)).FirstOrDefault(i => i.Id == target.Id);
-                if (match is not null) next.SetTarget(match);
-            }
-            return next;
+            var path = semanticTree.PathFor(row.Item);
+            if (path is not null)
+                row.Item.Label = enriched.FirstOrDefault(entry => entry.Path == path)?.Id ?? row.Item.Label;
         }
-
-        var simpleTree = CloneWithNodeNames(semanticTree.Tree);
-        sidebar!.ReplaceTree(styleTree!, simpleTree);
+        sidebar!.ReplaceTree(styleTree!, semanticTree.Tree);
         treePaths.Clear(); treeLayouts.Clear();
         var rootLayouts = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var binding in snapshot.Settings.Bindings)
@@ -286,6 +264,7 @@ internal sealed partial class DesignerGame
         UpdateTreeActions();
         if (selected == lastTreeSelection) return;
         lastTreeSelection = selected;
+        UpdatePropertyPanel();
         var layoutId = DirectLayoutTargetId;
         if (layoutId is null)
         {
@@ -308,7 +287,6 @@ internal sealed partial class DesignerGame
             selectedRow = selectedColumn = 0; rebuild = true;
             message = blueprint.CanEditPanel ? $"編集中：{layoutId}。四辺の margin・padding を指定できます。border は padding 上に表示されます。"
                 : $"編集中：{layoutId}。行・列のサイズを変更できます。既存モデルの種類・配置は保持します。";
-            UpdatePropertyPanel();
         });
     }
 
