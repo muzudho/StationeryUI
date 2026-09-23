@@ -294,7 +294,7 @@ Height = 20px （垂直の controlLength）
 ┌── ViewPort = RootNode Bounds Width 800px ────────┐
 │Padding All 10 pixels   　　　　　　　　　　　　　　　　　　│
 │　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Height 600px
-│　┌─ ChildNode ContentSize Width 780px ──────┐　　 │
+│　┌─ RootNode's ContentSize Width 780px  ─────┐　　 │
 │　│Margin All 20 pixels　　　　　　　　　　　　　　 │　　 │
 │　│　　　　　　　　　　　　　　　　　　　　　　　　 Height 580px
 │　│　┌─ Child Node Bounds Width 740px ──┐　　　│　　 │
@@ -312,10 +312,10 @@ Height = 20px （垂直の controlLength）
 例えば、ビューポートのサイズが 800px x 600px の場合、ルートノードの Bounds は 800px x 600px です。  
 ルートノードに Margin は有りません。  
 
-ルートノードの Bounds から、Padding を引いた残りが、子ノードのコンテントサイズになります。  
-例えば、ルートノードの四方の Padding が 10px の場合、子ノードのコンテントサイズは 780px x 580px です。  
+ルートノードの Bounds から、Padding を引いた残りが、ルートノードのコンテントサイズになります。  
+例えば、ルートノードの四方の Padding が 10px の場合、ルートノードのコンテントサイズは 780px x 580px です。  
 
-子ノードのコンテントサイズから、子ノードの Margin を引いた残りが、子ノードの Bounds になります。  
+ルートノードのコンテントサイズから、子ノードの Margin を引いた残りが、子ノードの Bounds になります。  
 例えば、子ノードの四方の Margin が 20px の場合、子ノードの Bounds は 740px x 540px です。  
 
 あとは繰り返しです。  
