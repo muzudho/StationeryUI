@@ -14,12 +14,10 @@
 
 ## 利用したい
 
-配布物を使う方は、こちらからお読みください。
-
-- **[すぐ使いたい — 最新のリリース](https://github.com/muzudho/StationeryUI/releases/latest)**：Assets からスタイル設定エディターの ZIP を入手。
-- **[利用者向けドキュメント](docs/user/README.md)**：製品の説明、使われる場面、起動と操作。
-- [これはいつどのように使われるか](docs/user/style-settings/use-case.md)：人間と AI が画面の調整を分担するシナリオ。
+- [これはいつどのように使われるか](docs/user/style-settings/use-case.md) - シナリオ形式の読み物。
+	- **[すぐ使いたい — 最新のリリース](https://github.com/muzudho/StationeryUI/releases/latest)**：Assets からスタイル設定エディターの ZIP を入手。
 - [これはどのような製品か](docs/user/products.md)：エディターと文房具 UI の役割・対応範囲。
+- **[利用者向けドキュメント](docs/user/README.md)**：製品の説明、使われる場面、起動と操作。
 
 ## NuGet から組み込む方・AI エージェントへ
 
