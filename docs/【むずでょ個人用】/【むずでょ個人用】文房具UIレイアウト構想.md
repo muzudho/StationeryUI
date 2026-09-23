@@ -62,7 +62,7 @@ X, Y は、基本的にビューポート内での相対座標だ。
 
 ```plaintext
 "margin" : {
-	"top:" : "10px",
+	"top" : "10px",
 	"right" : "20px",
 	"bottom" : "30px",
 	"left" : "40px"
@@ -78,7 +78,7 @@ X, Y は、基本的にビューポート内での相対座標だ。
 		"left" : "10px"
 	},
 	"vertical": {
-		"top:" : "10px",
+		"top" : "10px",
 		"bottom" : "10px"
 	},
 }
