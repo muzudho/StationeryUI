@@ -20,8 +20,9 @@
 
 - 利用したい
 	- [これはいつどのように使われるか](docs/user/use-cases/overview.md) - シナリオ形式の読み物。
-		- [文房具ＵＩフレームワークをすぐ使いたい](docs/user/get-started/framework.md)
-		- **[スタイルデザイナーをすぐ使いたい — 最新のリリース](https://github.com/muzudho/StationeryUI/releases/latest)**：Assets からスタイル設定エディターの ZIP を入手。
+	- すぐ使いたい
+		- ［文房具ＵＩフレームワーク］ - AI エージェントにこのリポジトリーを読ませてください。
+		- **[スタイルデザイナー](https://github.com/muzudho/StationeryUI/releases/latest)** - リリースページから ZIP を入手。
 	- [これはどのような製品か](docs/user/products.md)：エディターと文房具 UI の役割・対応範囲。
 	- **[利用者向けドキュメント](docs/user/README.md)**：製品の説明、使われる場面、起動と操作。
 - 開発に貢献したい
