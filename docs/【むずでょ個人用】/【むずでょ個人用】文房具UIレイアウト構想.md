@@ -134,12 +134,17 @@ X, Y は、基本的にビューポート内での相対座標だ。
 			* 垂直方向なら `Top` と `Bottom`。
 		* alignType 型
 			* `controlLength` - コントロールの横幅（水平方向の場合）または縦幅（垂直方向の場合）
+				* 制約 - `controlLength` が コンテントサイズを超えた場合、 `Error` ラベル表示とします。
 			* `align` - 寄せる位置です。以下の５つのいずれかを指定します。
 				* `top` - 上寄せ。余白のすべてを下側に配分します。
 				* `right` - 右寄せ。余白のすべてを左側に配分します。
 				* `bottom` - 下寄せ。余白のすべてを上側に配分します。
 				* `left` - 左寄せ。余白のすべてを右側に配分します。
 				* `center` - 中央寄せ。余白を左右または上下に均等に配分します。
+				* 制約 - `horizontal`  では、`left`, `right`, `center` だけ指定できます。
+				* 制約 - `vertical`  では、`top`, `bottom`, `center` だけ指定できます。
+* 制約 - `Left`, `Right` と、`Horizontal` は同時に指定できません。
+* 制約 - `Top`, `Bottom` と、`Vertical` は同時に指定できません。
 
 ### Padding プロパティ
 
@@ -171,14 +176,12 @@ X, Y は、基本的にビューポート内での相対座標だ。
 以下の３つの種類があります。  
 
 * ボックス・レイアウト（BoxLayout） - 子要素を０～１つ持つ。
+	* 詳しくは： 📖 [layouts セクションのボックス・レイアウト](../dev/structure/style-settings-file/layouts/box-layout.md)
 * グリッド・レイアウト（GridLayout） - 行と列を持つ。子要素を０～複数持つ。
+	* 詳しくは： 📖 [layouts セクションのグリッド・レイアウト](../dev/structure/style-settings-file/layouts/grid-layout.md)
 * ドック・レイアウト（DockLayout） - 四辺と中央に子要素を積む。四辺には０～複数個積める。中央は子要素を０～１個持つ。
+	* 詳しくは： 📖 [layouts セクションのドック・レイアウト](../dev/structure/style-settings-file/layouts/dock-layout.md)
 
-詳しくは、それぞれの記事を参照してください。  
-
-* 📖 [layouts セクションのボックス・レイアウト](../dev/structure/style-settings-file/layouts/box-layout.md)
-* 📖 [layouts セクションのグリッド・レイアウト](../dev/structure/style-settings-file/layouts/grid-layout.md)
-* 📖 [layouts セクションのドック・レイアウト](../dev/structure/style-settings-file/layouts/dock-layout.md)
 
 ## レイアウトツリー
 
