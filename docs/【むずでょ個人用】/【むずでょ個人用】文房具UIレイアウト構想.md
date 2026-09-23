@@ -27,9 +27,9 @@ X, Y は、基本的にビューポート内での相対座標だ。
 
 * `Margin` - 外側の余白。
 * `Padding` - 内側の余白。
-* `CellCollection` - 子ノードのコレクション
+* `Cells` - 子ノードのコレクション
 
-### Margin
+### Margin プロパティ
 
 まず、 JSON 設定方法を示します。
 
@@ -99,7 +99,6 @@ X, Y は、基本的にビューポート内での相対座標だ。
 		* `Bottom`
 	* 単位は
 		* `px` - ピクセル
-		* `rate` - 比
 * `Axes` - ２軸指定系
 	* メンバーは以下の２つ。
 		* `Horizontal` - 水平方向
@@ -117,4 +116,42 @@ X, Y は、基本的にビューポート内での相対座標だ。
 				* `left` - 左寄せ
 				* `center` - 中央寄せ
 
+## Padding プロパティ
+
+まず、 JSON 設定方法を示します。  
+
+```json
+{
+	"top:" : "10px",
+	"right" : "20px",
+	"bottom" : "30px",
+	"left" : "40px"
+}
+```
+
+解説：  
+
+* メンバーは以下の４つ。	
+	* `Left`
+	* `Top`
+	* `Right`
+	* `Bottom`
+* 単位は
+	* `px` - ピクセル
+* 省略すると 0px になります。
+
+## Cells プロパティ
+
+いわゆる `ChildNodes` に相当します。  
+以下の３つの種類があります。  
+
+* ボックス・レイアウト（BoxLayout） - 子要素を０～１つ持つ。
+* グリッド・レイアウト（GridLayout） - 行と列を持つ。子要素を０～複数持つ。
+* ドック・レイアウト（DockLayout） - 四辺と中央に子要素を積む。四辺には０～複数個積める。中央は子要素を０～１個持つ。
+
+詳しくは、それぞれの記事を参照してください。  
+
+* 📖 [layouts セクションのボックス・レイアウト](../dev/structure/style-settings-file/layouts/box-layout.md)
+* 📖 [layouts セクションのグリッド・レイアウト](../dev/structure/style-settings-file/layouts/grid-layout.md)
+* 📖 [layouts セクションのドック・レイアウト](../dev/structure/style-settings-file/layouts/dock-layout.md)
 
