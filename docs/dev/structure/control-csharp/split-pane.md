@@ -1,4 +1,4 @@
-# スプリットペーンの組み込み
+# スプリットペーン
 
 ## C# で利用する
 
@@ -9,5 +9,3 @@ BindSplitContent(splitElement, firstElement, secondElement) で接続する。
 Element.Split.Configure に SplitPaneOptions を渡すことでスタイルの更新を反映できる。
 
 下線付きリンクは StationeryUiHost.AddLink で追加できる。クリックと Enter / Space はゲームスレッドでコールバックを実行する。
-
-[開発者向け目次](README.md)
