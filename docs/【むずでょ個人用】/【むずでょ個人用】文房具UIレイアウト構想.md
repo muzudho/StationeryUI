@@ -260,8 +260,8 @@ Height = 20px （垂直の controlLength）
 {
     "bindings": {
 		"viewPort": "root:viewPort",
-		"topDemoPage": "root:viewPort/inbox:topDemoPage",
-		"nameField": "root:viewPort/inbox:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu"
+		"topDemoPage": "root:viewPort/single:topDemoPage",
+		"nameField": "root:viewPort/single:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu"
 	}
 }
 ```
