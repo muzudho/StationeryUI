@@ -221,7 +221,7 @@ Height = 20px （垂直の controlLength）
 
 ```plaintext
 * root: viewPort - BoxLayout
-	* inbox: topDemoPage - DockLayout
+	* center: topDemoPage - DockLayout
 		* top: applicationBar
 		* center: mainContent - GridLayout
 			* 1y.1x.1w.1h: leftMenu - BoxLayout
@@ -241,7 +241,7 @@ Height = 20px （垂直の controlLength）
 `viewPort` は、ノードの名前です。  
 `BoxLayout` は、レイアウトの種類です。  
 
-`inbox:` は、ボックスレイアウトが持つ唯一の子ノードを示します。  
+ボックスレイアウトは、 `center:` が唯一の子ノードを示します。  
 
 `top:` は、ドックレイアウトが持つ上側の子ノードを示します。  
 他に、`right:`, `bottom:`, `left:`, `center:` も同様です。  
