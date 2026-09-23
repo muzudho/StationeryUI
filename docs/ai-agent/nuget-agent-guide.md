@@ -1,4 +1,4 @@
-# NuGet を導入する AI エージェント向け手順
+# AI エージェント向け　＞　NuGet を導入する手順
 
 文房具 UI を他のリポジトリーへ組み込む際は、パッケージ参照の追加に続いて以下を確認してください。この文書は `StationeryUI`、`StationeryUI.MonoGame`、`StationeryUI.Windows` の各 NuGet パッケージへ同梱します。
 
@@ -9,8 +9,8 @@
 同梱資料は、そのパッケージを作成した時点の内容です。以下を順に参照してください。
 
 1. [ライブラリーの組み込み](library-integration.md)：基本の初期化・入力・描画と、［指でつまむ］機能のコード例。
-2. [開発者ウィンドウ](developer-window.md)：`--stationery-inspector <パイプ名>` を処理する別プロセスのホストと通信。
-3. [モデルと検査情報の接続](model-inspection.md)：検査対象の登録、完全パス、複数ホストの検査ツリー。
+2. [開発者ウィンドウ](dev/products/developer-window/README.md)：`--stationery-inspector <パイプ名>` を処理する別プロセスのホストと通信。
+3. [モデルと検査情報の接続](dev/products/developer-window/layout-inspector.md)：検査対象の登録、完全パス、複数ホストの検査ツリー。
 
 これらの資料が参照する追加資料やデモソースは、[ソースリポジトリー](https://github.com/muzudho/StationeryUI)で導入版に対応するタグを開いて確認してください。パッケージキャッシュ内のファイルを編集せず、接続コードは利用アプリのリポジトリーへ追加します。
 
@@ -39,7 +39,7 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 
 ## ドック配置と設定エラー
 
-`dock-layout` を使う場合は [ドック配置の設定例](../style-settings/dock-layout.md)を読んでください。レイアウトの各 `cells` に `dock` / `size` を設定し、`center` には `remaining` を指定します。エラー時に代替配置する `StationeryStyleFile` を使うアプリは、子の描画後に `ui.DrawLayoutErrors(layoutResult)` を呼び、`LastError` と F12 の検査情報も更新してください。JSON 自体の構文エラーなどは直前の状態を維持します。
+`dock-layout` を使う場合は [ドック配置の設定例](../dev/structure/style-settings-file/layouts/dock-layout.md)を読んでください。レイアウトの各 `cells` に `dock` / `size` を設定し、`center` には `remaining` を指定します。エラー時に代替配置する `StationeryStyleFile` を使うアプリは、子の描画後に `ui.DrawLayoutErrors(layoutResult)` を呼び、`LastError` と F12 の検査情報も更新してください。JSON 自体の構文エラーなどは直前の状態を維持します。
 
 ## ツリーへレイアウト情報を渡す
 
