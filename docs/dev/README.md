@@ -30,7 +30,7 @@
 - [エディターのオートセーブ](style-designer-autosave.md)
 - [検証記録](validation.md)
 - 構造
-	- [*.style-settings.json ファイルの作り方](structure/control-settings-file/README.md)
+	- [*.style-settings.json ファイルの作り方](structure/style-settings-file/layouts/README.md)
 
 ## 配布する
 
