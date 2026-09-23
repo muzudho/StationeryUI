@@ -124,7 +124,7 @@ X, Y は、基本的にビューポート内での相対座標だ。
 
 ```json
 {
-	"top:" : "10px",
+	"top" : "10px",
 	"right" : "20px",
 	"bottom" : "30px",
 	"left" : "40px"
