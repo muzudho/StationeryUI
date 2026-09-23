@@ -117,23 +117,31 @@ internal sealed partial class DesignerGame : Game
         }
         if (!blueprint.CanEditGrid) { BuildReadOnly(); return; }
         gridEditorVisible = true;
-        Text("columnTracksTitle", new(12, 8, 252, 36), "列の幅");
-        Text("rowTracksTitle", new(280, 8, 256, 36), "行の高さ");
-        Text("columnsLabel", new(12, 48, 88, 44), "列数");
-        columns = ui.AddTextBox("columns", new(104, 48, 160, 44), "列数", blueprint.Columns.Count.ToString());
-        Text("rowsLabel", new(280, 48, 88, 44), "行数");
-        rows = ui.AddTextBox("rows", new(372, 48, 164, 44), "行数", blueprint.Rows.Count.ToString());
+        // Property panel above the grid editors
+        propNodeName = Text("propNodeName", new(12, 8, 524, 24), "文房具Ｉｄ: -");
+        propKind = Text("propKind", new(12, 32, 524, 24), "種類: -");
+        propPosition = Text("propPosition", new(12, 56, 524, 24), "コンテナー内の位置: -");
+        propLayout = Text("propLayout", new(12, 80, 524, 24), "コンテナーとしてのレイアウト: -");
+
+        Text("columnTracksTitle", new(12, 112, 252, 36), "列の幅");
+        Text("rowTracksTitle", new(280, 112, 256, 36), "行の高さ");
+        Text("columnsLabel", new(12, 152, 88, 44), "列数");
+        columns = ui.AddTextBox("columns", new(104, 152, 160, 44), "列数", blueprint.Columns.Count.ToString());
+        Text("rowsLabel", new(280, 152, 88, 44), "行数");
+        rows = ui.AddTextBox("rows", new(372, 152, 164, 44), "行数", blueprint.Rows.Count.ToString());
+        // Tracks start below the property and header area
+        var trackBaseY = 204;
         for (var c = 0; c < blueprint.Columns.Count; c++)
         {
-            Text($"columnIndex{c}", new(12, 100 + c * 44, 36, 40), (c + 1).ToString());
-            AddTrack(blueprint.Columns[c], $"column{c}", new(104, 100 + c * 44, 160, 40), $"列 {c + 1} の幅");
+            Text($"columnIndex{c}", new(12, trackBaseY + c * 44, 36, 40), (c + 1).ToString());
+            AddTrack(blueprint.Columns[c], $"column{c}", new(104, trackBaseY + c * 44, 160, 40), $"列 {c + 1} の幅");
         }
         for (var r = 0; r < blueprint.Rows.Count; r++)
         {
-            Text($"rowIndex{r}", new(280, 100 + r * 44, 36, 40), (r + 1).ToString());
-            AddTrack(blueprint.Rows[r], $"row{r}", new(372, 100 + r * 44, 164, 40), $"行 {r + 1} の高さ");
+            Text($"rowIndex{r}", new(280, trackBaseY + r * 44, 36, 40), (r + 1).ToString());
+            AddTrack(blueprint.Rows[r], $"row{r}", new(372, trackBaseY + r * 44, 164, 40), $"行 {r + 1} の高さ");
         }
-        BuildGridInsetsEditor(new(12, 480, 524, 226));
+        BuildGridInsetsEditor(new(12, 480 + 104, 524, 226));
         BuildLivePreviewHeader();
         BuildSidebar();
     }

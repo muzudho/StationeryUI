@@ -6,6 +6,7 @@ using StationeryUI.MonoGame;
 using StationeryUI.StyleDesigner;
 using StationeryUI.Styling;
 using StationeryUI.Windows;
+using System.Linq;
 using System.Text.Json.Nodes;
 
 internal sealed partial class DesignerGame
@@ -14,6 +15,7 @@ internal sealed partial class DesignerGame
     private Action? pendingPage;
     private StationeryUiHost? sidebar;
     private StationeryUiHost.Element? styleTree;
+    private StationeryUiHost.Element? propNodeName, propKind, propPosition, propLayout;
     private StationeryUiHost.Element? modelTreeModeButton, layoutTreeModeButton, jsonTreeModeButton;
     private readonly DeveloperInspectionModel semanticTree = new();
     private DesignerTreeMode designerTreeMode = DesignerTreeMode.Layout;
@@ -175,7 +177,35 @@ internal sealed partial class DesignerGame
             if (semanticTree.Select(semanticLayoutPath)) revealLayout = null;
         }
         else if (previous is not null) semanticTree.Select(previous);
-        sidebar!.ReplaceTree(styleTree!, semanticTree.Tree);
+        // Create a copy of the semantic tree that shows only the local node name (nodeName) as the label
+        TreeView CloneWithNodeNames(TreeView src)
+        {
+            var next = new TreeView { SelectOnInteraction = src.SelectOnInteraction };
+            TreeItem? FindInNext(TreeItem? parent, string id)
+            {
+                if (parent is null) return next.Roots.FirstOrDefault(r => r.Id == id);
+                return parent.Children.FirstOrDefault(c => c.Id == id);
+            }
+            TreeItem? AddRec(TreeItem item, TreeItem? parent)
+            {
+                var path = semanticTree.PathFor(item);
+                var nodeName = path is not null ? enriched.FirstOrDefault(e => e.Path == path)?.Id ?? item.Label : item.Label;
+                var added = next.AddNode(item.Id, nodeName, parent, item.IsExpanded);
+                foreach (var child in item.Children) AddRec(child, added);
+                return added;
+            }
+            foreach (var root in src.Roots) AddRec(root, null);
+            // restore target/selection if possible
+            if (src.TargetItem is { } target)
+            {
+                var match = next.Roots.SelectMany(r => r.Children.Prepend(r)).FirstOrDefault(i => i.Id == target.Id);
+                if (match is not null) next.SetTarget(match);
+            }
+            return next;
+        }
+
+        var simpleTree = CloneWithNodeNames(semanticTree.Tree);
+        sidebar!.ReplaceTree(styleTree!, simpleTree);
         treePaths.Clear(); treeLayouts.Clear();
         var rootLayouts = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var binding in snapshot.Settings.Bindings)
@@ -198,6 +228,7 @@ internal sealed partial class DesignerGame
         }
         treeJson = lastValidTreeJson = json;
         UpdateTreeActions();
+        UpdatePropertyPanel();
     }
 
     private void RefreshJsonTree(string json)
@@ -246,6 +277,7 @@ internal sealed partial class DesignerGame
         }
         if (restore is not null) next.SetTarget(restore);
         sidebar!.ReplaceTree(styleTree, next); treeJson = lastValidTreeJson = json;
+        UpdatePropertyPanel();
     }
 
     private void HandleTreeSelection()
@@ -276,7 +308,36 @@ internal sealed partial class DesignerGame
             selectedRow = selectedColumn = 0; rebuild = true;
             message = blueprint.CanEditPanel ? $"編集中：{layoutId}。四辺の margin・padding を指定できます。border は padding 上に表示されます。"
                 : $"編集中：{layoutId}。行・列のサイズを変更できます。既存モデルの種類・配置は保持します。";
+            UpdatePropertyPanel();
         });
+    }
+
+    private void UpdatePropertyPanel()
+    {
+        if (propNodeName is null) return;
+        var entry = semanticTree.SelectedEntry;
+        if (entry is null)
+        {
+            propNodeName.Label = "文房具Ｉｄ: -";
+            propKind!.Label = "種類: -";
+            propPosition!.Label = "コンテナー内の位置: -";
+            propLayout!.Label = "コンテナーとしてのレイアウト: -";
+            return;
+        }
+        propNodeName.Label = $"文房具Ｉｄ: {entry.Id}";
+        propKind!.Label = $"種類: {entry.Kind}";
+        var position = entry.Cell is { } cell
+            ? FormattableString.Invariant($"col={cell.Column}, row={cell.Row}, colspan={cell.ColumnSpan}, rowspan={cell.RowSpan}")
+            : "-";
+        propPosition!.Label = $"コンテナー内の位置: {position}";
+        var layout = entry.LayoutTypes is { Count: > 0 } ?
+            string.Join(", ", entry.LayoutTypes!.Select(t => t switch {
+                "grid-layout" => "gridLayout",
+                "box-layout" => "boxLayout",
+                "dock-layout" => "dockLayout",
+                _ => t
+            })) : "-";
+        propLayout!.Label = $"コンテナーとしてのレイアウト: {layout}";
     }
 
     private string ImportedCellDescription(int row, int column)
