@@ -23,8 +23,9 @@ X, Y は、基本的にビューポート内での相対座標だ。
 １つのツリー構造になっている。  
 ノードのことを［レイアウトノード］（ `LayoutNode` ）と呼ぶことにする。  
 
-［レイアウトノード］は、抜粋すると以下の３つを持つ。  
+［レイアウトノード］は、抜粋すると以下の４つを持つ。  
 
+* `Name` - ノードの名前。
 * `Margin` - 外側の余白。
 * `Padding` - 内側の余白。
 * `Cells` - 子ノードのコレクション
@@ -116,7 +117,7 @@ X, Y は、基本的にビューポート内での相対座標だ。
 				* `left` - 左寄せ
 				* `center` - 中央寄せ
 
-## Padding プロパティ
+### Padding プロパティ
 
 まず、 JSON 設定方法を示します。  
 
@@ -140,7 +141,7 @@ X, Y は、基本的にビューポート内での相対座標だ。
 	* `px` - ピクセル
 * 省略すると 0px になります。
 
-## Cells プロパティ
+### Cells プロパティ
 
 いわゆる `ChildNodes` に相当します。  
 以下の３つの種類があります。  
@@ -155,3 +156,42 @@ X, Y は、基本的にビューポート内での相対座標だ。
 * 📖 [layouts セクションのグリッド・レイアウト](../dev/structure/style-settings-file/layouts/grid-layout.md)
 * 📖 [layouts セクションのドック・レイアウト](../dev/structure/style-settings-file/layouts/dock-layout.md)
 
+## レイアウトツリー
+
+［レイアウトノード］に［レイアウト］を指定し、子要素の［レイアウトノード］をぶら下げると、  
+ツリー構造になります。  
+
+例：  
+
+```plaintext
+* (root) viewPort - BoxLayout
+	* (inbox) topDemoPage - DockLayout
+		* (top) applicationBar
+		* (center) mainContent - GridLayout
+			* (1y 1x 1w 1h) leftMenu - BoxLayout
+			* (1y 2x 2w 1h) rightContent - BoxLayout
+		* (bottom) inspectorPanel - BoxLayout
+```
+
+👆　上記の１行が［レイアウトノード］です。  
+
+解説：  
+
+```plaintext
+* (root) `viewPort` - BoxLayout
+```
+
+👆　`(root)` は、最上位のノードを示します。  
+`viewPort` は、ノードの名前です。  
+`BoxLayout` は、レイアウトの種類です。  
+
+`(inbox)` は、ボックスレイアウトが持つ唯一の子ノードを示します。  
+
+`(top)` は、ドックレイアウトが持つ上側の子ノードを示します。  
+他に、`(right)`, `(bottom)`, `(left)`, `(center)` も同様です。  
+
+`(1y 1x 1w 1h)` は、グリッドレイアウトが持つ子ノードの位置とサイズを示します。  
+`1y` は、上から１行目に配置することを意味します。  
+`1x` は、左から１列目に配置することを意味します。  
+`1w` は、横幅が１列分であることを意味します。  
+`1h` は、縦幅が１行分であることを意味します。
