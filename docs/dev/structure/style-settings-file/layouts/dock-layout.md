@@ -1,7 +1,7 @@
-# ドック・レイアウト
+# layouts セクションのドック・レイアウト
 
 こちらも参照：  
-📖 [ドック・レイアウト（詳細）](./dock-layout-detail.md)  
+📖 [layouts セクションのドック・レイアウト（詳細）](./dock-layout-detail.md)  
 
 
 ## JSON 設定例
