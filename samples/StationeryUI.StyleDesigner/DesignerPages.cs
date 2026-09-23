@@ -293,7 +293,9 @@ internal sealed partial class DesignerGame
     private void UpdatePropertyPanel()
     {
         if (propNodeName is null) return;
-        var entry = semanticTree.SelectedEntry;
+        var entry = designerTreeMode == DesignerTreeMode.Json
+            ? null
+            : semanticTree.EntryFor(styleTree?.Tree?.TargetItem);
         if (entry is null)
         {
             propNodeName.Label = "文房具Ｉｄ: -";

@@ -14,6 +14,7 @@
 
 ## 利用したい
 
+- [ＡＩエージェントの方はこちらをお読みください](docs/user/ai-agent-guide/README.md) - 人間は読まなくて構いません。
 - [これはいつどのように使われるか](docs/user/use-cases/overview.md) - シナリオ形式の読み物。
     - [文房具ＵＩフレームワークをすぐ使いたい](docs/user/get-started/framework.md)
 	- **[スタイルデザイナーをすぐ使いたい — 最新のリリース](https://github.com/muzudho/StationeryUI/releases/latest)**：Assets からスタイル設定エディターの ZIP を入手。

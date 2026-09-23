@@ -1,9 +1,10 @@
-# dockLayout — 配列順に四辺を確保する
+# dockLayout
 
-JSON の型名は `dock-layout`、開発者ウィンドウでの表示名は `dockLayout` です。`work-page-layout` は互換性のため残ります。
+配列順に四辺を確保する  
 
-
-
+* JSON の型名： `dock-layout`
+* 開発者ウィンドウでの表示名は `dockLayout` です。
+* 下位互換： `work-page-layout` 要素
 
 ## cells と slots
 

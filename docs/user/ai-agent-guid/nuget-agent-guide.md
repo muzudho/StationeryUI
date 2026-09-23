@@ -39,7 +39,7 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 
 ## ドック配置と設定エラー
 
-`dock-layout` を使う場合は [ドック配置の設定例](dock-layout.md)を読んでください。レイアウトの各 `cells` に `dock` / `size` を設定し、`center` には `remaining` を指定します。エラー時に代替配置する `StationeryStyleFile` を使うアプリは、子の描画後に `ui.DrawLayoutErrors(layoutResult)` を呼び、`LastError` と F12 の検査情報も更新してください。JSON 自体の構文エラーなどは直前の状態を維持します。
+`dock-layout` を使う場合は [ドック配置の設定例](../style-settings/dock-layout.md)を読んでください。レイアウトの各 `cells` に `dock` / `size` を設定し、`center` には `remaining` を指定します。エラー時に代替配置する `StationeryStyleFile` を使うアプリは、子の描画後に `ui.DrawLayoutErrors(layoutResult)` を呼び、`LastError` と F12 の検査情報も更新してください。JSON 自体の構文エラーなどは直前の状態を維持します。
 
 ## ツリーへレイアウト情報を渡す
 

@@ -41,6 +41,8 @@ public sealed class DeveloperInspectionModel
     public string? SelectedPath => Tree.SelectedItem is { } item ? paths.GetValueOrDefault(item) : null;
     public StationeryInspectionEntry? SelectedEntry => SelectedPath is { } path ? entries.GetValueOrDefault(path) : null;
     public string? PathFor(TreeItem item) => paths.GetValueOrDefault(item);
+    public StationeryInspectionEntry? EntryFor(TreeItem? item)
+        => item is not null && paths.TryGetValue(item, out var path) ? entries.GetValueOrDefault(path) : null;
 
     public void Refresh(IReadOnlyList<StationeryInspectionEntry> snapshot)
     {

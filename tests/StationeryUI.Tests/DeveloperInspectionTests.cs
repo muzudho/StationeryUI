@@ -78,6 +78,10 @@ internal static class DeveloperInspectionTests
         Check(model.Tree.SelectedItem!.Label == "(demoPage : Page) (- : gridLayout)", "layout owner label and serialization");
         model.Select("/demo/demoPage/btn123");
         Check(model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 0, 3, 2 : -)", "column row column-span row-span order");
+        model.Tree.ClearSelection();
+        Check(model.EntryFor(model.Tree.TargetItem)?.Id == "btn123" && model.SelectedEntry is null,
+            "inspection entry resolves from the actual tree target");
+        model.Select("/demo/demoPage/btn123");
         Check(model.Tree.SelectedItem!.Parent!.Label == "(demoPage : Page) (- : gridLayout)", "root layout merged into owning model");
         Check(model.Tree.VisibleRows().Count == 3, "one row per model without duplicate root layout");
         Check(model.Select("/demo/demoPage:/grid") && model.SelectedPath == "/demo/demoPage", "legacy root selection resolves to owner");
