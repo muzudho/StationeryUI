@@ -117,10 +117,11 @@ internal static class StationeryControlBindingResolver
         }
         Index(root, "");
 
-        var routeCache = new Dictionary<string, string?>(StringComparer.Ordinal);
-        bool TryRoute(string modelPath, out string route)
+        var routeCache = new Dictionary<(string ModelPath, bool IncludeLayoutIds), string?>();
+        bool TryRoute(string modelPath, out string route, bool includeLayoutIds = false)
         {
-            if (routeCache.TryGetValue(modelPath, out var cached))
+            var cacheKey = (modelPath, includeLayoutIds);
+            if (routeCache.TryGetValue(cacheKey, out var cached))
             {
                 route = cached ?? "";
                 return cached is not null;
@@ -128,19 +129,37 @@ internal static class StationeryControlBindingResolver
             var parentPath = modelParents[modelPath];
             if (parentPath is null)
             {
-                routeCache[modelPath] = "root";
+                routeCache[cacheKey] = "root";
                 route = "root";
                 return true;
             }
-            if (!TryRoute(parentPath, out var parentRoute) || !TryPlacementRoute(parentPath, modelPath, out var placementRoute))
+            if (!TryRoute(parentPath, out var parentRoute, includeLayoutIds) || !TryPlacementRoute(parentPath, modelPath, out var placementRoute))
             {
-                routeCache[modelPath] = null;
+                routeCache[cacheKey] = null;
                 route = "";
                 return false;
             }
-            route = parentRoute + ":" + modelIds[parentPath] + "/" + placementRoute;
-            routeCache[modelPath] = route;
+            var layoutId = includeLayoutIds
+                ? placements.Where(binding => binding.ModelPath == parentPath && PlacementRouteUsesLayout(binding, modelPath))
+                    .Select(binding => RootLayoutId(binding.Layout))
+                    .Distinct(StringComparer.Ordinal).SingleOrDefault()
+                : null;
+            route = parentRoute + ":" + modelIds[parentPath] + (layoutId is null ? "" : "@" + layoutId) + "/" + placementRoute;
+            routeCache[cacheKey] = route;
             return true;
+        }
+
+        bool PlacementRouteUsesLayout(StationeryLayoutBinding placement, string childPath)
+            => placement.Children.Any(child => child.ModelPath == childPath)
+                || placement.FirstModel == childPath || placement.SecondModel == childPath
+                || placement.InspectorModel == childPath
+                || placement.DockChildren.Any(child => child.ModelPath == childPath);
+
+        string RootLayoutId(string layoutPath)
+        {
+            var layout = layouts[layoutPath];
+            while (layout.ParentPath is { } parentPath) layout = layouts[parentPath];
+            return layout.Id;
         }
 
         bool TryPlacementRoute(string parentPath, string childPath, out string route)
@@ -235,8 +254,13 @@ internal static class StationeryControlBindingResolver
 
         string ResolvePath(string handle, string selectedPath)
         {
-            var matches = modelIds.Keys.Where(path => TryRoute(path, out var route) &&
-                string.Equals(route, selectedPath, StringComparison.Ordinal)).ToArray();
+            var matches = modelIds.Keys.Where(path =>
+            {
+                var currentRoute = TryRoute(path, out var route) && string.Equals(route, selectedPath, StringComparison.Ordinal);
+                var identifiedRoute = TryRoute(path, out var identified, includeLayoutIds: true)
+                    && string.Equals(identified, selectedPath, StringComparison.Ordinal);
+                return currentRoute || identifiedRoute;
+            }).ToArray();
             if (matches.Length != 1)
             {
                 var candidates = modelIds.Keys
