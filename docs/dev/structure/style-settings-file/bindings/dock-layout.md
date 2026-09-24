@@ -1,14 +1,18 @@
 # bindings セクションの ドック・レイアウト
 
-## JSON 設定例（こうしたい）
+## JSON 設定例（将来的にこうしたい）
 
 ```json
 {
-    "bindings": [
-        {
-            "control": "inspectorPanel"
-        }
-    ]
+    "bindings": {
+    	"viewPort": "root:viewPort",
+        "inspectorPanel": "/root:viewPort/0:topDemoPage/bottom:inspectorPanel",
+		"saveButton": {
+			"topDemoPage" : "root:viewPort/0:topDemoPage",
+			"splitPaneDemoPage" : "root:viewPort/0:splitPaneDemoPage",
+			"layoutDemoPage" : "root:viewPort/0:layoutDemoPage"
+		}
+    }
 }
 ```
 
