@@ -856,5 +856,12 @@
                 }
             ]
         }
-    ]
+    ],
+    "bindingsV2": {
+        "ctrlToolHint": {
+            "lytTopDemoPage": "root:demo/0:topDemoPage/bottom:inspectorPanel/1y.1x.1w.1h",
+            "lytSplitPaneDemoPage": "root:demo/1:splitPaneDemoPage/bottom:inspectorPanel/1y.1x.1w.1h",
+            "lytLayoutDemoPage": "root:demo/2:layoutDemoPage/bottom:inspectorPanel/1y.1x.1w.1h"
+        }
+    }
 }

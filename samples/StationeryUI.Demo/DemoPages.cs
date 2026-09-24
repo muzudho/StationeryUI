@@ -74,6 +74,10 @@ internal sealed partial class Demo
                 _ => null
             };
         CreateLayoutPage();
+        topToolHint.ControlHandle = splitToolHint.ControlHandle = layoutToolHint.ControlHandle = "ctrlToolHint";
+        topToolHint.LayoutKey = "lytTopDemoPage";
+        splitToolHint.LayoutKey = "lytSplitPaneDemoPage";
+        layoutToolHint.LayoutKey = "lytLayoutDemoPage";
         layoutLink.ToolHint = "ボックスとグリッドの入れ子を、レイアウトデモページで確認できます。";
         Navigate("topDemoPage");
     }

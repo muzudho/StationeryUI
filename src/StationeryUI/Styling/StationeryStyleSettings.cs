@@ -70,9 +70,28 @@ public sealed record StationeryLayoutBinding(string Layout, string ModelPath, IR
     public string? LayoutError { get; init; }
 }
 
+/// <summary>A control handle mapped either to one layout path or to paths selected by layout key.</summary>
+public sealed record StationeryControlBindingV2(string? LayoutPath, IReadOnlyDictionary<string, string> LayoutPaths)
+{
+    public string ResolveLayoutPath(string? layoutKey = null)
+    {
+        if (LayoutPath is not null) return LayoutPath;
+        if (layoutKey is null) throw new ArgumentNullException(nameof(layoutKey), "A layout key is required for this control binding.");
+        return LayoutPaths.TryGetValue(layoutKey, out var path) ? path
+            : throw new KeyNotFoundException($"Unknown layout key '{layoutKey}'.");
+    }
+}
+
 public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> Models,
     IReadOnlyList<StationeryLayoutNode> Layouts, IReadOnlyList<StationeryLayoutBinding> Bindings)
 {
+    public IReadOnlyDictionary<string, StationeryControlBindingV2> BindingsV2 { get; init; }
+        = new Dictionary<string, StationeryControlBindingV2>(StringComparer.Ordinal);
+
+    public string ResolveLayoutPath(string controlHandle, string? layoutKey = null)
+        => BindingsV2.TryGetValue(controlHandle, out var binding) ? binding.ResolveLayoutPath(layoutKey)
+            : throw new KeyNotFoundException($"Unknown control handle '{controlHandle}' in bindingsV2.");
+
     public static StationeryStyleSettings Default { get; } = Parse("""
         {"models":[{"id":"demo","type":"viewport"}],
          "layouts":[{"id":"rootPanel","type":"box-layout"}],
@@ -439,7 +458,52 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             if (roots.Length > 1)
                 throw new JsonException($"{group.Key}: a node can be associated with at most one layout tree. Nest layouts instead of binding multiple roots.");
         }
-        return new(Array.AsReadOnly(new[] { model }), layouts.AsReadOnly(), bindings.AsReadOnly());
+        return new(Array.AsReadOnly(new[] { model }), layouts.AsReadOnly(), bindings.AsReadOnly())
+        { BindingsV2 = ReadBindingsV2(root) };
+    }
+
+    private static IReadOnlyDictionary<string, StationeryControlBindingV2> ReadBindingsV2(JsonElement root)
+    {
+        var result = new Dictionary<string, StationeryControlBindingV2>(StringComparer.Ordinal);
+        if (!root.TryGetProperty("bindingsV2", out var value)) return result;
+        RequireObject(value, "bindingsV2");
+        foreach (var property in value.EnumerateObject())
+        {
+            var path = "bindingsV2." + property.Name;
+            if (string.IsNullOrWhiteSpace(property.Name) || property.Name.Any(char.IsWhiteSpace))
+                throw new JsonException($"{path}: control handles must be nonempty and contain no whitespace.");
+            if (result.ContainsKey(property.Name)) throw new JsonException($"{path}: duplicate control handle.");
+            if (property.Value.ValueKind == JsonValueKind.String)
+            {
+                var layoutPath = ReadBindingPath(property.Value, path);
+                result.Add(property.Name, new(layoutPath, new Dictionary<string, string>(StringComparer.Ordinal)));
+                continue;
+            }
+            RequireObject(property.Value, path);
+            var keyedPaths = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var layoutKey in property.Value.EnumerateObject())
+            {
+                if (string.IsNullOrWhiteSpace(layoutKey.Name) || layoutKey.Name.Any(char.IsWhiteSpace))
+                    throw new JsonException($"{path}: layout keys must be nonempty and contain no whitespace.");
+                if (keyedPaths.ContainsKey(layoutKey.Name)) throw new JsonException($"{path}: duplicate layout key '{layoutKey.Name}'.");
+                keyedPaths.Add(layoutKey.Name, ReadBindingPath(layoutKey.Value, path + "." + layoutKey.Name));
+            }
+            if (keyedPaths.Count == 0) throw new JsonException($"{path}: at least one layout key is required.");
+            result.Add(property.Name, new(null, keyedPaths));
+        }
+        return result;
+    }
+
+    private static string ReadBindingPath(JsonElement value, string path)
+    {
+        if (value.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(value.GetString()))
+            throw new JsonException($"{path}: expected a nonempty layout path string.");
+        var layoutPath = value.GetString()!;
+        if (layoutPath.Any(char.IsWhiteSpace) || (layoutPath != "root" && !layoutPath.StartsWith("root:", StringComparison.Ordinal)) ||
+            layoutPath.EndsWith('/') || layoutPath.Contains("//", StringComparison.Ordinal) ||
+            layoutPath.Split('/').Any(segment => segment.Length == 0 || segment is "." or ".." || segment.Count(c => c == ':') > 1 || segment.StartsWith(':') || segment.EndsWith(':')))
+            throw new JsonException($"{path}: layout paths must be root-based slash-separated routes without whitespace or empty segments.");
+        return layoutPath;
     }
 
     private static StationeryLayoutCell ResolveCell(JsonElement child, StationeryLayoutNode layout, string path, HashSet<string> assigned)

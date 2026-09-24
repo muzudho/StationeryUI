@@ -153,7 +153,18 @@ internal sealed partial class Demo : Game
             }
             appliedStyle = styles.Current;
         }
-        var arranged = StationeryLayoutEngine.Arrange(styles.Current, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+        var activeToolHint = activePage switch
+        {
+            "topDemoPage" => topToolHint,
+            "splitPaneDemoPage" => splitToolHint,
+            "layoutDemoPage" => layoutToolHint,
+            _ => throw new ArgumentOutOfRangeException(nameof(activePage), activePage, "Unknown demo page.")
+        };
+        var controlLayoutKeys = activeToolHint.ControlHandle is { } handle && activeToolHint.LayoutKey is { } key
+            ? new Dictionary<string, string>(StringComparer.Ordinal) { [handle] = key }
+            : new Dictionary<string, string>(StringComparer.Ordinal);
+        var arranged = StationeryLayoutEngine.Arrange(styles.Current, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height,
+            controlLayoutKeys);
         latestLayout = arranged;
         var content = arranged.ContentBounds[modelBinding.Root.Path];
         hasContentArea = content.Width >= 1 && content.Height >= 1;
@@ -169,6 +180,9 @@ internal sealed partial class Demo : Game
         }
         ApplySplitStyles(arranged);
         ApplyLayoutStyles(arranged);
+        if (activeToolHint.ControlHandle is { } activeHandle && arranged.ControlBounds.TryGetValue(activeHandle, out var toolHintBounds))
+            activeToolHint.Bounds = new(toolHintBounds.X / requestedScale, toolHintBounds.Y / requestedScale,
+                toolHintBounds.Width / requestedScale, toolHintBounds.Height / requestedScale);
         popupUi!.Viewport.Scale = Math.Min(1, Math.Min(content.Width / 800, content.Height / 320));
         popupUi.Viewport.Offset = new(content.X + (content.Width - 800 * popupUi.Viewport.Scale) / 2,
             content.Y + (content.Height - 320 * popupUi.Viewport.Scale) / 2);

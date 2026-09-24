@@ -18,6 +18,10 @@ public sealed record StationeryLayoutResult(IReadOnlyDictionary<string, ScreenRe
     public IReadOnlyDictionary<string, ScreenRectangle> LayoutContentBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
     public IReadOnlyDictionary<string, ScreenRectangle> LayoutBorderBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
     public IReadOnlyDictionary<string, ScreenRectangle> BorderBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
+    /// <summary>Bounds selected through bindingsV2 control handles.</summary>
+    public IReadOnlyDictionary<string, ScreenRectangle> ControlBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
+    /// <summary>The selected bindingsV2 path for each resolved control handle.</summary>
+    public IReadOnlyDictionary<string, string> ControlLayoutPaths { get; init; } = new Dictionary<string, string>();
 }
 public sealed record StationeryLayoutError(string ModelPath, string LayoutPath, string Message, ScreenRectangle Bounds);
 
@@ -36,7 +40,12 @@ public static class StationeryLayoutEngine
                 result.Add((r, c, new(content.X + columns[c], content.Y + rows[r], columns[c + 1] - columns[c], rows[r + 1] - rows[r])));
         return result;
     }
-    public static StationeryLayoutResult Arrange(StationeryStyleSettings settings, double width, double height)
+    /// <summary>
+    /// Arranges the existing model/layout bindings and resolves any bindingsV2 entries.
+    /// For controls with keyed paths, controlLayoutKeys supplies the selected LayoutKey per handle.
+    /// </summary>
+    public static StationeryLayoutResult Arrange(StationeryStyleSettings settings, double width, double height,
+        IReadOnlyDictionary<string, string>? controlLayoutKeys = null)
     {
         if (!double.IsFinite(width) || width < 0 || !double.IsFinite(height) || height < 0)
             throw new ArgumentOutOfRangeException(nameof(width), "Window dimensions must be finite and nonnegative.");
@@ -175,13 +184,97 @@ public static class StationeryLayoutEngine
         }
 
         foreach (var model in settings.Models) Visit(model.CreateTree(), new(0, 0, width, height));
+        var controlBounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
+        var controlLayoutPaths = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (settings.BindingsV2.Count > 0)
+        {
+            var modelPaths = new Dictionary<string, string>(StringComparer.Ordinal);
+            var modelParents = new Dictionary<string, string?>(StringComparer.Ordinal);
+            void IndexModels(StationeryModelNode model, string parent)
+            {
+                var path = parent + "/" + model.Id;
+                modelPaths.Add(path, model.Id);
+                modelParents.Add(path, parent.Length == 0 ? null : parent);
+                foreach (var child in model.Children) IndexModels(child, path);
+            }
+            foreach (var model in settings.Models) IndexModels(model, "");
+            var routes = new Dictionary<string, string>(StringComparer.Ordinal);
+            string RouteFor(string modelPath)
+            {
+                if (routes.TryGetValue(modelPath, out var cached)) return cached;
+                var parentPath = modelParents[modelPath];
+                if (parentPath is null) return routes[modelPath] = "root";
+                var parentRoute = RouteFor(parentPath);
+                var namedParentRoute = parentRoute + ":" + modelPaths[parentPath];
+                var edge = PlacementEdge(parentPath, modelPath);
+                return routes[modelPath] = namedParentRoute + "/" + edge;
+            }
+
+            string PlacementEdge(string parentPath, string childPath)
+            {
+                foreach (var placement in settings.Bindings.Where(binding => binding.ModelPath == parentPath))
+                {
+                    var layout = layouts[placement.Layout];
+                    if (placement.Children.FirstOrDefault(child => child.ModelPath == childPath) is { } child)
+                    {
+                        if (layout.Type == "box-layout") return "single";
+                        if (layout.Type == "grid-layout")
+                            return $"{child.Row + 1}y.{child.Column + 1}x.{child.RowSpan}w.{child.ColumnSpan}h";
+                        if (layout.Type == "tabbed-box-layout") return child.Row.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    }
+                    if (placement.FirstModel == childPath) return "first";
+                    if (placement.SecondModel == childPath) return "second";
+                    if (placement.InspectorModel == childPath) return "bottom";
+                    var dockChild = placement.DockChildren.FirstOrDefault(child => child.ModelPath == childPath);
+                    if (dockChild is not null) return dockChild.Dock;
+                }
+                throw new InvalidOperationException($"No legacy bindings placement was found for model '{childPath}'.");
+            }
+
+            foreach (var (handle, binding) in settings.BindingsV2)
+            {
+                string? key = null;
+                if (binding.LayoutPath is null)
+                {
+                    if (controlLayoutKeys is null || !controlLayoutKeys.TryGetValue(handle, out key))
+                        throw new InvalidOperationException($"Control '{handle}' requires a LayoutKey.");
+                }
+                var selectedPath = binding.ResolveLayoutPath(key);
+                var modelId = ModelIdForHandle(handle);
+                var candidates = modelPaths.Where(pair => pair.Value == modelId).Select(pair => pair.Key).ToArray();
+                var matches = candidates.Where(path => MatchesRoute(selectedPath, path)).ToArray();
+                if (matches.Length != 1)
+                    throw new InvalidOperationException($"bindingsV2 path for '{handle}' resolves to {matches.Length} current model placements; the path must match exactly one placement.");
+                if (!bounds.TryGetValue(matches[0], out var controlBoundsForHandle))
+                    throw new InvalidOperationException($"No arranged bounds exist for control '{handle}' at {matches[0]}.");
+                controlBounds.Add(handle, controlBoundsForHandle);
+                controlLayoutPaths.Add(handle, selectedPath);
+            }
+
+            bool MatchesRoute(string selectedPath, string modelPath)
+            {
+                try { return string.Equals(selectedPath, RouteFor(modelPath), StringComparison.Ordinal); }
+                catch (InvalidOperationException) { return false; }
+            }
+        }
+
         return new(new ReadOnlyDictionary<string, ScreenRectangle>(bounds), new ReadOnlyDictionary<string, ScreenRectangle>(contents))
         { Errors = errors.AsReadOnly(), BorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(borders),
             MarginBounds = new ReadOnlyDictionary<string, ScreenRectangle>(marginBounds),
             LayoutMarginBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutMarginBounds),
             LayoutBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBounds),
             LayoutContentBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutContents),
-            LayoutBorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBorders) };
+            LayoutBorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBorders),
+            ControlBounds = new ReadOnlyDictionary<string, ScreenRectangle>(controlBounds),
+            ControlLayoutPaths = new ReadOnlyDictionary<string, string>(controlLayoutPaths) };
+
+        static string ModelIdForHandle(string handle)
+        {
+            var suffix = handle.StartsWith("ctrl", StringComparison.Ordinal) ? handle[4..] : handle;
+            if (suffix.Length == 0) return suffix;
+            return char.ToLowerInvariant(suffix[0]) + suffix[1..];
+        }
+
     }
 
     private static double[] TrackEdges(IReadOnlyList<LayoutTrack> tracks, double available)

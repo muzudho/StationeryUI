@@ -20,8 +20,27 @@
 | `models` | 文房具の所属・親子関係 | `Models`、`CreateTree()` |
 | `layouts` | 再利用できる配置定義 | `Layouts`、`StationeryLayoutNode` |
 | `bindings` | モデルと配置定義の対応 | `Bindings`、`StationeryLayoutBinding` |
+| `bindingsV2` | コントロールハンドルとレイアウトパスの対応 | `BindingsV2`、`StationeryControlBindingV2` |
 
 3 配列はすべて必須です。現在の `models` は **`type: "viewport"` のルート1個**に限ります。その子にページやコンテナーを作ります。`layouts` と `bindings` は空配列にもできますが、コントロールが正しく配置される保証にはなりません。アプリ側で必要な binding を検証します。
+
+移行中は任意の `bindingsV2` オブジェクトを追加できます。キーはコントロールハンドル、値は単一のレイアウトパス、またはレイアウトキーからパスへのオブジェクトです。
+
+```json
+{
+  "bindingsV2": {
+    "ctrlNameField": "root:demo/0:topDemoPage/center:body/1y.1x.1w.1h",
+    "ctrlSaveButton": {
+      "lytTopDemoPage": "root:demo/0:topDemoPage/center:body/1y.2x.1w.1h",
+      "lytSplitPaneDemoPage": "root:demo/1:splitPaneDemoPage/center:body/1y.1x.1w.1h"
+    }
+  }
+}
+```
+
+文字列値は `root` から始まるパスです。オブジェクト値では呼び出し側がコントロールハンドルごとの `LayoutKey` を `StationeryLayoutEngine.Arrange(settings, width, height, controlLayoutKeys)` に渡します。MonoGame の `Element` では `ControlHandle` と `LayoutKey` に設定できます。結果の `ControlBounds` と `ControlLayoutPaths` はハンドルで参照できます。`ctrl` 接頭辞を持つハンドルは、その後の先頭文字を小文字にした名前のモデルへ対応します（例：`ctrlNameField` → `nameField`）。
+
+この併用段階では、既存の `bindings` が配置と Bounds 計算を担います。`bindingsV2` のパスは既存 bindings から得られるモデル配置パスと照合され、一致しない場合や一意に解決できない場合は `Arrange` がエラーにします。従って `bindingsV2` だけで配置する移行はまだ完了していません。
 
 モデルには `id`、`type`、必要に応じて `children` を置きます。レイアウトの型とモデルの型は別です。たとえばモデルは `splitPane`、レイアウトは `split-pane` です。モデルの `type` 文字列を任意に増やしても、対応する UI が自動実装されるわけではありません。
 
