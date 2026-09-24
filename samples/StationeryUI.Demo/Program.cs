@@ -153,16 +153,16 @@ internal sealed partial class Demo : Game
             }
             appliedStyle = styles.Current;
         }
-        var activeToolHint = activePage switch
+        var elements = styledElements.Concat(splitElements).Concat(layoutElements).ToArray();
+        var activePageKey = "lyt" + char.ToUpperInvariant(activePage[0]) + activePage[1..];
+        var controlLayoutKeys = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (handle, binding) in styles.Current.BindingsV2.Where(pair => pair.Value.LayoutPath is null))
         {
-            "topDemoPage" => topToolHint,
-            "splitPaneDemoPage" => splitToolHint,
-            "layoutDemoPage" => layoutToolHint,
-            _ => throw new ArgumentOutOfRangeException(nameof(activePage), activePage, "Unknown demo page.")
-        };
-        var controlLayoutKeys = activeToolHint.ControlHandle is { } handle && activeToolHint.LayoutKey is { } key
-            ? new Dictionary<string, string>(StringComparer.Ordinal) { [handle] = key }
-            : new Dictionary<string, string>(StringComparer.Ordinal);
+            var selectedElement = elements.FirstOrDefault(element => element.ControlHandle == handle && element.LayoutKey == activePageKey)
+                ?? elements.FirstOrDefault(element => element.ControlHandle == handle && element.LayoutKey is not null);
+            var selectedKey = selectedElement?.LayoutKey ?? binding.LayoutPaths.Keys.FirstOrDefault();
+            if (selectedKey is not null) controlLayoutKeys[handle] = selectedKey;
+        }
         var arranged = StationeryLayoutEngine.Arrange(styles.Current, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height,
             controlLayoutKeys);
         latestLayout = arranged;
@@ -174,19 +174,20 @@ internal sealed partial class Demo : Game
         ui.Viewport.Offset = new(0, 0);
         foreach (var element in styledElements)
         {
-            var bounds = arranged.Bounds[element.Path];
+            var bounds = BoundsFor(element, arranged);
             element.Bounds = new(bounds.X / requestedScale, bounds.Y / requestedScale,
                 bounds.Width / requestedScale, bounds.Height / requestedScale);
         }
         ApplySplitStyles(arranged);
         ApplyLayoutStyles(arranged);
-        if (activeToolHint.ControlHandle is { } activeHandle && arranged.ControlBounds.TryGetValue(activeHandle, out var toolHintBounds))
-            activeToolHint.Bounds = new(toolHintBounds.X / requestedScale, toolHintBounds.Y / requestedScale,
-                toolHintBounds.Width / requestedScale, toolHintBounds.Height / requestedScale);
         popupUi!.Viewport.Scale = Math.Min(1, Math.Min(content.Width / 800, content.Height / 320));
         popupUi.Viewport.Offset = new(content.X + (content.Width - 800 * popupUi.Viewport.Scale) / 2,
             content.Y + (content.Height - 320 * popupUi.Viewport.Scale) / 2);
     }
+
+    private static ScreenRectangle BoundsFor(StationeryUiHost.Element element, StationeryLayoutResult arranged)
+        => element.ControlHandle is { } handle && arranged.ControlBounds.TryGetValue(handle, out var bounds)
+            ? bounds : arranged.Bounds[element.Path];
     protected override void Update(GameTime gameTime)
     {
         var keyboard = Keyboard.GetState(); var mouse = Mouse.GetState();

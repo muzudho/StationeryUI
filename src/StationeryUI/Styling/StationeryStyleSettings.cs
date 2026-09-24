@@ -1,6 +1,7 @@
 namespace StationeryUI.Styling;
 
 using System.Globalization;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using StationeryUI.Canvas;
 using StationeryUI.Controls;
@@ -86,7 +87,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
     IReadOnlyList<StationeryLayoutNode> Layouts, IReadOnlyList<StationeryLayoutBinding> Bindings)
 {
     public IReadOnlyDictionary<string, StationeryControlBindingV2> BindingsV2 { get; init; }
-        = new Dictionary<string, StationeryControlBindingV2>(StringComparer.Ordinal);
+        = new ReadOnlyDictionary<string, StationeryControlBindingV2>(new Dictionary<string, StationeryControlBindingV2>(StringComparer.Ordinal));
 
     public string ResolveLayoutPath(string controlHandle, string? layoutKey = null)
         => BindingsV2.TryGetValue(controlHandle, out var binding) ? binding.ResolveLayoutPath(layoutKey)
@@ -465,7 +466,8 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
     private static IReadOnlyDictionary<string, StationeryControlBindingV2> ReadBindingsV2(JsonElement root)
     {
         var result = new Dictionary<string, StationeryControlBindingV2>(StringComparer.Ordinal);
-        if (!root.TryGetProperty("bindingsV2", out var value)) return result;
+        if (!root.TryGetProperty("bindingsV2", out var value))
+            return new ReadOnlyDictionary<string, StationeryControlBindingV2>(result);
         RequireObject(value, "bindingsV2");
         foreach (var property in value.EnumerateObject())
         {
@@ -476,7 +478,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             if (property.Value.ValueKind == JsonValueKind.String)
             {
                 var layoutPath = ReadBindingPath(property.Value, path);
-                result.Add(property.Name, new(layoutPath, new Dictionary<string, string>(StringComparer.Ordinal)));
+                result.Add(property.Name, new(layoutPath, new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(StringComparer.Ordinal))));
                 continue;
             }
             RequireObject(property.Value, path);
@@ -489,9 +491,9 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 keyedPaths.Add(layoutKey.Name, ReadBindingPath(layoutKey.Value, path + "." + layoutKey.Name));
             }
             if (keyedPaths.Count == 0) throw new JsonException($"{path}: at least one layout key is required.");
-            result.Add(property.Name, new(null, keyedPaths));
+            result.Add(property.Name, new(null, new ReadOnlyDictionary<string, string>(keyedPaths)));
         }
-        return result;
+        return new ReadOnlyDictionary<string, StationeryControlBindingV2>(result);
     }
 
     private static string ReadBindingPath(JsonElement value, string path)

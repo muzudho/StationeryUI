@@ -51,7 +51,13 @@ public sealed partial class StationeryUiHost : IDisposable
         /// <summary>Optional page or layout variant selected for this control in bindingsV2.</summary>
         public string? LayoutKey { get; set; }
         public StationeryBoxModel? BoxModel { get; set; }
-        internal Element(StationeryNode node, ScreenRectangle bounds, string label) { Node = node; Bounds = bounds; Label = label; }
+        internal Element(StationeryNode node, ScreenRectangle bounds, string label)
+        {
+            Node = node;
+            Bounds = bounds;
+            Label = label;
+            ControlHandle = "ctrl" + char.ToUpperInvariant(node.Id[0]) + node.Id[1..];
+        }
         public StationeryNode Node { get; internal set; }
         public string Id => Node.Id;
         public string Path => Node.Path;

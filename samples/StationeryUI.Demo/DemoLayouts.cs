@@ -14,6 +14,7 @@ internal sealed partial class Demo
         styledElements.Add(layoutLink);
         layoutUi = new(GraphicsDevice, input!, family => new StationeryUI.Windows.WindowsTextRasterizer(family), modelBinding.LayoutPage);
         layoutBackLink = layoutUi.AddLink(modelBinding.LayoutControls["topDemoLink"], new(), "← トップページへ", () => Navigate("topDemoPage"));
+        layoutBackLink.LayoutKey = "lytLayoutDemoPage";
         layoutBackLink.ToolHint = "トップページへ戻ります。入力内容は保持されます。";
         layoutElements.Add(layoutBackLink);
         var labels = new Dictionary<string, string>
@@ -52,7 +53,7 @@ internal sealed partial class Demo
         layoutUi.Viewport.Scale = requestedScale;
         foreach (var element in layoutElements)
         {
-            var bounds = arranged.Bounds[element.Path];
+            var bounds = BoundsFor(element, arranged);
             element.Bounds = new(bounds.X / requestedScale, bounds.Y / requestedScale, bounds.Width / requestedScale, bounds.Height / requestedScale);
             ButtonColor? surface = element.Id switch
             {
