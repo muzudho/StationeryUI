@@ -186,8 +186,13 @@ internal sealed partial class Demo : Game
     }
 
     private static ScreenRectangle BoundsFor(StationeryUiHost.Element element, StationeryLayoutResult arranged)
-        => element.ControlHandle is { } handle && arranged.ControlBounds.TryGetValue(handle, out var bounds)
-            ? bounds : arranged.Bounds[element.Path];
+    {
+        var handle = element.ControlHandle
+            ?? throw new InvalidOperationException($"Demo control '{element.Path}' has no bindingsV2 handle.");
+        return arranged.ControlBounds.TryGetValue(handle, out var bounds)
+            ? bounds
+            : throw new InvalidOperationException($"Demo control '{handle}' has no resolved bindingsV2 bounds.");
+    }
     protected override void Update(GameTime gameTime)
     {
         var keyboard = Keyboard.GetState(); var mouse = Mouse.GetState();

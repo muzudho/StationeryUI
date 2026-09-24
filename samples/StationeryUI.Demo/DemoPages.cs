@@ -94,7 +94,7 @@ internal sealed partial class Demo
         splitUi.Viewport.Scale = requestedScale;
         foreach (var element in splitElements)
         {
-            var bounds = element.Split is not null ? arranged.ContentBounds[element.Path] : BoundsFor(element, arranged);
+            var bounds = BoundsFor(element, arranged);
             element.Bounds = new(bounds.X / requestedScale, bounds.Y / requestedScale, bounds.Width / requestedScale, bounds.Height / requestedScale);
             if (element.Split is not null)
             {
