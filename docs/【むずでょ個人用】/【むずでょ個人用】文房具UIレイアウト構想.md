@@ -253,14 +253,16 @@ Height = 20px （垂直の controlLength）
 ```plaintext
 * root: viewPort - TabbedBoxLayout [ControlHandle: viewPort]
 	* 0: topDemoPage - DockLayout [ControlHandle: topDemoPage]
-		* top: applicationBar [ControlHandle: applicationBar]
+		* top: applicationBar - GridLayout [ControlHandle: applicationBar]
 		* center: mainContent - GridLayout [ControlHandle: mainContent]
 			* 1y.1x.1w.1h: leftMenu - BoxLayout [ControlHandle: leftMenu]
 				* single: nameField [ControlHandle: nameField]
 			* 1y.2x.2w.1h: rightContent - BoxLayout [ControlHandle: rightContent]
 		* bottom: inspectorPanel - BoxLayout [ControlHandle: inspectorPanel]
 	* 1: splitPaneDemoPage - DockLayout [ControlHandle: splitPaneDemoPage]
+		* top: applicationBar - GridLayout [ControlHandle: applicationBar]
 	* 2: layoutDemoPage - DockLayout [ControlHandle: layoutDemoPage]
+		* top: applicationBar - GridLayout [ControlHandle: applicationBar]
 ```
 
 👆　上記の１行が［レイアウトノード］です。  
@@ -338,9 +340,9 @@ Height = 20px （垂直の controlLength）
     "bindings": {
 		"ctrlViewPort": "root",
 		"ctrlSaveButton": {
-			"lytTopDemoPage" : "root:viewPort/0:topDemoPage/top",
-			"lytSplitPaneDemoPage" : "root:viewPort/1:splitPaneDemoPage/top",
-			"lytLayoutDemoPage" : "root:viewPort/2:layoutDemoPage/top"
+			"lytTopDemoPage" : "root:viewPort/0:topDemoPage/top:applicationBar/1y.1x.1w.1h",
+			"lytSplitPaneDemoPage" : "root:viewPort/1:splitPaneDemoPage/top:applicationBar/1y.1x.1w.1h",
+			"lytLayoutDemoPage" : "root:viewPort/2:layoutDemoPage/top:applicationBar/1y.1x.1w.1h"
 		}
 	}
 }
