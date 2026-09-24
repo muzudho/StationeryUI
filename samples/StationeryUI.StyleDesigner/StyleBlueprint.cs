@@ -242,7 +242,7 @@ public sealed class StyleBlueprint
                 models.Add(new JsonObject { ["id"] = id, ["type"] = cell.Kind, ["label"] = cell.Label });
                 cells.Add(new JsonObject { ["row"] = row, ["col"] = column });
                 bindings.Add(new JsonObject { ["model"] = id,
-                    ["cell"] = new JsonObject { ["row"] = row + 1, ["col"] = column + 1 } });
+                    ["cell"] = new JsonObject { ["row"] = row, ["col"] = column } });
             }
         var root = new JsonObject
         {

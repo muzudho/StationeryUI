@@ -534,64 +534,64 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
           "model": "nameField",
           "cell": {
-            "row": 1,
-            "col": 1
+            "row": 0,
+            "col": 0
           }
         },
         {
           "model": "memoField",
+          "cell": {
+            "row": 1,
+            "col": 0
+          }
+        },
+        {
+          "model": "themeButton",
+          "cell": {
+            "row": 2,
+            "col": 0
+          }
+        },
+        {
+          "model": "scaleButton",
           "cell": {
             "row": 2,
             "col": 1
           }
         },
         {
-          "model": "themeButton",
-          "cell": {
-            "row": 3,
-            "col": 1
-          }
-        },
-        {
-          "model": "scaleButton",
-          "cell": {
-            "row": 3,
-            "col": 2
-          }
-        },
-        {
           "model": "applyTitleButton",
           "cell": {
-            "row": 4,
-            "col": 1
+            "row": 3,
+            "col": 0
           }
         },
         {
           "model": "openDialogButton",
           "cell": {
-            "row": 5,
-            "col": 1
+            "row": 4,
+            "col": 0
           }
         },
         {
           "model": "sampleTree",
           "cell": {
-            "row": 1,
-            "col": 2
+            "row": 0,
+            "col": 1
           }
         },
         {
           "model": "splitPaneDemoLink",
           "cell": {
-            "row": 5,
-            "col": 2
+            "row": 4,
+            "col": 1
           }
         },
         {
           "model": "layoutDemoLink",
           "cell": {
-            "row": 4,
-            "col": 2
+            "row": 3,
+            "col": 1
           }
         }
       ]
@@ -603,22 +603,22 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
           "model": "topDemoLink",
           "cell": {
-            "row": 1,
-            "col": 1
+            "row": 0,
+            "col": 0
           }
         },
         {
           "model": "verticalSplit",
           "cell": {
-            "row": 2,
-            "col": 1
+            "row": 1,
+            "col": 0
           }
         },
         {
           "model": "horizontalSplit",
           "cell": {
-            "row": 3,
-            "col": 1
+            "row": 2,
+            "col": 0
           }
         }
       ]
@@ -662,8 +662,8 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
           "model": "toolHint",
           "cell": {
-            "row": 1,
-            "col": 1
+            "row": 0,
+            "col": 0
           }
         }
       ]
@@ -695,8 +695,8 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
           "model": "toolHint",
           "cell": {
-            "row": 1,
-            "col": 1
+            "row": 0,
+            "col": 0
           }
         }
       ]
@@ -708,36 +708,36 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
           "model": "topDemoLink",
           "cell": {
-            "row": 1,
-            "col": 1
+            "row": 0,
+            "col": 0
           }
         },
         {
           "model": "title",
           "cell": {
-            "row": 1,
-            "col": 2
+            "row": 0,
+            "col": 1
           }
         },
         {
           "model": "boxTitle",
           "cell": {
-            "row": 2,
-            "col": 1
+            "row": 1,
+            "col": 0
           }
         },
         {
           "model": "boxContent",
           "cell": {
-            "row": 3,
-            "col": 1
+            "row": 2,
+            "col": 0
           }
         },
         {
           "model": "gridTitle",
           "cell": {
-            "row": 2,
-            "col": 2
+            "row": 1,
+            "col": 1
           }
         }
       ]
@@ -753,15 +753,15 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
           "model": "spanCell",
           "cell": {
-            "row": 1,
-            "col": 1
+            "row": 0,
+            "col": 0
           }
         },
         {
           "model": "gridFooter",
           "cell": {
-            "row": 3,
-            "col": 1
+            "row": 2,
+            "col": 0
           }
         }
       ]
@@ -773,29 +773,29 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
           "model": "nestedA",
           "cell": {
-            "row": 1,
-            "col": 1
+            "row": 0,
+            "col": 0
           }
         },
         {
           "model": "nestedB",
           "cell": {
-            "row": 1,
-            "col": 2
+            "row": 0,
+            "col": 1
           }
         },
         {
           "model": "nestedC",
           "cell": {
-            "row": 2,
-            "col": 1
+            "row": 1,
+            "col": 0
           }
         },
         {
           "model": "nestedD",
           "cell": {
-            "row": 2,
-            "col": 2
+            "row": 1,
+            "col": 1
           }
         }
       ]
@@ -827,8 +827,8 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
           "model": "toolHint",
           "cell": {
-            "row": 1,
-            "col": 1
+            "row": 0,
+            "col": 0
           }
         }
       ]

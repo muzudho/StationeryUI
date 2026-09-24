@@ -87,9 +87,7 @@
 * `column-definitions` - グリッドの各列の幅を指定します。
 * `padding` - レイアウトの内側の余白です。
 * `margin` - レイアウトの外側の余白です。
-* 子要素の配置指定
-    * 次期： `cells`
-    * 現行： `childrenModel` - XXX: 仕様確認中。子要素をぶら下げるときに使う？ 使っていない分まで書く必要があるか？
+* `cells` - セルの配置枠です。`row`・`col` は layouts と bindings の両方で 0 始まりです。モデルとの紐づけは `bindings.childrenModel` で指定します。
 
 
 ## 子要素の配置指定

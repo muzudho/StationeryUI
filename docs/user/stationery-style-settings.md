@@ -73,14 +73,14 @@ JSON の構文エラー、不正な値、ファイルの削除や読み取り失
 
 `layouts` の `cells` は配置枠だけを定義します。セルに名前を付ける `slots` は使用しません。`bindings.childrenModel` の `cell` で配置枠を選びます。
 
-GridLayout は `row` と `col` を 1 始まりで指定します。レイアウト定義側の `cells` は従来どおり内部の 0 始まりの配置値ですが、binding のセルキーは 1 始まりです。
+GridLayout は `layouts.cells` と binding の `cell` の両方で `row` と `col` を 0 始まりで指定します。
 
 ```json
 "cells": [
     { "row": 0, "col": 1, "colspan": 2 }
 ],
 "childrenModel": [
-    { "model": "content", "cell": { "row": 1, "col": 2 } }
+    { "model": "content", "cell": { "row": 0, "col": 1 } }
 ]
 ```
 
@@ -157,11 +157,11 @@ DockLayout は方向ごとの出現順を 1 始まりで指定します。`top` 
             "childrenModel": [
                 {
                     "model": "nameField",
-                    "cell": { "row": 1, "col": 1 }
+                    "cell": { "row": 0, "col": 0 }
                 },
                 {
                     "model": "memoField",
-                    "cell": { "row": 1, "col": 2 }
+                    "cell": { "row": 0, "col": 1 }
                 }
             ]
         }
@@ -184,7 +184,7 @@ bindings.layout には先頭 `/` 付きのスラッシュ区切りの完全パ�
 
 box-layout には layout と model を指定する。
 grid-layout には layout、parentModel、childrenModel を指定する。
-childrenModel の各要素は cell と model の対応を持つ。GridLayout の cell は 1 始まりの row・col、DockLayout の cell は方向ごとの 1 始まりの index。model は parentModel からたどる相対パス。行・列・span は layouts.cells に定義する。
+childrenModel の各要素は cell と model の対応を持つ。GridLayout の cell は 0 始まりの row・col、DockLayout の cell は方向ごとの 1 始まりの index。model は parentModel からたどる相対パス。行・列・span は layouts.cells に定義する。
 
 - parentModel: demo、model: nameField → /demo/nameField。
 - parentModel: demo、model: inputs/nameField → /demo/inputs/nameField。

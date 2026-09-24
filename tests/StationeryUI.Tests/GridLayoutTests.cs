@@ -207,16 +207,16 @@ internal static class GridLayoutTests
                      "cells":[{"row":0,"col":0},{"row":0,"col":1}]},
                     {"id":"dock","type":"dock-layout","cells":[{"dock":"top","size":"10px"},{"dock":"top","size":"20px"}] }],
          "bindings":[{"layout":"/grid","parentModel":"screen","childrenModel":[
-             {"model":"a","cell":{"row":1,"col":1}},{"model":"b","cell":{"row":1,"col":2}}]},
+             {"model":"a","cell":{"row":0,"col":0}},{"model":"b","cell":{"row":0,"col":1}}]},
                      {"layout":"/dock","parentModel":"screen/dockParent","childrenModel":[
              {"model":"c","cell":{"dock":"top","index":1}},{"model":"d","cell":{"dock":"top","index":2}}]}]}
         """;
         var settings = StationeryStyleSettings.Parse(source);
         Require(settings.Bindings[0].Children[0].Row == 0 && settings.Bindings[0].Children[1].Column == 1,
-            "grid cell key uses one-based external coordinates");
+            "grid cell key uses zero-based coordinates");
         Require(settings.Bindings[1].DockChildren[1].CellIndex == 1, "dock cell key counts repeated directions");
         RejectText(source.Replace("\"index\":2", "\"index\":3"));
-        RejectText(source.Replace("\"row\":1,\"col\":1", "\"row\":0,\"col\":1"));
+        RejectText(source.Replace("\"model\":\"a\",\"cell\":{\"row\":0,\"col\":0}", "\"model\":\"a\",\"cell\":{\"row\":-1,\"col\":0}"));
     }
 
     private static void AddElementMargin(JsonNode node, string margin)

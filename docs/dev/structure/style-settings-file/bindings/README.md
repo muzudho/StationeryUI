@@ -4,7 +4,7 @@
 
 `cells` は **layouts 内**の配置枠です。セルに `slots` は書きません。モデルとの対応は bindings の `cell` で指定します。
 
-GridLayout のセルキーは、外部表記では 1 始まりの `row` と `col` です。`rowspan` と `colspan` はセルの大きさであり、キーには含めません。
+GridLayout のセルキーは、`layouts.cells` と同じく 0 始まりの `row` と `col` です。`rowspan` と `colspan` はセルの大きさであり、キーには含めません。
 
 ```json
 "cells": [
@@ -15,8 +15,8 @@ GridLayout のセルキーは、外部表記では 1 始まりの `row` と `col
 
 ```json
 "childrenModel": [
-  {"model": "header", "cell": {"row": 1, "col": 2}},
-  {"model": "body", "cell": {"row": 2, "col": 1}}
+  {"model": "header", "cell": {"row": 0, "col": 1}},
+  {"model": "body", "cell": {"row": 1, "col": 0}}
 ]
 ```
 
@@ -46,9 +46,9 @@ DockLayout のセルキーは、方向ごとの出現順を 1 始まりで数え
 
 ## 配置枠とモデルの対応
 
-配置情報は `layouts` に集めます。grid-layout の `cells` に `row`・`col`・必要な span、dock-layout の `cells` に `dock`・`size` を書きます。`bindings.childrenModel` は GridLayout なら `{"cell":{"row":1,"col":1}, "model":"nameField"}`、DockLayout なら `{"cell":{"dock":"top","index":1}, "model":"nameField"}` のように対応させます。
+配置情報は `layouts` に集めます。grid-layout の `cells` に `row`・`col`・必要な span、dock-layout の `cells` に `dock`・`size` を書きます。`bindings.childrenModel` は GridLayout なら `{"cell":{"row":0,"col":0}, "model":"nameField"}`、DockLayout なら `{"cell":{"dock":"top","index":1}, "model":"nameField"}` のように対応させます。
 
-セルキーは同じレイアウト内で一意です。GridLayout は 1 始まりの `row`・`col`、DockLayout は方向ごとの 1 始まりの `index` で指定します。未知のセル、同じセルへの二重割り当て、同じモデルの二重配置はエラーです。グリッドの枠は、モデルを割り当てていなくても範囲外・重複・子レイアウトとの重なりを検証します。未割り当ての枠は空き領域として残り、ドックではそのサイズを確保します。ドックの配置順は cells の順で決まり、bindings の並べ替えでは変わりません。
+セルキーは同じレイアウト内で一意です。GridLayout は 0 始まりの `row`・`col`、DockLayout は方向ごとの 1 始まりの `index` で指定します。未知のセル、同じセルへの二重割り当て、同じモデルの二重配置はエラーです。グリッドの枠は、モデルを割り当てていなくても範囲外・重複・子レイアウトとの重なりを検証します。未割り当ての枠は空き領域として残り、ドックではそのサイズを確保します。ドックの配置順は cells の順で決まり、bindings の並べ替えでは変わりません。
 
 旧形式の `bindings.childrenModel` にある行・列・span・dock・size は読み込みエラーになります。これらを参照先レイアウトの cells に移し、binding 側は cell と model にしてください。共有していたレイアウトで配置が異なる場合は、レイアウト定義を分けます。デモでは下端80px用の pageDock と0px用の pageDockFullscreen を使います。
 

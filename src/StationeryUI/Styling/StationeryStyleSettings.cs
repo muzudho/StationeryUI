@@ -427,11 +427,11 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             {
                 if (cell.EnumerateObject().Any(p => p.Name is not ("row" or "col")))
                     throw new JsonException($"{path}.cell: grid cell keys are row and col.");
-                var row = ReadInteger(cell, "row", path + ".cell", 1, 1) - 1;
-                var col = ReadInteger(cell, "col", path + ".cell", 1, 1) - 1;
+                var row = ReadInteger(cell, "row", path + ".cell", 0, 0);
+                var col = ReadInteger(cell, "col", path + ".cell", 0, 0);
                 var candidate = layout.Cells.FirstOrDefault(c => c.Row == row && c.Column == col);
-                if (candidate is null) throw new JsonException($"{path}: unknown cell row={row + 1}, col={col + 1} in {layout.Path}.");
-                var key = $"row={row + 1},col={col + 1}";
+                if (candidate is null) throw new JsonException($"{path}: unknown cell row={row}, col={col} in {layout.Path}.");
+                var key = $"row={row},col={col}";
                 if (!assigned.Add(key)) throw new JsonException($"{path}: cell '{key}' is assigned more than once.");
                 return candidate;
             }
