@@ -74,12 +74,187 @@ public sealed record StationeryLayoutBinding(string Layout, string ModelPath, IR
 /// <summary>A control handle mapped either to one layout path or to paths selected by layout key.</summary>
 public sealed record StationeryControlBindingV2(string? LayoutPath, IReadOnlyDictionary<string, string> LayoutPaths)
 {
+    /// <summary>Model path resolved from the layout route when the settings snapshot is parsed.</summary>
+    public string? ModelPath { get; init; }
+    /// <summary>Model paths resolved for each layout key when the settings snapshot is parsed.</summary>
+    public IReadOnlyDictionary<string, string> ModelPaths { get; init; }
+        = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(StringComparer.Ordinal));
+
     public string ResolveLayoutPath(string? layoutKey = null)
     {
         if (LayoutPath is not null) return LayoutPath;
         if (layoutKey is null) throw new ArgumentNullException(nameof(layoutKey), "A layout key is required for this control binding.");
         return LayoutPaths.TryGetValue(layoutKey, out var path) ? path
             : throw new KeyNotFoundException($"Unknown layout key '{layoutKey}'.");
+    }
+
+    public string ResolveModelPath(string? layoutKey = null)
+    {
+        if (LayoutPath is not null) return ModelPath
+            ?? throw new InvalidOperationException("The bindingsV2 layout path has not been resolved to a model.");
+        if (layoutKey is null) throw new ArgumentNullException(nameof(layoutKey), "A layout key is required for this control binding.");
+        return ModelPaths.TryGetValue(layoutKey, out var path) ? path
+            : throw new KeyNotFoundException($"Unknown layout key '{layoutKey}'.");
+    }
+}
+
+/// <summary>Resolves serialized control routes once, while a complete settings snapshot is parsed.</summary>
+internal static class StationeryControlBindingResolver
+{
+    public static IReadOnlyDictionary<string, StationeryControlBindingV2> Resolve(StationeryModelNode root,
+        IReadOnlyList<StationeryLayoutNode> layoutNodes, IReadOnlyList<StationeryLayoutBinding> placements,
+        IReadOnlyDictionary<string, StationeryControlBindingV2> bindings)
+    {
+        var layouts = layoutNodes.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
+        var modelIds = new Dictionary<string, string>(StringComparer.Ordinal);
+        var modelParents = new Dictionary<string, string?>(StringComparer.Ordinal);
+        void Index(StationeryModelNode model, string parent)
+        {
+            var path = parent + "/" + model.Id;
+            modelIds.Add(path, model.Id);
+            modelParents.Add(path, parent.Length == 0 ? null : parent);
+            foreach (var child in model.Children) Index(child, path);
+        }
+        Index(root, "");
+
+        var routeCache = new Dictionary<string, string?>(StringComparer.Ordinal);
+        bool TryRoute(string modelPath, out string route)
+        {
+            if (routeCache.TryGetValue(modelPath, out var cached))
+            {
+                route = cached ?? "";
+                return cached is not null;
+            }
+            var parentPath = modelParents[modelPath];
+            if (parentPath is null)
+            {
+                routeCache[modelPath] = "root";
+                route = "root";
+                return true;
+            }
+            if (!TryRoute(parentPath, out var parentRoute) || !TryPlacementRoute(parentPath, modelPath, out var placementRoute))
+            {
+                routeCache[modelPath] = null;
+                route = "";
+                return false;
+            }
+            route = parentRoute + ":" + modelIds[parentPath] + "/" + placementRoute;
+            routeCache[modelPath] = route;
+            return true;
+        }
+
+        bool TryPlacementRoute(string parentPath, string childPath, out string route)
+        {
+            foreach (var placement in placements.Where(binding => binding.ModelPath == parentPath))
+            {
+                var layout = layouts[placement.Layout];
+                string? edge = null;
+                if (placement.Children.FirstOrDefault(child => child.ModelPath == childPath) is { } child)
+                {
+                    if (layout.Type == "box-layout") edge = "single";
+                    if (layout.Type == "grid-layout")
+                        edge = $"{child.Row + 1}y.{child.Column + 1}x.{child.RowSpan}w.{child.ColumnSpan}h";
+                    if (layout.Type == "tabbed-box-layout")
+                        edge = child.Row.ToString(CultureInfo.InvariantCulture);
+                }
+                if (placement.FirstModel == childPath) edge = "first";
+                if (placement.SecondModel == childPath) edge = "second";
+                if (placement.InspectorModel == childPath) edge = "bottom";
+                var dockChild = placement.DockChildren.FirstOrDefault(item => item.ModelPath == childPath);
+                if (dockChild is not null) edge = dockChild.Dock;
+                if (edge is null) continue;
+                if (!TryNestedLayoutRoute(parentPath, placement.Layout, out var nested)) continue;
+                route = nested.Length == 0 ? edge : nested + "/" + edge;
+                return true;
+            }
+            route = "";
+            return false;
+        }
+
+        bool TryNestedLayoutRoute(string ownerPath, string boundLayoutPath, out string route)
+        {
+            var rootLayoutPath = placements.Where(binding => binding.ModelPath == ownerPath)
+                .Select(binding => binding.Layout)
+                .Where(path => boundLayoutPath == path || boundLayoutPath.StartsWith(path + "/", StringComparison.Ordinal))
+                .OrderBy(path => path.Length).FirstOrDefault();
+            if (rootLayoutPath is null)
+            {
+                route = "";
+                return false;
+            }
+            if (rootLayoutPath == boundLayoutPath)
+            {
+                route = "";
+                return true;
+            }
+            var nested = new List<StationeryLayoutNode>();
+            var current = layouts[boundLayoutPath];
+            while (current.Path != rootLayoutPath)
+            {
+                nested.Add(current);
+                if (current.ParentPath is not { } parentPath || !layouts.TryGetValue(parentPath, out current!))
+                {
+                    route = "";
+                    return false;
+                }
+            }
+            nested.Reverse();
+            var segments = new List<string>(nested.Count);
+            foreach (var childLayout in nested)
+            {
+                var parentLayout = layouts[childLayout.ParentPath!];
+                string edge;
+                if (parentLayout.Type == "box-layout") edge = "single";
+                else if (parentLayout.Type == "grid-layout")
+                    edge = $"{childLayout.Row + 1}y.{childLayout.Column + 1}x.{childLayout.RowSpan}w.{childLayout.ColumnSpan}h";
+                else
+                {
+                    route = "";
+                    return false;
+                }
+                segments.Add(edge + ":" + childLayout.Id);
+            }
+            route = string.Join('/', segments);
+            return true;
+        }
+
+        static string ModelIdForHandle(string handle)
+        {
+            var suffix = handle.StartsWith("ctrl", StringComparison.Ordinal) ? handle[4..] : handle;
+            return suffix.Length == 0 ? suffix : char.ToLowerInvariant(suffix[0]) + suffix[1..];
+        }
+
+        var resolved = new Dictionary<string, StationeryControlBindingV2>(StringComparer.Ordinal);
+        foreach (var (handle, binding) in bindings)
+        {
+            var expectedId = ModelIdForHandle(handle);
+            var resolvedByKey = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (binding.LayoutPath is { } singlePath)
+            {
+                resolved.Add(handle, binding with { ModelPath = ResolvePath(handle, singlePath, expectedId) });
+                continue;
+            }
+            foreach (var (key, selectedPath) in binding.LayoutPaths)
+                resolvedByKey.Add(key, ResolvePath(handle, selectedPath, expectedId));
+            resolved.Add(handle, binding with { ModelPaths = new ReadOnlyDictionary<string, string>(resolvedByKey) });
+        }
+        return new ReadOnlyDictionary<string, StationeryControlBindingV2>(resolved);
+
+        string ResolvePath(string handle, string selectedPath, string expectedId)
+        {
+            var allMatches = modelIds.Keys.Where(path => TryRoute(path, out var route) &&
+                string.Equals(route, selectedPath, StringComparison.Ordinal)).ToArray();
+            if (allMatches.Length == 1 && modelIds[allMatches[0]] != expectedId)
+                throw new JsonException($"bindingsV2 handle '{handle}' selects model '{modelIds[allMatches[0]]}' with path '{selectedPath}'.");
+            var matches = allMatches.Where(path => modelIds[path] == expectedId).ToArray();
+            if (matches.Length != 1)
+            {
+                var candidates = modelIds.Keys.Where(path => modelIds[path] == expectedId)
+                    .Select(path => TryRoute(path, out var route) ? $"{path} => {route}" : $"{path} => <no legacy placement>");
+                throw new JsonException($"bindingsV2 path for '{handle}' resolves to {matches.Length} current model placements; the path must match exactly one placement. Selected path: '{selectedPath}'. Candidate routes: {string.Join("; ", candidates)}.");
+            }
+            return matches[0];
+        }
     }
 }
 
@@ -459,8 +634,9 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             if (roots.Length > 1)
                 throw new JsonException($"{group.Key}: a node can be associated with at most one layout tree. Nest layouts instead of binding multiple roots.");
         }
+        var bindingsV2 = StationeryControlBindingResolver.Resolve(model, layouts, bindings, ReadBindingsV2(root));
         return new(Array.AsReadOnly(new[] { model }), layouts.AsReadOnly(), bindings.AsReadOnly())
-        { BindingsV2 = ReadBindingsV2(root) };
+        { BindingsV2 = bindingsV2 };
     }
 
     private static IReadOnlyDictionary<string, StationeryControlBindingV2> ReadBindingsV2(JsonElement root)

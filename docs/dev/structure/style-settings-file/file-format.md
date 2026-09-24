@@ -40,7 +40,7 @@
 
 文字列値は `root` から始まるパスです。ネストした layout の場合は、子 layout の配置セルと Id（例：`3y.2x.1w.1h:grid`）を経路に含めます。オブジェクト値では呼び出し側がコントロールハンドルごとの `LayoutKey` を `StationeryLayoutEngine.Arrange(settings, width, height, controlLayoutKeys)` に渡します。MonoGame の `Element` では `ControlHandle` と `LayoutKey` に設定できます。結果の `ControlBounds` と `ControlLayoutPaths` はハンドルで参照できます。`ctrl` 接頭辞を持つハンドルは、その後の先頭文字を小文字にした名前のモデルへ対応します（例：`ctrlNameField` → `nameField`）。
 
-この併用段階では、既存の `bindings` が配置と Bounds 計算を担います。`bindingsV2` のパスは既存 bindings から得られるモデル配置パスと照合され、一致しない場合や一意に解決できない場合は `Arrange` がエラーにします。従って `bindingsV2` だけで配置する移行はまだ完了していません。
+この併用段階では、設定の読み込み時に `bindingsV2` のパスを既存 `bindings` から得られるモデル配置パスと照合し、対象モデルへ解決します。`Arrange` はその解決済みモデルの bounds をハンドルへ返します。一方、配置と Bounds 計算自体はまだ既存 `bindings` が担うため、`bindingsV2` だけで配置する移行は完了していません。
 
 モデルには `id`、`type`、必要に応じて `children` を置きます。レイアウトの型とモデルの型は別です。たとえばモデルは `splitPane`、レイアウトは `split-pane` です。モデルの `type` 文字列を任意に増やしても、対応する UI が自動実装されるわけではありません。
 

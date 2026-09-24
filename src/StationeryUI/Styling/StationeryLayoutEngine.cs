@@ -41,7 +41,7 @@ public static class StationeryLayoutEngine
         return result;
     }
     /// <summary>
-    /// Arranges the existing model/layout bindings and resolves any bindingsV2 entries.
+    /// Arranges the current model/layout structure and returns bounds for bindingsV2 control handles.
     /// For controls with keyed paths, controlLayoutKeys supplies the selected LayoutKey per handle.
     /// </summary>
     public static StationeryLayoutResult Arrange(StationeryStyleSettings settings, double width, double height,
@@ -188,88 +188,6 @@ public static class StationeryLayoutEngine
         var controlLayoutPaths = new Dictionary<string, string>(StringComparer.Ordinal);
         if (settings.BindingsV2.Count > 0)
         {
-            var modelPaths = new Dictionary<string, string>(StringComparer.Ordinal);
-            var modelParents = new Dictionary<string, string?>(StringComparer.Ordinal);
-            void IndexModels(StationeryModelNode model, string parent)
-            {
-                var path = parent + "/" + model.Id;
-                modelPaths.Add(path, model.Id);
-                modelParents.Add(path, parent.Length == 0 ? null : parent);
-                foreach (var child in model.Children) IndexModels(child, path);
-            }
-            foreach (var model in settings.Models) IndexModels(model, "");
-            var routes = new Dictionary<string, string>(StringComparer.Ordinal);
-            string RouteFor(string modelPath)
-            {
-                if (routes.TryGetValue(modelPath, out var cached)) return cached;
-                var parentPath = modelParents[modelPath];
-                if (parentPath is null) return routes[modelPath] = "root";
-                var parentRoute = RouteFor(parentPath);
-                var namedParentRoute = parentRoute + ":" + modelPaths[parentPath];
-                var placementRoute = PlacementRoute(parentPath, modelPath);
-                return routes[modelPath] = namedParentRoute + "/" + placementRoute;
-            }
-
-            string PlacementRoute(string parentPath, string childPath)
-            {
-                foreach (var placement in settings.Bindings.Where(binding => binding.ModelPath == parentPath))
-                {
-                    var layout = layouts[placement.Layout];
-                    string? edge = null;
-                    if (placement.Children.FirstOrDefault(child => child.ModelPath == childPath) is { } child)
-                    {
-                        if (layout.Type == "box-layout") edge = "single";
-                        if (layout.Type == "grid-layout")
-                            edge = $"{child.Row + 1}y.{child.Column + 1}x.{child.RowSpan}w.{child.ColumnSpan}h";
-                        if (layout.Type == "tabbed-box-layout")
-                            edge = child.Row.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                    }
-                    if (placement.FirstModel == childPath) edge = "first";
-                    if (placement.SecondModel == childPath) edge = "second";
-                    if (placement.InspectorModel == childPath) edge = "bottom";
-                    var dockChild = placement.DockChildren.FirstOrDefault(child => child.ModelPath == childPath);
-                    if (dockChild is not null) edge = dockChild.Dock;
-                    if (edge is not null)
-                    {
-                        var nestedLayouts = NestedLayoutRoute(parentPath, placement.Layout);
-                        return nestedLayouts.Length == 0 ? edge : nestedLayouts + "/" + edge;
-                    }
-                }
-                throw new InvalidOperationException($"No legacy bindings placement was found for model '{childPath}'.");
-            }
-
-            string NestedLayoutRoute(string ownerPath, string boundLayoutPath)
-            {
-                var rootLayoutPath = settings.Bindings.Where(binding => binding.ModelPath == ownerPath)
-                    .Select(binding => binding.Layout)
-                    .Where(path => boundLayoutPath == path || boundLayoutPath.StartsWith(path + "/", StringComparison.Ordinal))
-                    .OrderBy(path => path.Length).FirstOrDefault()
-                    ?? throw new InvalidOperationException($"No root layout is bound to '{ownerPath}'.");
-                if (rootLayoutPath == boundLayoutPath) return "";
-                var nested = new List<StationeryLayoutNode>();
-                var current = layouts[boundLayoutPath];
-                while (current.Path != rootLayoutPath)
-                {
-                    nested.Add(current);
-                    current = current.ParentPath is { } parentPath && layouts.TryGetValue(parentPath, out var parentLayout)
-                        ? parentLayout : throw new InvalidOperationException($"Layout '{current.Path}' is not nested under '{rootLayoutPath}'.");
-                }
-                nested.Reverse();
-                var segments = new List<string>(nested.Count);
-                foreach (var childLayout in nested)
-                {
-                    var parentLayout = layouts[childLayout.ParentPath!];
-                    var edge = parentLayout.Type switch
-                    {
-                        "box-layout" => "single",
-                        "grid-layout" => $"{childLayout.Row + 1}y.{childLayout.Column + 1}x.{childLayout.RowSpan}w.{childLayout.ColumnSpan}h",
-                        _ => throw new InvalidOperationException($"Nested layout '{childLayout.Path}' is not placed by a supported parent layout.")
-                    };
-                    segments.Add(edge + ":" + childLayout.Id);
-                }
-                return string.Join('/', segments);
-            }
-
             foreach (var (handle, binding) in settings.BindingsV2)
             {
                 string? key = null;
@@ -279,34 +197,11 @@ public static class StationeryLayoutEngine
                         throw new InvalidOperationException($"Control '{handle}' requires a LayoutKey.");
                 }
                 var selectedPath = binding.ResolveLayoutPath(key);
-                var modelId = ModelIdForHandle(handle);
-                // Route only the model named by this control handle. Trying every model
-                // makes unplaced/unsupported models throw during normal path lookup;
-                // although MatchesRoute catches those exceptions, debuggers configured
-                // to break on thrown InvalidOperationException still stop on every frame.
-                var matches = modelPaths.Where(pair => pair.Value == modelId)
-                    .Select(pair => pair.Key)
-                    .Where(path => MatchesRoute(selectedPath, path)).ToArray();
-                if (matches.Length != 1)
-                {
-                    var candidates = modelPaths.Keys.Where(path => modelPaths[path] == modelId)
-                        .Select(path =>
-                        {
-                            try { return $"{path} => {RouteFor(path)}"; }
-                            catch (InvalidOperationException exception) { return $"{path} => <{exception.Message}>"; }
-                        });
-                    throw new InvalidOperationException($"bindingsV2 path for '{handle}' resolves to {matches.Length} current model placements; the path must match exactly one placement. Selected path: '{selectedPath}'. Candidate routes: {string.Join("; ", candidates)}.");
-                }
-                if (!bounds.TryGetValue(matches[0], out var controlBoundsForHandle))
-                    throw new InvalidOperationException($"No arranged bounds exist for control '{handle}' at {matches[0]}.");
+                var targetModelPath = binding.ResolveModelPath(key);
+                if (!bounds.TryGetValue(targetModelPath, out var controlBoundsForHandle))
+                    throw new InvalidOperationException($"No arranged bounds exist for control '{handle}' at {targetModelPath} (path '{selectedPath}').");
                 controlBounds.Add(handle, controlBoundsForHandle);
                 controlLayoutPaths.Add(handle, selectedPath);
-            }
-
-            bool MatchesRoute(string selectedPath, string modelPath)
-            {
-                try { return string.Equals(selectedPath, RouteFor(modelPath), StringComparison.Ordinal); }
-                catch (InvalidOperationException) { return false; }
             }
         }
 
@@ -319,13 +214,6 @@ public static class StationeryLayoutEngine
             LayoutBorderBounds = new ReadOnlyDictionary<string, ScreenRectangle>(layoutBorders),
             ControlBounds = new ReadOnlyDictionary<string, ScreenRectangle>(controlBounds),
             ControlLayoutPaths = new ReadOnlyDictionary<string, string>(controlLayoutPaths) };
-
-        static string ModelIdForHandle(string handle)
-        {
-            var suffix = handle.StartsWith("ctrl", StringComparison.Ordinal) ? handle[4..] : handle;
-            if (suffix.Length == 0) return suffix;
-            return char.ToLowerInvariant(suffix[0]) + suffix[1..];
-        }
 
     }
 
