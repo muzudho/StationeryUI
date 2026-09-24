@@ -10,9 +10,10 @@
 ## 現行版と、新しい構想との違い
 
 * ［スタイル設定ファイル］の models セクションに、コントロールの親子関係を設定しているが、これは廃止予定です。
-* ［スタイル設定ファイル］の bindings セクションに、レイアウトの親子関係を定義しているが、これは廃止予定です。［レイアウトハンドル］を用いて、コントロールとレイアウトの間接的なマッピングだけを行います。
+* ［スタイル設定ファイル］の bindings セクションに、レイアウトの親子関係を定義しているが、これは廃止予定です。  
+［コントロールハンドル］を用いて、コントロールとレイアウトの間接的なマッピングだけを行います。
 
-［コントロール］は、［コントロールハンドル］を１ちます。
+［コントロール］は、それぞれ一意な［コントロールハンドル］を１つ持ちます。  
 新しい構想の bindings セクションは、［コントロールハンドル］と［レイアウトパス］を一対一対応させます。  
 
 
@@ -26,6 +27,8 @@
 	* `Width`
 	* `Height`
 * `ControlHandle` - ［コントロール・ハンドル］。後述。
+
+画面に置く各コントロールへ、重複しない `ControlHandle` を割り当てます。
 
 X, Y は、基本的にビューポート内での相対座標だ。  
 左上が原点で、Y 軸は下向きに伸びる。  
@@ -248,8 +251,9 @@ Height = 20px （垂直の controlLength）
 		* top: applicationBar
 		* center: mainContent - GridLayout
 			* 1y.1x.1w.1h: leftMenu - BoxLayout
+				* single: nameField
 			* 1y.2x.2w.1h: rightContent - BoxLayout
-		* bottom: inspectorPanel - BoxLayout
+		* bottom: inspectorPanel - BoxLayout [ControlHandle: inspectorPanel]
 ```
 
 👆　上記の１行が［レイアウトノード］です。  
@@ -284,7 +288,12 @@ Height = 20px （垂直の controlLength）
     "bindings": {
 		"viewPort": "root:viewPort",
 		"topDemoPage": "root:viewPort/single:topDemoPage",
-		"nameField": "root:viewPort/single:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu"
+		"applicationBar": "root:viewPort/single:topDemoPage/top:applicationBar",
+		"mainContent": "root:viewPort/single:topDemoPage/center:mainContent",
+		"leftMenu": "root:viewPort/single:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu",
+		"nameField": "root:viewPort/single:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu/single:nameField",
+		"rightContent": "root:viewPort/single:topDemoPage/center:mainContent/1y.2x.2w.1h:rightContent",
+		"inspectorPanel": "root:viewPort/single:topDemoPage/bottom:inspectorPanel"
 	}
 }
 ```
@@ -297,7 +306,7 @@ Height = 20px （垂直の controlLength）
 
 です。  
 
-［コントロール・ハンドル］は、任意の文字列です。  
+［コントロール・ハンドル］は、画面上で一意な任意の文字列です。  
 使える文字は、半角英数字記号です。空白、改行は使えません。  
 
 コントロールは、［レイアウトパス］を１つ持つことができます。  
