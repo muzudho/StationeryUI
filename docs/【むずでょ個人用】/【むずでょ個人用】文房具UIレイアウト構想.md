@@ -19,7 +19,7 @@
 
 ## MonoGame での座標系
 
-コントロールは、以下のプロパティを持つ。  
+［コントロール］は、以下のプロパティを持つ。  
 
 * `Bounds` - MonoGame の `Rectangle` 型。実際に使われる座標。
 	* `X`
@@ -27,6 +27,7 @@
 	* `Width`
 	* `Height`
 * `ControlHandle` - ［コントロール・ハンドル］。後述。
+* `LayoutKey` - ［レイアウトキー］。後述。
 
 画面に置く各コントロールへ、重複しない `ControlHandle` を割り当てます。
 
@@ -290,11 +291,7 @@ Height = 20px （垂直の controlLength）
 ```json
 {
     "bindings": {
-		"viewPort": {
-			"root": {
-				"layout": "viewPort"
-			}
-		},
+		"viewPort": "root:viewPort",
 		"topDemoPage": "root:viewPort/0:topDemoPage",
 		"applicationBar": "root:viewPort/0:topDemoPage/top:applicationBar",
 		"mainContent": "root:viewPort/0:topDemoPage/center:mainContent",
@@ -319,7 +316,30 @@ Height = 20px （垂直の controlLength）
 ［コントロール・ハンドル］は、画面上で一意な任意の文字列です。  
 使える文字は、半角英数字記号です。空白、改行は使えません。  
 
-コントロールは、［レイアウトパス］を１つ持つことができます。  
+［コントロール］は、［レイアウトパス］を１つ持つことができます。  
+
+［コントロール］によっては、別ページにも配置されることがあります。  
+そこで、［JSON オブジェクト］を使って複数の［レイアウトキー］と［レイアウトパス］のペアを  
+持たせることができます。  
+
+例：  
+
+```json
+{
+    "bindings": {
+		"viewPort": "root:viewPort",
+		"saveButton": {
+			"topDemoPage" : "root:viewPort/0:topDemoPage",
+			"splitPaneDemoPage" : "root:viewPort/0:splitPaneDemoPage",
+			"layoutDemoPage" : "root:viewPort/0:layoutDemoPage"
+		}
+	}
+}
+```
+
+👆　（将来的に）３つのページに配置される［コントロール］の指定方法。  
+C# ソースコードでは［レイアウトキー］を使って［ソルバー］を使うことで、  
+［レイアウトパス］を変えることができます。
 
 
 ## ソルバー
@@ -361,8 +381,6 @@ Height = 20px （垂直の controlLength）
 例えば、子ノードの四方の Margin が 20px の場合、子ノードの Bounds は 740px x 540px です。  
 
 あとは繰り返しです。  
-
-
 
 
 ## 廃止方針

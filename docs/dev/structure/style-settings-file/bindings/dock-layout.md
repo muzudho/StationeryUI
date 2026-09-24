@@ -1,6 +1,18 @@
 # bindings セクションの ドック・レイアウト
 
-## JSON 設定例
+## JSON 設定例（こうしたい）
+
+```json
+{
+    "bindings": [
+        {
+            "control": "inspectorPanel"
+        }
+    ]
+}
+```
+
+## JSON 設定例（旧バージョン）
 
 ```json
 {
