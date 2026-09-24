@@ -847,7 +847,43 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         }
       ]
     }
-  ]
+  ],
+  "bindingsV2": {
+    "ctrlNameField": "root:demo/0:topDemoPage/center:body/1y.1x.1w.1h",
+    "ctrlMemoField": "root:demo/0:topDemoPage/center:body/2y.1x.1w.1h",
+    "ctrlThemeButton": "root:demo/0:topDemoPage/center:body/3y.1x.1w.1h",
+    "ctrlScaleButton": "root:demo/0:topDemoPage/center:body/3y.2x.1w.1h",
+    "ctrlApplyTitleButton": "root:demo/0:topDemoPage/center:body/4y.1x.1w.1h",
+    "ctrlOpenDialogButton": "root:demo/0:topDemoPage/center:body/5y.1x.1w.1h",
+    "ctrlSampleTree": "root:demo/0:topDemoPage/center:body/1y.2x.1w.1h",
+    "ctrlSplitPaneDemoLink": "root:demo/0:topDemoPage/center:body/5y.2x.1w.1h",
+    "ctrlLayoutDemoLink": "root:demo/0:topDemoPage/center:body/4y.2x.1w.1h",
+    "ctrlVerticalSplit": "root:demo/1:splitPaneDemoPage/center:body/2y.1x.1w.1h",
+    "ctrlHorizontalSplit": "root:demo/1:splitPaneDemoPage/center:body/3y.1x.1w.1h",
+    "ctrlLeftPane": "root:demo/1:splitPaneDemoPage/center:body/2y.1x.1w.1h:verticalSplit/first",
+    "ctrlRightPane": "root:demo/1:splitPaneDemoPage/center:body/2y.1x.1w.1h:verticalSplit/second",
+    "ctrlTopPane": "root:demo/1:splitPaneDemoPage/center:body/3y.1x.1w.1h:horizontalSplit/first",
+    "ctrlBottomPane": "root:demo/1:splitPaneDemoPage/center:body/3y.1x.1w.1h:horizontalSplit/second",
+    "ctrlTitle": "root:demo/2:layoutDemoPage/center:body/1y.2x.1w.1h",
+    "ctrlBoxTitle": "root:demo/2:layoutDemoPage/center:body/2y.1x.1w.1h",
+    "ctrlBoxContent": "root:demo/2:layoutDemoPage/center:body/3y.1x.1w.1h",
+    "ctrlGridTitle": "root:demo/2:layoutDemoPage/center:body/2y.2x.1w.1h",
+    "ctrlSpanCell": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.1x.2w.1h",
+    "ctrlGridFooter": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/3y.1x.1w.3h",
+    "ctrlNestedA": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.1x.1w.1h",
+    "ctrlNestedB": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.2x.1w.1h",
+    "ctrlNestedC": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.1x.1w.1h",
+    "ctrlNestedD": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.2x.1w.1h",
+    "ctrlTopDemoLink": {
+      "lytSplitPaneDemoPage": "root:demo/1:splitPaneDemoPage/center:body/1y.1x.1w.1h",
+      "lytLayoutDemoPage": "root:demo/2:layoutDemoPage/center:body/1y.1x.1w.1h"
+    },
+    "ctrlToolHint": {
+      "lytTopDemoPage": "root:demo/0:topDemoPage/bottom:inspectorPanel/1y.1x.1w.1h",
+      "lytSplitPaneDemoPage": "root:demo/1:splitPaneDemoPage/bottom:inspectorPanel/1y.1x.1w.1h",
+      "lytLayoutDemoPage": "root:demo/2:layoutDemoPage/bottom:inspectorPanel/1y.1x.1w.1h"
+    }
+  }
 }
 """);
 
@@ -896,16 +932,22 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         {
             ["nameField"] = "textBox", ["cancelButton"] = "button", ["saveButton"] = "button"
         });
-        var placed = settings.Bindings.SelectMany(binding => binding.Children).Select(child => child.ModelPath).ToHashSet(StringComparer.Ordinal);
-        placed.UnionWith(settings.Bindings.SelectMany(binding => binding.DockChildren).Select(child => child.ModelPath));
-        foreach (var binding in settings.Bindings.Where(binding => binding.FirstModel is not null))
-        {
-            placed.Add(binding.FirstModel!); placed.Add(binding.SecondModel!);
-        }
         foreach (var node in main.Values.Concat(splitControls.Values).Concat(layoutControls.Values))
-            if (!placed.Contains(node.Path)) throw new JsonException($"Demo control {node.Path} needs a grid-layout cell binding.");
+        {
+            var handle = "ctrl" + char.ToUpperInvariant(node.Id[0]) + node.Id[1..];
+            if (!settings.BindingsV2.TryGetValue(handle, out var controlBinding))
+                throw new JsonException($"Demo control {node.Path} requires a bindingsV2 entry for '{handle}'.");
+            var resolvedPaths = controlBinding.LayoutPath is not null
+                ? new[] { controlBinding.ModelPath }
+                : controlBinding.ModelPaths.Values.ToArray();
+            if (!resolvedPaths.Contains(node.Path, StringComparer.Ordinal))
+                throw new JsonException($"bindingsV2 entry '{handle}' does not resolve to demo control {node.Path}.");
+        }
         if (settings.Bindings.Any(binding => root.Resolve(binding.ModelPath)!.IsWithin(dialog)) ||
-            placed.Any(path => root.Resolve(path)!.IsWithin(dialog)))
+            settings.Bindings.SelectMany(binding => binding.Children.Select(child => child.ModelPath)
+                .Concat(binding.DockChildren.Select(child => child.ModelPath))
+                .Concat(binding.FirstModel is null ? [] : [binding.FirstModel, binding.SecondModel!]))
+                .Any(path => root.Resolve(path)!.IsWithin(dialog)))
             throw new JsonException("The demo dialog currently uses its code-defined layout; bind the main controls only.");
         foreach (var id in new[] { "verticalSplit", "horizontalSplit" })
         {

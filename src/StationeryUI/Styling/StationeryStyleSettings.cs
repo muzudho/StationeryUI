@@ -218,38 +218,28 @@ internal static class StationeryControlBindingResolver
             return true;
         }
 
-        static string ModelIdForHandle(string handle)
-        {
-            var suffix = handle.StartsWith("ctrl", StringComparison.Ordinal) ? handle[4..] : handle;
-            return suffix.Length == 0 ? suffix : char.ToLowerInvariant(suffix[0]) + suffix[1..];
-        }
-
         var resolved = new Dictionary<string, StationeryControlBindingV2>(StringComparer.Ordinal);
         foreach (var (handle, binding) in bindings)
         {
-            var expectedId = ModelIdForHandle(handle);
             var resolvedByKey = new Dictionary<string, string>(StringComparer.Ordinal);
             if (binding.LayoutPath is { } singlePath)
             {
-                resolved.Add(handle, binding with { ModelPath = ResolvePath(handle, singlePath, expectedId) });
+                resolved.Add(handle, binding with { ModelPath = ResolvePath(handle, singlePath) });
                 continue;
             }
             foreach (var (key, selectedPath) in binding.LayoutPaths)
-                resolvedByKey.Add(key, ResolvePath(handle, selectedPath, expectedId));
+                resolvedByKey.Add(key, ResolvePath(handle, selectedPath));
             resolved.Add(handle, binding with { ModelPaths = new ReadOnlyDictionary<string, string>(resolvedByKey) });
         }
         return new ReadOnlyDictionary<string, StationeryControlBindingV2>(resolved);
 
-        string ResolvePath(string handle, string selectedPath, string expectedId)
+        string ResolvePath(string handle, string selectedPath)
         {
-            var allMatches = modelIds.Keys.Where(path => TryRoute(path, out var route) &&
+            var matches = modelIds.Keys.Where(path => TryRoute(path, out var route) &&
                 string.Equals(route, selectedPath, StringComparison.Ordinal)).ToArray();
-            if (allMatches.Length == 1 && modelIds[allMatches[0]] != expectedId)
-                throw new JsonException($"bindingsV2 handle '{handle}' selects model '{modelIds[allMatches[0]]}' with path '{selectedPath}'.");
-            var matches = allMatches.Where(path => modelIds[path] == expectedId).ToArray();
             if (matches.Length != 1)
             {
-                var candidates = modelIds.Keys.Where(path => modelIds[path] == expectedId)
+                var candidates = modelIds.Keys
                     .Select(path => TryRoute(path, out var route) ? $"{path} => {route}" : $"{path} => <no legacy placement>");
                 throw new JsonException($"bindingsV2 path for '{handle}' resolves to {matches.Length} current model placements; the path must match exactly one placement. Selected path: '{selectedPath}'. Candidate routes: {string.Join("; ", candidates)}.");
             }
