@@ -286,6 +286,7 @@ Height = 20px （垂直の controlLength）
 `1w` は、横幅が１列分であることを意味します。  
 `1h` は、縦幅が１行分であることを意味します。
 
+
 ## バインディングズ
 
 まず、 JSON 設定方法を示します。  
@@ -293,16 +294,16 @@ Height = 20px （垂直の controlLength）
 ```json
 {
     "bindings": {
-		"viewPort": "root:viewPort",
-		"topDemoPage": "root:viewPort/0:topDemoPage",
-		"applicationBar": "root:viewPort/0:topDemoPage/top:applicationBar",
-		"mainContent": "root:viewPort/0:topDemoPage/center:mainContent",
-		"leftMenu": "root:viewPort/0:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu",
-		"nameField": "root:viewPort/0:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu/single:nameField",
-		"rightContent": "root:viewPort/0:topDemoPage/center:mainContent/1y.2x.2w.1h:rightContent",
-		"inspectorPanel": "root:viewPort/0:topDemoPage/bottom:inspectorPanel",
-		"splitPaneDemoPage": "root:viewPort/1:splitPaneDemoPage",
-		"layoutDemoPage": "root:viewPort/2:layoutDemoPage"
+		"ctrlViewPort": "root",
+		"ctrlTopDemoPage": "root:viewPort/0",
+		"ctrlApplicationBar": "root:viewPort/0:topDemoPage/top",
+		"ctrlMainContent": "root:viewPort/0:topDemoPage/center",
+		"ctrlLeftMenu": "root:viewPort/0:topDemoPage/center:mainContent/1y.1x.1w.1h",
+		"ctrlNameField": "root:viewPort/0:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu/single",
+		"ctrlRightContent": "root:viewPort/0:topDemoPage/center:mainContent/1y.2x.2w.1h",
+		"ctrlInspectorPanel": "root:viewPort/0:topDemoPage/bottom",
+		"ctrlSplitPaneDemoPage": "root:viewPort/1",
+		"ctrlLayoutDemoPage": "root:viewPort/2"
 	}
 }
 ```
@@ -310,15 +311,21 @@ Height = 20px （垂直の controlLength）
 👆　書式は、  
 
 ```plaintext
-"コントロール・ハンドル": "レイアウトノードのパス"
+"コントロールハンドル": "レイアウトノードのパス"
 ```
 
 です。  
 
-［コントロール・ハンドル］は、画面上で一意な任意の文字列です。  
+［コントロールハンドル］は、画面上で一意な任意の文字列です。  
 使える文字は、半角英数字記号です。空白、改行は使えません。  
+［レイアウトノードの名前］と区別しやすくするために、 `ctrl` で始めることを推奨します。  
 
 ［コントロール］は、１つの［レイアウトキー］につき［レイアウトパス］を１つ持ちます。  
+
+［レイアウトキー］は、コントロールで一意な任意の文字列です。  
+使える文字は、半角英数字記号です。空白、改行は使えません。  
+他の名前と区別しやすくするために、 `lyt` で始めることを推奨します。  
+
 
 ［コントロール］によっては、別ページにも配置されることがあります。  
 この場合、bindings の値に［JSON オブジェクト］を置き、複数の［レイアウトキー］と［レイアウトパス］のペアを  
@@ -329,11 +336,11 @@ Height = 20px （垂直の controlLength）
 ```json
 {
     "bindings": {
-		"viewPort": "root:viewPort",
-		"saveButton": {
-			"topDemoPage" : "root:viewPort/0:topDemoPage",
-			"splitPaneDemoPage" : "root:viewPort/1:splitPaneDemoPage",
-			"layoutDemoPage" : "root:viewPort/2:layoutDemoPage"
+		"ctrlViewPort": "root",
+		"ctrlSaveButton": {
+			"lytTopDemoPage" : "root:viewPort/0",
+			"lytSplitPaneDemoPage" : "root:viewPort/1",
+			"lytLayoutDemoPage" : "root:viewPort/2"
 		}
 	}
 }
