@@ -338,9 +338,9 @@ Height = 20px （垂直の controlLength）
     "bindings": {
 		"ctrlViewPort": "root",
 		"ctrlSaveButton": {
-			"lytTopDemoPage" : "root:viewPort/0",
-			"lytSplitPaneDemoPage" : "root:viewPort/1",
-			"lytLayoutDemoPage" : "root:viewPort/2"
+			"lytTopDemoPage" : "root:viewPort/0:topDemoPage/top",
+			"lytSplitPaneDemoPage" : "root:viewPort/1:splitPaneDemoPage/top",
+			"lytLayoutDemoPage" : "root:viewPort/2:layoutDemoPage/top"
 		}
 	}
 }
