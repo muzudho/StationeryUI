@@ -139,6 +139,7 @@ internal sealed partial class Demo : Game
 
     private void ApplyStyles()
     {
+        SyncSelectedTab();
         if (!ReferenceEquals(appliedStyle, styles.Current))
         {
             var next = DemoModelBinding.Create(styles.Current);

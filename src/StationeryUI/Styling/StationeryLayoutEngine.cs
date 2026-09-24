@@ -87,6 +87,18 @@ public static class StationeryLayoutEngine
                 foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
                     foreach (var child in binding.Children)
                         positions[child.ModelPath] = content;
+            if (layout.Type == "tabbed-box-layout")
+                foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
+                {
+                    if ((uint)layout.SelectedTabIndex >= (uint)binding.Children.Count)
+                        throw new InvalidOperationException($"{layout.Path}.SelectedTabIndex {layout.SelectedTabIndex} is outside the {binding.Children.Count} bound tabs.");
+                    for (var index = 0; index < binding.Children.Count; index++)
+                    {
+                        var child = binding.Children[index];
+                        positions[child.ModelPath] = index == layout.SelectedTabIndex
+                            ? content : new ScreenRectangle(content.X, content.Y, 0, 0);
+                    }
+                }
             if (layout.Type == "dock-layout")
                 foreach (var binding in owners[owner].Where(b => b.Layout == layout.Path))
                 {
@@ -135,7 +147,7 @@ public static class StationeryLayoutEngine
                 content = outer with { Height = outer.Height - inspectorHeight };
                 positions.Add(page.InspectorModel!, new(outer.X, outer.Y + content.Height, outer.Width, inspectorHeight));
             }
-            if (roots.TryGetValue(node.Path, out var panel))
+            if (roots.TryGetValue(node.Path, out var panel) && (panel.Type is "box-layout" or "tabbed-box-layout"))
             {
                 var inset = panel.Padding.GetContentBounds(content.Width, content.Height);
                 content = inset with { X = outer.X + inset.X, Y = outer.Y + inset.Y };
@@ -155,7 +167,7 @@ public static class StationeryLayoutEngine
             }
             if (owners.TryGetValue(node.Path, out var ownerBindings))
                 foreach (var layout in ownerBindings.Select(b => layouts[("/" + b.Layout.Split('/')[1])]).Distinct())
-                    if (layout.Type is "box-layout" or "grid-layout" or "dock-layout") ArrangeLayout(layout, node.Path, outer, content, rootAllocation);
+                    if (layout.Type is "box-layout" or "grid-layout" or "dock-layout" or "tabbed-box-layout") ArrangeLayout(layout, node.Path, outer, content, rootAllocation);
             // An unbound dock child must not cover every sibling; other nested bindings still take precedence.
             var inheritedChild = ownerBindings?.Any(b => layouts[b.Layout].Type == "dock-layout") == true
                 ? new ScreenRectangle(content.X, content.Y, 0, 0) : content;

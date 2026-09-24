@@ -234,6 +234,8 @@ Height = 20px （垂直の controlLength）
 * ドック・レイアウト（DockLayout） - 四辺と中央に子要素を積む。四辺には０～複数個積める。中央は子要素を０～１個持つ。
 	* 詳しくは： 📖 [layouts セクションのドック・レイアウト](../dev/structure/style-settings-file/layouts/dock-layout.md)
 	* 詳しくは： 📖 [layouts セクションのドック・レイアウト（詳細）](../dev/structure/style-settings-file/layouts/dock-layout-detail.md)
+* タブド・ボックス・レイアウト（TabbedBoxLayout） - 子要素を同時に１つしか持てません。遷移することで、子要素を配列で複数個持たせることができます。
+	* 詳しくは： 📖 [layouts セクションのタブド・ボックス・レイアウト](../dev/structure/style-settings-file/layouts/tabbed-box-layout.md)
 * その他
 	* 詳しくは： 📖 [ネステッド・レイアウト](../dev/structure/style-settings-file/layouts/nested-layouts.md)
 		* グリッドのセルを跨ぐ考え方
@@ -246,14 +248,16 @@ Height = 20px （垂直の controlLength）
 例：  
 
 ```plaintext
-* root: viewPort - BoxLayout
-	* single: topDemoPage - DockLayout
-		* top: applicationBar
-		* center: mainContent - GridLayout
-			* 1y.1x.1w.1h: leftMenu - BoxLayout
-				* single: nameField
-			* 1y.2x.2w.1h: rightContent - BoxLayout
+* root: viewPort - TabbedBoxLayout [ControlHandle: viewPort]
+	* 0: topDemoPage - DockLayout [ControlHandle: topDemoPage]
+		* top: applicationBar [ControlHandle: applicationBar]
+		* center: mainContent - GridLayout [ControlHandle: mainContent]
+			* 1y.1x.1w.1h: leftMenu - BoxLayout [ControlHandle: leftMenu]
+				* single: nameField [ControlHandle: nameField]
+			* 1y.2x.2w.1h: rightContent - BoxLayout [ControlHandle: rightContent]
 		* bottom: inspectorPanel - BoxLayout [ControlHandle: inspectorPanel]
+	* 1: splitPaneDemoPage - DockLayout [ControlHandle: splitPaneDemoPage]
+	* 2: layoutDemoPage - DockLayout [ControlHandle: layoutDemoPage]
 ```
 
 👆　上記の１行が［レイアウトノード］です。  
@@ -261,12 +265,12 @@ Height = 20px （垂直の controlLength）
 解説：  
 
 ```plaintext
-* root: viewPort - BoxLayout
+* root: viewPort - TabbedBoxLayout
 ```
 
 👆　`root:` は、最上位のノードを示します。  
 `viewPort` は、ノードの名前です。  
-`BoxLayout` は、レイアウトの種類です。  
+`TabbedBoxLayout` は、レイアウトの種類です。  
 
 ボックスレイアウトは、 `single:` が唯一の子ノードを示します。  
 
@@ -286,14 +290,20 @@ Height = 20px （垂直の controlLength）
 ```json
 {
     "bindings": {
-		"viewPort": "root:viewPort",
-		"topDemoPage": "root:viewPort/single:topDemoPage",
-		"applicationBar": "root:viewPort/single:topDemoPage/top:applicationBar",
-		"mainContent": "root:viewPort/single:topDemoPage/center:mainContent",
-		"leftMenu": "root:viewPort/single:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu",
-		"nameField": "root:viewPort/single:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu/single:nameField",
-		"rightContent": "root:viewPort/single:topDemoPage/center:mainContent/1y.2x.2w.1h:rightContent",
-		"inspectorPanel": "root:viewPort/single:topDemoPage/bottom:inspectorPanel"
+		"viewPort": {
+			"root": {
+				"layout": "viewPort"
+			}
+		},
+		"topDemoPage": "root:viewPort/0:topDemoPage",
+		"applicationBar": "root:viewPort/0:topDemoPage/top:applicationBar",
+		"mainContent": "root:viewPort/0:topDemoPage/center:mainContent",
+		"leftMenu": "root:viewPort/0:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu",
+		"nameField": "root:viewPort/0:topDemoPage/center:mainContent/1y.1x.1w.1h:leftMenu/single:nameField",
+		"rightContent": "root:viewPort/0:topDemoPage/center:mainContent/1y.2x.2w.1h:rightContent",
+		"inspectorPanel": "root:viewPort/0:topDemoPage/bottom:inspectorPanel",
+		"splitPaneDemoPage": "root:viewPort/1:splitPaneDemoPage",
+		"layoutDemoPage": "root:viewPort/2:layoutDemoPage"
 	}
 }
 ```

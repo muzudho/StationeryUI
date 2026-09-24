@@ -49,6 +49,8 @@ public sealed record StationeryLayoutNode(string Id, string Type, ViewportPaddin
     public int RowSpan { get; init; } = 1;
     public int ColumnSpan { get; init; } = 1;
     public IReadOnlyList<StationeryLayoutNode> Children { get; init; } = [];
+    /// <summary>Runtime-selected zero-based child for tabbed-box-layout.</summary>
+    public int SelectedTabIndex { get; set; }
 }
 /// <summary>A name for a cell, with no geometry or spacing of its own.</summary>
 public sealed record StationeryLayoutSlot(string Id);
@@ -84,7 +86,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         {
             var rootPath = "/" + Models[0].Id;
             var binding = Bindings.FirstOrDefault(binding => binding.ModelPath == rootPath &&
-                Layouts.Any(layout => layout.Path == ("/" + binding.Layout.Split('/')[1]) && layout.Type is "box-layout" or "grid-layout" or "dock-layout"));
+                Layouts.Any(layout => layout.Path == ("/" + binding.Layout.Split('/')[1]) && layout.Type is "box-layout" or "grid-layout" or "dock-layout" or "tabbed-box-layout"));
             return binding is null ? default : Layouts.Single(layout => layout.Path == ("/" + binding.Layout.Split('/')[1])).Padding;
         }
     }
@@ -120,7 +122,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             var type = ReadString(item, "type", path);
             if (type == "floating-layout") type = "grid-layout"; // Legacy JSON spelling.
             if (type == "panel") type = "box-layout";
-            if (type is not ("box-layout" or "grid-layout" or "dock-layout" or "split-pane" or "fullscreen-layout" or "work-page-layout")) throw new JsonException($"{path}.type must be box-layout, grid-layout, dock-layout, split-pane, fullscreen-layout or work-page-layout.");
+            if (type is not ("box-layout" or "grid-layout" or "dock-layout" or "tabbed-box-layout" or "split-pane" or "fullscreen-layout" or "work-page-layout")) throw new JsonException($"{path}.type must be box-layout, grid-layout, dock-layout, tabbed-box-layout, split-pane, fullscreen-layout or work-page-layout.");
             if (item.TryGetProperty("contents", out _) ||
                 item.TryGetProperty("model", out _) || item.TryGetProperty("parentModel", out _))
                 throw new JsonException($"{path}: model references and placement belong in bindings.");
@@ -136,8 +138,8 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             }
             if (type != "box-layout" && item.TryGetProperty("border", out _))
                 throw new JsonException($"{path}: border requires a box-layout.");
-            if (type is "box-layout" or "grid-layout" or "dock-layout") margin = ReadEdges("margin");
-            else if (item.TryGetProperty("margin", out _)) throw new JsonException($"{path}: margin requires box-layout, grid-layout or dock-layout.");
+            if (type is "box-layout" or "grid-layout" or "dock-layout" or "tabbed-box-layout") margin = ReadEdges("margin");
+            else if (item.TryGetProperty("margin", out _)) throw new JsonException($"{path}: margin requires box-layout, grid-layout, dock-layout or tabbed-box-layout.");
             SplitPaneOptions? split = null;
             double inspectorHeight = 0;
             IReadOnlyList<LayoutTrack> rows = Array.Empty<LayoutTrack>(), columns = Array.Empty<LayoutTrack>();
@@ -155,10 +157,11 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 if (item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
                     throw new JsonException($"{path}: dock-layout uses dock/size on cells, not track definitions.");
             }
-            else if (type == "box-layout")
+            else if (type is "box-layout" or "tabbed-box-layout")
             {
                 margin = ReadEdges("margin");
-                border = ReadEdges("border");
+                if (type == "box-layout") border = ReadEdges("border");
+                else if (item.TryGetProperty("border", out _)) throw new JsonException($"{path}: border requires a box-layout.");
                 if (item.TryGetProperty("row-definitions", out _) || item.TryGetProperty("column-definitions", out _))
                     throw new JsonException($"{path}: track definitions require grid-layout.");
                 padding = new(8, 8, 8, 8);
@@ -384,6 +387,30 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                     if (!panels.Add(node.Path + ":" + layout.Path)) throw new JsonException($"Multiple box-layout bindings for {node.Path}.");
                     bindings.Add(new(layoutId, node.Path, Array.Empty<StationeryCellBinding>()));
                 }
+                continue;
+            }
+            if (layout.Type == "tabbed-box-layout")
+            {
+                if (item.TryGetProperty("model", out _)) throw new JsonException($"{path}: tabbed-box-layout uses parentModel and childrenModel.");
+                var tabParent = ResolveModel(modelTree, ReadString(item, "parentModel", path), null);
+                if (tabParent.Kind is not ("viewport" or "page" or "container" or "dialog"))
+                    throw new JsonException($"{tabParent.Path} cannot be a tabbed-box parent.");
+                if (!panels.Add(tabParent.Path + ":" + layout.Path)) throw new JsonException($"Multiple tabbed-box-layout bindings for {tabParent.Path}.");
+                var tabChildren = new List<StationeryCellBinding>();
+                foreach (var child in ReadArray(item, "childrenModel", path).EnumerateArray())
+                {
+                    var childPath = $"{path}.childrenModel[{tabChildren.Count}]";
+                    RequireObject(child, childPath);
+                    if (child.EnumerateObject().Any(p => p.Name != "model"))
+                        throw new JsonException($"{childPath}: tab order comes from childrenModel array order; only model is allowed.");
+                    var node = ResolveModel(modelTree, ReadString(child, "model", childPath), tabParent);
+                    if (node.Parent != tabParent || node.Kind != "page")
+                        throw new JsonException($"{childPath}: tabbed-box children must be direct page models of {tabParent.Path}.");
+                    if (!placedModels.Add(node.Path)) throw new JsonException($"Model {node.Path} is placed more than once.");
+                    tabChildren.Add(new(node.Path, tabChildren.Count, 0));
+                }
+                if (tabChildren.Count == 0) throw new JsonException($"{path}: tabbed-box-layout requires at least one page.");
+                bindings.Add(new(layoutId, tabParent.Path, tabChildren.AsReadOnly()));
                 continue;
             }
             if (item.TryGetProperty("model", out _)) throw new JsonException($"{path}: grid-layout uses parentModel and childrenModel.");

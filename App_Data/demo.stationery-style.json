@@ -205,6 +205,11 @@
     ],
     "layouts": [
         {
+            "id": "tabbedPages",
+            "type": "tabbed-box-layout",
+            "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" }
+        },
+        {
             "id": "topDemoLayout",
             "type": "grid-layout",
             "row-definitions": [
@@ -526,6 +531,15 @@
         }
     ],
     "bindings": [
+        {
+            "layout": "/tabbedPages",
+            "parentModel": "demo",
+            "childrenModel": [
+                { "model": "topDemoPage" },
+                { "model": "splitPaneDemoPage" },
+                { "model": "layoutDemoPage" }
+            ]
+        },
         {
             "layout": "/topDemoLayout",
             "parentModel": "demo/topDemoPage/body",

@@ -228,6 +228,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
   ],
   "layouts": [
     {
+      "id": "tabbedPages",
+      "type": "tabbed-box-layout",
+      "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" }
+    },
+    {
       "id": "topDemoLayout",
       "type": "grid-layout",
       "row-definitions": [
@@ -527,6 +532,15 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     }
   ],
   "bindings": [
+    {
+      "layout": "/tabbedPages",
+      "parentModel": "demo",
+      "childrenModel": [
+        { "model": "topDemoPage" },
+        { "model": "splitPaneDemoPage" },
+        { "model": "layoutDemoPage" }
+      ]
+    },
     {
       "layout": "/topDemoLayout",
       "parentModel": "demo/topDemoPage/body",

@@ -15,6 +15,7 @@ internal sealed partial class Demo
     private void Navigate(string page)
     {
         activePage = page;
+        SyncSelectedTab();
         popupOpen = false;
         Window.Title = page switch
         {
@@ -22,6 +23,19 @@ internal sealed partial class Demo
             "splitPaneDemoPage" => "StationeryUI — スプリットペーンデモページ",
             _ => "StationeryUI — トップデモページ"
         };
+    }
+    private void SyncSelectedTab()
+    {
+        if (styles is null) return;
+        var index = activePage switch
+        {
+            "topDemoPage" => 0,
+            "splitPaneDemoPage" => 1,
+            "layoutDemoPage" => 2,
+            _ => throw new ArgumentOutOfRangeException(nameof(activePage), activePage, "Unknown demo page.")
+        };
+        var layout = styles.Current.Layouts.SingleOrDefault(item => item.Path == "/tabbedPages" && item.Type == "tabbed-box-layout");
+        if (layout is not null) layout.SelectedTabIndex = index;
     }
     private void CreatePages()
     {

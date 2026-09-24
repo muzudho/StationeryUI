@@ -87,7 +87,7 @@ public static class DeveloperInspectionLayout
         var layout = entry.LayoutTypes is { Count: > 0 }
             ? string.Join(", ", entry.LayoutTypes.Select(type => type switch
             {
-                "grid-layout" => "gridLayout", "box-layout" => "boxLayout",
+                "grid-layout" => "gridLayout", "box-layout" => "boxLayout", "tabbed-box-layout" => "tabbedBoxLayout",
                 "dock-layout" => "dockLayout",
                 "fullscreen-layout" => "fullscreenLayout", "work-page-layout" => "workPageLayout",
                 "split-pane" => "splitPane", _ => type
