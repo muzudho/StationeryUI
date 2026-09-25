@@ -41,7 +41,7 @@ public sealed class StationeryDeveloperView : IDisposable
         this.input = input;
         Style = style ?? StationeryDeveloperStyle.Load();
         Model.SetTreeMode(DeveloperTreeMode.Layout);
-        var root = Style.Settings.Models[0].CreateTree();
+        var root = Style.Settings.ModelTree.CreateTree();
         var splitNode = root.Resolve("/developerViewport/developerWindow/inspectorSplit")!;
         var treeNode = root.Resolve("/developerViewport/developerWindow/inspectorSplit/stationeryTree")!;
         var detailsNode = root.Resolve("/developerViewport/developerWindow/inspectorSplit/details")!;

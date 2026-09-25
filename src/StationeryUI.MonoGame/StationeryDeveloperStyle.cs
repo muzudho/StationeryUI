@@ -18,29 +18,31 @@ public sealed class StationeryDeveloperStyle
     private StationeryDeveloperStyle(StationeryStyleSettings settings, int width, int height)
     {
         Settings = settings; Width = width; Height = height;
-        var root = settings.Models[0].CreateTree();
+        var root = settings.ModelTree.CreateTree();
         foreach (var (path, kind) in new[] {
             ("", "page"), ("/instructions", "textBlock"), ("/inspectorSplit", "splitPane"),
             ("/inspectorPanel", "container"), ("/inspectorPanel/toolHint", "textBlock"),
             ("/inspectorSplit/stationeryTree", "tree"), ("/inspectorSplit/details", "textBlock"), ("/copyPath", "button") })
             if (root.Resolve("/developerViewport/developerWindow" + path)?.Kind != kind)
                 throw new JsonException($"Required developer model: /developerViewport/developerWindow{path} ({kind}).");
-        if (!settings.BindingsV2.TryGetValue("ctrlInspectorSplit", out var splitBinding) ||
-            splitBinding.ModelPath != "/developerViewport/developerWindow/inspectorSplit" ||
-            splitBinding.LayoutPath is not { } splitRoute)
-            throw new JsonException("bindingsV2 must bind ctrlInspectorSplit to the inspectorSplit model.");
+        if (!settings.ControlTree.TryGetValue("ctrlInspectorSplit", out var splitBinding) ||
+            !splitBinding.ModelPaths.Values.Contains("/developerViewport/developerWindow/inspectorSplit", StringComparer.Ordinal))
+            throw new JsonException("controlTree must bind ctrlInspectorSplit to the inspectorSplit model.");
+        var splitRoute = splitBinding.LayoutPaths.Values.Single();
         var splitLayout = settings.Layouts.SingleOrDefault(layout => layout.Type == "split-pane" &&
             splitRoute.Contains(":" + layout.Id, StringComparison.Ordinal));
         if (splitLayout?.Split is not { } splitOptions ||
-            !settings.BindingsV2.Values.Any(binding => binding.ModelPath == "/developerViewport/developerWindow/inspectorSplit/stationeryTree" &&
-                binding.LayoutPath?.EndsWith("/first", StringComparison.Ordinal) == true) ||
-            !settings.BindingsV2.Values.Any(binding => binding.ModelPath == "/developerViewport/developerWindow/inspectorSplit/details" &&
-                binding.LayoutPath?.EndsWith("/second", StringComparison.Ordinal) == true))
-            throw new JsonException("The inspector split must bind stationeryTree first and details second in bindingsV2.");
+            !HasPlacement("/developerViewport/developerWindow/inspectorSplit/stationeryTree", "/first") ||
+            !HasPlacement("/developerViewport/developerWindow/inspectorSplit/details", "/second"))
+            throw new JsonException("The inspector split must bind stationeryTree first and details second in controlTree.");
         SplitOptions = splitOptions;
         foreach (var path in new[] { "/developerViewport/developerWindow/inspectorPanel", "/developerViewport/developerWindow/instructions", "/developerViewport/developerWindow/inspectorSplit", "/developerViewport/developerWindow/copyPath", "/developerViewport/developerWindow/inspectorPanel/toolHint" })
-            if (!settings.BindingsV2.Values.Any(binding => binding.ModelPath == path))
-                throw new JsonException($"Required bindingsV2 route: {path}.");
+            if (!settings.ControlTree.Values.Any(binding => binding.ModelPaths.Values.Contains(path, StringComparer.Ordinal)))
+                throw new JsonException($"Required controlTree route: {path}.");
+
+        bool HasPlacement(string modelPath, string suffix) => settings.ControlTree.Values.Any(binding =>
+            binding.ModelPaths.Values.Contains(modelPath, StringComparer.Ordinal) &&
+            binding.LayoutPaths.Values.Any(route => route.EndsWith(suffix, StringComparison.Ordinal)));
     }
 
     public static StationeryDeveloperStyle Parse(string json)

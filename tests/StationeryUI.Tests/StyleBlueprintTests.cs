@@ -33,7 +33,7 @@ internal static class StyleBlueprintTests
         Check(style.Layouts[0].Columns[0].Value == 1.5 && !style.Layouts[0].Columns[1].IsRate, "fractional number and unit");
         using var doc = JsonDocument.Parse(json);
         Check(doc.RootElement.GetProperty("models")[0].GetProperty("children")[0].GetProperty("children")[0].GetProperty("label").GetString() == plan.At(0, 0).Label, "labels preserve Japanese and escaping");
-        Check(style.Models[0].CreateTree().Resolve("/design/mainPage/cellR1C1")!.Kind == "button", "generated stable identity");
+        Check(style.ModelTree.CreateTree().Resolve("/design/mainPage/cellR1C1")!.Kind == "button", "generated stable identity");
         var bounds = StationeryLayoutEngine.Arrange(style, 1000, 600).Bounds;
         Check(bounds["/design/mainPage/cellR1C2"].Width == 100, "pixel width");
         plan.Resize(4, 3);

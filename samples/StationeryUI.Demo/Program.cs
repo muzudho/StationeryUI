@@ -154,11 +154,14 @@ internal sealed partial class Demo : Game
             appliedStyle = styles.Current;
         }
         var elements = styledElements.Concat(splitElements).Concat(layoutElements).ToArray();
-        var activePageKey = "key" + char.ToUpperInvariant(activePage[0]) + activePage[1..];
+        var activePageControl = "ctrl" + char.ToUpperInvariant(activePage[0]) + activePage[1..];
+        var activePageKey = "/ctrlViewPort/" + activePageControl + "/ctrlInspectorPanel";
+        var activePagePrefix = "/ctrlViewPort/" + activePageControl + "/";
         var controlLayoutKeys = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var (handle, binding) in styles.Current.BindingsV2.Where(pair => pair.Value.LayoutPath is null))
+        foreach (var (handle, binding) in styles.Current.ControlTree.Where(pair => pair.Value.LayoutPath is null))
         {
             var selectedElement = elements.FirstOrDefault(element => element.ControlHandle == handle && element.LayoutKey == activePageKey)
+                ?? elements.FirstOrDefault(element => element.ControlHandle == handle && element.LayoutKey?.StartsWith(activePagePrefix, StringComparison.Ordinal) == true)
                 ?? elements.FirstOrDefault(element => element.ControlHandle == handle && element.LayoutKey is not null);
             var selectedKey = selectedElement?.LayoutKey ?? binding.LayoutPaths.Keys.FirstOrDefault();
             if (selectedKey is not null) controlLayoutKeys[handle] = selectedKey;
@@ -188,10 +191,10 @@ internal sealed partial class Demo : Game
     private static ScreenRectangle BoundsFor(StationeryUiHost.Element element, StationeryLayoutResult arranged)
     {
         var handle = element.ControlHandle
-            ?? throw new InvalidOperationException($"Demo control '{element.Path}' has no bindingsV2 handle.");
+            ?? throw new InvalidOperationException($"Demo control '{element.Path}' has no controlTree handle.");
         return arranged.ControlBounds.TryGetValue(handle, out var bounds)
             ? bounds
-            : throw new InvalidOperationException($"Demo control '{handle}' has no resolved bindingsV2 bounds.");
+            : throw new InvalidOperationException($"Demo control '{handle}' has no resolved controlTree bounds.");
     }
     protected override void Update(GameTime gameTime)
     {

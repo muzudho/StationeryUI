@@ -14,7 +14,7 @@ internal sealed partial class Demo
         styledElements.Add(layoutLink);
         layoutUi = new(GraphicsDevice, input!, family => new StationeryUI.Windows.WindowsTextRasterizer(family), modelBinding.LayoutPage);
         layoutBackLink = layoutUi.AddLink(modelBinding.LayoutControls["topDemoLink"], new(), "← トップページへ", () => Navigate("topDemoPage"));
-        layoutBackLink.LayoutKey = "keyLayoutDemoPage";
+        layoutBackLink.LayoutKey = "/ctrlViewPort/ctrlLayoutDemoPage/ctrlBody";
         layoutBackLink.ToolHint = "トップページへ戻ります。入力内容は保持されます。";
         layoutElements.Add(layoutBackLink);
         var labels = new Dictionary<string, string>

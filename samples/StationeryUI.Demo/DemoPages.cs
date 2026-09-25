@@ -47,7 +47,7 @@ internal sealed partial class Demo
         styledElements.Add(forwardLink);
         splitUi = new(GraphicsDevice, input!, family => new WindowsTextRasterizer(family), modelBinding.SplitPage);
         backLink = splitUi.AddLink(modelBinding.SplitControls["topDemoLink"], new(), "← トップデモページに戻る", () => Navigate("topDemoPage"));
-        backLink.LayoutKey = "keySplitPaneDemoPage";
+        backLink.LayoutKey = "/ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody";
         verticalSplit = splitUi.AddSplitPane(modelBinding.SplitControls["verticalSplit"], new(), "垂直分割（左右）", new());
         horizontalSplit = splitUi.AddSplitPane(modelBinding.SplitControls["horizontalSplit"], new(), "水平分割（上下）", new(true));
         var left = splitUi.AddTextBox(modelBinding.SplitControls["leftPane"], new(), "左ペーン", "垂直分割：左ペーン");
@@ -80,9 +80,9 @@ internal sealed partial class Demo
             };
         CreateLayoutPage();
         topToolHint.ControlHandle = splitToolHint.ControlHandle = layoutToolHint.ControlHandle = "ctrlToolHint";
-        topToolHint.LayoutKey = "keyTopDemoPage";
-        splitToolHint.LayoutKey = "keySplitPaneDemoPage";
-        layoutToolHint.LayoutKey = "keyLayoutDemoPage";
+        topToolHint.LayoutKey = "/ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel";
+        splitToolHint.LayoutKey = "/ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel";
+        layoutToolHint.LayoutKey = "/ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel";
         layoutLink.ToolHint = "ボックスとグリッドの入れ子を、レイアウトデモページで確認できます。";
         Navigate("topDemoPage");
     }
@@ -104,8 +104,7 @@ internal sealed partial class Demo
             {
                 var handle = element.ControlHandle
                     ?? throw new InvalidOperationException($"Split control '{element.Path}' has no control handle.");
-                var route = styles.Current.BindingsV2[handle].LayoutPath
-                    ?? throw new InvalidOperationException($"Control '{handle}' requires one split-pane route.");
+                var route = styles.Current.ResolveLayoutPath(handle);
                 var splitLayout = styles.Current.Layouts.Single(layout => layout.Type == "split-pane" &&
                     route.Contains(":" + layout.Id, StringComparison.Ordinal));
                 element.Split.Configure(splitLayout.Split!);

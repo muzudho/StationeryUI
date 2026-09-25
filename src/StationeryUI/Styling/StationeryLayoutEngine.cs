@@ -18,9 +18,9 @@ public sealed record StationeryLayoutResult(IReadOnlyDictionary<string, ScreenRe
     public IReadOnlyDictionary<string, ScreenRectangle> LayoutContentBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
     public IReadOnlyDictionary<string, ScreenRectangle> LayoutBorderBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
     public IReadOnlyDictionary<string, ScreenRectangle> BorderBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
-    /// <summary>Bounds selected through bindingsV2 control handles.</summary>
+    /// <summary>Bounds selected through controlTree control handles.</summary>
     public IReadOnlyDictionary<string, ScreenRectangle> ControlBounds { get; init; } = new Dictionary<string, ScreenRectangle>();
-    /// <summary>The selected bindingsV2 path for each resolved control handle.</summary>
+    /// <summary>The selected controlTree path for each resolved control handle.</summary>
     public IReadOnlyDictionary<string, string> ControlLayoutPaths { get; init; } = new Dictionary<string, string>();
 }
 public sealed record StationeryLayoutError(string ModelPath, string LayoutPath, string Message, ScreenRectangle Bounds);
@@ -41,7 +41,7 @@ public static class StationeryLayoutEngine
         return result;
     }
     /// <summary>
-    /// Arranges the current model/layout structure and returns bounds for bindingsV2 control handles.
+    /// Arranges the current model/layout structure and returns bounds for controlTree control handles.
     /// For controls with keyed paths, controlLayoutKeys supplies the selected LayoutKey per handle.
     /// </summary>
     public static StationeryLayoutResult Arrange(StationeryStyleSettings settings, double width, double height,
@@ -183,18 +183,22 @@ public static class StationeryLayoutEngine
             foreach (var child in node.Children) Visit(child, inheritedChild);
         }
 
-        foreach (var model in settings.Models) Visit(model.CreateTree(), new(0, 0, width, height));
+        Visit(settings.ModelTree.CreateTree(), new(0, 0, width, height));
         var controlBounds = new Dictionary<string, ScreenRectangle>(StringComparer.Ordinal);
         var controlLayoutPaths = new Dictionary<string, string>(StringComparer.Ordinal);
-        if (settings.BindingsV2.Count > 0)
+        if (settings.ControlTree.Count > 0)
         {
-            foreach (var (handle, binding) in settings.BindingsV2)
+            foreach (var (handle, binding) in settings.ControlTree)
             {
                 string? key = null;
                 if (binding.LayoutPath is null)
                 {
                     if (controlLayoutKeys is null || !controlLayoutKeys.TryGetValue(handle, out key))
+                    {
+                        if (binding.LayoutPaths.Count == 1) key = binding.LayoutPaths.Keys.Single();
+                        else
                         throw new InvalidOperationException($"Control '{handle}' requires a LayoutKey.");
+                    }
                 }
                 var selectedPath = binding.ResolveLayoutPath(key);
                 var targetModelPath = binding.ResolveModelPath(key);

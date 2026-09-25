@@ -155,7 +155,7 @@ internal sealed partial class DesignerGame
         if (json == treeJson || styleTree is null) return;
         var previous = semanticTree.SelectedPath;
         var snapshot = blueprint.CreatePreview(Math.Max(1, previewWindow.Width), Math.Max(1, previewWindow.Height), TargetLayoutId);
-        var root = snapshot.Settings.Models[0].CreateTree();
+        var root = snapshot.Settings.ModelTree.CreateTree();
         var entries = new List<StationeryInspectionEntry>();
         void Visit(StationeryNode node)
         {
@@ -393,12 +393,12 @@ internal sealed partial class DesignerGame
         if (editingPage && styleTree?.Tree is { } tree)
         {
             var previous = tree.TargetItem;
-            foreach (var root in tree.Roots.Where(n => treePaths.GetValueOrDefault(n.Id) is ["models"] or ["bindings"] or ["bindingsV2"]))
+            foreach (var root in tree.Roots.Where(n => treePaths.GetValueOrDefault(n.Id) is ["modelTree"] or ["controlTree"]))
             {
                 tree.SetTarget(root.Children.FirstOrDefault() ?? root);
                 UpdateTreeActions();
                 if (sidebar!.Focus.IsEnabled(deleteNode!.Path) || sidebar.Focus.IsEnabled(renameId!.Path))
-                    throw new InvalidOperationException("Models and bindings must be read-only.");
+                    throw new InvalidOperationException("modelTree and controlTree must be read-only in this view.");
             }
             if (previous is not null) tree.SetTarget(previous); else tree.ClearTarget();
             UpdateTreeActions();

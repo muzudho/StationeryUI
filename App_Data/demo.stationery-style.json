@@ -1,208 +1,430 @@
 {
-    "models": [
-        {
-            "id": "mdlDemo",
-            "type": "viewport",
-            "children": [
-                {
-                    "id": "mdlTopDemoPage",
-                    "type": "page",
-                    "children": [
-                        {
-                            "id": "mdlBody",
-                            "type": "container",
-                            "children": [
-                                {
-                                    "id": "mdlNameField",
-                                    "type": "textBox"
-                                },
-                                {
-                                    "id": "mdlMemoField",
-                                    "type": "textBox"
-                                },
-                                {
-                                    "id": "mdlThemeButton",
-                                    "type": "button"
-                                },
-                                {
-                                    "id": "mdlScaleButton",
-                                    "type": "button"
-                                },
-                                {
-                                    "id": "mdlApplyTitleButton",
-                                    "type": "button"
-                                },
-                                {
-                                    "id": "mdlOpenDialogButton",
-                                    "type": "button"
-                                },
-                                {
-                                    "id": "mdlSampleTree",
-                                    "type": "tree"
-                                },
-                                {
-                                    "id": "mdlEditDialog",
-                                    "type": "dialog",
-                                    "children": [
-                                        {
-                                            "id": "mdlNameField",
-                                            "type": "textBox"
-                                        },
-                                        {
-                                            "id": "mdlCancelButton",
-                                            "type": "button"
-                                        },
-                                        {
-                                            "id": "mdlSaveButton",
-                                            "type": "button"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "id": "mdlSplitPaneDemoLink",
-                                    "type": "link"
-                                },
-                                {
-                                    "id": "mdlLayoutDemoLink",
-                                    "type": "link"
-                                }
-                            ]
-                        },
-                        {
-                            "id": "mdlInspectorPanel",
-                            "type": "container",
-                            "children": [
-                                {
-                                    "id": "mdlToolHint",
-                                    "type": "textBlock"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "id": "mdlSplitPaneDemoPage",
-                    "type": "page",
-                    "children": [
-                        {
-                            "id": "mdlBody",
-                            "type": "container",
-                            "children": [
-                                {
-                                    "id": "mdlTopDemoLink",
-                                    "type": "link"
-                                },
-                                {
-                                    "id": "mdlVerticalSplit",
-                                    "type": "splitPane",
-                                    "children": [
-                                        {
-                                            "id": "mdlLeftPane",
-                                            "type": "textBox"
-                                        },
-                                        {
-                                            "id": "mdlRightPane",
-                                            "type": "textBox"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "id": "mdlHorizontalSplit",
-                                    "type": "splitPane",
-                                    "children": [
-                                        {
-                                            "id": "mdlTopPane",
-                                            "type": "textBox"
-                                        },
-                                        {
-                                            "id": "mdlBottomPane",
-                                            "type": "textBox"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "id": "mdlInspectorPanel",
-                            "type": "container",
-                            "children": [
-                                {
-                                    "id": "mdlToolHint",
-                                    "type": "textBlock"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "id": "mdlLayoutDemoPage",
-                    "type": "page",
-                    "children": [
-                        {
-                            "id": "mdlBody",
-                            "type": "container",
-                            "children": [
-                                {
-                                    "id": "mdlTopDemoLink",
-                                    "type": "link"
-                                },
-                                {
-                                    "id": "mdlTitle",
-                                    "type": "textBlock"
-                                },
-                                {
-                                    "id": "mdlBoxTitle",
-                                    "type": "textBlock"
-                                },
-                                {
-                                    "id": "mdlBoxContent",
-                                    "type": "textBlock"
-                                },
-                                {
-                                    "id": "mdlGridTitle",
-                                    "type": "textBlock"
-                                },
-                                {
-                                    "id": "mdlSpanCell",
-                                    "type": "textBlock"
-                                },
-                                {
-                                    "id": "mdlNestedA",
-                                    "type": "textBlock"
-                                },
-                                {
-                                    "id": "mdlNestedB",
-                                    "type": "textBlock"
-                                },
-                                {
-                                    "id": "mdlNestedC",
-                                    "type": "textBlock"
-                                },
-                                {
-                                    "id": "mdlNestedD",
-                                    "type": "textBlock"
-                                },
-                                {
-                                    "id": "mdlGridFooter",
-                                    "type": "textBlock"
-                                }
-                            ]
-                        },
-                        {
-                            "id": "mdlInspectorPanel",
-                            "type": "container",
-                            "children": [
-                                {
-                                    "id": "mdlToolHint",
-                                    "type": "textBlock"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
+    "controlTree": {
+        "ctrlNameField": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[1y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField"
+            }
+        },
+        "ctrlMemoField": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[2y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlMemoField"
+            }
+        },
+        "ctrlThemeButton": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[3y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlThemeButton"
+            }
+        },
+        "ctrlScaleButton": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[3y_2x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlScaleButton"
+            }
+        },
+        "ctrlApplyTitleButton": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[4y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlApplyTitleButton"
+            }
+        },
+        "ctrlOpenDialogButton": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[5y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlOpenDialogButton"
+            }
+        },
+        "ctrlSampleTree": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[1y_2x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree"
+            }
+        },
+        "ctrlSplitPaneDemoLink": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[5y_2x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSplitPaneDemoLink"
+            }
+        },
+        "ctrlLayoutDemoLink": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[4y_2x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlLayoutDemoLink"
+            }
+        },
+        "ctrlVerticalSplit": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit"
+            }
+        },
+        "ctrlHorizontalSplit": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit"
+            }
+        },
+        "ctrlLeftPane": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout.first"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlLeftPane"
+            }
+        },
+        "ctrlRightPane": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout.second"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlRightPane"
+            }
+        },
+        "ctrlTopPane": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout.first"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlTopPane"
+            }
+        },
+        "ctrlBottomPane": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout.second"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlBottomPane"
+            }
+        },
+        "ctrlTitle": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_2x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTitle"
+            }
+        },
+        "ctrlBoxTitle": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[2y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxTitle"
+            }
+        },
+        "ctrlBoxContent": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_1x_1w_1h].box"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxContent"
+            }
+        },
+        "ctrlGridTitle": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[2y_2x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridTitle"
+            }
+        },
+        "ctrlSpanCell": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_1x_2w_1h].spanCellBox"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlSpanCell"
+            }
+        },
+        "ctrlGridFooter": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[3y_1x_1w_3h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridFooter"
+            }
+        },
+        "ctrlNestedA": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedA"
+            }
+        },
+        "ctrlNestedB": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_2x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedB"
+            }
+        },
+        "ctrlNestedC": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedC"
+            }
+        },
+        "ctrlNestedD": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_2x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
+            }
+        },
+        "ctrlTopDemoLink": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[1y_1x_1w_1h]",
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink",
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
+            }
+        },
+        "ctrlToolHint": {
+            "layoutPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel": "tabbedPages[0].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]",
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel": "tabbedPages[1].pageDockFullscreen[bottom_1].inspectorContents[1y_1x_1w_1h]",
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel": "tabbedPages[2].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]"
+            },
+            "modelPath": {
+                "in /ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint",
+                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint",
+                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
+            }
         }
-    ],
+    },
+    "modelTree": {
+        "id": "mdlDemo",
+        "type": "viewport",
+        "children": [
+            {
+                "id": "mdlTopDemoPage",
+                "type": "page",
+                "children": [
+                    {
+                        "id": "mdlBody",
+                        "type": "container",
+                        "children": [
+                            {
+                                "id": "mdlNameField",
+                                "type": "textBox"
+                            },
+                            {
+                                "id": "mdlMemoField",
+                                "type": "textBox"
+                            },
+                            {
+                                "id": "mdlThemeButton",
+                                "type": "button"
+                            },
+                            {
+                                "id": "mdlScaleButton",
+                                "type": "button"
+                            },
+                            {
+                                "id": "mdlApplyTitleButton",
+                                "type": "button"
+                            },
+                            {
+                                "id": "mdlOpenDialogButton",
+                                "type": "button"
+                            },
+                            {
+                                "id": "mdlSampleTree",
+                                "type": "tree"
+                            },
+                            {
+                                "id": "mdlEditDialog",
+                                "type": "dialog",
+                                "children": [
+                                    {
+                                        "id": "mdlNameField",
+                                        "type": "textBox"
+                                    },
+                                    {
+                                        "id": "mdlCancelButton",
+                                        "type": "button"
+                                    },
+                                    {
+                                        "id": "mdlSaveButton",
+                                        "type": "button"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "mdlSplitPaneDemoLink",
+                                "type": "link"
+                            },
+                            {
+                                "id": "mdlLayoutDemoLink",
+                                "type": "link"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mdlInspectorPanel",
+                        "type": "container",
+                        "children": [
+                            {
+                                "id": "mdlToolHint",
+                                "type": "textBlock"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mdlSplitPaneDemoPage",
+                "type": "page",
+                "children": [
+                    {
+                        "id": "mdlBody",
+                        "type": "container",
+                        "children": [
+                            {
+                                "id": "mdlTopDemoLink",
+                                "type": "link"
+                            },
+                            {
+                                "id": "mdlVerticalSplit",
+                                "type": "splitPane",
+                                "children": [
+                                    {
+                                        "id": "mdlLeftPane",
+                                        "type": "textBox"
+                                    },
+                                    {
+                                        "id": "mdlRightPane",
+                                        "type": "textBox"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "mdlHorizontalSplit",
+                                "type": "splitPane",
+                                "children": [
+                                    {
+                                        "id": "mdlTopPane",
+                                        "type": "textBox"
+                                    },
+                                    {
+                                        "id": "mdlBottomPane",
+                                        "type": "textBox"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mdlInspectorPanel",
+                        "type": "container",
+                        "children": [
+                            {
+                                "id": "mdlToolHint",
+                                "type": "textBlock"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mdlLayoutDemoPage",
+                "type": "page",
+                "children": [
+                    {
+                        "id": "mdlBody",
+                        "type": "container",
+                        "children": [
+                            {
+                                "id": "mdlTopDemoLink",
+                                "type": "link"
+                            },
+                            {
+                                "id": "mdlTitle",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlBoxTitle",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlBoxContent",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlGridTitle",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlSpanCell",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlNestedA",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlNestedB",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlNestedC",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlNestedD",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlGridFooter",
+                                "type": "textBlock"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mdlInspectorPanel",
+                        "type": "container",
+                        "children": [
+                            {
+                                "id": "mdlToolHint",
+                                "type": "textBlock"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
     "layouts": [
         {
             "id": "tabbedPages",
@@ -544,129 +766,5 @@
                 }
             ]
         }
-    ],
-    "bindingsV2": {
-        "ctrlNameField": {
-            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[1y_1x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField"
-        },
-        "ctrlMemoField": {
-            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[2y_1x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlMemoField"
-        },
-        "ctrlThemeButton": {
-            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[3y_1x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlThemeButton"
-        },
-        "ctrlScaleButton": {
-            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[3y_2x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlScaleButton"
-        },
-        "ctrlApplyTitleButton": {
-            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[4y_1x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlApplyTitleButton"
-        },
-        "ctrlOpenDialogButton": {
-            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[5y_1x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlOpenDialogButton"
-        },
-        "ctrlSampleTree": {
-            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[1y_2x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree"
-        },
-        "ctrlSplitPaneDemoLink": {
-            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[5y_2x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSplitPaneDemoLink"
-        },
-        "ctrlLayoutDemoLink": {
-            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[4y_2x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlLayoutDemoLink"
-        },
-        "ctrlVerticalSplit": {
-            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout",
-            "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit"
-        },
-        "ctrlHorizontalSplit": {
-            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout",
-            "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit"
-        },
-        "ctrlLeftPane": {
-            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout.first",
-            "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlLeftPane"
-        },
-        "ctrlRightPane": {
-            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout.second",
-            "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlRightPane"
-        },
-        "ctrlTopPane": {
-            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout.first",
-            "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlTopPane"
-        },
-        "ctrlBottomPane": {
-            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout.second",
-            "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlBottomPane"
-        },
-        "ctrlTitle": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_2x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTitle"
-        },
-        "ctrlBoxTitle": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[2y_1x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxTitle"
-        },
-        "ctrlBoxContent": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_1x_1w_1h].box",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxContent"
-        },
-        "ctrlGridTitle": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[2y_2x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridTitle"
-        },
-        "ctrlSpanCell": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_1x_2w_1h].spanCellBox",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlSpanCell"
-        },
-        "ctrlGridFooter": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[3y_1x_1w_3h]",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridFooter"
-        },
-        "ctrlNestedA": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_1x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedA"
-        },
-        "ctrlNestedB": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_2x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedB"
-        },
-        "ctrlNestedC": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_1x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedC"
-        },
-        "ctrlNestedD": {
-            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_2x_1w_1h]",
-            "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
-        },
-        "ctrlTopDemoLink": {
-            "layoutPath": {
-                "keySplitPaneDemoPage": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[1y_1x_1w_1h]",
-                "keyLayoutDemoPage": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_1x_1w_1h].topDemoLinkBox"
-            },
-            "modelPath": {
-                "keySplitPaneDemoPage": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink",
-                "keyLayoutDemoPage": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
-            }
-        },
-        "ctrlToolHint": {
-            "layoutPath": {
-                "keyTopDemoPage": "tabbedPages[0].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]",
-                "keySplitPaneDemoPage": "tabbedPages[1].pageDockFullscreen[bottom_1].inspectorContents[1y_1x_1w_1h]",
-                "keyLayoutDemoPage": "tabbedPages[2].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "keyTopDemoPage": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint",
-                "keySplitPaneDemoPage": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint",
-                "keyLayoutDemoPage": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
-            }
-        }
-    }
+    ]
 }

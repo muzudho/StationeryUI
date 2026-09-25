@@ -1,20 +1,22 @@
 {
-  "models": [
-    {
-      "id": "demo",
-      "type": "viewport"
-    }
-  ],
+  "modelTree": {
+    "id": "demo",
+    "type": "viewport"
+  },
   "layouts": [
     {
       "id": "rootPanel",
       "type": "box-layout"
     }
   ],
-  "bindings": [
-    {
-      "layout": "/rootPanel",
-      "model": "demo"
+  "controlTree": {
+    "ctrlDemo": {
+      "layoutPath": {
+        "in /": "rootPanel"
+      },
+      "modelPath": {
+        "in /": "/demo"
+      }
     }
-  ]
+  }
 }

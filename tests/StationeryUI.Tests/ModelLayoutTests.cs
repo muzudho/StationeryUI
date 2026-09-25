@@ -8,7 +8,7 @@ internal static class ModelLayoutTests
     {
         var shippedText = File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
         var shipped = StationeryStyleSettings.Parse(shippedText);
-        Require(shipped.Models.Count == 1 && shipped.Layouts.Any(l => l.Type == "dock-layout") && shipped.Bindings.Any(b => b.DockChildren.Count > 0), "shipped independent arrays");
+        Require(shipped.ModelTree.Type == "viewport" && shipped.Layouts.Any(l => l.Type == "dock-layout") && shipped.Bindings.Any(b => b.DockChildren.Count > 0), "shipped model tree and layouts");
         Require(DemoModelBinding.Create(shipped).Main["nameField"].Kind == "textBox", "shipped code binding");
         var source = """
             {"models":[{"id":"demo","type":"viewport","children":[
@@ -18,7 +18,7 @@ internal static class ModelLayoutTests
             "bindings":[{"layout":"/unrelatedLayoutId","model":"/demo"}]}
             """;
         var settings = StationeryStyleSettings.Parse(source);
-        var tree = settings.Models[0].CreateTree();
+        var tree = settings.ModelTree.CreateTree();
         Require(tree.Resolve("/demo/leftPage/nameField")?.Kind == "textBox", "left path");
         Require(tree.Resolve("/demo/rightPage/nameField")?.Kind == "textBox", "right path");
         Require(settings.Padding.Left == 24, "padding is found through bindings");

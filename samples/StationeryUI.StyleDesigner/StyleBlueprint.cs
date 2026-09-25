@@ -57,14 +57,14 @@ public sealed class StyleBlueprint
             var layout = FindLayout(JsonNode.Parse(json)!, "/" + selectedId!.Split('/')[1])!.DeepClone();
             var root = new JsonObject
             {
-                ["models"] = new JsonArray(new JsonObject { ["id"] = "previewRoot", ["type"] = "viewport" }),
+                ["modelTree"] = new JsonObject { ["id"] = "previewRoot", ["type"] = "viewport" },
                 ["layouts"] = new JsonArray(layout),
-                ["bindingsV2"] = new JsonObject
+                ["controlTree"] = new JsonObject
                 {
                     ["ctrlPreviewRoot"] = new JsonObject
                     {
-                        ["modelPath"] = "/previewRoot",
-                        ["layoutPath"] = $"root:{selectedId!.Split('/')[1]}"
+                        ["modelPath"] = new JsonObject { ["in /"] = "/previewRoot" },
+                        ["layoutPath"] = new JsonObject { ["in /"] = selectedId!.Split('/')[1] }
                     }
                 }
             };
@@ -72,7 +72,7 @@ public sealed class StyleBlueprint
             settings = StationeryStyleSettings.Parse(json);
             binding = settings.Bindings[0];
         }
-        var tree = settings.Models[0].CreateTree();
+        var tree = settings.ModelTree.CreateTree();
         var scope = tree;
         if (binding is not null)
         {
@@ -88,18 +88,8 @@ public sealed class StyleBlueprint
     }
     public static StyleBlueprint Parse(string json)
     {
-        var settings = StationeryStyleSettings.Parse(json);
+        _ = StationeryStyleSettings.Parse(json);
         var imported = JsonNode.Parse(json)!.AsObject();
-        var migrationDraft = (JsonObject)imported.DeepClone();
-        if (!migrationDraft.ContainsKey("bindingsV2") && migrationDraft["bindings"] is JsonArray &&
-            TryMigrateLegacyBindings(migrationDraft, settings, out var migrated))
-        {
-            imported = migrationDraft;
-            imported.Remove("bindings");
-            imported["bindingsV2"] = migrated;
-            json = imported.ToJsonString();
-            StationeryStyleSettings.Parse(json);
-        }
         var plan = new StyleBlueprint { imported = imported };
         // Normalize layout types only; preserve model IDs, labels and extension properties.
         foreach (var (_, layout) in LayoutNodes(plan.imported))
@@ -116,7 +106,7 @@ public sealed class StyleBlueprint
     private static bool TryMigrateLegacyBindings(JsonObject imported, StationeryStyleSettings settings, out JsonObject migrated)
     {
         migrated = new JsonObject();
-        var modelRoot = settings.Models[0].CreateTree();
+        var modelRoot = settings.ModelTree.CreateTree();
         var layouts = settings.Layouts.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
         var placementsByOwner = settings.Bindings.GroupBy(binding => binding.ModelPath)
             .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
@@ -126,8 +116,8 @@ public sealed class StyleBlueprint
         if (synthesizeRoot)
         {
             var rootLayouts = settings.Layouts.Where(layout => layout.ParentPath is null).Select(layout => layout.Id).ToHashSet(StringComparer.Ordinal);
-            syntheticRootId = "bindingsV2Root";
-            for (var suffix = 2; rootLayouts.Contains(syntheticRootId); suffix++) syntheticRootId = "bindingsV2Root" + suffix;
+            syntheticRootId = "controlTreeRoot";
+            for (var suffix = 2; rootLayouts.Contains(syntheticRootId); suffix++) syntheticRootId = "controlTreeRoot" + suffix;
             imported["layouts"]!.AsArray().Add(new JsonObject { ["id"] = syntheticRootId, ["type"] = "box-layout" });
         }
 
@@ -236,7 +226,7 @@ public sealed class StyleBlueprint
         {
             var candidate = (JsonObject)imported.DeepClone();
             candidate.Remove("bindings");
-            candidate["bindingsV2"] = migrated.DeepClone();
+            candidate["controlTree"] = migrated.DeepClone();
             var converted = StationeryStyleSettings.Parse(candidate.ToJsonString());
             if (converted.Bindings.Count != settings.Bindings.Count + (synthesizeRoot ? 1 : 0))
             { migrated = new(); return false; }
@@ -381,8 +371,8 @@ public sealed class StyleBlueprint
             }
             return Serialize(draft);
         }
-        var models = new JsonArray();
-        var bindingsV2 = new JsonObject();
+        var modelChildren = new JsonArray();
+        var controlTree = new JsonObject();
         var cells = new JsonArray();
         for (var row = 0; row < Rows.Count; row++)
             for (var column = 0; column < Columns.Count; column++)
@@ -390,22 +380,23 @@ public sealed class StyleBlueprint
                 var cell = At(row, column);
                 if (!Kinds.Contains(cell.Kind)) throw new JsonException("未対応の文房具の種類です。");
                 var id = $"cellR{row + 1}C{column + 1}";
-                models.Add(new JsonObject { ["id"] = id, ["type"] = cell.Kind, ["label"] = cell.Label });
+                modelChildren.Add(new JsonObject { ["id"] = id, ["type"] = cell.Kind, ["label"] = cell.Label });
                 cells.Add(new JsonObject { ["row"] = row, ["col"] = column });
                 var handle = StationeryControlHandle.FromModelId(id);
-                bindingsV2[handle] = new JsonObject
+                controlTree[handle] = new JsonObject
                 {
-                    ["modelPath"] = $"/design/mainPage/{id}",
-                    ["layoutPath"] = $"root:{rootLayoutId}/single:{DefaultLayoutId}/{row + 1}y.{column + 1}x.1w.1h"
+                    ["modelPath"] = new JsonObject { ["in /ctrlViewPort/ctrlMainPage"] = $"/design/mainPage/{id}" },
+                    ["layoutPath"] = new JsonObject { ["in /ctrlViewPort/ctrlMainPage"] = $"{rootLayoutId}[single].{DefaultLayoutId}[{row + 1}y_{column + 1}x_1w_1h]" }
                 };
             }
         var root = new JsonObject
         {
-            ["models"] = new JsonArray(new JsonObject
+            ["controlTree"] = controlTree,
+            ["modelTree"] = new JsonObject
             {
                 ["id"] = "design", ["type"] = "viewport", ["children"] = new JsonArray(new JsonObject
-                { ["id"] = "mainPage", ["type"] = "page", ["children"] = models })
-            }),
+                { ["id"] = "mainPage", ["type"] = "page", ["children"] = modelChildren })
+            },
             ["layouts"] = new JsonArray(
                 new JsonObject { ["id"] = rootLayoutId, ["type"] = "box-layout" },
                 new JsonObject
@@ -415,7 +406,6 @@ public sealed class StyleBlueprint
                     ["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
                     ["margin"] = EdgeObject("margin"), ["padding"] = EdgeObject("padding")
                 }),
-            ["bindingsV2"] = bindingsV2
         };
         return Serialize(root);
     }
@@ -515,8 +505,14 @@ public sealed class StyleBlueprint
 
     public string? NodeId(IReadOnlyList<string> path)
     {
-        if (path.Count < 2 || path[0] is not ("models" or "layouts")) return null;
-        // Only layouts/models and slots inside a cell can carry editable identities.
+        if (path.Count < 1 || path[0] is not ("modelTree" or "layouts")) return null;
+        // Only modelTree/layout nodes and slots inside a cell can carry editable identities.
+        if (path[0] == "modelTree")
+        {
+            if ((path.Count > 1 && path.Count % 2 == 0) ||
+                path.Where((_, i) => i > 0 && i < path.Count - 1 && i % 2 == 1).Any(part => part != "children")) return null;
+            return NodeAt(JsonNode.Parse(BuildJson())!, path) is JsonObject model ? (string?)model["id"] : null;
+        }
         IReadOnlyList<string> ownerPath = path[0] == "layouts" && path.Count >= 6 && path[^2] == "slots" && path[^4] == "cells"
             ? path.Take(path.Count - 4).ToArray() : path;
         if (ownerPath.Count % 2 != 0 || ownerPath.Where((_, i) => i > 0 && i % 2 == 0).Any(p => p != "children")) return null;
@@ -526,7 +522,10 @@ public sealed class StyleBlueprint
     public (string? Error, string? Warning) ValidateId(string id, IReadOnlyList<string>? path = null)
     {
         var root = JsonNode.Parse(BuildJson())!;
-        var array = path is null ? root["layouts"]!.AsArray() : NodeAt(root, path.Take(path.Count - 1).ToArray()).AsArray();
+        JsonArray array;
+        if (path is null) array = root["layouts"]!.AsArray();
+        else if (path.Count == 1 && path[0] == "modelTree") array = [];
+        else array = NodeAt(root, path.Take(path.Count - 1).ToArray()).AsArray();
         var current = path is null ? null : NodeAt(root, path);
         return CheckId(id, array.Where(n => n != current).Select(n => (string)n!["id"]!));
     }
@@ -537,8 +536,6 @@ public sealed class StyleBlueprint
         var error = ValidateId(id, path).Error;
         if (error is not null) throw new ArgumentException(error);
         var draft = JsonNode.Parse(BuildJson())!.AsObject();
-        if (draft.ContainsKey("bindings"))
-            throw new InvalidOperationException("This legacy layout cannot be migrated automatically; rename its models or layouts after converting the file to bindingsV2.");
         var settings = StationeryStyleSettings.Parse(draft.ToJsonString());
         var node = NodeAt(draft, path);
         var oldId = (string)node["id"]!;
@@ -552,7 +549,7 @@ public sealed class StyleBlueprint
             }
             var oldPath = LayoutNodes(draft).Single(l => ReferenceEquals(l.Node, node)).Path;
             var newPath = oldPath[..^oldId.Length] + id;
-            RewriteBindingsV2Routes(draft, settings, oldPath, null, oldId, id);
+            RewriteControlTreeRoutes(draft, settings, oldPath, null, oldId, id);
             if (selected is not null && (selected == oldPath || selected.StartsWith(oldPath + "/", StringComparison.Ordinal)))
                 selected = newPath + selected[oldPath.Length..];
         }
@@ -562,7 +559,7 @@ public sealed class StyleBlueprint
             for (JsonNode? ancestor = node; ancestor is not null && ancestor != draft; ancestor = ancestor.Parent)
                 if (ancestor is JsonObject obj && obj["id"] is JsonValue value) ids.Insert(0, value.GetValue<string>());
             var oldPath = "/" + string.Join("/", ids);
-            RewriteBindingsV2Routes(draft, settings, null, oldPath, oldId, id);
+            RewriteControlTreeRoutes(draft, settings, null, oldPath, oldId, id);
         }
         node["id"] = id;
         Serialize(draft);
@@ -570,19 +567,22 @@ public sealed class StyleBlueprint
         if (selected is not null) SelectLayout(selected);
     }
 
-    private static void RewriteBindingsV2Routes(JsonObject draft, StationeryStyleSettings settings,
+    private static void RewriteControlTreeRoutes(JsonObject draft, StationeryStyleSettings settings,
         string? oldLayoutPath, string? oldModelPath, string oldId, string newId)
     {
-        if (draft["bindingsV2"] is not JsonObject bindingsV2) return;
+        if (draft["controlTree"] is not JsonObject controlTree) return;
 
         void RewriteEntry(JsonNode node)
         {
-            if (node is JsonObject obj && obj["modelPath"] is JsonValue modelValue && modelValue.TryGetValue<string>(out var modelPath))
+            if (node is JsonObject obj && obj["modelPath"] is JsonObject models && obj["layoutPath"] is JsonObject routes)
             {
-                if (oldModelPath is not null && (modelPath == oldModelPath || modelPath.StartsWith(oldModelPath + "/", StringComparison.Ordinal)))
-                    obj["modelPath"] = oldModelPath[..^oldId.Length] + newId + modelPath[oldModelPath.Length..];
-                if (obj["layoutPath"] is JsonValue routeValue && routeValue.TryGetValue<string>(out var route))
-                    obj["layoutPath"] = RewriteLayoutRoute(route);
+                foreach (var modelEntry in models.ToArray())
+                    if (modelEntry.Value is JsonValue modelValue && modelValue.TryGetValue<string>(out var modelPath) &&
+                        oldModelPath is not null && (modelPath == oldModelPath || modelPath.StartsWith(oldModelPath + "/", StringComparison.Ordinal)))
+                        models[modelEntry.Key] = oldModelPath[..^oldId.Length] + newId + modelPath[oldModelPath.Length..];
+                foreach (var routeEntry in routes.ToArray())
+                    if (routeEntry.Value is JsonValue routeValue && routeValue.TryGetValue<string>(out var route))
+                        routes[routeEntry.Key] = RewriteLayoutRoute(route);
                 return;
             }
             if (node is JsonObject keyed)
@@ -591,14 +591,14 @@ public sealed class StyleBlueprint
                 foreach (var arrayItem in array) if (arrayItem is not null) RewriteEntry(arrayItem);
         }
 
-        foreach (var entry in bindingsV2.ToArray()) if (entry.Value is not null) RewriteEntry(entry.Value);
+        foreach (var entry in controlTree.ToArray()) if (entry.Value is not null) RewriteEntry(entry.Value);
 
         string RewriteLayoutRoute(string route)
         {
             if (oldLayoutPath is null) return route;
             var oldLayoutId = oldLayoutPath.Split('/').Last();
-            return route.Replace("root:" + oldLayoutId, "root:" + newId, StringComparison.Ordinal)
-                .Replace(":" + oldLayoutId, ":" + newId, StringComparison.Ordinal);
+            return route.Replace(oldLayoutId + "[", newId + "[", StringComparison.Ordinal)
+                .Replace("." + oldLayoutId + ".", "." + newId + ".", StringComparison.Ordinal);
         }
     }
 

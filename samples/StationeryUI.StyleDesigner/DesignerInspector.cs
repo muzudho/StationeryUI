@@ -44,12 +44,12 @@ internal sealed partial class DesignerGame
         "createFile" => selectedOutputFolder is null ? "先にフォルダーを選択してください。" : "選択フォルダーへ現在の設計を作成します。同名があれば連番にして上書きを避けます。",
         "styleTree" => "＋／－で開閉。水色の枠が操作対象です。layouts 内の box-layout や表をクリックすると設定を編集できます。",
         "addChild" => "layouts、子のないボックス、グリッドを選んで子レイアウトを追加します。グリッド内では row・col・rowspan・colspan を指定します。",
-        "deleteNode" => "layouts 内の操作対象を削除します。models・bindings は閲覧専用です。参照や必須設定を壊す削除も拒否します。",
-        "renameId" => "layouts 内の Id を変更します。既存の bindings の参照は自動で追従します。models・bindings は閲覧専用です。",
+        "deleteNode" => "layouts 内の操作対象を削除します。modelTree・controlTree は閲覧専用です。参照や必須設定を壊す削除も拒否します。",
+        "renameId" => "layouts 内の Id を変更します。既存の controlTree の参照は自動で追従します。modelTree・controlTree は閲覧専用です。",
         "stationeryId" => "英字・数字・アンダースコアのみ。camelCase を推奨します。数字始まりなどの警告があっても確定できます。",
         "panel" => "指定した Id の box-layout を追加し、margin・padding の設定画面を開きます。border はレイアウトに影響しません。",
         "floating" => "指定した Id の grid-layout を追加し、列幅・行高を設定します。",
-        "confirmId" => "入力した Id に変更します。既存の bindings の参照も追従します。",
+        "confirmId" => "入力した Id に変更します。既存の controlTree の参照も追従します。",
         "cancel" => utilityDialog is not null
             ? exportDialog ? "ダイアログを閉じます。書き出し済みのファイルは保持します。Esc キーでも閉じられます。"
                 : "縮小を取り消して元の列数・行数に戻します。Esc キーでも閉じられます。"

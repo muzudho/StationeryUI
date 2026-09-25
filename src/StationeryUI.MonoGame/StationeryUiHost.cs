@@ -47,9 +47,9 @@ public sealed partial class StationeryUiHost : IDisposable
     public sealed class Element
     {
         public string? ToolHint { get; set; }
-        /// <summary>Optional handle used to look up this control in bindingsV2.</summary>
+        /// <summary>Optional handle used to look up this control in controlTree.</summary>
         public string? ControlHandle { get; set; }
-        /// <summary>Optional page or layout variant selected for this control in bindingsV2.</summary>
+        /// <summary>Optional page or layout variant selected for this control in controlTree.</summary>
         public string? LayoutKey { get; set; }
         public StationeryBoxModel? BoxModel { get; set; }
         internal Element(StationeryNode node, ScreenRectangle bounds, string label)

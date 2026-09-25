@@ -50,7 +50,7 @@ internal sealed partial class DesignerGame
             livePreview.Viewport.Offset = new(previewWindow.X, previewWindow.Y);
             var index = 0;
             var selectedModelPath = SelectedPreviewModelPath();
-            var selectedNode = selectedModelPath is null ? null : snapshot.Settings.Models[0].CreateTree().Resolve(selectedModelPath);
+            var selectedNode = selectedModelPath is null ? null : snapshot.Settings.ModelTree.CreateTree().Resolve(selectedModelPath);
             var dialogNode = selectedNode;
             while (dialogNode is not null && dialogNode.Kind != "dialog") dialogNode = dialogNode.Parent;
             var dialogPath = dialogNode?.Path;
@@ -134,7 +134,7 @@ internal sealed partial class DesignerGame
                 }
                 if (model["children"] is JsonArray children) foreach (var child in children) Visit(child!, path);
             }
-            foreach (var root in metadata["models"]!.AsArray()) Visit(root!, "");
+            Visit(metadata["modelTree"]!, "");
             if (dialogPath is null && blueprint.CanEditPanel)
             {
                 foreach (var (layoutKey, area) in snapshot.Layout.LayoutContentBounds)
@@ -184,7 +184,7 @@ internal sealed partial class DesignerGame
 
         string? snapshotDialogPath()
         {
-            var selected = selectedPath is null ? null : previewSnapshot.Settings.Models[0].CreateTree().Resolve(selectedPath);
+            var selected = selectedPath is null ? null : previewSnapshot.Settings.ModelTree.CreateTree().Resolve(selectedPath);
             for (var node = selected; node is not null; node = node.Parent)
                 if (node.Kind == "dialog") return node.Path;
             return null;
