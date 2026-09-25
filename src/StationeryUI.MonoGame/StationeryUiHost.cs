@@ -11,6 +11,7 @@ using StationeryUI.Platform;
 using StationeryUI.Text;
 using StationeryUI.Theming;
 using StationeryUI.Inspection;
+using StationeryUI.Styling;
 
 /// <summary>A single-window desktop UI host. Call Update before game input and Draw after the game.</summary>
 public sealed partial class StationeryUiHost : IDisposable
@@ -56,7 +57,7 @@ public sealed partial class StationeryUiHost : IDisposable
             Node = node;
             Bounds = bounds;
             Label = label;
-            ControlHandle = "ctrl" + char.ToUpperInvariant(node.Id[0]) + node.Id[1..];
+            ControlHandle = StationeryControlHandle.FromModelId(node.Id);
         }
         public StationeryNode Node { get; internal set; }
         public string Id => Node.Id;

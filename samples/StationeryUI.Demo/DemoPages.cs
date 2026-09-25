@@ -98,7 +98,7 @@ internal sealed partial class Demo
             element.Bounds = new(bounds.X / requestedScale, bounds.Y / requestedScale, bounds.Width / requestedScale, bounds.Height / requestedScale);
             if (element.Split is not null)
             {
-                var handle = "ctrl" + char.ToUpperInvariant(element.Id[0]) + element.Id[1..];
+                var handle = StationeryControlHandle.FromModelId(element.Id);
                 var route = styles.Current.BindingsV2[handle].LayoutPath
                     ?? throw new InvalidOperationException($"Control '{handle}' requires one split-pane route.");
                 var splitLayout = styles.Current.Layouts.Single(layout => layout.Type == "split-pane" &&

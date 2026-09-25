@@ -620,7 +620,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         });
         foreach (var node in main.Values.Concat(splitControls.Values).Concat(layoutControls.Values))
         {
-            var handle = "ctrl" + char.ToUpperInvariant(node.Id[0]) + node.Id[1..];
+            var handle = StationeryControlHandle.FromModelId(node.Id);
             if (!settings.BindingsV2.TryGetValue(handle, out var controlBinding))
                 throw new JsonException($"Demo control {node.Path} requires a bindingsV2 entry for '{handle}'.");
             var resolvedPaths = controlBinding.LayoutPath is not null

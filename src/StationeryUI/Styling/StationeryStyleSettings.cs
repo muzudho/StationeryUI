@@ -35,6 +35,19 @@ public sealed record StationeryModelNode(string Id, string Type, IReadOnlyList<S
     }
 }
 
+/// <summary>Creates the conventional control handle for a model Id.</summary>
+public static class StationeryControlHandle
+{
+    /// <summary>Returns <c>ctrl</c> plus the model stem, removing a leading <c>mdl</c> when present.</summary>
+    public static string FromModelId(string modelId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(modelId);
+        var stem = modelId.StartsWith("mdl", StringComparison.Ordinal) && modelId.Length > 3
+            ? modelId[3..] : modelId;
+        return "ctrl" + char.ToUpperInvariant(stem[0]) + stem[1..];
+    }
+}
+
 public readonly record struct LayoutTrack(double Value, bool IsRate);
 
 /// <summary>A reusable layout definition. It has no reference to model identities.</summary>

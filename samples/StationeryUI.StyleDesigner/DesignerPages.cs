@@ -393,7 +393,7 @@ internal sealed partial class DesignerGame
         if (editingPage && styleTree?.Tree is { } tree)
         {
             var previous = tree.TargetItem;
-            foreach (var root in tree.Roots.Where(n => treePaths.GetValueOrDefault(n.Id) is ["models"] or ["bindings"]))
+            foreach (var root in tree.Roots.Where(n => treePaths.GetValueOrDefault(n.Id) is ["models"] or ["bindings"] or ["bindingsV2"]))
             {
                 tree.SetTarget(root.Children.FirstOrDefault() ?? root);
                 UpdateTreeActions();
