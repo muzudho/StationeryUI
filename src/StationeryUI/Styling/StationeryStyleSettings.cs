@@ -930,10 +930,13 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
             else throw new JsonException($"{path}.type is required unless the node can be resolved by name from viewports.");
 
             var node = new ViewNode(type, name);
-            if (!value.TryGetProperty("children", out var children) || children.ValueKind != JsonValueKind.Array)
-                throw new JsonException($"{path}.children must be an array.");
-            foreach (var (child, index) in children.EnumerateArray().Select((child, index) => (child, index)))
-                node.ChildNodes.Add(ReadViewNode(child, $"{path}.children[{index}]", knownNodes));
+            if (value.TryGetProperty("children", out var children))
+            {
+                if (children.ValueKind != JsonValueKind.Array)
+                    throw new JsonException($"{path}.children must be an array.");
+                foreach (var (child, index) in children.EnumerateArray().Select((child, index) => (child, index)))
+                    node.ChildNodes.Add(ReadViewNode(child, $"{path}.children[{index}]", knownNodes));
+            }
             return node;
         }
     }
