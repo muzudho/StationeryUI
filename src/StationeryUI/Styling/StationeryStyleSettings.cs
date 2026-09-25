@@ -2,6 +2,7 @@ namespace StationeryUI.Styling;
 
 using System.Globalization;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using StationeryUI.Canvas;
 using StationeryUI.Controls;
@@ -101,6 +102,164 @@ public sealed record StationeryControlBindingV2(string? LayoutPath, IReadOnlyDic
 /// <summary>Resolves serialized control routes once, while a complete settings snapshot is parsed.</summary>
 internal static class StationeryControlBindingResolver
 {
+    private sealed class PlacementAccumulator(string layout, string model)
+    {
+        public string Layout { get; } = layout;
+        public string Model { get; } = model;
+        public List<StationeryCellBinding> Children { get; } = [];
+        public List<StationeryDockBinding> DockChildren { get; } = [];
+        public string? First { get; set; }
+        public string? Second { get; set; }
+        public string? Inspector { get; set; }
+    }
+
+    public static IReadOnlyList<StationeryLayoutBinding> ResolvePlacementsFromRoutes(StationeryModelNode model,
+        IReadOnlyList<StationeryLayoutNode> layoutNodes, IReadOnlyDictionary<string, StationeryControlBindingV2> bindings)
+    {
+        var root = model.CreateTree();
+        var layouts = layoutNodes.ToDictionary(layout => layout.Path, StringComparer.Ordinal);
+        var accumulators = new Dictionary<(string Model, string Layout), PlacementAccumulator>();
+        var assignedModels = new Dictionary<(string Model, string Layout, string Child), string>();
+
+        foreach (var binding in bindings.Values)
+        foreach (var route in binding.LayoutPath is { } single ? new[] { single } : binding.LayoutPaths.Values)
+        {
+            var segments = route.Split('/');
+            if (segments.Length == 0 || !segments[0].StartsWith("root:", StringComparison.Ordinal))
+                throw new JsonException($"bindingsV2 route '{route}' must start with root:<modelId>.");
+            var (rootId, rootLayoutId) = ParseTarget(segments[0][5..], route);
+            if (rootId != root.Id) throw new JsonException($"bindingsV2 route '{route}' starts at unknown model '{rootId}'.");
+            var owner = root;
+            var activeLayout = ResolveRootLayout(rootLayoutId, route);
+            EnsurePlacement(owner, activeLayout);
+
+            foreach (var segment in segments.Skip(1))
+            {
+                var colon = segment.IndexOf(':');
+                if (colon < 0) throw new JsonException($"bindingsV2 route '{route}' has an unqualified segment '{segment}'.");
+                var edge = segment[..colon];
+                var (targetId, targetLayoutId) = ParseTarget(segment[(colon + 1)..], route);
+                var modelChild = owner.Children.FirstOrDefault(child => child.Id == targetId);
+                if (modelChild is not null)
+                {
+                    if (activeLayout is null) throw new JsonException($"bindingsV2 route '{route}' has no layout for model '{owner.Path}'.");
+                    AddPlacement(owner, modelChild, activeLayout, edge, route);
+                    owner = modelChild;
+                    activeLayout = targetLayoutId is null ? null : ResolveRootLayout(targetLayoutId, route);
+                    EnsurePlacement(owner, activeLayout);
+                    continue;
+                }
+
+                if (activeLayout is null || !layouts.TryGetValue(activeLayout.Path, out var currentLayout))
+                    throw new JsonException($"bindingsV2 route '{route}' references unknown nested layout '{targetId}'.");
+                var nested = currentLayout.Children.FirstOrDefault(child => child.Id == targetId);
+                if (nested is null || targetLayoutId is not null)
+                    throw new JsonException($"bindingsV2 route '{route}' target '{targetId}' is neither a child model nor a nested layout.");
+                if (!MatchesLayoutCell(edge, currentLayout, nested))
+                    throw new JsonException($"bindingsV2 route '{route}' does not match the declared cell for nested layout '{nested.Path}'.");
+                activeLayout = nested;
+            }
+        }
+
+        return accumulators.Values.Select(item => new StationeryLayoutBinding(item.Layout, item.Model,
+            item.Children.AsReadOnly(), item.First, item.Second, item.Inspector)
+        { DockChildren = item.DockChildren.AsReadOnly() }).ToArray();
+
+        StationeryLayoutNode? ResolveRootLayout(string? id, string route)
+        {
+            if (id is null) throw new JsonException($"bindingsV2 route '{route}' must include a root layout ID for every model.");
+            var candidates = layoutNodes.Where(layout => layout.ParentPath is null && layout.Id == id).ToArray();
+            return candidates.Length == 1 ? candidates[0]
+                : throw new JsonException($"bindingsV2 route '{route}' root layout ID '{id}' resolves to {candidates.Length} layouts.");
+        }
+
+        void AddPlacement(StationeryUI.Inspection.StationeryNode parent, StationeryUI.Inspection.StationeryNode child,
+            StationeryLayoutNode layout, string edge, string route)
+        {
+            var key = (parent.Path, layout.Path);
+            if (!accumulators.TryGetValue(key, out var accumulator))
+                accumulators.Add(key, accumulator = new(layout.Path, parent.Path));
+            var childKey = (parent.Path, layout.Path, child.Path);
+            if (assignedModels.TryGetValue(childKey, out var previous))
+            {
+                if (previous != edge) throw new JsonException($"Model '{child.Path}' has conflicting bindingsV2 routes.");
+                return;
+            }
+            assignedModels.Add(childKey, edge);
+            if (layout.Type == "grid-layout" && ParseGridEdge(edge) is { } grid)
+            {
+                accumulator.Children.Add(new(child.Path, grid.Row, grid.Column, grid.RowSpan, grid.ColumnSpan));
+                return;
+            }
+            if (layout.Type == "tabbed-box-layout" && int.TryParse(edge, NumberStyles.None, CultureInfo.InvariantCulture, out var tab))
+            {
+                accumulator.Children.Add(new(child.Path, tab, 0));
+                return;
+            }
+            if (layout.Type == "box-layout" && edge == "single")
+            {
+                accumulator.Children.Add(new(child.Path, 0, 0));
+                return;
+            }
+            if (layout.Type == "dock-layout")
+            {
+                var direction = edge;
+                int? cellIndex = null;
+                var separator = edge.LastIndexOf('.');
+                if (separator > 0 && int.TryParse(edge[(separator + 1)..], NumberStyles.None, CultureInfo.InvariantCulture, out var oneBasedIndex))
+                { direction = edge[..separator]; cellIndex = oneBasedIndex - 1; }
+                var matching = layout.Cells.Select((cell, index) => (cell, index))
+                    .Where(item => item.cell.Dock == direction && (cellIndex is null || item.index == cellIndex)).ToArray();
+                if (matching.Length != 1) throw new JsonException($"bindingsV2 route '{route}' dock edge '{edge}' resolves to {matching.Length} cells in {layout.Path}.");
+                var item = matching[0];
+                accumulator.DockChildren.Add(new(child.Path, direction, item.cell.Size) { CellIndex = item.index });
+                return;
+            }
+            if (layout.Type == "split-pane" && (edge is "first" or "second"))
+            {
+                if (edge == "first") accumulator.First = child.Path; else accumulator.Second = child.Path;
+                return;
+            }
+            if ((layout.Type is "fullscreen-layout" or "work-page-layout") && edge == "bottom")
+            {
+                accumulator.Inspector = child.Path;
+                return;
+            }
+            throw new JsonException($"bindingsV2 route '{route}' edge '{edge}' is invalid for {layout.Type} at {layout.Path}.");
+        }
+
+        void EnsurePlacement(StationeryUI.Inspection.StationeryNode owner, StationeryLayoutNode? layout)
+        {
+            if (layout is null) return;
+            var key = (owner.Path, layout.Path);
+            if (!accumulators.ContainsKey(key)) accumulators.Add(key, new(layout.Path, owner.Path));
+        }
+
+        static (string Id, string? LayoutId) ParseTarget(string target, string route)
+        {
+            var at = target.IndexOf('@');
+            if (at == 0 || at == target.Length - 1 || (at >= 0 && target.IndexOf('@', at + 1) >= 0))
+                throw new JsonException($"bindingsV2 route '{route}' has an invalid model/layout marker '{target}'.");
+            return at < 0 ? (target, null) : (target[..at], target[(at + 1)..]);
+        }
+
+        static (int Row, int Column, int RowSpan, int ColumnSpan)? ParseGridEdge(string edge)
+        {
+            var values = Regex.Matches(edge, "[0-9]+").Cast<Match>()
+                .Select(match => int.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
+            if (values.Length != 4 || !edge.Contains('y') || !edge.Contains('x') || !edge.Contains('w') || !edge.Contains('h')) return null;
+            return (values[0] - 1, values[1] - 1, values[2], values[3]);
+        }
+
+        static bool MatchesLayoutCell(string edge, StationeryLayoutNode ownerLayout, StationeryLayoutNode childLayout)
+        {
+            if (ownerLayout.Type == "box-layout") return edge == "single";
+            if (ownerLayout.Type != "grid-layout" || ParseGridEdge(edge) is not { } grid) return false;
+            return childLayout.Row == grid.Row && childLayout.Column == grid.Column
+                && childLayout.RowSpan == grid.RowSpan && childLayout.ColumnSpan == grid.ColumnSpan;
+        }
+    }
+
     public static IReadOnlyDictionary<string, StationeryControlBindingV2> Resolve(StationeryModelNode root,
         IReadOnlyList<StationeryLayoutNode> layoutNodes, IReadOnlyList<StationeryLayoutBinding> placements,
         IReadOnlyDictionary<string, StationeryControlBindingV2> bindings)
@@ -129,31 +288,29 @@ internal static class StationeryControlBindingResolver
             var parentPath = modelParents[modelPath];
             if (parentPath is null)
             {
-                routeCache[cacheKey] = "root";
-                route = "root";
+                route = includeLayoutIds
+                    ? $"root:{modelIds[modelPath]}@{placements.Where(binding => binding.ModelPath == modelPath).Select(binding => RootLayoutId(binding.Layout)).Distinct(StringComparer.Ordinal).Single()}"
+                    : "root";
+                routeCache[cacheKey] = route;
                 return true;
             }
-            if (!TryRoute(parentPath, out var parentRoute, includeLayoutIds) || !TryPlacementRoute(parentPath, modelPath, out var placementRoute))
+            if (!TryRoute(parentPath, out var parentRoute, includeLayoutIds) || !TryPlacementRoute(parentPath, modelPath, out var placementRoute, includeLayoutIds))
             {
                 routeCache[cacheKey] = null;
                 route = "";
                 return false;
             }
             var layoutId = includeLayoutIds
-                ? placements.Where(binding => binding.ModelPath == parentPath && PlacementRouteUsesLayout(binding, modelPath))
+                ? placements.Where(binding => binding.ModelPath == modelPath)
                     .Select(binding => RootLayoutId(binding.Layout))
                     .Distinct(StringComparer.Ordinal).SingleOrDefault()
                 : null;
-            route = parentRoute + ":" + modelIds[parentPath] + (layoutId is null ? "" : "@" + layoutId) + "/" + placementRoute;
+            route = parentRoute + "/" + placementRoute + (includeLayoutIds
+                ? ":" + modelIds[modelPath] + (layoutId is null ? "" : "@" + layoutId)
+                : "");
             routeCache[cacheKey] = route;
             return true;
         }
-
-        bool PlacementRouteUsesLayout(StationeryLayoutBinding placement, string childPath)
-            => placement.Children.Any(child => child.ModelPath == childPath)
-                || placement.FirstModel == childPath || placement.SecondModel == childPath
-                || placement.InspectorModel == childPath
-                || placement.DockChildren.Any(child => child.ModelPath == childPath);
 
         string RootLayoutId(string layoutPath)
         {
@@ -162,7 +319,7 @@ internal static class StationeryControlBindingResolver
             return layout.Id;
         }
 
-        bool TryPlacementRoute(string parentPath, string childPath, out string route)
+        bool TryPlacementRoute(string parentPath, string childPath, out string route, bool includeLayoutIds)
         {
             foreach (var placement in placements.Where(binding => binding.ModelPath == parentPath))
             {
@@ -180,7 +337,8 @@ internal static class StationeryControlBindingResolver
                 if (placement.SecondModel == childPath) edge = "second";
                 if (placement.InspectorModel == childPath) edge = "bottom";
                 var dockChild = placement.DockChildren.FirstOrDefault(item => item.ModelPath == childPath);
-                if (dockChild is not null) edge = dockChild.Dock;
+                if (dockChild is not null) edge = includeLayoutIds && dockChild.CellIndex >= 0
+                    ? $"{dockChild.Dock}.{dockChild.CellIndex + 1}" : dockChild.Dock;
                 if (edge is null) continue;
                 if (!TryNestedLayoutRoute(parentPath, placement.Layout, out var nested)) continue;
                 route = nested.Length == 0 ? edge : nested + "/" + edge;
@@ -264,7 +422,7 @@ internal static class StationeryControlBindingResolver
             if (matches.Length != 1)
             {
                 var candidates = modelIds.Keys
-                    .Select(path => TryRoute(path, out var route) ? $"{path} => {route}" : $"{path} => <no legacy placement>");
+                    .Select(path => TryRoute(path, out var route, includeLayoutIds: true) ? $"{path} => {route}" : $"{path} => <no placement route>");
                 throw new JsonException($"bindingsV2 path for '{handle}' resolves to {matches.Length} current model placements; the path must match exactly one placement. Selected path: '{selectedPath}'. Candidate routes: {string.Join("; ", candidates)}.");
             }
             return matches[0];
@@ -312,7 +470,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         using var document = JsonDocument.Parse(json);
         var root = RequireObject(document.RootElement, "root");
         if (root.TryGetProperty("viewport", out _) || root.TryGetProperty("model", out _) || root.TryGetProperty("layout", out _))
-            throw new JsonException("Use the models, layouts and bindings arrays; old root keys are obsolete.");
+            throw new JsonException("Use the models and layouts sections with bindingsV2; old root keys are obsolete.");
         var modelJson = ReadArray(root, "models", "root");
         if (modelJson.GetArrayLength() != 1) throw new JsonException("models currently requires exactly one viewport root.");
         var model = ReadModel(modelJson[0], "models[0]");
@@ -334,7 +492,7 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             if (type is not ("box-layout" or "grid-layout" or "dock-layout" or "tabbed-box-layout" or "split-pane" or "fullscreen-layout" or "work-page-layout")) throw new JsonException($"{path}.type must be box-layout, grid-layout, dock-layout, tabbed-box-layout, split-pane, fullscreen-layout or work-page-layout.");
             if (item.TryGetProperty("contents", out _) ||
                 item.TryGetProperty("model", out _) || item.TryGetProperty("parentModel", out _))
-                throw new JsonException($"{path}: model references and placement belong in bindings.");
+                throw new JsonException($"{path}: model references and placement belong in bindingsV2 routes.");
             var padding = default(ViewportPadding);
             var margin = default(ViewportPadding);
             var border = default(ViewportPadding);
@@ -489,7 +647,11 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         var placedModels = new HashSet<string>(StringComparer.Ordinal);
         var pages = new HashSet<string>(StringComparer.Ordinal);
         var splits = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var item in ReadArray(root, "bindings", "root").EnumerateArray())
+        var legacyBindingItems = root.TryGetProperty("bindings", out var legacyBindings)
+            ? legacyBindings.ValueKind == JsonValueKind.Array ? legacyBindings.EnumerateArray().ToArray()
+                : throw new JsonException("bindings must be an array when supplied.")
+            : Array.Empty<JsonElement>();
+        foreach (var item in legacyBindingItems)
         {
             var path = $"bindings[{bindings.Count}]";
             RequireObject(item, path);
@@ -640,6 +802,12 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 children.Add(new(node.Path, slot.Row, slot.Column, slot.RowSpan, slot.ColumnSpan));
             }
             bindings.Add(new(layoutId, parent.Path, children.AsReadOnly()));
+        }
+        if (legacyBindingItems.Length == 0)
+        {
+            if (!root.TryGetProperty("bindingsV2", out _))
+                throw new JsonException("bindingsV2 is required when the legacy bindings array is omitted.");
+            bindings.AddRange(StationeryControlBindingResolver.ResolvePlacementsFromRoutes(model, layouts, ReadBindingsV2(root)));
         }
         // A model is associated with at most one root tree; bindings to descendants of that tree are valid.
         foreach (var group in bindings.GroupBy(b => b.ModelPath))

@@ -11,36 +11,35 @@
 
 旧設定で余白用 box と配置用 grid を併用していた場合は、box の padding を grid へ移して box の binding を削除してください。margin / border も必要なら、box の `children` に grid を入れ、binding の layout を `/boxId/gridId` に変更します。
 
-## models → bindings → layouts の順にたどる
+## models → bindingsV2 → layouts の順にたどる
 
-たとえば `/app/nameField` の配置を知りたい場合、`models` でそのノードを確認し、`bindings.childrenModel` の `cell` を確認し、`layout` が指す `layouts` の cells 内で、その row・col または dock・index のセルを調べます。`layouts[0]` がルート用という規則はありません。
+たとえば `/demo/topDemoPage/body/nameField` の配置は、`bindingsV2` の `ctrlNameField` 経路からたどれます。経路内のモデル Id が `models` の親子関係を、レイアウト Id とセル座標が `layouts` の定義を示します。`layouts[0]` がルート用という規則はありません。
 
 | セクション | 意味 | C# での対応 |
 | --- | --- | --- |
 | `models` | 文房具の所属・親子関係 | `Models`、`CreateTree()` |
 | `layouts` | 再利用できる配置定義 | `Layouts`、`StationeryLayoutNode` |
-| `bindings` | モデルと配置定義の対応 | `Bindings`、`StationeryLayoutBinding` |
-| `bindingsV2` | コントロールハンドルとレイアウトパスの対応 | `BindingsV2`、`StationeryControlBindingV2` |
+| `bindingsV2` | コントロールハンドル、モデル、レイアウト経路の対応 | `BindingsV2`、`StationeryControlBindingV2` |
 
-3 配列はすべて必須です。現在の `models` は **`type: "viewport"` のルート1個**に限ります。その子にページやコンテナーを作ります。`layouts` と `bindings` は空配列にもできますが、コントロールが正しく配置される保証にはなりません。アプリ側で必要な binding を検証します。
+`models` と `layouts` は必須です。現在の `models` は **`type: "viewport"` のルート1個**に限ります。その子にページやコンテナーを作ります。コントロールの配置は `bindingsV2` に記述します。
 
-移行中は任意の `bindingsV2` オブジェクトを追加できます。キーはコントロールハンドル、値は単一のレイアウトパス、またはレイアウトキーからパスへのオブジェクトです。
+`bindingsV2` のキーはコントロールハンドル、値は単一のレイアウト経路、またはレイアウトキーから経路へのオブジェクトです。経路には配置セル、モデル Id、モデルに適用するルートレイアウト Id を含めます。
 
 ```json
 {
   "bindingsV2": {
-    "ctrlNameField": "root:demo/0:topDemoPage/center:body/1y.1x.1w.1h",
+    "ctrlNameField": "root:demo@tabbedPages/0:topDemoPage@pageDock/center:body@topDemoLayout/1y.1x.1w.1h:nameField",
     "ctrlSaveButton": {
-      "lytTopDemoPage": "root:demo/0:topDemoPage/center:body/1y.2x.1w.1h",
-      "lytSplitPaneDemoPage": "root:demo/1:splitPaneDemoPage/center:body/1y.1x.1w.1h"
+      "lytTopDemoPage": "root:demo@tabbedPages/0:topDemoPage@pageDock/center:body@topDemoLayout/1y.2x.1w.1h:saveButton",
+      "lytSplitPaneDemoPage": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDock/center:body@splitDemoLayout/1y.1x.1w.1h:saveButton"
     }
   }
 }
 ```
 
-文字列値は `root` から始まるパスです。ネストした layout の場合は、子 layout の配置セルと Id（例：`3y.2x.1w.1h:grid`）を経路に含めます。オブジェクト値では呼び出し側がコントロールハンドルごとの `LayoutKey` を `StationeryLayoutEngine.Arrange(settings, width, height, controlLayoutKeys)` に渡します。MonoGame の `Element` では `ControlHandle` と `LayoutKey` に設定できます。結果の `ControlBounds` と `ControlLayoutPaths` はハンドルで参照できます。コントロールハンドルは一意な任意の文字列で、`ctrl` 接頭辞は慣習です。ハンドル名からモデルを推測せず、レイアウトパスが対象モデルを決めます。MonoGame の `Element` は既定でモデル Id から `ctrl` 付きのハンドルを生成します。
+経路は `root:<modelId>@<layoutId>` から始まり、以降は配置セルと子モデル Id を順に記します。`@layoutId` がそのモデル配下で使うルートレイアウトを特定し、終端の `:<modelId>` が配置対象モデルを特定します。dock のセルは方向と配列位置を `center.2` のように記します（位置は1始まり）。ネストした layout は子 layout の配置セルと Id（例：`3y.2x.1w.1h:grid`）を経路に含めます。オブジェクト値では呼び出し側がコントロールハンドルごとの `LayoutKey` を `StationeryLayoutEngine.Arrange(settings, width, height, controlLayoutKeys)` に渡します。MonoGame の `Element` では `ControlHandle` と `LayoutKey` に設定できます。結果の `ControlBounds` と `ControlLayoutPaths` はハンドルで参照できます。コントロールハンドルは一意な任意の文字列で、`ctrl` 接頭辞は慣習です。経路内のモデル Id と layout Id が対応先を特定します。
 
-この併用段階では、設定の読み込み時に `bindingsV2` のパスを既存 `bindings` から得られるモデル配置パスと照合し、対象モデルへ解決します。`Arrange` はその解決済みモデルの bounds をハンドルへ返します。一方、配置と Bounds 計算自体はまだ既存 `bindings` が担うため、`bindingsV2` だけで配置する移行は完了していません。
+設定の読み込み時に `bindingsV2` の経路からモデルと配置情報を復元します。`Arrange` はその配置で計算した bounds をハンドルへ返します。旧 `bindings` を含む既存ファイルも読み込み互換のため受け付けますが、新しい設定では `bindingsV2` を使います。
 
 モデルには `id`、`type`、必要に応じて `children` を置きます。レイアウトの型とモデルの型は別です。たとえばモデルは `splitPane`、レイアウトは `split-pane` です。モデルの `type` 文字列を任意に増やしても、対応する UI が自動実装されるわけではありません。
 
@@ -121,20 +120,18 @@ bindings: outerGrid のセルに contentArea を配置
 }
 ```
 
-`bindings` の要素：
+`bindingsV2` の経路例：
 
 ```json
 {
-    "layout": "/editorSplit",
-    "model": "/app/editorSplit",
-    "firstModel": "leftPane",
-    "secondModel": "rightPane"
+    "ctrlLeftPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/2y.1x.1w.1h:verticalSplit@verticalSplitLayout/first:leftPane",
+    "ctrlRightPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/2y.1x.1w.1h:verticalSplit@verticalSplitLayout/second:rightPane"
 }
 ```
 
 対象モデルは `type: "splitPane"`、直下の子は指定した2個だけにします。`vertical` は縦の仕切りで左右分割、`horizontal` は横の仕切りで上下分割です。最初のペーンは左または上です。ratio は単位のない JSON **数値**で0～1、既定0.5。dividerWidth は正の px（既定8）、minimumPaneSize は非負の px（既定40）です。
 
-`Arrange` は設定から静的な分割矩形を返します。ドラッグ可能な UI には C# で `AddSplitPane(node, bounds, label, options)` を作り、`BindSplitContent(split, first, second)` を接続します。`options` には対象 binding から引いた `StationeryLayoutNode.Split` を渡します。子は同じホストに登録された直接の子コントロールである必要があります。
+`Arrange` は設定から静的な分割矩形を返します。ドラッグ可能な UI には C# で `AddSplitPane(node, bounds, label, options)` を作り、`BindSplitContent(split, first, second)` を接続します。`options` には split-pane の `StationeryLayoutNode.Split` を渡します。子は同じホストに登録された直接の子コントロールである必要があります。
 
 ドラッグ中の比率は `element.Split.Ratio` が持ちます。ホストが `Update` / `Draw` で子を再配置するので、静的な `Arrange` の値を最後に上書きしてドラッグ結果を戻さないようにします。同じ値の `Configure` は比率を保持します。設定を変えると設定側の比率へ戻ります。ドラッグ結果の JSON への書き戻しは自動ではありません。[デモの接続例](../../../samples/StationeryUI.Demo/DemoPages.cs)と[スプリットペーンの説明](../../user/split-pane.md)を参照してください。
 

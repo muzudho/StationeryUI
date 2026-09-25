@@ -530,367 +530,40 @@
             ]
         }
     ],
-    "bindings": [
-        {
-            "layout": "/tabbedPages",
-            "parentModel": "demo",
-            "childrenModel": [
-                { "model": "topDemoPage" },
-                { "model": "splitPaneDemoPage" },
-                { "model": "layoutDemoPage" }
-            ]
-        },
-        {
-            "layout": "/topDemoLayout",
-            "parentModel": "demo/topDemoPage/body",
-            "childrenModel": [
-                {
-                    "model": "nameField",
-                    "cell": {
-                        "row": 0,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "memoField",
-                    "cell": {
-                        "row": 1,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "themeButton",
-                    "cell": {
-                        "row": 2,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "scaleButton",
-                    "cell": {
-                        "row": 2,
-                        "col": 1
-                    }
-                },
-                {
-                    "model": "applyTitleButton",
-                    "cell": {
-                        "row": 3,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "openDialogButton",
-                    "cell": {
-                        "row": 4,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "sampleTree",
-                    "cell": {
-                        "row": 0,
-                        "col": 1
-                    }
-                },
-                {
-                    "model": "splitPaneDemoLink",
-                    "cell": {
-                        "row": 4,
-                        "col": 1
-                    }
-                },
-                {
-                    "model": "layoutDemoLink",
-                    "cell": {
-                        "row": 3,
-                        "col": 1
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/splitDemoLayout",
-            "parentModel": "demo/splitPaneDemoPage/body",
-            "childrenModel": [
-                {
-                    "model": "topDemoLink",
-                    "cell": {
-                        "row": 0,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "verticalSplit",
-                    "cell": {
-                        "row": 1,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "horizontalSplit",
-                    "cell": {
-                        "row": 2,
-                        "col": 0
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/verticalSplitLayout",
-            "model": "demo/splitPaneDemoPage/body/verticalSplit",
-            "firstModel": "leftPane",
-            "secondModel": "rightPane"
-        },
-        {
-            "layout": "/horizontalSplitLayout",
-            "model": "demo/splitPaneDemoPage/body/horizontalSplit",
-            "firstModel": "topPane",
-            "secondModel": "bottomPane"
-        },
-        {
-            "layout": "/pageDock",
-            "parentModel": "demo/topDemoPage",
-            "childrenModel": [
-                {
-                    "model": "inspectorPanel",
-                    "cell": {
-                        "dock": "bottom",
-                        "index": 1
-                    }
-                },
-                {
-                    "model": "body",
-                    "cell": {
-                        "dock": "center",
-                        "index": 1
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/inspectorContents",
-            "parentModel": "demo/topDemoPage/inspectorPanel",
-            "childrenModel": [
-                {
-                    "model": "toolHint",
-                    "cell": {
-                        "row": 0,
-                        "col": 0
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/pageDockFullscreen",
-            "parentModel": "demo/splitPaneDemoPage",
-            "childrenModel": [
-                {
-                    "model": "inspectorPanel",
-                    "cell": {
-                        "dock": "bottom",
-                        "index": 1
-                    }
-                },
-                {
-                    "model": "body",
-                    "cell": {
-                        "dock": "center",
-                        "index": 1
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/inspectorContents",
-            "parentModel": "demo/splitPaneDemoPage/inspectorPanel",
-            "childrenModel": [
-                {
-                    "model": "toolHint",
-                    "cell": {
-                        "row": 0,
-                        "col": 0
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/layoutShowcase",
-            "parentModel": "demo/layoutDemoPage/body",
-            "childrenModel": [
-                {
-                    "model": "topDemoLink",
-                    "cell": {
-                        "row": 0,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "title",
-                    "cell": {
-                        "row": 0,
-                        "col": 1
-                    }
-                },
-                {
-                    "model": "boxTitle",
-                    "cell": {
-                        "row": 1,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "boxContent",
-                    "cell": {
-                        "row": 2,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "gridTitle",
-                    "cell": {
-                        "row": 1,
-                        "col": 1
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/topDemoLinkBox",
-            "parentModel": "demo/layoutDemoPage/body/topDemoLink",
-            "childrenModel": []
-        },
-        {
-            "layout": "/box",
-            "model": "demo/layoutDemoPage/body/boxContent"
-        },
-        {
-            "layout": "/layoutShowcase/grid",
-            "parentModel": "demo/layoutDemoPage/body",
-            "childrenModel": [
-                {
-                    "model": "spanCell",
-                    "cell": {
-                        "row": 0,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "gridFooter",
-                    "cell": {
-                        "row": 2,
-                        "col": 0
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/spanCellBox",
-            "parentModel": "demo/layoutDemoPage/body/spanCell",
-            "childrenModel": []
-        },
-        {
-            "layout": "/layoutShowcase/grid/nestedGrid",
-            "parentModel": "demo/layoutDemoPage/body",
-            "childrenModel": [
-                {
-                    "model": "nestedA",
-                    "cell": {
-                        "row": 0,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "nestedB",
-                    "cell": {
-                        "row": 0,
-                        "col": 1
-                    }
-                },
-                {
-                    "model": "nestedC",
-                    "cell": {
-                        "row": 1,
-                        "col": 0
-                    }
-                },
-                {
-                    "model": "nestedD",
-                    "cell": {
-                        "row": 1,
-                        "col": 1
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/pageDock",
-            "parentModel": "demo/layoutDemoPage",
-            "childrenModel": [
-                {
-                    "model": "inspectorPanel",
-                    "cell": {
-                        "dock": "bottom",
-                        "index": 1
-                    }
-                },
-                {
-                    "model": "body",
-                    "cell": {
-                        "dock": "center",
-                        "index": 1
-                    }
-                }
-            ]
-        },
-        {
-            "layout": "/inspectorContents",
-            "parentModel": "demo/layoutDemoPage/inspectorPanel",
-            "childrenModel": [
-                {
-                    "model": "toolHint",
-                    "cell": {
-                        "row": 0,
-                        "col": 0
-                    }
-                }
-            ]
-        }
-    ],
     "bindingsV2": {
-        "ctrlNameField": "root:demo/0:topDemoPage/center:body/1y.1x.1w.1h",
-        "ctrlMemoField": "root:demo/0:topDemoPage/center:body/2y.1x.1w.1h",
-        "ctrlThemeButton": "root:demo/0:topDemoPage/center:body/3y.1x.1w.1h",
-        "ctrlScaleButton": "root:demo/0:topDemoPage/center:body/3y.2x.1w.1h",
-        "ctrlApplyTitleButton": "root:demo/0:topDemoPage/center:body/4y.1x.1w.1h",
-        "ctrlOpenDialogButton": "root:demo/0:topDemoPage/center:body/5y.1x.1w.1h",
-        "ctrlSampleTree": "root:demo/0:topDemoPage/center:body/1y.2x.1w.1h",
-        "ctrlSplitPaneDemoLink": "root:demo/0:topDemoPage/center:body/5y.2x.1w.1h",
-        "ctrlLayoutDemoLink": "root:demo/0:topDemoPage/center:body/4y.2x.1w.1h",
-        "ctrlVerticalSplit": "root:demo/1:splitPaneDemoPage/center:body/2y.1x.1w.1h",
-        "ctrlHorizontalSplit": "root:demo/1:splitPaneDemoPage/center:body/3y.1x.1w.1h",
-        "ctrlLeftPane": "root:demo/1:splitPaneDemoPage/center:body/2y.1x.1w.1h:verticalSplit/first",
-        "ctrlRightPane": "root:demo/1:splitPaneDemoPage/center:body/2y.1x.1w.1h:verticalSplit/second",
-        "ctrlTopPane": "root:demo/1:splitPaneDemoPage/center:body/3y.1x.1w.1h:horizontalSplit/first",
-        "ctrlBottomPane": "root:demo/1:splitPaneDemoPage/center:body/3y.1x.1w.1h:horizontalSplit/second",
-        "ctrlTitle": "root:demo/2:layoutDemoPage/center:body/1y.2x.1w.1h",
-        "ctrlBoxTitle": "root:demo/2:layoutDemoPage/center:body/2y.1x.1w.1h",
-        "ctrlBoxContent": "root:demo/2:layoutDemoPage/center:body/3y.1x.1w.1h",
-        "ctrlGridTitle": "root:demo/2:layoutDemoPage/center:body/2y.2x.1w.1h",
-        "ctrlSpanCell": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.1x.2w.1h",
-        "ctrlGridFooter": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/3y.1x.1w.3h",
-        "ctrlNestedA": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.1x.1w.1h",
-        "ctrlNestedB": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.2x.1w.1h",
-        "ctrlNestedC": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.1x.1w.1h",
-        "ctrlNestedD": "root:demo/2:layoutDemoPage/center:body/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.2x.1w.1h",
+        "ctrlNameField": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/1y.1x.1w.1h:nameField",
+        "ctrlMemoField": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/2y.1x.1w.1h:memoField",
+        "ctrlThemeButton": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/3y.1x.1w.1h:themeButton",
+        "ctrlScaleButton": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/3y.2x.1w.1h:scaleButton",
+        "ctrlApplyTitleButton": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/4y.1x.1w.1h:applyTitleButton",
+        "ctrlOpenDialogButton": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/5y.1x.1w.1h:openDialogButton",
+        "ctrlSampleTree": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/1y.2x.1w.1h:sampleTree",
+        "ctrlSplitPaneDemoLink": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/5y.2x.1w.1h:splitPaneDemoLink",
+        "ctrlLayoutDemoLink": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/4y.2x.1w.1h:layoutDemoLink",
+        "ctrlVerticalSplit": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/2y.1x.1w.1h:verticalSplit@verticalSplitLayout",
+        "ctrlHorizontalSplit": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/3y.1x.1w.1h:horizontalSplit@horizontalSplitLayout",
+        "ctrlLeftPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/2y.1x.1w.1h:verticalSplit@verticalSplitLayout/first:leftPane",
+        "ctrlRightPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/2y.1x.1w.1h:verticalSplit@verticalSplitLayout/second:rightPane",
+        "ctrlTopPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/3y.1x.1w.1h:horizontalSplit@horizontalSplitLayout/first:topPane",
+        "ctrlBottomPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/3y.1x.1w.1h:horizontalSplit@horizontalSplitLayout/second:bottomPane",
+        "ctrlTitle": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/1y.2x.1w.1h:title",
+        "ctrlBoxTitle": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/2y.1x.1w.1h:boxTitle",
+        "ctrlBoxContent": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.1x.1w.1h:boxContent@box",
+        "ctrlGridTitle": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/2y.2x.1w.1h:gridTitle",
+        "ctrlSpanCell": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.1x.2w.1h:spanCell@spanCellBox",
+        "ctrlGridFooter": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/3y.1x.1w.3h:gridFooter",
+        "ctrlNestedA": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.1x.1w.1h:nestedA",
+        "ctrlNestedB": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.2x.1w.1h:nestedB",
+        "ctrlNestedC": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.1x.1w.1h:nestedC",
+        "ctrlNestedD": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.2x.1w.1h:nestedD",
         "ctrlTopDemoLink": {
-            "lytSplitPaneDemoPage": "root:demo/1:splitPaneDemoPage/center:body/1y.1x.1w.1h",
-            "lytLayoutDemoPage": "root:demo/2:layoutDemoPage/center:body/1y.1x.1w.1h"
+            "lytSplitPaneDemoPage": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/1y.1x.1w.1h:topDemoLink",
+            "lytLayoutDemoPage": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/1y.1x.1w.1h:topDemoLink@topDemoLinkBox"
         },
         "ctrlToolHint": {
-            "lytTopDemoPage": "root:demo/0:topDemoPage/bottom:inspectorPanel/1y.1x.1w.1h",
-            "lytSplitPaneDemoPage": "root:demo/1:splitPaneDemoPage/bottom:inspectorPanel/1y.1x.1w.1h",
-            "lytLayoutDemoPage": "root:demo/2:layoutDemoPage/bottom:inspectorPanel/1y.1x.1w.1h"
+            "lytTopDemoPage": "root:demo@tabbedPages/0:topDemoPage@pageDock/bottom.1:inspectorPanel@inspectorContents/1y.1x.1w.1h:toolHint",
+            "lytSplitPaneDemoPage": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/bottom.1:inspectorPanel@inspectorContents/1y.1x.1w.1h:toolHint",
+            "lytLayoutDemoPage": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/bottom.1:inspectorPanel@inspectorContents/1y.1x.1w.1h:toolHint"
         }
     }
 }
