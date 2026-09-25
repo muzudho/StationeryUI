@@ -2,9 +2,27 @@
     "viewports": [
         {
             "type": "Viewport",
-            "name": "mainViewport",
-            "children": {
-            }
+            "name": "vMainViewport",
+            "children": [
+                {
+                    "type": "Page",
+                    "name": "vTopDemoPage",
+                    "children": [
+                    ]
+                },
+                {
+                    "type": "Page",
+                    "name": "vLayoutDemoPage",
+                    "children": [
+                    ]
+                },
+                {
+                    "type": "Page",
+                    "name": "vSplitPaneDemoPage",
+                    "children": [
+                    ]
+                }
+            ]
         }
     ],
     "controlTree": {
