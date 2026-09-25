@@ -41,10 +41,23 @@ public static class StationeryControlHandle
     /// <summary>Returns <c>ctrl</c> plus the model stem, removing a leading <c>mdl</c> when present.</summary>
     public static string FromModelId(string modelId)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(modelId);
-        var stem = modelId.StartsWith("mdl", StringComparison.Ordinal) && modelId.Length > 3
-            ? modelId[3..] : modelId;
+        var stem = ModelStemFromId(modelId);
         return "ctrl" + char.ToUpperInvariant(stem[0]) + stem[1..];
+    }
+
+    /// <summary>Returns the model Id without its conventional <c>mdl</c> prefix, when present.</summary>
+    public static string ModelStemFromId(string modelId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(modelId);
+        return modelId.StartsWith("mdl", StringComparison.Ordinal) && modelId.Length > 3
+            ? modelId[3..] : modelId;
+    }
+
+    /// <summary>Returns the lower-camel role name corresponding to a model Id.</summary>
+    public static string ModelRoleFromId(string modelId)
+    {
+        var stem = ModelStemFromId(modelId);
+        return char.ToLowerInvariant(stem[0]) + stem[1..];
     }
 }
 

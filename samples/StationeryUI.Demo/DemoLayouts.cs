@@ -55,7 +55,7 @@ internal sealed partial class Demo
         {
             var bounds = BoundsFor(element, arranged);
             element.Bounds = new(bounds.X / requestedScale, bounds.Y / requestedScale, bounds.Width / requestedScale, bounds.Height / requestedScale);
-            ButtonColor? surface = element.Id switch
+            ButtonColor? surface = StationeryControlHandle.ModelRoleFromId(element.Id) switch
             {
                 "boxContent" => new(38, 77, 68),
                 "spanCell" => new(64, 64, 98),

@@ -113,7 +113,7 @@ internal sealed partial class Demo
         if (!smoke || !IsPageSmoke(scenario)) return;
         if (scenario is "page-hint" or "page-hint-clear")
         {
-            var target = styledElements.Single(e => e.Id == "themeButton");
+            var target = styledElements.Single(e => StationeryControlHandle.ModelRoleFromId(e.Id) == "themeButton");
             var box = ui!.Viewport.ToWindow(scenario == "page-hint-clear" && updateFrames >= 4 ? topToolHint.Bounds : target.Bounds);
             mouse = new((int)(box.X + 24), (int)(box.Y + 24), 0, ButtonState.Released,
                 ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);

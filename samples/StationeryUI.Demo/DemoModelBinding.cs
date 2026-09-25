@@ -12,79 +12,79 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
 {
   "models": [
     {
-      "id": "demo",
+      "id": "mdlDemo",
       "type": "viewport",
       "children": [
         {
-          "id": "topDemoPage",
+          "id": "mdlTopDemoPage",
           "type": "page",
           "children": [
             {
-              "id": "body",
+              "id": "mdlBody",
               "type": "container",
               "children": [
                 {
-                  "id": "nameField",
+                  "id": "mdlNameField",
                   "type": "textBox"
                 },
                 {
-                  "id": "memoField",
+                  "id": "mdlMemoField",
                   "type": "textBox"
                 },
                 {
-                  "id": "themeButton",
+                  "id": "mdlThemeButton",
                   "type": "button"
                 },
                 {
-                  "id": "scaleButton",
+                  "id": "mdlScaleButton",
                   "type": "button"
                 },
                 {
-                  "id": "applyTitleButton",
+                  "id": "mdlApplyTitleButton",
                   "type": "button"
                 },
                 {
-                  "id": "openDialogButton",
+                  "id": "mdlOpenDialogButton",
                   "type": "button"
                 },
                 {
-                  "id": "sampleTree",
+                  "id": "mdlSampleTree",
                   "type": "tree"
                 },
                 {
-                  "id": "editDialog",
+                  "id": "mdlEditDialog",
                   "type": "dialog",
                   "children": [
                     {
-                      "id": "nameField",
+                      "id": "mdlNameField",
                       "type": "textBox"
                     },
                     {
-                      "id": "cancelButton",
+                      "id": "mdlCancelButton",
                       "type": "button"
                     },
                     {
-                      "id": "saveButton",
+                      "id": "mdlSaveButton",
                       "type": "button"
                     }
                   ]
                 },
                 {
-                  "id": "splitPaneDemoLink",
+                  "id": "mdlSplitPaneDemoLink",
                   "type": "link"
                 },
                 {
-                  "id": "layoutDemoLink",
+                  "id": "mdlLayoutDemoLink",
                   "type": "link"
                 }
               ]
             },
             {
-              "id": "inspectorPanel",
+              "id": "mdlInspectorPanel",
               "type": "container",
               "children": [
                 {
-                  "id": "toolHint",
+                  "id": "mdlToolHint",
                   "type": "textBlock"
                 }
               ]
@@ -92,41 +92,41 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           ]
         },
         {
-          "id": "splitPaneDemoPage",
+          "id": "mdlSplitPaneDemoPage",
           "type": "page",
           "children": [
             {
-              "id": "body",
+              "id": "mdlBody",
               "type": "container",
               "children": [
                 {
-                  "id": "topDemoLink",
+                  "id": "mdlTopDemoLink",
                   "type": "link"
                 },
                 {
-                  "id": "verticalSplit",
+                  "id": "mdlVerticalSplit",
                   "type": "splitPane",
                   "children": [
                     {
-                      "id": "leftPane",
+                      "id": "mdlLeftPane",
                       "type": "textBox"
                     },
                     {
-                      "id": "rightPane",
+                      "id": "mdlRightPane",
                       "type": "textBox"
                     }
                   ]
                 },
                 {
-                  "id": "horizontalSplit",
+                  "id": "mdlHorizontalSplit",
                   "type": "splitPane",
                   "children": [
                     {
-                      "id": "topPane",
+                      "id": "mdlTopPane",
                       "type": "textBox"
                     },
                     {
-                      "id": "bottomPane",
+                      "id": "mdlBottomPane",
                       "type": "textBox"
                     }
                   ]
@@ -134,11 +134,11 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
               ]
             },
             {
-              "id": "inspectorPanel",
+              "id": "mdlInspectorPanel",
               "type": "container",
               "children": [
                 {
-                  "id": "toolHint",
+                  "id": "mdlToolHint",
                   "type": "textBlock"
                 }
               ]
@@ -146,15 +146,15 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
           ]
         },
         {
-          "id": "layoutDemoPage",
+          "id": "mdlLayoutDemoPage",
           "type": "page",
           "children": [
             {
-              "id": "body",
+              "id": "mdlBody",
               "type": "container",
               "children": [
                 {
-                  "id": "topDemoLink",
+                  "id": "mdlTopDemoLink",
                   "type": "link",
                   "margin": {
                     "top": "4px",
@@ -164,23 +164,23 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   }
                 },
                 {
-                  "id": "title",
+                  "id": "mdlTitle",
                   "type": "textBlock"
                 },
                 {
-                  "id": "boxTitle",
+                  "id": "mdlBoxTitle",
                   "type": "textBlock"
                 },
                 {
-                  "id": "boxContent",
+                  "id": "mdlBoxContent",
                   "type": "textBlock"
                 },
                 {
-                  "id": "gridTitle",
+                  "id": "mdlGridTitle",
                   "type": "textBlock"
                 },
                 {
-                  "id": "spanCell",
+                  "id": "mdlSpanCell",
                   "type": "textBlock",
                   "margin": {
                     "top": "16px",
@@ -190,33 +190,33 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                   }
                 },
                 {
-                  "id": "nestedA",
+                  "id": "mdlNestedA",
                   "type": "textBlock"
                 },
                 {
-                  "id": "nestedB",
+                  "id": "mdlNestedB",
                   "type": "textBlock"
                 },
                 {
-                  "id": "nestedC",
+                  "id": "mdlNestedC",
                   "type": "textBlock"
                 },
                 {
-                  "id": "nestedD",
+                  "id": "mdlNestedD",
                   "type": "textBlock"
                 },
                 {
-                  "id": "gridFooter",
+                  "id": "mdlGridFooter",
                   "type": "textBlock"
                 }
               ]
             },
             {
-              "id": "inspectorPanel",
+              "id": "mdlInspectorPanel",
               "type": "container",
               "children": [
                 {
-                  "id": "toolHint",
+                  "id": "mdlToolHint",
                   "type": "textBlock"
                 }
               ]
@@ -532,39 +532,39 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     }
   ],
   "bindingsV2": {
-    "ctrlNameField": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/1y.1x.1w.1h:nameField",
-    "ctrlMemoField": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/2y.1x.1w.1h:memoField",
-    "ctrlThemeButton": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/3y.1x.1w.1h:themeButton",
-    "ctrlScaleButton": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/3y.2x.1w.1h:scaleButton",
-    "ctrlApplyTitleButton": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/4y.1x.1w.1h:applyTitleButton",
-    "ctrlOpenDialogButton": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/5y.1x.1w.1h:openDialogButton",
-    "ctrlSampleTree": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/1y.2x.1w.1h:sampleTree",
-    "ctrlSplitPaneDemoLink": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/5y.2x.1w.1h:splitPaneDemoLink",
-    "ctrlLayoutDemoLink": "root:demo@tabbedPages/0:topDemoPage@pageDock/center.2:body@topDemoLayout/4y.2x.1w.1h:layoutDemoLink",
-    "ctrlVerticalSplit": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/2y.1x.1w.1h:verticalSplit@verticalSplitLayout",
-    "ctrlHorizontalSplit": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/3y.1x.1w.1h:horizontalSplit@horizontalSplitLayout",
-    "ctrlLeftPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/2y.1x.1w.1h:verticalSplit@verticalSplitLayout/first:leftPane",
-    "ctrlRightPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/2y.1x.1w.1h:verticalSplit@verticalSplitLayout/second:rightPane",
-    "ctrlTopPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/3y.1x.1w.1h:horizontalSplit@horizontalSplitLayout/first:topPane",
-    "ctrlBottomPane": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/3y.1x.1w.1h:horizontalSplit@horizontalSplitLayout/second:bottomPane",
-    "ctrlTitle": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/1y.2x.1w.1h:title",
-    "ctrlBoxTitle": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/2y.1x.1w.1h:boxTitle",
-    "ctrlBoxContent": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.1x.1w.1h:boxContent@box",
-    "ctrlGridTitle": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/2y.2x.1w.1h:gridTitle",
-    "ctrlSpanCell": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.1x.2w.1h:spanCell",
-    "ctrlGridFooter": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/3y.1x.1w.3h:gridFooter",
-    "ctrlNestedA": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.1x.1w.1h:nestedA",
-    "ctrlNestedB": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.2x.1w.1h:nestedB",
-    "ctrlNestedC": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.1x.1w.1h:nestedC",
-    "ctrlNestedD": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.2x.1w.1h:nestedD",
+    "ctrlNameField": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/1y.1x.1w.1h:mdlNameField",
+    "ctrlMemoField": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/2y.1x.1w.1h:mdlMemoField",
+    "ctrlThemeButton": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/3y.1x.1w.1h:mdlThemeButton",
+    "ctrlScaleButton": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/3y.2x.1w.1h:mdlScaleButton",
+    "ctrlApplyTitleButton": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/4y.1x.1w.1h:mdlApplyTitleButton",
+    "ctrlOpenDialogButton": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/5y.1x.1w.1h:mdlOpenDialogButton",
+    "ctrlSampleTree": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/1y.2x.1w.1h:mdlSampleTree",
+    "ctrlSplitPaneDemoLink": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/5y.2x.1w.1h:mdlSplitPaneDemoLink",
+    "ctrlLayoutDemoLink": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/4y.2x.1w.1h:mdlLayoutDemoLink",
+    "ctrlVerticalSplit": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/2y.1x.1w.1h:mdlVerticalSplit@verticalSplitLayout",
+    "ctrlHorizontalSplit": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/3y.1x.1w.1h:mdlHorizontalSplit@horizontalSplitLayout",
+    "ctrlLeftPane": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/2y.1x.1w.1h:mdlVerticalSplit@verticalSplitLayout/first:mdlLeftPane",
+    "ctrlRightPane": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/2y.1x.1w.1h:mdlVerticalSplit@verticalSplitLayout/second:mdlRightPane",
+    "ctrlTopPane": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/3y.1x.1w.1h:mdlHorizontalSplit@horizontalSplitLayout/first:mdlTopPane",
+    "ctrlBottomPane": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/3y.1x.1w.1h:mdlHorizontalSplit@horizontalSplitLayout/second:mdlBottomPane",
+    "ctrlTitle": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/1y.2x.1w.1h:mdlTitle",
+    "ctrlBoxTitle": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/2y.1x.1w.1h:mdlBoxTitle",
+    "ctrlBoxContent": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.1x.1w.1h:mdlBoxContent@box",
+    "ctrlGridTitle": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/2y.2x.1w.1h:mdlGridTitle",
+    "ctrlSpanCell": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.1x.2w.1h:mdlSpanCell",
+    "ctrlGridFooter": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/3y.1x.1w.3h:mdlGridFooter",
+    "ctrlNestedA": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.1x.1w.1h:mdlNestedA",
+    "ctrlNestedB": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.2x.1w.1h:mdlNestedB",
+    "ctrlNestedC": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.1x.1w.1h:mdlNestedC",
+    "ctrlNestedD": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.2x.1w.1h:mdlNestedD",
     "ctrlTopDemoLink": {
-      "lytSplitPaneDemoPage": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/center.2:body@splitDemoLayout/1y.1x.1w.1h:topDemoLink",
-      "lytLayoutDemoPage": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/center.2:body@layoutShowcase/1y.1x.1w.1h:topDemoLink"
+      "lytSplitPaneDemoPage": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/1y.1x.1w.1h:mdlTopDemoLink",
+      "lytLayoutDemoPage": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/1y.1x.1w.1h:mdlTopDemoLink"
     },
     "ctrlToolHint": {
-      "lytTopDemoPage": "root:demo@tabbedPages/0:topDemoPage@pageDock/bottom.1:inspectorPanel@inspectorContents/1y.1x.1w.1h:toolHint",
-      "lytSplitPaneDemoPage": "root:demo@tabbedPages/1:splitPaneDemoPage@pageDockFullscreen/bottom.1:inspectorPanel@inspectorContents/1y.1x.1w.1h:toolHint",
-      "lytLayoutDemoPage": "root:demo@tabbedPages/2:layoutDemoPage@pageDock/bottom.1:inspectorPanel@inspectorContents/1y.1x.1w.1h:toolHint"
+      "lytTopDemoPage": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/bottom.1:mdlInspectorPanel@inspectorContents/1y.1x.1w.1h:mdlToolHint",
+      "lytSplitPaneDemoPage": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/bottom.1:mdlInspectorPanel@inspectorContents/1y.1x.1w.1h:mdlToolHint",
+      "lytLayoutDemoPage": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/bottom.1:mdlInspectorPanel@inspectorContents/1y.1x.1w.1h:mdlToolHint"
     }
   }
 }
@@ -576,17 +576,17 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         static IEnumerable<string> Routes(StationeryControlBindingV2 binding)
             => binding.LayoutPath is { } route ? [route] : binding.LayoutPaths.Values;
         var all = Descendants(root).ToArray();
-        var topPage = root.Children.SingleOrDefault(node => node.Id == "topDemoPage" && node.Kind == "page")
+        var topPage = root.Children.SingleOrDefault(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "topDemoPage" && node.Kind == "page")
             ?? throw new JsonException("topDemoPage is required.");
-        var splitPage = root.Children.SingleOrDefault(node => node.Id == "splitPaneDemoPage" && node.Kind == "page")
+        var splitPage = root.Children.SingleOrDefault(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "splitPaneDemoPage" && node.Kind == "page")
             ?? throw new JsonException("splitPaneDemoPage is required.");
-        var layoutPage = root.Children.Single(node => node.Id == "layoutDemoPage" && node.Kind == "page");
+        var layoutPage = root.Children.Single(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "layoutDemoPage" && node.Kind == "page");
         foreach (var page in new[] { topPage, splitPage, layoutPage })
             if (!settings.BindingsV2.Values.Any(binding => Routes(binding).Any(route =>
-                route.Contains("/bottom", StringComparison.Ordinal) && route.Contains(":inspectorPanel@", StringComparison.Ordinal) &&
+                route.Contains("/bottom", StringComparison.Ordinal) && route.Contains(":mdlInspectorPanel@", StringComparison.Ordinal) &&
                 route.Contains(":" + page.Id + "@", StringComparison.Ordinal))))
                 throw new JsonException($"{page.Path} requires a page layout bound to inspectorPanel.");
-        var dialogs = all.Where(node => node.Id == "editDialog" && node.Kind == "dialog").ToArray();
+        var dialogs = all.Where(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "editDialog" && node.Kind == "dialog").ToArray();
         if (dialogs.Length != 1) throw new JsonException("Demo models requires one editDialog of type dialog.");
         var dialog = dialogs[0];
         if (!dialog.IsWithin(topPage)) throw new JsonException("editDialog must be in topDemoPage.");
@@ -639,9 +639,9 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             var node = splitControls[id];
             var expected = id == "verticalSplit" ? new[] { "leftPane", "rightPane" } : new[] { "topPane", "bottomPane" };
             var first = settings.BindingsV2.Values.Any(binding => binding.ModelPath == splitControls[expected[0]].Path &&
-                binding.LayoutPath?.EndsWith("/first:" + expected[0], StringComparison.Ordinal) == true);
+                binding.LayoutPath?.EndsWith("/first:mdl" + char.ToUpperInvariant(expected[0][0]) + expected[0][1..], StringComparison.Ordinal) == true);
             var second = settings.BindingsV2.Values.Any(binding => binding.ModelPath == splitControls[expected[1]].Path &&
-                binding.LayoutPath?.EndsWith("/second:" + expected[1], StringComparison.Ordinal) == true);
+                binding.LayoutPath?.EndsWith("/second:mdl" + char.ToUpperInvariant(expected[1][0]) + expected[1][1..], StringComparison.Ordinal) == true);
             var hasSplitLayout = settings.BindingsV2.Values.Any(binding => binding.ModelPath == node.Path &&
                 binding.LayoutPath is { } route && route.Contains("@" + id + "Layout", StringComparison.Ordinal));
             if (!hasSplitLayout || !first || !second)
@@ -666,7 +666,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         var result = new Dictionary<string, StationeryNode>(StringComparer.Ordinal);
         foreach (var (id, kind) in roles)
         {
-            var matches = all.Where(node => node.Id == id).ToArray();
+            var matches = all.Where(node => StationeryControlHandle.ModelRoleFromId(node.Id) == id).ToArray();
             if (matches.Length != 1 || matches[0].Kind != kind)
                 throw new JsonException($"Demo models requires exactly one {id} of type {kind} in its main/dialog scope.");
             result.Add(id, matches[0]);
