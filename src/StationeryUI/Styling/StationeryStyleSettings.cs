@@ -35,6 +35,14 @@ public sealed record StationeryModelNode(string Id, string Type, IReadOnlyList<S
     }
 }
 
+/// <summary>A node in the configured viewport and view snapshot trees.</summary>
+public sealed class ViewNode(string type, string name)
+{
+    public string Type { get; set; } = type;
+    public string Name { get; set; } = name;
+    public List<ViewNode> ChildNodes { get; } = [];
+}
+
 /// <summary>Creates the conventional control handle for a model Id.</summary>
 public static class StationeryControlHandle
 {
@@ -484,6 +492,10 @@ internal static class StationeryControlBindingResolver
 public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
     IReadOnlyList<StationeryLayoutNode> Layouts, IReadOnlyList<StationeryLayoutBinding> Bindings)
 {
+    /// <summary>Root containing the configured initial viewport snapshot nodes.</summary>
+    public ViewNode ViewportSnapshotTree { get; init; } = new("ViewportSnapshot", "initialViewportSnapshot");
+    /// <summary>Root containing every configured viewport node.</summary>
+    public ViewNode ViewportsTree { get; init; } = new("Viewports", "viewports");
     public IReadOnlyDictionary<string, StationeryControlBinding> ControlTree { get; init; }
         = new ReadOnlyDictionary<string, StationeryControlBinding>(new Dictionary<string, StationeryControlBinding>(StringComparer.Ordinal));
 
@@ -528,6 +540,33 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
             root.TryGetProperty("models", out _) || root.TryGetProperty("bindings", out _) || root.TryGetProperty("bindingsV2", out _))
             throw new JsonException("Use modelTree, layouts and controlTree; legacy models/bindings sections are not supported.");
         if (!root.TryGetProperty("modelTree", out var modelJson)) throw new JsonException("modelTree is required.");
+
+        var viewportsRoot = new ViewNode("Viewports", "viewports");
+        if (root.TryGetProperty("viewports", out var viewportsJson))
+        {
+            if (viewportsJson.ValueKind != JsonValueKind.Array)
+                throw new JsonException("viewports must be an array.");
+            foreach (var (item, index) in viewportsJson.EnumerateArray().Select((item, index) => (item, index)))
+                viewportsRoot.ChildNodes.Add(ReadViewNode(item, $"viewports[{index}]", null));
+        }
+
+        var viewNodesByName = new Dictionary<string, ViewNode>(StringComparer.Ordinal);
+        void IndexViewNodes(ViewNode node)
+        {
+            viewNodesByName.TryAdd(node.Name, node);
+            foreach (var child in node.ChildNodes) IndexViewNodes(child);
+        }
+        IndexViewNodes(viewportsRoot);
+
+        var snapshotRoot = new ViewNode("ViewportSnapshot", "initialViewportSnapshot");
+        if (root.TryGetProperty("initialViewportSnapshot", out var snapshotJson))
+        {
+            if (snapshotJson.ValueKind != JsonValueKind.Array)
+                throw new JsonException("initialViewportSnapshot must be an array.");
+            foreach (var (item, index) in snapshotJson.EnumerateArray().Select((item, index) => (item, index)))
+                snapshotRoot.ChildNodes.Add(ReadViewNode(item, $"initialViewportSnapshot[{index}]", viewNodesByName));
+        }
+
         var model = ReadModel(modelJson, "modelTree");
         if (model.Type != "viewport") throw new JsonException("modelTree.type must be viewport.");
         var modelTree = model.CreateTree();
@@ -870,7 +909,33 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
         }
         var controlTree = StationeryControlBindingResolver.Resolve(model, layouts, bindings, ReadControlTree(root));
         return new(model, layouts.AsReadOnly(), bindings.AsReadOnly())
-        { ControlTree = controlTree };
+        {
+            ViewportSnapshotTree = snapshotRoot,
+            ViewportsTree = viewportsRoot,
+            ControlTree = controlTree
+        };
+
+        static ViewNode ReadViewNode(JsonElement value, string path, IReadOnlyDictionary<string, ViewNode>? knownNodes)
+        {
+            RequireObject(value, path);
+            var name = ReadString(value, "name", path);
+            string type;
+            if (value.TryGetProperty("type", out var typeJson))
+            {
+                if (typeJson.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(typeJson.GetString()))
+                    throw new JsonException($"{path}.type must be a nonempty string.");
+                type = typeJson.GetString()!;
+            }
+            else if (knownNodes is not null && knownNodes.TryGetValue(name, out var knownNode)) type = knownNode.Type;
+            else throw new JsonException($"{path}.type is required unless the node can be resolved by name from viewports.");
+
+            var node = new ViewNode(type, name);
+            if (!value.TryGetProperty("children", out var children) || children.ValueKind != JsonValueKind.Array)
+                throw new JsonException($"{path}.children must be an array.");
+            foreach (var (child, index) in children.EnumerateArray().Select((child, index) => (child, index)))
+                node.ChildNodes.Add(ReadViewNode(child, $"{path}.children[{index}]", knownNodes));
+            return node;
+        }
     }
 
     private static IReadOnlyDictionary<string, StationeryControlBinding> ReadControlTree(JsonElement root)

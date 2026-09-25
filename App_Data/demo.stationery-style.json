@@ -1,4 +1,16 @@
 {
+    "initialViewportSnapshot": [
+        {
+            "name": "vMainViewport",
+            "children": [
+                {
+                    "name": "vTopDemoPage",
+                    "children": [
+                    ]
+                }
+            ]
+        }
+    ],
     "viewports": [
         {
             "type": "Viewport",
