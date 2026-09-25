@@ -13,7 +13,7 @@
     ],
     "viewports": [
         {
-            "type": "Viewport",
+            "type": "SinglePageView",
             "name": "vMainViewport",
             "children": [
                 {
