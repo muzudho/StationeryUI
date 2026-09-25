@@ -1,0 +1,20 @@
+{
+  "models": [
+    {
+      "id": "demo",
+      "type": "viewport"
+    }
+  ],
+  "layouts": [
+    {
+      "id": "rootPanel",
+      "type": "box-layout"
+    }
+  ],
+  "bindings": [
+    {
+      "layout": "/rootPanel",
+      "model": "demo"
+    }
+  ]
+}

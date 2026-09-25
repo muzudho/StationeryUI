@@ -11,6 +11,9 @@ using System.Text.Encodings.Web;
 public sealed class StyleBlueprint
 {
     private JsonObject? imported;
+    private readonly string rootLayoutId = "layout" + Guid.NewGuid().ToString("N");
+    public string DefaultLayoutId { get; } = "layout" + Guid.NewGuid().ToString("N");
+    public string DefaultLayoutPath => "/" + DefaultLayoutId;
     public bool IsImported => imported is not null;
     public string? SelectedLayoutId { get; private set; }
     public static IEnumerable<(string Path, JsonNode Node)> LayoutNodes(JsonNode root)
@@ -33,7 +36,7 @@ public sealed class StyleBlueprint
     public bool CanEditGrid => !IsImported || SelectedLayoutType == "grid-layout";
     public Dictionary<string, Track> PanelEdges { get; } = [];
     private readonly Dictionary<string, string> originalPanelNumbers = [];
-    public IReadOnlyList<string> EditableLayouts => imported is null ? ["/mainGrid"] : LayoutNodes(imported)
+    public IReadOnlyList<string> EditableLayouts => imported is null ? [DefaultLayoutPath] : LayoutNodes(imported)
         .Where(l => (string?)l.Node["type"] == "grid-layout" && l.Node["row-definitions"]!.AsArray().Count <= 8 && l.Node["column-definitions"]!.AsArray().Count <= 8)
         .Select(l => l.Path).ToArray();
 
@@ -46,7 +49,7 @@ public sealed class StyleBlueprint
     {
         var json = BuildJson();
         var settings = StationeryStyleSettings.Parse(json);
-        var selectedId = targetLayoutId ?? (IsImported ? SelectedLayoutId : "/mainGrid");
+        var selectedId = targetLayoutId ?? (IsImported ? SelectedLayoutId : DefaultLayoutPath);
         var binding = settings.Bindings.FirstOrDefault(b => ("/" + b.Layout.Split('/')[1]) == (selectedId is null ? null : "/" + selectedId.Split('/')[1]));
         var standalone = selectedId is not null && binding is null;
         if (standalone)
@@ -393,7 +396,7 @@ public sealed class StyleBlueprint
                 bindingsV2[handle] = new JsonObject
                 {
                     ["modelPath"] = $"/design/mainPage/{id}",
-                    ["layoutPath"] = $"root:designRoot/single:mainGrid/{row + 1}y.{column + 1}x.1w.1h"
+                    ["layoutPath"] = $"root:{rootLayoutId}/single:{DefaultLayoutId}/{row + 1}y.{column + 1}x.1w.1h"
                 };
             }
         var root = new JsonObject
@@ -404,10 +407,10 @@ public sealed class StyleBlueprint
                 { ["id"] = "mainPage", ["type"] = "page", ["children"] = models })
             }),
             ["layouts"] = new JsonArray(
-                new JsonObject { ["id"] = "designRoot", ["type"] = "box-layout" },
+                new JsonObject { ["id"] = rootLayoutId, ["type"] = "box-layout" },
                 new JsonObject
                 {
-                    ["id"] = "mainGrid", ["type"] = "grid-layout", ["cells"] = cells,
+                    ["id"] = DefaultLayoutId, ["type"] = "grid-layout", ["cells"] = cells,
                     ["row-definitions"] = new JsonArray(Rows.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
                     ["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
                     ["margin"] = EdgeObject("margin"), ["padding"] = EdgeObject("padding")
@@ -540,7 +543,7 @@ public sealed class StyleBlueprint
         var node = NodeAt(draft, path);
         var oldId = (string)node["id"]!;
         if (oldId == id) return;
-        var selected = IsImported ? SelectedLayoutId : "/mainGrid";
+        var selected = IsImported ? SelectedLayoutId : DefaultLayoutPath;
         if (path[0] == "layouts")
         {
             if (path.Count >= 2 && path[^2] == "slots")

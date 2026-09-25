@@ -489,11 +489,15 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         => BindingsV2.TryGetValue(controlHandle, out var binding) ? binding.ResolveLayoutPath(layoutKey)
             : throw new KeyNotFoundException($"Unknown control handle '{controlHandle}' in bindingsV2.");
 
-    public static StationeryStyleSettings Default { get; } = Parse("""
-        {"models":[{"id":"demo","type":"viewport"}],
-         "layouts":[{"id":"rootPanel","type":"box-layout"}],
-         "bindings":[{"layout":"/rootPanel","model":"demo"}]}
-        """);
+    public static StationeryStyleSettings Default { get; } = LoadDefault();
+
+    private static StationeryStyleSettings LoadDefault()
+    {
+        using var stream = typeof(StationeryStyleSettings).Assembly.GetManifestResourceStream("StationeryUI.Styling.Default.stationery-style.json")
+            ?? throw new InvalidOperationException("The embedded default stationery style is missing.");
+        using var reader = new StreamReader(stream);
+        return Parse(reader.ReadToEnd());
+    }
 
     // Convenience for consumers interested only in root padding; never depends on layouts array order.
     public ViewportPadding Padding

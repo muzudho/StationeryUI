@@ -34,7 +34,11 @@ internal sealed partial class Demo
             "layoutDemoPage" => 2,
             _ => throw new ArgumentOutOfRangeException(nameof(activePage), activePage, "Unknown demo page.")
         };
-        var layout = styles.Current.Layouts.SingleOrDefault(item => item.Path == "/tabbedPages" && item.Type == "tabbed-box-layout");
+        var handle = StationeryControlHandle.FromModelId(modelBinding.Main["layoutDemoLink"].Id);
+        var route = styles.Current.ResolveLayoutPath(handle);
+        var rootSegment = route.Split('/')[0];
+        var rootLayoutId = rootSegment.StartsWith("root:", StringComparison.Ordinal) ? rootSegment[5..] : null;
+        var layout = styles.Current.Layouts.SingleOrDefault(item => item.Id == rootLayoutId && item.Type == "tabbed-box-layout");
         if (layout is not null) layout.SelectedTabIndex = index;
     }
     private void CreatePages()
@@ -98,7 +102,8 @@ internal sealed partial class Demo
             element.Bounds = new(bounds.X / requestedScale, bounds.Y / requestedScale, bounds.Width / requestedScale, bounds.Height / requestedScale);
             if (element.Split is not null)
             {
-                var handle = StationeryControlHandle.FromModelId(element.Id);
+                var handle = element.ControlHandle
+                    ?? throw new InvalidOperationException($"Split control '{element.Path}' has no control handle.");
                 var route = styles.Current.BindingsV2[handle].LayoutPath
                     ?? throw new InvalidOperationException($"Control '{handle}' requires one split-pane route.");
                 var splitLayout = styles.Current.Layouts.Single(layout => layout.Type == "split-pane" &&

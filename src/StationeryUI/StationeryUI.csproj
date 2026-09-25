@@ -1,1 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <EmbeddedResource Include="Styling/Default.stationery-style.json" LogicalName="StationeryUI.Styling.Default.stationery-style.json" />
+  </ItemGroup>
+</Project>

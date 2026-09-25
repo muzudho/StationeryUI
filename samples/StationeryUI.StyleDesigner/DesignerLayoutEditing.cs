@@ -169,7 +169,7 @@ internal sealed partial class DesignerGame
         {
             keyboard = new();
             if (renamePath is not null) SetText(idField!, "renamedLayout");
-            else if (frames == 8) SetText(idField!, "mainGrid");
+            else if (frames == 8) SetText(idField!, blueprint.DefaultLayoutId);
             else if (frames == 9) SetText(idField!, "123_layout");
             mouse = SmokeMouse(layoutDialog, renamePath is not null || layoutSmoke == "panel" ? 470 : 780, 395, frames == (renamePath is null ? 9 : 17));
         }

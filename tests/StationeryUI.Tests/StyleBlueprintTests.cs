@@ -131,7 +131,7 @@ internal static class StyleBlueprintTests
         var plan = new StyleBlueprint();
         plan.AddLayout("box-layout", "123_panel");
         var before = plan.BuildJson();
-        try { plan.AddLayout("box-layout", "mainGrid"); throw new Exception("Duplicate accepted"); } catch (ArgumentException) { }
+        try { plan.AddLayout("box-layout", plan.DefaultLayoutId); throw new Exception("Duplicate accepted"); } catch (ArgumentException) { }
         Check(plan.BuildJson() == before, "duplicate add is atomic");
         plan.RenameId(["layouts", "0"], "newGrid");
         Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].Layout == "/newGrid", "layout references updated");

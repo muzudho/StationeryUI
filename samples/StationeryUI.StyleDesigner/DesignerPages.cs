@@ -87,7 +87,7 @@ internal sealed partial class DesignerGame
     {
         editingPage = hasDraft = true; sidebarActive = false; applicationBarActive = false; rebuild = false;
         message = text; treeJson = null; lastTreeSelection = null;
-        revealLayout = blueprint.IsImported ? blueprint.SelectedLayoutId : "/mainGrid";
+        revealLayout = blueprint.IsImported ? blueprint.SelectedLayoutId : blueprint.DefaultLayoutPath;
         if (!string.IsNullOrEmpty(smokeOutput) && saveSession is null) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-style.json");
         BuildUi();
         var scale = BodyScale;
