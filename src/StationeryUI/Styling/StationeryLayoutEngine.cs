@@ -77,6 +77,8 @@ public static class StationeryLayoutEngine
         {
             var rows = TrackEdges(grid.Rows, area.Height);
             var columns = TrackEdges(grid.Columns, area.Width);
+            if (row < 0 || col < 0 || rowSpan < 1 || colSpan < 1 || row + rowSpan >= rows.Length || col + colSpan >= columns.Length)
+                throw new InvalidOperationException($"{grid.Path}: cell y={row + 1}, x={col + 1}, w={colSpan}, h={rowSpan} exceeds its {rows.Length - 1}x{columns.Length - 1} tracks.");
             return new(area.X + columns[col], area.Y + rows[row], columns[col + colSpan] - columns[col], rows[row + rowSpan] - rows[row]);
         }
         void ArrangeLayout(StationeryLayoutNode layout, string owner, ScreenRectangle area, ScreenRectangle? rootContent = null, ScreenRectangle? rootAllocation = null)

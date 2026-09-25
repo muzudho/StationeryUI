@@ -14,23 +14,109 @@
         {
             "type": "SinglePageView",
             "name": "vMainViewport",
+            "layout": {
+                "name": "csTabbedPages",
+                "type": "TabbedBoxLayout",
+                "padding": {
+                    "top": "0px",
+                    "right": "0px",
+                    "bottom": "0px",
+                    "left": "0px"
+                }
+            },
             "children": [
                 {
                     "type": "Page",
                     "name": "vTopDemoPage",
-                    "style": "csTopDemoGridLayout",
+                    "layout": {
+                        "name": "csPageDock",
+                        "type": "DockLayout",
+                        "cells": [
+                            {
+                                "dock": "bottom",
+                                "size": "80px"
+                            },
+                            {
+                                "dock": "center",
+                                "size": "remaining"
+                            }
+                        ]
+                    },
                     "children": [
                         {
                             "type": "Container",
                             "name": "vBody",
+                            "layout": {
+                                "name": "csTopDemoGridLayout",
+                                "type": "GridLayout",
+                                "row-definitions": [
+                                    "1rate",
+                                    "1rate",
+                                    "1rate",
+                                    "1rate",
+                                    "1rate"
+                                ],
+                                "column-definitions": [
+                                    "1rate",
+                                    "1rate"
+                                ],
+                                "padding": {
+                                    "top": "4px",
+                                    "right": "4px",
+                                    "bottom": "4px",
+                                    "left": "4px"
+                                },
+                                "margin": {
+                                    "top": "4px",
+                                    "right": "4px",
+                                    "bottom": "4px",
+                                    "left": "4px"
+                                },
+                                "cells": [
+                                    {
+                                        "row": 0,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 1,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 2,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 2,
+                                        "col": 1
+                                    },
+                                    {
+                                        "row": 3,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 4,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 0,
+                                        "col": 1
+                                    },
+                                    {
+                                        "row": 4,
+                                        "col": 1
+                                    },
+                                    {
+                                        "row": 3,
+                                        "col": 1
+                                    }
+                                ]
+                            },
                             "children": [
                                 {
                                     "type": "TextBox",
                                     "name": "vNameField",
+                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlNameField",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[1y_1x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField"
                                     }
@@ -38,10 +124,8 @@
                                 {
                                     "type": "TextBox",
                                     "name": "vMemoField",
+                                    "place": { "row": 2, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlMemoField",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[2y_1x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlMemoField"
                                     }
@@ -49,10 +133,8 @@
                                 {
                                     "type": "Button",
                                     "name": "vThemeButton",
+                                    "place": { "row": 3, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlThemeButton",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[3y_1x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlThemeButton"
                                     }
@@ -60,10 +142,8 @@
                                 {
                                     "type": "Button",
                                     "name": "vScaleButton",
+                                    "place": { "row": 3, "col": 2, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlScaleButton",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[3y_2x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlScaleButton"
                                     }
@@ -71,10 +151,8 @@
                                 {
                                     "type": "Button",
                                     "name": "vApplyTitleButton",
+                                    "place": { "row": 4, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlApplyTitleButton",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[4y_1x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlApplyTitleButton"
                                     }
@@ -82,10 +160,8 @@
                                 {
                                     "type": "Button",
                                     "name": "vOpenDialogButton",
+                                    "place": { "row": 5, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlOpenDialogButton",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[5y_1x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlOpenDialogButton"
                                     }
@@ -93,10 +169,8 @@
                                 {
                                     "type": "Tree",
                                     "name": "vSampleTree",
+                                    "place": { "row": 1, "col": 2, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlSampleTree",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[1y_2x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree"
                                     }
@@ -122,10 +196,8 @@
                                 {
                                     "type": "Link",
                                     "name": "vSplitPaneDemoLink",
+                                    "place": { "row": 5, "col": 2, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlSplitPaneDemoLink",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[5y_2x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSplitPaneDemoLink"
                                     }
@@ -133,51 +205,206 @@
                                 {
                                     "type": "Link",
                                     "name": "vLayoutDemoLink",
+                                    "place": { "row": 4, "col": 2, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlLayoutDemoLink",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[4y_2x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlLayoutDemoLink"
                                     }
                                 }
-                            ]
+                            ],
+                            "place": "center_2"
                         },
                         {
                             "type": "Container",
                             "name": "vInspectorPanel",
+                            "layout": {
+                                "name": "csInspectorContentsGridLayout",
+                                "type": "GridLayout",
+                                "row-definitions": [
+                                    "1rate"
+                                ],
+                                "column-definitions": [
+                                    "1rate"
+                                ],
+                                "cells": [
+                                    {
+                                        "row": 0,
+                                        "col": 0
+                                    }
+                                ]
+                            },
                             "children": [
                                 {
                                     "type": "TextBlock",
                                     "name": "vToolHint",
+                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlToolHint",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel": "csTabbedPages[0].csPageDock[bottom_1].csInspectorContentsGridLayout[1y_1x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint"
                                     }
                                 }
-                            ]
+                            ],
+                            "place": "bottom_1"
                         }
-                    ]
+                    ],
+                    "place": 0
                 },
                 {
                     "type": "Page",
                     "name": "vLayoutDemoPage",
-                    "style": "csLayoutShowcaseGridLayout",
+                    "layout": {
+                        "name": "csPageDock",
+                        "type": "DockLayout",
+                        "cells": [
+                            {
+                                "dock": "bottom",
+                                "size": "80px"
+                            },
+                            {
+                                "dock": "center",
+                                "size": "remaining"
+                            }
+                        ]
+                    },
                     "children": [
                         {
                             "type": "Container",
                             "name": "vBody",
+                            "layout": {
+                                "name": "csLayoutShowcaseGridLayout",
+                                "type": "GridLayout",
+                                "row-definitions": [
+                                    "60px",
+                                    "52px",
+                                    "1rate"
+                                ],
+                                "column-definitions": [
+                                    "1rate",
+                                    "2rate"
+                                ],
+                                "children": [
+                                    {
+                                        "id": "grid",
+                                        "type": "GridLayout",
+                                        "row-definitions": [
+                                            "1rate",
+                                            "1rate",
+                                            "1rate"
+                                        ],
+                                        "column-definitions": [
+                                            "1rate",
+                                            "1rate",
+                                            "1rate"
+                                        ],
+                                        "row": 2,
+                                        "col": 1,
+                                        "children": [
+                                            {
+                                                "id": "nestedGrid",
+                                                "type": "GridLayout",
+                                                "row-definitions": [
+                                                    "1rate",
+                                                    "1rate"
+                                                ],
+                                                "column-definitions": [
+                                                    "1rate",
+                                                    "1rate"
+                                                ],
+                                                "row": 0,
+                                                "col": 1,
+                                                "rowspan": 2,
+                                                "colspan": 2,
+                                                "cells": [
+                                                    {
+                                                        "row": 0,
+                                                        "col": 0
+                                                    },
+                                                    {
+                                                        "row": 0,
+                                                        "col": 1
+                                                    },
+                                                    {
+                                                        "row": 1,
+                                                        "col": 0
+                                                    },
+                                                    {
+                                                        "row": 1,
+                                                        "col": 1
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "cells": [
+                                            {
+                                                "row": 0,
+                                                "col": 0,
+                                                "rowspan": 2
+                                            },
+                                            {
+                                                "row": 2,
+                                                "col": 0,
+                                                "colspan": 3
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "padding": {
+                                    "top": "4px",
+                                    "right": "4px",
+                                    "bottom": "4px",
+                                    "left": "4px"
+                                },
+                                "margin": {
+                                    "top": "4px",
+                                    "right": "4px",
+                                    "bottom": "4px",
+                                    "left": "4px"
+                                },
+                                "cells": [
+                                    {
+                                        "row": 0,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 0,
+                                        "col": 1
+                                    },
+                                    {
+                                        "row": 1,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 1,
+                                        "col": 1
+                                    },
+                                    {
+                                        "row": 2,
+                                        "col": 0
+                                    }
+                                ]
+                            },
                             "children": [
                                 {
                                     "type": "Link",
                                     "name": "vTopDemoLink",
-                                    "controlHandle": "ctrlTopDemoLink",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[1y_1x_1w_1h]"
+                                    "layout": {
+                                        "name": "csTopDemoLinkBox",
+                                        "type": "BoxLayout",
+                                        "padding": {
+                                            "top": "0px",
+                                            "right": "0px",
+                                            "bottom": "0px",
+                                            "left": "0px"
+                                        },
+                                        "margin": {
+                                            "top": "4px",
+                                            "right": "4px",
+                                            "bottom": "4px",
+                                            "left": "4px"
+                                        }
                                     },
+                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "controlHandle": "ctrlTopDemoLink",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
                                     }
@@ -185,10 +412,8 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vTitle",
+                                    "place": { "row": 1, "col": 2, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlTitle",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[1y_2x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTitle"
                                     }
@@ -196,10 +421,8 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vBoxTitle",
+                                    "place": { "row": 2, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlBoxTitle",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[2y_1x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxTitle"
                                     }
@@ -207,10 +430,30 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vBoxContent",
-                                    "controlHandle": "ctrlBoxContent",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_1x_1w_1h].csBoxLayout"
+                                    "layout": {
+                                        "name": "csBoxLayout",
+                                        "type": "BoxLayout",
+                                        "padding": {
+                                            "top": "24px",
+                                            "right": "24px",
+                                            "bottom": "24px",
+                                            "left": "24px"
+                                        },
+                                        "margin": {
+                                            "top": "8px",
+                                            "right": "8px",
+                                            "bottom": "8px",
+                                            "left": "8px"
+                                        },
+                                        "border": {
+                                            "top": "2px",
+                                            "right": "2px",
+                                            "bottom": "2px",
+                                            "left": "2px"
+                                        }
                                     },
+                                    "place": { "row": 3, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "controlHandle": "ctrlBoxContent",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxContent"
                                     }
@@ -218,117 +461,221 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vGridTitle",
+                                    "place": { "row": 2, "col": 2, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlGridTitle",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[2y_2x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridTitle"
                                     }
                                 },
                                 {
-                                    "type": "TextBlock",
-                                    "name": "vSpanCell",
-                                    "controlHandle": "ctrlSpanCell",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_1x_2w_1h].csSpanCellBox"
+                                    "type": "Layout",
+                                    "name": "vGridLayout",
+                                    "layout": {
+                                        "ref": "grid"
                                     },
-                                    "modelPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlSpanCell"
-                                    }
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "name": "vNestedA",
-                                    "controlHandle": "ctrlNestedA",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_1x_1w_1h]"
-                                    },
-                                    "modelPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedA"
-                                    }
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "name": "vNestedB",
-                                    "controlHandle": "ctrlNestedB",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_2x_1w_1h]"
-                                    },
-                                    "modelPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedB"
-                                    }
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "name": "vNestedC",
-                                    "controlHandle": "ctrlNestedC",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_1x_1w_1h]"
-                                    },
-                                    "modelPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedC"
-                                    }
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "name": "vNestedD",
-                                    "controlHandle": "ctrlNestedD",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_2x_1w_1h]"
-                                    },
-                                    "modelPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
-                                    }
-                                },
-                                {
-                                    "type": "TextBlock",
-                                    "name": "vGridFooter",
-                                    "controlHandle": "ctrlGridFooter",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[3y_1x_1w_3h]"
-                                    },
-                                    "modelPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridFooter"
-                                    }
+                                    "children": [
+                                        {
+                                            "type": "TextBlock",
+                                            "name": "vSpanCell",
+                                            "layout": {
+                                                "name": "csSpanCellBox",
+                                                "type": "BoxLayout",
+                                                "padding": {
+                                                    "top": "0px",
+                                                    "right": "0px",
+                                                    "bottom": "0px",
+                                                    "left": "0px"
+                                                },
+                                                "margin": {
+                                                    "top": "16px",
+                                                    "right": "16px",
+                                                    "bottom": "16px",
+                                                    "left": "16px"
+                                                }
+                                            },
+                                            "place": { "row": 1, "col": 1, "colspan": 2, "rowspan": 1 },
+                                            "controlHandle": "ctrlSpanCell",
+                                            "modelPath": {
+                                                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlSpanCell"
+                                            }
+                                        },
+                                        {
+                                            "type": "Layout",
+                                            "name": "vNestedGridLayout",
+                                            "layout": {
+                                                "ref": "nestedGrid"
+                                            },
+                                            "children": [
+                                                {
+                                                    "type": "TextBlock",
+                                                    "name": "vNestedA",
+                                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                                    "controlHandle": "ctrlNestedA",
+                                                    "modelPath": {
+                                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedA"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "TextBlock",
+                                                    "name": "vNestedB",
+                                                    "place": { "row": 1, "col": 2, "colspan": 1, "rowspan": 1 },
+                                                    "controlHandle": "ctrlNestedB",
+                                                    "modelPath": {
+                                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedB"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "TextBlock",
+                                                    "name": "vNestedC",
+                                                    "place": { "row": 2, "col": 1, "colspan": 1, "rowspan": 1 },
+                                                    "controlHandle": "ctrlNestedC",
+                                                    "modelPath": {
+                                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedC"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "TextBlock",
+                                                    "name": "vNestedD",
+                                                    "place": { "row": 2, "col": 2, "colspan": 1, "rowspan": 1 },
+                                                    "controlHandle": "ctrlNestedD",
+                                                    "modelPath": {
+                                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
+                                                    }
+                                                }
+                                            ],
+                                            "place": { "row": 1, "col": 2, "colspan": 2, "rowspan": 2 }
+                                        },
+                                        {
+                                            "type": "TextBlock",
+                                            "name": "vGridFooter",
+                                            "place": { "row": 3, "col": 1, "colspan": 3, "rowspan": 1 },
+                                            "controlHandle": "ctrlGridFooter",
+                                            "modelPath": {
+                                                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridFooter"
+                                            }
+                                        }
+                                    ],
+                                    "place": { "row": 3, "col": 2, "colspan": 1, "rowspan": 1 }
                                 }
-                            ]
+                            ],
+                            "place": "center_2"
                         },
                         {
                             "type": "Container",
                             "name": "vInspectorPanel",
+                            "layout": {
+                                "name": "csInspectorContentsGridLayout",
+                                "type": "GridLayout",
+                                "row-definitions": [
+                                    "1rate"
+                                ],
+                                "column-definitions": [
+                                    "1rate"
+                                ],
+                                "cells": [
+                                    {
+                                        "row": 0,
+                                        "col": 0
+                                    }
+                                ]
+                            },
                             "children": [
                                 {
                                     "type": "TextBlock",
                                     "name": "vToolHint",
+                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlToolHint",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel": "csTabbedPages[2].csPageDock[bottom_1].csInspectorContentsGridLayout[1y_1x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
                                     }
                                 }
-                            ]
+                            ],
+                            "place": "bottom_1"
                         }
-                    ]
+                    ],
+                    "place": 2
                 },
                 {
                     "type": "Page",
                     "name": "vSplitPaneDemoPage",
-                    "style": "csSplitDemoGridLayout",
+                    "layout": {
+                        "name": "csPageDockFullscreen",
+                        "type": "DockLayout",
+                        "cells": [
+                            {
+                                "dock": "bottom",
+                                "size": "0px"
+                            },
+                            {
+                                "dock": "center",
+                                "size": "remaining"
+                            }
+                        ]
+                    },
                     "children": [
                         {
                             "type": "Container",
                             "name": "vBody",
+                            "layout": {
+                                "name": "csSplitDemoGridLayout",
+                                "type": "GridLayout",
+                                "row-definitions": [
+                                    "64px",
+                                    "1rate",
+                                    "1rate"
+                                ],
+                                "column-definitions": [
+                                    "1rate"
+                                ],
+                                "padding": {
+                                    "top": "4px",
+                                    "right": "4px",
+                                    "bottom": "4px",
+                                    "left": "4px"
+                                },
+                                "margin": {
+                                    "top": "4px",
+                                    "right": "4px",
+                                    "bottom": "4px",
+                                    "left": "4px"
+                                },
+                                "cells": [
+                                    {
+                                        "row": 0,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 1,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 2,
+                                        "col": 0
+                                    }
+                                ]
+                            },
                             "children": [
                                 {
                                     "type": "Link",
                                     "name": "vTopDemoLink",
-                                    "controlHandle": "ctrlTopDemoLink",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[1y_1x_1w_1h]"
+                                    "layout": {
+                                        "name": "csTopDemoLinkBox",
+                                        "type": "BoxLayout",
+                                        "padding": {
+                                            "top": "0px",
+                                            "right": "0px",
+                                            "bottom": "0px",
+                                            "left": "0px"
+                                        },
+                                        "margin": {
+                                            "top": "4px",
+                                            "right": "4px",
+                                            "bottom": "4px",
+                                            "left": "4px"
+                                        }
                                     },
+                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "controlHandle": "ctrlTopDemoLink",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink"
                                     }
@@ -336,14 +683,20 @@
                                 {
                                     "type": "SplitPane",
                                     "name": "vVerticalSplit",
+                                    "layout": {
+                                        "name": "csVerticalSplitPaneLayout",
+                                        "type": "SplitPane",
+                                        "orientation": "vertical",
+                                        "ratio": 0.5,
+                                        "dividerWidth": "10px",
+                                        "minimumPaneSize": "80px"
+                                    },
                                     "children": [
                                         {
                                             "type": "TextBox",
                                             "name": "vLeftPane",
+                                            "place": "first",
                                             "controlHandle": "ctrlLeftPane",
-                                            "layoutPath": {
-                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[2y_1x_1w_1h].csVerticalSplitPaneLayout.first"
-                                            },
                                             "modelPath": {
                                                 "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlLeftPane"
                                             }
@@ -351,19 +704,15 @@
                                         {
                                             "type": "TextBox",
                                             "name": "vRightPane",
+                                            "place": "second",
                                             "controlHandle": "ctrlRightPane",
-                                            "layoutPath": {
-                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[2y_1x_1w_1h].csVerticalSplitPaneLayout.second"
-                                            },
                                             "modelPath": {
                                                 "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlRightPane"
                                             }
                                         }
                                     ],
+                                    "place": { "row": 2, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlVerticalSplit",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[2y_1x_1w_1h].csVerticalSplitPaneLayout"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit"
                                     }
@@ -371,14 +720,20 @@
                                 {
                                     "type": "SplitPane",
                                     "name": "vHorizontalSplit",
+                                    "layout": {
+                                        "name": "csHorizontalSplitPaneLayout",
+                                        "type": "SplitPane",
+                                        "orientation": "horizontal",
+                                        "ratio": 0.5,
+                                        "dividerWidth": "10px",
+                                        "minimumPaneSize": "60px"
+                                    },
                                     "children": [
                                         {
                                             "type": "TextBox",
                                             "name": "vTopPane",
+                                            "place": "first",
                                             "controlHandle": "ctrlTopPane",
-                                            "layoutPath": {
-                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[3y_1x_1w_1h].csHorizontalSplitPaneLayout.first"
-                                            },
                                             "modelPath": {
                                                 "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlTopPane"
                                             }
@@ -386,386 +741,56 @@
                                         {
                                             "type": "TextBox",
                                             "name": "vBottomPane",
+                                            "place": "second",
                                             "controlHandle": "ctrlBottomPane",
-                                            "layoutPath": {
-                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[3y_1x_1w_1h].csHorizontalSplitPaneLayout.second"
-                                            },
                                             "modelPath": {
                                                 "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlBottomPane"
                                             }
                                         }
                                     ],
+                                    "place": { "row": 3, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlHorizontalSplit",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[3y_1x_1w_1h].csHorizontalSplitPaneLayout"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit"
                                     }
                                 }
-                            ]
+                            ],
+                            "place": "center_2"
                         },
                         {
                             "type": "Container",
                             "name": "vInspectorPanel",
+                            "layout": {
+                                "name": "csInspectorContentsGridLayout",
+                                "type": "GridLayout",
+                                "row-definitions": [
+                                    "1rate"
+                                ],
+                                "column-definitions": [
+                                    "1rate"
+                                ],
+                                "cells": [
+                                    {
+                                        "row": 0,
+                                        "col": 0
+                                    }
+                                ]
+                            },
                             "children": [
                                 {
                                     "type": "TextBlock",
                                     "name": "vToolHint",
+                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlToolHint",
-                                    "layoutPath": {
-                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel": "csTabbedPages[1].csPageDockFullscreen[bottom_1].csInspectorContentsGridLayout[1y_1x_1w_1h]"
-                                    },
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint"
                                     }
                                 }
-                            ]
-                        }
-                    ]
-                }
-            ],
-            "style": "csTabbedPages"
-        }
-    ],
-    "styles": [
-        {
-            "name": "csTabbedPages",
-            "type": "TabbedBoxLayout",
-            "padding": {
-                "top": "0px",
-                "right": "0px",
-                "bottom": "0px",
-                "left": "0px"
-            }
-        },
-        {
-            "name": "csTopDemoGridLayout",
-            "type": "GridLayout",
-            "row-definitions": [
-                "1rate",
-                "1rate",
-                "1rate",
-                "1rate",
-                "1rate"
-            ],
-            "column-definitions": [
-                "1rate",
-                "1rate"
-            ],
-            "padding": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "margin": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "cells": [
-                {
-                    "row": 0,
-                    "col": 0
-                },
-                {
-                    "row": 1,
-                    "col": 0
-                },
-                {
-                    "row": 2,
-                    "col": 0
-                },
-                {
-                    "row": 2,
-                    "col": 1
-                },
-                {
-                    "row": 3,
-                    "col": 0
-                },
-                {
-                    "row": 4,
-                    "col": 0
-                },
-                {
-                    "row": 0,
-                    "col": 1
-                },
-                {
-                    "row": 4,
-                    "col": 1
-                },
-                {
-                    "row": 3,
-                    "col": 1
-                }
-            ]
-        },
-        {
-            "name": "csSplitDemoGridLayout",
-            "type": "GridLayout",
-            "row-definitions": [
-                "64px",
-                "1rate",
-                "1rate"
-            ],
-            "column-definitions": [
-                "1rate"
-            ],
-            "padding": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "margin": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "cells": [
-                {
-                    "row": 0,
-                    "col": 0
-                },
-                {
-                    "row": 1,
-                    "col": 0
-                },
-                {
-                    "row": 2,
-                    "col": 0
-                }
-            ]
-        },
-        {
-            "name": "csVerticalSplitPaneLayout",
-            "type": "SplitPane",
-            "orientation": "vertical",
-            "ratio": 0.5,
-            "dividerWidth": "10px",
-            "minimumPaneSize": "80px"
-        },
-        {
-            "name": "csHorizontalSplitPaneLayout",
-            "type": "SplitPane",
-            "orientation": "horizontal",
-            "ratio": 0.5,
-            "dividerWidth": "10px",
-            "minimumPaneSize": "60px"
-        },
-        {
-            "name": "csPageDock",
-            "type": "DockLayout",
-            "cells": [
-                {
-                    "dock": "bottom",
-                    "size": "80px"
-                },
-                {
-                    "dock": "center",
-                    "size": "remaining"
-                }
-            ]
-        },
-        {
-            "name": "csInspectorContentsGridLayout",
-            "type": "GridLayout",
-            "row-definitions": [
-                "1rate"
-            ],
-            "column-definitions": [
-                "1rate"
-            ],
-            "cells": [
-                {
-                    "row": 0,
-                    "col": 0
-                }
-            ]
-        },
-        {
-            "name": "csLayoutShowcaseGridLayout",
-            "type": "GridLayout",
-            "row-definitions": [
-                "60px",
-                "52px",
-                "1rate"
-            ],
-            "column-definitions": [
-                "1rate",
-                "2rate"
-            ],
-            "children": [
-                {
-                    "id": "grid",
-                    "type": "GridLayout",
-                    "row-definitions": [
-                        "1rate",
-                        "1rate",
-                        "1rate"
-                    ],
-                    "column-definitions": [
-                        "1rate",
-                        "1rate",
-                        "1rate"
-                    ],
-                    "row": 2,
-                    "col": 1,
-                    "children": [
-                        {
-                            "id": "nestedGrid",
-                            "type": "GridLayout",
-                            "row-definitions": [
-                                "1rate",
-                                "1rate"
                             ],
-                            "column-definitions": [
-                                "1rate",
-                                "1rate"
-                            ],
-                            "row": 0,
-                            "col": 1,
-                            "rowspan": 2,
-                            "colspan": 2,
-                            "cells": [
-                                {
-                                    "row": 0,
-                                    "col": 0
-                                },
-                                {
-                                    "row": 0,
-                                    "col": 1
-                                },
-                                {
-                                    "row": 1,
-                                    "col": 0
-                                },
-                                {
-                                    "row": 1,
-                                    "col": 1
-                                }
-                            ]
+                            "place": "bottom_1"
                         }
                     ],
-                    "cells": [
-                        {
-                            "row": 0,
-                            "col": 0,
-                            "rowspan": 2
-                        },
-                        {
-                            "row": 2,
-                            "col": 0,
-                            "colspan": 3
-                        }
-                    ]
-                }
-            ],
-            "padding": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "margin": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "cells": [
-                {
-                    "row": 0,
-                    "col": 0
-                },
-                {
-                    "row": 0,
-                    "col": 1
-                },
-                {
-                    "row": 1,
-                    "col": 0
-                },
-                {
-                    "row": 1,
-                    "col": 1
-                },
-                {
-                    "row": 2,
-                    "col": 0
-                }
-            ]
-        },
-        {
-            "name": "csBoxLayout",
-            "type": "BoxLayout",
-            "padding": {
-                "top": "24px",
-                "right": "24px",
-                "bottom": "24px",
-                "left": "24px"
-            },
-            "margin": {
-                "top": "8px",
-                "right": "8px",
-                "bottom": "8px",
-                "left": "8px"
-            },
-            "border": {
-                "top": "2px",
-                "right": "2px",
-                "bottom": "2px",
-                "left": "2px"
-            }
-        },
-        {
-            "name": "csTopDemoLinkBox",
-            "type": "BoxLayout",
-            "padding": {
-                "top": "0px",
-                "right": "0px",
-                "bottom": "0px",
-                "left": "0px"
-            },
-            "margin": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            }
-        },
-        {
-            "name": "csSpanCellBox",
-            "type": "BoxLayout",
-            "padding": {
-                "top": "0px",
-                "right": "0px",
-                "bottom": "0px",
-                "left": "0px"
-            },
-            "margin": {
-                "top": "16px",
-                "right": "16px",
-                "bottom": "16px",
-                "left": "16px"
-            }
-        },
-        {
-            "name": "csPageDockFullscreen",
-            "type": "DockLayout",
-            "cells": [
-                {
-                    "dock": "bottom",
-                    "size": "0px"
-                },
-                {
-                    "dock": "center",
-                    "size": "remaining"
+                    "place": 1
                 }
             ]
         }

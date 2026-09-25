@@ -41,6 +41,10 @@ public sealed class ViewNode(string type, string name)
     public string Type { get; set; } = type;
     public string Name { get; set; } = name;
     public string? Style { get; set; }
+    /// <summary>Inline layout applied by this node to its direct children.</summary>
+    public JsonElement? Layout { get; set; }
+    /// <summary>Position of this node in its parent's layout.</summary>
+    public JsonElement? Place { get; set; }
     public string? ControlHandle { get; set; }
     public Dictionary<string, string> LayoutPaths { get; } = new(StringComparer.Ordinal);
     public Dictionary<string, string> ModelPaths { get; } = new(StringComparer.Ordinal);
@@ -323,7 +327,8 @@ internal static class StationeryControlBindingResolver
             var values = Regex.Matches(edge, "[0-9]+").Cast<Match>()
                 .Select(match => int.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
             if (values.Length != 4 || !edge.Contains('y') || !edge.Contains('x') || !edge.Contains('w') || !edge.Contains('h')) return null;
-            return (values[0] - 1, values[1] - 1, values[2], values[3]);
+            // Route syntax is y/x/width/height, while the binding stores rowSpan/columnSpan.
+            return (values[0] - 1, values[1] - 1, values[3], values[2]);
         }
 
         static bool MatchesLayoutCell(string edge, StationeryLayoutNode ownerLayout, StationeryLayoutNode childLayout)
@@ -404,7 +409,7 @@ internal static class StationeryControlBindingResolver
                 {
                     if (layout.Type == "box-layout") edge = "single";
                     if (layout.Type == "grid-layout")
-                        edge = $"{child.Row + 1}y.{child.Column + 1}x.{child.RowSpan}w.{child.ColumnSpan}h";
+                        edge = $"{child.Row + 1}y.{child.Column + 1}x.{child.ColumnSpan}w.{child.RowSpan}h";
                     if (layout.Type == "tabbed-box-layout")
                         edge = child.Row.ToString(CultureInfo.InvariantCulture);
                 }
@@ -458,7 +463,7 @@ internal static class StationeryControlBindingResolver
                 string edge;
                 if (parentLayout.Type == "box-layout") edge = "single";
                 else if (parentLayout.Type == "grid-layout")
-                    edge = $"{childLayout.Row + 1}y.{childLayout.Column + 1}x.{childLayout.RowSpan}w.{childLayout.ColumnSpan}h";
+                    edge = $"{childLayout.Row + 1}y.{childLayout.Column + 1}x.{childLayout.ColumnSpan}w.{childLayout.RowSpan}h";
                 else
                 {
                     route = "";
@@ -566,6 +571,40 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
                 if (!styles.TryAdd(name, new(name, type, item.Clone())))
                     throw new JsonException($"{path}: duplicate style name '{name}'.");
             }
+        }
+        else if (root.TryGetProperty("viewports", out var inlineViewports) && inlineViewports.ValueKind == JsonValueKind.Array)
+        {
+            void CollectInlineLayouts(JsonElement nodes, string path)
+            {
+                foreach (var (item, index) in nodes.EnumerateArray().Select((item, index) => (item, index)))
+                {
+                    var nodePath = $"{path}[{index}]";
+                    if (item.TryGetProperty("layout", out var inlineLayout))
+                    {
+                        RequireObject(inlineLayout, nodePath + ".layout");
+                        if (inlineLayout.TryGetProperty("ref", out _))
+                        {
+                            if (inlineLayout.EnumerateObject().Count() != 1)
+                                throw new JsonException($"{nodePath}.layout reference can only contain ref.");
+                            goto Children;
+                        }
+                        var name = inlineLayout.TryGetProperty("name", out _) ? ReadString(inlineLayout, "name", nodePath + ".layout")
+                            : inlineLayout.TryGetProperty("id", out _) ? ReadString(inlineLayout, "id", nodePath + ".layout")
+                            : throw new JsonException($"{nodePath}.layout requires name.");
+                        var type = ReadString(inlineLayout, "type", nodePath + ".layout");
+                        if (styles.TryGetValue(name, out var previous) && previous.Definition.GetRawText() != inlineLayout.GetRawText())
+                            throw new JsonException($"{nodePath}.layout duplicates '{name}' with a different definition.");
+                        styles.TryAdd(name, new(name, type, inlineLayout.Clone()));
+                    }
+                    Children:
+                    if (item.TryGetProperty("children", out var children))
+                    {
+                        if (children.ValueKind != JsonValueKind.Array) throw new JsonException($"{nodePath}.children must be an array.");
+                        CollectInlineLayouts(children, nodePath + ".children");
+                    }
+                }
+            }
+            CollectInlineLayouts(inlineViewports, "viewports");
         }
 
         var viewportsRoot = new ViewNode("Viewports", "viewports");
@@ -767,12 +806,20 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
             layouts.Add(layout);
             foreach (var child in layout.Children) Flatten(child);
         }
-        var layoutDefinitions = root.TryGetProperty("layouts", out var legacyLayouts)
-            ? legacyLayouts
-            : root.TryGetProperty("styles", out var styleLayouts) ? styleLayouts
-            : throw new JsonException("styles is required.");
-        if (layoutDefinitions.ValueKind != JsonValueKind.Array) throw new JsonException("styles must be an array.");
-        foreach (var item in layoutDefinitions.EnumerateArray()) Flatten(ReadLayout(item, null, null));
+        if (root.TryGetProperty("layouts", out var legacyLayouts))
+        {
+            if (legacyLayouts.ValueKind != JsonValueKind.Array) throw new JsonException("layouts must be an array.");
+            foreach (var item in legacyLayouts.EnumerateArray()) Flatten(ReadLayout(item, null, null));
+        }
+        else if (root.TryGetProperty("styles", out var styleLayouts))
+        {
+            if (styleLayouts.ValueKind != JsonValueKind.Array) throw new JsonException("styles must be an array.");
+            foreach (var item in styleLayouts.EnumerateArray()) Flatten(ReadLayout(item, null, null));
+        }
+        else
+        {
+            foreach (var style in styles.Values) Flatten(ReadLayout(style.Definition, null, null));
+        }
         var controlBindings = root.TryGetProperty("controlTree", out _)
             ? ReadControlTree(root)
             : ReadControlTree(viewportsRoot);
@@ -974,16 +1021,39 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
             else throw new JsonException($"{path}.type is required unless the node can be resolved by name from viewports.");
 
             string? style = knownNode?.Style;
+            JsonElement? layout = knownNode?.Layout;
+            JsonElement? place = knownNode?.Place;
+            if (value.TryGetProperty("layout", out var layoutJson))
+            {
+            if (layoutJson.ValueKind != JsonValueKind.Object)
+                throw new JsonException($"{path}.layout must be an object.");
+            layout = layoutJson.Clone();
+            var inlineName = layoutJson.TryGetProperty("ref", out var layoutRef)
+                ? layoutRef.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(layoutRef.GetString())
+                    ? layoutRef.GetString()! : throw new JsonException($"{path}.layout.ref must be a nonempty string.")
+                : layoutJson.TryGetProperty("name", out _) ? ReadString(layoutJson, "name", path + ".layout")
+                : layoutJson.TryGetProperty("id", out _) ? ReadString(layoutJson, "id", path + ".layout")
+                : throw new JsonException($"{path}.layout requires name.");
+                if (style is not null && style != inlineName)
+                    throw new JsonException($"{path} cannot specify both a different style and inline layout.");
+                style = inlineName;
+            }
+            if (value.TryGetProperty("place", out var placeJson))
+            {
+                if (placeJson.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+                    throw new JsonException($"{path}.place cannot be null.");
+                place = placeJson.Clone();
+            }
             if (value.TryGetProperty("style", out var styleJson))
             {
                 if (styleJson.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(styleJson.GetString()))
                     throw new JsonException($"{path}.style must be a nonempty style name.");
                 style = styleJson.GetString();
             }
-            if (style is not null && !styles.ContainsKey(style))
+            if (style is not null && !styles.ContainsKey(style) && layout?.ValueKind != JsonValueKind.Object)
                 throw new JsonException($"{path}.style references unknown style '{style}'.");
 
-            var node = new ViewNode(type, name) { Style = style };
+            var node = new ViewNode(type, name) { Style = style, Layout = layout, Place = place };
             if (value.TryGetProperty("controlHandle", out var handleJson))
             {
                 if (handleJson.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(handleJson.GetString()) ||
@@ -993,9 +1063,11 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
             }
             var hasLayoutPaths = value.TryGetProperty("layoutPath", out var layoutPathsJson);
             var hasModelPaths = value.TryGetProperty("modelPath", out var modelPathsJson);
-            if (hasLayoutPaths != hasModelPaths || hasLayoutPaths && node.ControlHandle is null ||
-                hasLayoutPaths && (layoutPathsJson.ValueKind != JsonValueKind.Object || modelPathsJson.ValueKind != JsonValueKind.Object))
-                throw new JsonException($"{path}: controlHandle requires matching layoutPath and modelPath context maps.");
+            if (hasLayoutPaths && (!hasModelPaths || node.ControlHandle is null) ||
+                hasLayoutPaths && (layoutPathsJson.ValueKind != JsonValueKind.Object || modelPathsJson.ValueKind != JsonValueKind.Object) ||
+                hasModelPaths && modelPathsJson.ValueKind != JsonValueKind.Object ||
+                hasModelPaths && node.ControlHandle is null)
+                throw new JsonException($"{path}: modelPath requires controlHandle; legacy layoutPath also requires modelPath.");
             if (hasLayoutPaths)
             {
                 foreach (var entry in layoutPathsJson.EnumerateObject())
@@ -1004,15 +1076,16 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
                         throw new JsonException($"{path}.layoutPath: expected an absolute context key such as 'in /ctrlViewPort/ctrlPage'.");
                     node.LayoutPaths.Add(context, ReadBindingPath(entry.Value, path + ".layoutPath." + entry.Name));
                 }
+            }
+            if (hasModelPaths)
                 foreach (var entry in modelPathsJson.EnumerateObject())
                 {
                     if (!TryReadControlContext(entry.Name, out var context))
                         throw new JsonException($"{path}.modelPath: expected an absolute context key such as 'in /ctrlViewPort/ctrlPage'.");
                     node.ModelPaths.Add(context, ReadModelPath(entry.Value, path + ".modelPath." + entry.Name));
                 }
-                if (node.LayoutPaths.Count == 0 || !node.LayoutPaths.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(node.ModelPaths.Keys))
-                    throw new JsonException($"{path}: layoutPath and modelPath must define the same nonempty set of contexts.");
-            }
+            if (hasLayoutPaths && (node.LayoutPaths.Count == 0 || !node.LayoutPaths.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(node.ModelPaths.Keys)))
+                throw new JsonException($"{path}: legacy layoutPath and modelPath must define the same nonempty set of contexts.");
             if (value.TryGetProperty("children", out var children))
             {
                 if (children.ValueKind != JsonValueKind.Array)
@@ -1027,28 +1100,69 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
     private static IReadOnlyDictionary<string, StationeryControlBinding> ReadControlTree(ViewNode viewportsRoot)
     {
         var maps = new Dictionary<string, (Dictionary<string, string> Layout, Dictionary<string, string> Model)>(StringComparer.Ordinal);
-        void Visit(ViewNode node)
+        static string? LayoutId(ViewNode node)
         {
+            if (node.Layout is not { ValueKind: JsonValueKind.Object } definition) return node.Style;
+            if (definition.TryGetProperty("ref", out var reference)) return reference.GetString();
+            if (definition.TryGetProperty("name", out var name)) return name.GetString();
+            if (definition.TryGetProperty("id", out var id)) return id.GetString();
+            return node.Style;
+        }
+        static string FormatPlace(JsonElement? place, string nodeName)
+        {
+            if (place is not { } value) throw new JsonException($"View node '{nodeName}' requires place because its parent has a layout.");
+            if (value.ValueKind == JsonValueKind.String) return value.GetString()!.Replace('_', '.');
+            if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var index)) return index.ToString(CultureInfo.InvariantCulture);
+            if (value.ValueKind == JsonValueKind.Object)
+            {
+                int Part(string key, string alternate) => value.TryGetProperty(key, out var part) && part.TryGetInt32(out var number)
+                    ? number : value.TryGetProperty(alternate, out part) && part.TryGetInt32(out number)
+                    ? number : throw new JsonException($"View node '{nodeName}'.place.{key} must be an integer.");
+                return $"{Part("row", "y")}y_{Part("col", "x")}x_{Part("colspan", "w")}w_{Part("rowspan", "h")}h".Replace('_', '.');
+            }
+            throw new JsonException($"View node '{nodeName}'.place must be a string, integer or grid address object.");
+        }
+        static bool ContainsBindings(ViewNode node) => node.ControlHandle is not null || node.ModelPaths.Count > 0 ||
+            node.ChildNodes.Any(ContainsBindings);
+
+        void Visit(ViewNode node, string? route)
+        {
+            if (!ContainsBindings(node)) return;
+            if (route is null)
+            {
+                var rootLayout = LayoutId(node);
+                if (rootLayout is null) throw new JsonException($"Root view node '{node.Name}' requires layout.");
+                route = "root:" + rootLayout;
+            }
+            else
+            {
+                var edge = FormatPlace(node.Place, node.Name);
+                var layout = LayoutId(node);
+                route += "/" + edge + (layout is null ? "" : ":" + layout);
+            }
             if (node.ControlHandle is { } handle)
             {
                 if (!maps.TryGetValue(handle, out var map))
                     maps.Add(handle, map = (new(StringComparer.Ordinal), new(StringComparer.Ordinal)));
-                foreach (var (context, route) in node.LayoutPaths)
-                    if (!map.Layout.TryAdd(context, route)) throw new JsonException($"Duplicate control context '{context}' for '{handle}'.");
                 foreach (var (context, modelPath) in node.ModelPaths)
+                {
+                    var bindingRoute = node.LayoutPaths.TryGetValue(context, out var legacyRoute) ? legacyRoute : route;
+                    if (!map.Layout.TryAdd(context, bindingRoute) && map.Layout[context] != bindingRoute)
+                        throw new JsonException($"Duplicate control context '{context}' for '{handle}'.");
                     if (!map.Model.TryAdd(context, modelPath)) throw new JsonException($"Duplicate control context '{context}' for '{handle}'.");
+                }
             }
             else if (node.LayoutPaths.Count > 0 || node.ModelPaths.Count > 0)
                 throw new JsonException($"View node '{node.Name}' has paths but no controlHandle.");
-            foreach (var child in node.ChildNodes) Visit(child);
+            foreach (var child in node.ChildNodes) Visit(child, route);
         }
-        foreach (var child in viewportsRoot.ChildNodes) Visit(child);
+        foreach (var child in viewportsRoot.ChildNodes) Visit(child, null);
 
         var result = new Dictionary<string, StationeryControlBinding>(StringComparer.Ordinal);
         foreach (var (handle, mapsForHandle) in maps)
         {
-            if (mapsForHandle.Layout.Count == 0 || !mapsForHandle.Layout.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(mapsForHandle.Model.Keys))
-                throw new JsonException($"View node control '{handle}' must define matching nonempty layoutPath and modelPath contexts.");
+            if (mapsForHandle.Model.Count == 0 || !mapsForHandle.Layout.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(mapsForHandle.Model.Keys))
+                throw new JsonException($"View node control '{handle}' must define modelPath contexts.");
             result.Add(handle, new(null, new ReadOnlyDictionary<string, string>(mapsForHandle.Layout))
             { ModelReferences = new ReadOnlyDictionary<string, string>(mapsForHandle.Model) });
         }

@@ -206,7 +206,7 @@ public sealed class StyleBlueprint
         }
 
         static string GridEdge(int row, int column, int rowSpan, int columnSpan)
-            => $"{row + 1}y.{column + 1}x.{rowSpan}w.{columnSpan}h";
+            => $"{row + 1}y.{column + 1}x.{columnSpan}w.{rowSpan}h";
 
         var allModels = new List<StationeryUI.Inspection.StationeryNode>();
         void Visit(StationeryUI.Inspection.StationeryNode model)
