@@ -5,8 +5,7 @@
             "children": [
                 {
                     "name": "vTopDemoPage",
-                    "children": [
-                    ]
+                    "children": []
                 }
             ]
         }
@@ -27,31 +26,80 @@
                             "children": [
                                 {
                                     "type": "TextBox",
-                                    "name": "vNameField"
+                                    "name": "vNameField",
+                                    "controlHandle": "ctrlNameField",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[1y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField"
+                                    }
                                 },
                                 {
                                     "type": "TextBox",
-                                    "name": "vMemoField"
+                                    "name": "vMemoField",
+                                    "controlHandle": "ctrlMemoField",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[2y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlMemoField"
+                                    }
                                 },
                                 {
                                     "type": "Button",
-                                    "name": "vThemeButton"
+                                    "name": "vThemeButton",
+                                    "controlHandle": "ctrlThemeButton",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[3y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlThemeButton"
+                                    }
                                 },
                                 {
                                     "type": "Button",
-                                    "name": "vScaleButton"
+                                    "name": "vScaleButton",
+                                    "controlHandle": "ctrlScaleButton",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[3y_2x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlScaleButton"
+                                    }
                                 },
                                 {
                                     "type": "Button",
-                                    "name": "vApplyTitleButton"
+                                    "name": "vApplyTitleButton",
+                                    "controlHandle": "ctrlApplyTitleButton",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[4y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlApplyTitleButton"
+                                    }
                                 },
                                 {
                                     "type": "Button",
-                                    "name": "vOpenDialogButton"
+                                    "name": "vOpenDialogButton",
+                                    "controlHandle": "ctrlOpenDialogButton",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[5y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlOpenDialogButton"
+                                    }
                                 },
                                 {
                                     "type": "Tree",
-                                    "name": "vSampleTree"
+                                    "name": "vSampleTree",
+                                    "controlHandle": "ctrlSampleTree",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[1y_2x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree"
+                                    }
                                 },
                                 {
                                     "type": "Dialog",
@@ -73,11 +121,25 @@
                                 },
                                 {
                                     "type": "Link",
-                                    "name": "vSplitPaneDemoLink"
+                                    "name": "vSplitPaneDemoLink",
+                                    "controlHandle": "ctrlSplitPaneDemoLink",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[5y_2x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSplitPaneDemoLink"
+                                    }
                                 },
                                 {
                                     "type": "Link",
-                                    "name": "vLayoutDemoLink"
+                                    "name": "vLayoutDemoLink",
+                                    "controlHandle": "ctrlLayoutDemoLink",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "csTabbedPages[0].csPageDock[center_2].csTopDemoGridLayout[4y_2x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlLayoutDemoLink"
+                                    }
                                 }
                             ]
                         },
@@ -87,7 +149,14 @@
                             "children": [
                                 {
                                     "type": "TextBlock",
-                                    "name": "vToolHint"
+                                    "name": "vToolHint",
+                                    "controlHandle": "ctrlToolHint",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel": "csTabbedPages[0].csPageDock[bottom_1].csInspectorContentsGridLayout[1y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint"
+                                    }
                                 }
                             ]
                         }
@@ -104,47 +173,124 @@
                             "children": [
                                 {
                                     "type": "Link",
-                                    "name": "vTopDemoLink"
+                                    "name": "vTopDemoLink",
+                                    "controlHandle": "ctrlTopDemoLink",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[1y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vTitle"
+                                    "name": "vTitle",
+                                    "controlHandle": "ctrlTitle",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[1y_2x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTitle"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vBoxTitle"
+                                    "name": "vBoxTitle",
+                                    "controlHandle": "ctrlBoxTitle",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[2y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxTitle"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vBoxContent"
+                                    "name": "vBoxContent",
+                                    "controlHandle": "ctrlBoxContent",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_1x_1w_1h].csBoxLayout"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxContent"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vGridTitle"
+                                    "name": "vGridTitle",
+                                    "controlHandle": "ctrlGridTitle",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[2y_2x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridTitle"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vSpanCell"
+                                    "name": "vSpanCell",
+                                    "controlHandle": "ctrlSpanCell",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_1x_2w_1h].csSpanCellBox"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlSpanCell"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vNestedA"
+                                    "name": "vNestedA",
+                                    "controlHandle": "ctrlNestedA",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedA"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vNestedB"
+                                    "name": "vNestedB",
+                                    "controlHandle": "ctrlNestedB",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_2x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedB"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vNestedC"
+                                    "name": "vNestedC",
+                                    "controlHandle": "ctrlNestedC",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedC"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vNestedD"
+                                    "name": "vNestedD",
+                                    "controlHandle": "ctrlNestedD",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_2x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
+                                    }
                                 },
                                 {
                                     "type": "TextBlock",
-                                    "name": "vGridFooter"
+                                    "name": "vGridFooter",
+                                    "controlHandle": "ctrlGridFooter",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "csTabbedPages[2].csPageDock[center_2].csLayoutShowcaseGridLayout[3y_2x_1w_1h].grid[3y_1x_1w_3h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridFooter"
+                                    }
                                 }
                             ]
                         },
@@ -154,7 +300,14 @@
                             "children": [
                                 {
                                     "type": "TextBlock",
-                                    "name": "vToolHint"
+                                    "name": "vToolHint",
+                                    "controlHandle": "ctrlToolHint",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel": "csTabbedPages[2].csPageDock[bottom_1].csInspectorContentsGridLayout[1y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
+                                    }
                                 }
                             ]
                         }
@@ -171,7 +324,14 @@
                             "children": [
                                 {
                                     "type": "Link",
-                                    "name": "vTopDemoLink"
+                                    "name": "vTopDemoLink",
+                                    "controlHandle": "ctrlTopDemoLink",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[1y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink"
+                                    }
                                 },
                                 {
                                     "type": "SplitPane",
@@ -179,13 +339,34 @@
                                     "children": [
                                         {
                                             "type": "TextBox",
-                                            "name": "vLeftPane"
+                                            "name": "vLeftPane",
+                                            "controlHandle": "ctrlLeftPane",
+                                            "layoutPath": {
+                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[2y_1x_1w_1h].csVerticalSplitPaneLayout.first"
+                                            },
+                                            "modelPath": {
+                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlLeftPane"
+                                            }
                                         },
                                         {
                                             "type": "TextBox",
-                                            "name": "vRightPane"
+                                            "name": "vRightPane",
+                                            "controlHandle": "ctrlRightPane",
+                                            "layoutPath": {
+                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[2y_1x_1w_1h].csVerticalSplitPaneLayout.second"
+                                            },
+                                            "modelPath": {
+                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlRightPane"
+                                            }
                                         }
-                                    ]
+                                    ],
+                                    "controlHandle": "ctrlVerticalSplit",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[2y_1x_1w_1h].csVerticalSplitPaneLayout"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit"
+                                    }
                                 },
                                 {
                                     "type": "SplitPane",
@@ -193,13 +374,34 @@
                                     "children": [
                                         {
                                             "type": "TextBox",
-                                            "name": "vTopPane"
+                                            "name": "vTopPane",
+                                            "controlHandle": "ctrlTopPane",
+                                            "layoutPath": {
+                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[3y_1x_1w_1h].csHorizontalSplitPaneLayout.first"
+                                            },
+                                            "modelPath": {
+                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlTopPane"
+                                            }
                                         },
                                         {
                                             "type": "TextBox",
-                                            "name": "vBottomPane"
+                                            "name": "vBottomPane",
+                                            "controlHandle": "ctrlBottomPane",
+                                            "layoutPath": {
+                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[3y_1x_1w_1h].csHorizontalSplitPaneLayout.second"
+                                            },
+                                            "modelPath": {
+                                                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlBottomPane"
+                                            }
                                         }
-                                    ]
+                                    ],
+                                    "controlHandle": "ctrlHorizontalSplit",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "csTabbedPages[1].csPageDockFullscreen[center_2].csSplitDemoGridLayout[3y_1x_1w_1h].csHorizontalSplitPaneLayout"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit"
+                                    }
                                 }
                             ]
                         },
@@ -209,16 +411,34 @@
                             "children": [
                                 {
                                     "type": "TextBlock",
-                                    "name": "vToolHint"
+                                    "name": "vToolHint",
+                                    "controlHandle": "ctrlToolHint",
+                                    "layoutPath": {
+                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel": "csTabbedPages[1].csPageDockFullscreen[bottom_1].csInspectorContentsGridLayout[1y_1x_1w_1h]"
+                                    },
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint"
+                                    }
                                 }
                             ]
                         }
                     ]
                 }
-            ]
+            ],
+            "style": "csTabbedPages"
         }
     ],
     "styles": [
+        {
+            "name": "csTabbedPages",
+            "type": "TabbedBoxLayout",
+            "padding": {
+                "top": "0px",
+                "right": "0px",
+                "bottom": "0px",
+                "left": "0px"
+            }
+        },
         {
             "name": "csTopDemoGridLayout",
             "type": "GridLayout",
@@ -281,6 +501,90 @@
                 {
                     "row": 3,
                     "col": 1
+                }
+            ]
+        },
+        {
+            "name": "csSplitDemoGridLayout",
+            "type": "GridLayout",
+            "row-definitions": [
+                "64px",
+                "1rate",
+                "1rate"
+            ],
+            "column-definitions": [
+                "1rate"
+            ],
+            "padding": {
+                "top": "4px",
+                "right": "4px",
+                "bottom": "4px",
+                "left": "4px"
+            },
+            "margin": {
+                "top": "4px",
+                "right": "4px",
+                "bottom": "4px",
+                "left": "4px"
+            },
+            "cells": [
+                {
+                    "row": 0,
+                    "col": 0
+                },
+                {
+                    "row": 1,
+                    "col": 0
+                },
+                {
+                    "row": 2,
+                    "col": 0
+                }
+            ]
+        },
+        {
+            "name": "csVerticalSplitPaneLayout",
+            "type": "SplitPane",
+            "orientation": "vertical",
+            "ratio": 0.5,
+            "dividerWidth": "10px",
+            "minimumPaneSize": "80px"
+        },
+        {
+            "name": "csHorizontalSplitPaneLayout",
+            "type": "SplitPane",
+            "orientation": "horizontal",
+            "ratio": 0.5,
+            "dividerWidth": "10px",
+            "minimumPaneSize": "60px"
+        },
+        {
+            "name": "csPageDock",
+            "type": "DockLayout",
+            "cells": [
+                {
+                    "dock": "bottom",
+                    "size": "80px"
+                },
+                {
+                    "dock": "center",
+                    "size": "remaining"
+                }
+            ]
+        },
+        {
+            "name": "csInspectorContentsGridLayout",
+            "type": "GridLayout",
+            "row-definitions": [
+                "1rate"
+            ],
+            "column-definitions": [
+                "1rate"
+            ],
+            "cells": [
+                {
+                    "row": 0,
+                    "col": 0
                 }
             ]
         },
@@ -398,268 +702,74 @@
             ]
         },
         {
-            "name": "csSplitDemoGridLayout",
-            "type": "GridLayout",
-            "row-definitions": [
-                "64px",
-                "1rate",
-                "1rate"
-            ],
-            "column-definitions": [
-                "1rate"
-            ],
+            "name": "csBoxLayout",
+            "type": "BoxLayout",
             "padding": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
+                "top": "24px",
+                "right": "24px",
+                "bottom": "24px",
+                "left": "24px"
+            },
+            "margin": {
+                "top": "8px",
+                "right": "8px",
+                "bottom": "8px",
+                "left": "8px"
+            },
+            "border": {
+                "top": "2px",
+                "right": "2px",
+                "bottom": "2px",
+                "left": "2px"
+            }
+        },
+        {
+            "name": "csTopDemoLinkBox",
+            "type": "BoxLayout",
+            "padding": {
+                "top": "0px",
+                "right": "0px",
+                "bottom": "0px",
+                "left": "0px"
             },
             "margin": {
                 "top": "4px",
                 "right": "4px",
                 "bottom": "4px",
                 "left": "4px"
+            }
+        },
+        {
+            "name": "csSpanCellBox",
+            "type": "BoxLayout",
+            "padding": {
+                "top": "0px",
+                "right": "0px",
+                "bottom": "0px",
+                "left": "0px"
             },
+            "margin": {
+                "top": "16px",
+                "right": "16px",
+                "bottom": "16px",
+                "left": "16px"
+            }
+        },
+        {
+            "name": "csPageDockFullscreen",
+            "type": "DockLayout",
             "cells": [
                 {
-                    "row": 0,
-                    "col": 0
+                    "dock": "bottom",
+                    "size": "0px"
                 },
                 {
-                    "row": 1,
-                    "col": 0
-                },
-                {
-                    "row": 2,
-                    "col": 0
+                    "dock": "center",
+                    "size": "remaining"
                 }
             ]
         }
     ],
-    "controlTree": {
-        "ctrlNameField": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[1y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField"
-            }
-        },
-        "ctrlMemoField": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[2y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlMemoField"
-            }
-        },
-        "ctrlThemeButton": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[3y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlThemeButton"
-            }
-        },
-        "ctrlScaleButton": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[3y_2x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlScaleButton"
-            }
-        },
-        "ctrlApplyTitleButton": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[4y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlApplyTitleButton"
-            }
-        },
-        "ctrlOpenDialogButton": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[5y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlOpenDialogButton"
-            }
-        },
-        "ctrlSampleTree": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[1y_2x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree"
-            }
-        },
-        "ctrlSplitPaneDemoLink": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[5y_2x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSplitPaneDemoLink"
-            }
-        },
-        "ctrlLayoutDemoLink": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "tabbedPages[0].pageDock[center_2].topDemoLayout[4y_2x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlLayoutDemoLink"
-            }
-        },
-        "ctrlVerticalSplit": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit"
-            }
-        },
-        "ctrlHorizontalSplit": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit"
-            }
-        },
-        "ctrlLeftPane": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout.first"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlLeftPane"
-            }
-        },
-        "ctrlRightPane": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout.second"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlVerticalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlRightPane"
-            }
-        },
-        "ctrlTopPane": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout.first"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlTopPane"
-            }
-        },
-        "ctrlBottomPane": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout.second"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody/ctrlHorizontalSplit": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlBottomPane"
-            }
-        },
-        "ctrlTitle": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_2x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTitle"
-            }
-        },
-        "ctrlBoxTitle": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[2y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxTitle"
-            }
-        },
-        "ctrlBoxContent": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_1x_1w_1h].box"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxContent"
-            }
-        },
-        "ctrlGridTitle": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[2y_2x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridTitle"
-            }
-        },
-        "ctrlSpanCell": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_1x_2w_1h].spanCellBox"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlSpanCell"
-            }
-        },
-        "ctrlGridFooter": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[3y_1x_1w_3h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridFooter"
-            }
-        },
-        "ctrlNestedA": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedA"
-            }
-        },
-        "ctrlNestedB": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_2x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedB"
-            }
-        },
-        "ctrlNestedC": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedC"
-            }
-        },
-        "ctrlNestedD": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_2x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
-            }
-        },
-        "ctrlTopDemoLink": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[1y_1x_1w_1h]",
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink",
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
-            }
-        },
-        "ctrlToolHint": {
-            "layoutPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel": "tabbedPages[0].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]",
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel": "tabbedPages[1].pageDockFullscreen[bottom_1].inspectorContents[1y_1x_1w_1h]",
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel": "tabbedPages[2].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]"
-            },
-            "modelPath": {
-                "in /ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint",
-                "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint",
-                "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
-            }
-        }
-    },
     "modelTree": {
         "id": "mdlDemo",
         "type": "viewport",
@@ -861,347 +971,5 @@
                 ]
             }
         ]
-    },
-    "layouts": [
-        {
-            "id": "tabbedPages",
-            "type": "tabbed-box-layout",
-            "padding": {
-                "top": "0px",
-                "right": "0px",
-                "bottom": "0px",
-                "left": "0px"
-            }
-        },
-        {
-            "id": "topDemoLayout",
-            "type": "grid-layout",
-            "row-definitions": [
-                "1rate",
-                "1rate",
-                "1rate",
-                "1rate",
-                "1rate"
-            ],
-            "column-definitions": [
-                "1rate",
-                "1rate"
-            ],
-            "padding": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "margin": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "cells": [
-                {
-                    "row": 0,
-                    "col": 0
-                },
-                {
-                    "row": 1,
-                    "col": 0
-                },
-                {
-                    "row": 2,
-                    "col": 0
-                },
-                {
-                    "row": 2,
-                    "col": 1
-                },
-                {
-                    "row": 3,
-                    "col": 0
-                },
-                {
-                    "row": 4,
-                    "col": 0
-                },
-                {
-                    "row": 0,
-                    "col": 1
-                },
-                {
-                    "row": 4,
-                    "col": 1
-                },
-                {
-                    "row": 3,
-                    "col": 1
-                }
-            ]
-        },
-        {
-            "id": "splitDemoLayout",
-            "type": "grid-layout",
-            "row-definitions": [
-                "64px",
-                "1rate",
-                "1rate"
-            ],
-            "column-definitions": [
-                "1rate"
-            ],
-            "padding": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "margin": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "cells": [
-                {
-                    "row": 0,
-                    "col": 0
-                },
-                {
-                    "row": 1,
-                    "col": 0
-                },
-                {
-                    "row": 2,
-                    "col": 0
-                }
-            ]
-        },
-        {
-            "id": "verticalSplitLayout",
-            "type": "split-pane",
-            "orientation": "vertical",
-            "ratio": 0.5,
-            "dividerWidth": "10px",
-            "minimumPaneSize": "80px"
-        },
-        {
-            "id": "horizontalSplitLayout",
-            "type": "split-pane",
-            "orientation": "horizontal",
-            "ratio": 0.5,
-            "dividerWidth": "10px",
-            "minimumPaneSize": "60px"
-        },
-        {
-            "id": "pageDock",
-            "type": "dock-layout",
-            "cells": [
-                {
-                    "dock": "bottom",
-                    "size": "80px"
-                },
-                {
-                    "dock": "center",
-                    "size": "remaining"
-                }
-            ]
-        },
-        {
-            "id": "inspectorContents",
-            "type": "grid-layout",
-            "row-definitions": [
-                "1rate"
-            ],
-            "column-definitions": [
-                "1rate"
-            ],
-            "cells": [
-                {
-                    "row": 0,
-                    "col": 0
-                }
-            ]
-        },
-        {
-            "id": "layoutShowcase",
-            "type": "grid-layout",
-            "row-definitions": [
-                "60px",
-                "52px",
-                "1rate"
-            ],
-            "column-definitions": [
-                "1rate",
-                "2rate"
-            ],
-            "children": [
-                {
-                    "id": "grid",
-                    "type": "grid-layout",
-                    "row-definitions": [
-                        "1rate",
-                        "1rate",
-                        "1rate"
-                    ],
-                    "column-definitions": [
-                        "1rate",
-                        "1rate",
-                        "1rate"
-                    ],
-                    "row": 2,
-                    "col": 1,
-                    "children": [
-                        {
-                            "id": "nestedGrid",
-                            "type": "grid-layout",
-                            "row-definitions": [
-                                "1rate",
-                                "1rate"
-                            ],
-                            "column-definitions": [
-                                "1rate",
-                                "1rate"
-                            ],
-                            "row": 0,
-                            "col": 1,
-                            "rowspan": 2,
-                            "colspan": 2,
-                            "cells": [
-                                {
-                                    "row": 0,
-                                    "col": 0
-                                },
-                                {
-                                    "row": 0,
-                                    "col": 1
-                                },
-                                {
-                                    "row": 1,
-                                    "col": 0
-                                },
-                                {
-                                    "row": 1,
-                                    "col": 1
-                                }
-                            ]
-                        }
-                    ],
-                    "cells": [
-                        {
-                            "row": 0,
-                            "col": 0,
-                            "rowspan": 2
-                        },
-                        {
-                            "row": 2,
-                            "col": 0,
-                            "colspan": 3
-                        }
-                    ]
-                }
-            ],
-            "padding": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "margin": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            },
-            "cells": [
-                {
-                    "row": 0,
-                    "col": 0
-                },
-                {
-                    "row": 0,
-                    "col": 1
-                },
-                {
-                    "row": 1,
-                    "col": 0
-                },
-                {
-                    "row": 1,
-                    "col": 1
-                },
-                {
-                    "row": 2,
-                    "col": 0
-                }
-            ]
-        },
-        {
-            "id": "box",
-            "type": "box-layout",
-            "padding": {
-                "top": "24px",
-                "right": "24px",
-                "bottom": "24px",
-                "left": "24px"
-            },
-            "margin": {
-                "top": "8px",
-                "right": "8px",
-                "bottom": "8px",
-                "left": "8px"
-            },
-            "border": {
-                "top": "2px",
-                "right": "2px",
-                "bottom": "2px",
-                "left": "2px"
-            }
-        },
-        {
-            "id": "topDemoLinkBox",
-            "type": "box-layout",
-            "padding": {
-                "top": "0px",
-                "right": "0px",
-                "bottom": "0px",
-                "left": "0px"
-            },
-            "margin": {
-                "top": "4px",
-                "right": "4px",
-                "bottom": "4px",
-                "left": "4px"
-            }
-        },
-        {
-            "id": "spanCellBox",
-            "type": "box-layout",
-            "padding": {
-                "top": "0px",
-                "right": "0px",
-                "bottom": "0px",
-                "left": "0px"
-            },
-            "margin": {
-                "top": "16px",
-                "right": "16px",
-                "bottom": "16px",
-                "left": "16px"
-            }
-        },
-        {
-            "id": "pageDockFullscreen",
-            "type": "dock-layout",
-            "cells": [
-                {
-                    "dock": "bottom",
-                    "size": "0px"
-                },
-                {
-                    "dock": "center",
-                    "size": "remaining"
-                }
-            ]
-        }
-    ]
+    }
 }

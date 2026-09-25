@@ -1,46 +1,56 @@
-# Control tree and model tree
+# Viewports, styles, and model tree
 
-The current style file uses three top-level sections:
+The demo style file separates three concerns:
 
-- `controlTree`: control handles and their context-specific model and layout paths.
-- `modelTree`: one viewport model root and its owned model instances.
-- `layouts`: reusable layout definitions.
+- `viewports` describes the visible view and control tree.
+- `styles` contains reusable layout definitions referenced by a view node's `style` property.
+- `modelTree` describes model ownership and model instances.
 
-The former `models`, `bindings`, and `bindingsV2` sections are not accepted. Existing style files must be rewritten to this format.
+## View nodes
 
-## Model tree
-
-`modelTree` is one model node, not an array:
+Each view node has a `type`, a `name`, optional `style`, and optional `children`:
 
 ```json
-"modelTree": {
-    "id": "mdlViewPort",
-    "type": "viewport",
+{
+    "type": "Page",
+    "name": "vTopDemoPage",
+    "style": "csTopDemoGridLayout",
     "children": []
 }
 ```
 
-Children express model ownership and identity. A page may own separate model instances for its controls. Presentation grouping belongs in the control and layout trees when it does not represent model ownership.
+The `style` property names an entry in the top-level `styles` array. Layout definitions are kept out of the view tree, like CSS rules kept out of HTML.
 
-## Control tree entries
+## Styles
 
-Each top-level property is a control handle. `layoutPath` and `modelPath` are maps keyed by the same `in /...` absolute control context:
+Style entries have a unique `name` and a layout `type`. Their remaining properties define the layout:
 
 ```json
-"controlTree": {
-    "ctrlSaveButton": {
-        "layoutPath": {
-            "in /ctrlViewPort/ctrlDemoPage": "tabbedPages[0].pageDock[center_2].mainGrid[2y_1x_1w_1h]",
-            "in /ctrlViewPort/ctrlSplitPaneDemoPage": "tabbedPages[1].pageDock[center_2].splitGrid[3y_1x_1w_1h]"
-        },
-        "modelPath": {
-            "in /ctrlViewPort/ctrlDemoPage": "/mdlViewPort/mdlDemoPage/mdlSaveButton",
-            "in /ctrlViewPort/ctrlSplitPaneDemoPage": "/mdlViewPort/mdlSplitPaneDemoPage/mdlSaveButton"
-        }
+{
+    "name": "csTopDemoGridLayout",
+    "type": "GridLayout",
+    "row-definitions": ["1rate", "1rate"],
+    "column-definitions": ["1rate", "1rate"],
+    "cells": [{ "row": 0, "col": 0 }, { "row": 1, "col": 1 }]
+}
+```
+
+## Control and model references
+
+Control bindings live on their corresponding view nodes. Each node stores its handle and matching context-keyed `layoutPath` and `modelPath` maps:
+
+```json
+{
+    "type": "Button",
+    "name": "vSaveButton",
+    "controlHandle": "ctrlSaveButton",
+    "layoutPath": {
+        "in /ctrlViewPort/ctrlDemoPage": "csTabbedPages[0].csPageDock[center_2].csMainGrid[2y_1x_1w_1h]"
+    },
+    "modelPath": {
+        "in /ctrlViewPort/ctrlDemoPage": "/mdlViewPort/mdlDemoPage/mdlSaveButton"
     }
 }
 ```
 
-The context after `in` starts with `/` and names the absolute control path where that variant is used. The same context key pairs its layout and model paths. A single-context control still uses maps with one entry.
-
-Layout paths use dot syntax. A cell address is written in brackets, with `_` separating its parts: `grid[2y_1x_1w_1h]`. Model paths remain absolute slash-separated paths such as `/mdlViewPort/mdlDemoPage/mdlSaveButton`.
+The same handle may appear on separate view nodes for different pages. The parser combines those nodes into one runtime binding while preserving each context. `modelTree` remains independent so model ownership and lifecycle do not have to match the visual tree.
