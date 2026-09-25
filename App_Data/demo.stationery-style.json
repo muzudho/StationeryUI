@@ -19,6 +19,7 @@
                 {
                     "type": "Page",
                     "name": "vTopDemoPage",
+                    "style": "csTopDemoGridLayout",
                     "children": [
                         {
                             "type": "Container",
@@ -211,6 +212,73 @@
                             ]
                         }
                     ]
+                }
+            ]
+        }
+    ],
+    "styles": [
+        {
+            "name": "csTopDemoGridLayout",
+            "type": "GridLayout",
+            "row-definitions": [
+                "1rate",
+                "1rate",
+                "1rate",
+                "1rate",
+                "1rate"
+            ],
+            "column-definitions": [
+                "1rate",
+                "1rate"
+            ],
+            "padding": {
+                "top": "4px",
+                "right": "4px",
+                "bottom": "4px",
+                "left": "4px"
+            },
+            "margin": {
+                "top": "4px",
+                "right": "4px",
+                "bottom": "4px",
+                "left": "4px"
+            },
+            "cells": [
+                {
+                    "row": 0,
+                    "col": 0
+                },
+                {
+                    "row": 1,
+                    "col": 0
+                },
+                {
+                    "row": 2,
+                    "col": 0
+                },
+                {
+                    "row": 2,
+                    "col": 1
+                },
+                {
+                    "row": 3,
+                    "col": 0
+                },
+                {
+                    "row": 4,
+                    "col": 0
+                },
+                {
+                    "row": 0,
+                    "col": 1
+                },
+                {
+                    "row": 4,
+                    "col": 1
+                },
+                {
+                    "row": 3,
+                    "col": 1
                 }
             ]
         }
