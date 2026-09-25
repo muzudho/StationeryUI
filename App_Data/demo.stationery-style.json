@@ -17,12 +17,7 @@
             "layout": {
                 "name": "csTabbedPages",
                 "type": "TabbedBoxLayout",
-                "padding": {
-                    "top": "0px",
-                    "right": "0px",
-                    "bottom": "0px",
-                    "left": "0px"
-                }
+                "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" }
             },
             "children": [
                 {
@@ -32,14 +27,8 @@
                         "name": "csPageDock",
                         "type": "DockLayout",
                         "cells": [
-                            {
-                                "dock": "bottom",
-                                "size": "80px"
-                            },
-                            {
-                                "dock": "center",
-                                "size": "remaining"
-                            }
+                            { "dock": "bottom", "size": "80px" },
+                            { "dock": "center", "size": "remaining" }
                         ]
                     },
                     "children": [
@@ -49,66 +38,20 @@
                             "layout": {
                                 "name": "csTopDemoGridLayout",
                                 "type": "GridLayout",
-                                "row-definitions": [
-                                    "1rate",
-                                    "1rate",
-                                    "1rate",
-                                    "1rate",
-                                    "1rate"
-                                ],
-                                "column-definitions": [
-                                    "1rate",
-                                    "1rate"
-                                ],
-                                "padding": {
-                                    "top": "4px",
-                                    "right": "4px",
-                                    "bottom": "4px",
-                                    "left": "4px"
-                                },
-                                "margin": {
-                                    "top": "4px",
-                                    "right": "4px",
-                                    "bottom": "4px",
-                                    "left": "4px"
-                                },
+                                "row-definitions": ["1rate", "1rate", "1rate", "1rate", "1rate"],
+                                "column-definitions": ["1rate", "1rate"],
+                                "padding": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" },
+                                "margin": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" },
                                 "cells": [
-                                    {
-                                        "row": 0,
-                                        "col": 0
-                                    },
-                                    {
-                                        "row": 1,
-                                        "col": 0
-                                    },
-                                    {
-                                        "row": 2,
-                                        "col": 0
-                                    },
-                                    {
-                                        "row": 2,
-                                        "col": 1
-                                    },
-                                    {
-                                        "row": 3,
-                                        "col": 0
-                                    },
-                                    {
-                                        "row": 4,
-                                        "col": 0
-                                    },
-                                    {
-                                        "row": 0,
-                                        "col": 1
-                                    },
-                                    {
-                                        "row": 4,
-                                        "col": 1
-                                    },
-                                    {
-                                        "row": 3,
-                                        "col": 1
-                                    }
+                                    { "row": 0, "col": 0 },
+                                    { "row": 1, "col": 0 },
+                                    { "row": 2, "col": 0 },
+                                    { "row": 2, "col": 1 },
+                                    { "row": 3, "col": 0 },
+                                    { "row": 4, "col": 0 },
+                                    { "row": 0, "col": 1 },
+                                    { "row": 4, "col": 1 },
+                                    { "row": 3, "col": 1 }
                                 ]
                             },
                             "children": [
@@ -179,18 +122,9 @@
                                     "type": "Dialog",
                                     "name": "vEditDialog",
                                     "children": [
-                                        {
-                                            "type": "TextBox",
-                                            "name": "vNameField"
-                                        },
-                                        {
-                                            "type": "Button",
-                                            "name": "vCancelButton"
-                                        },
-                                        {
-                                            "type": "Button",
-                                            "name": "vSaveButton"
-                                        }
+                                        { "type": "TextBox", "name": "vNameField" },
+                                        { "type": "Button", "name": "vCancelButton" },
+                                        { "type": "Button", "name": "vSaveButton" }
                                     ]
                                 },
                                 {
@@ -220,17 +154,10 @@
                             "layout": {
                                 "name": "csInspectorContentsGridLayout",
                                 "type": "GridLayout",
-                                "row-definitions": [
-                                    "1rate"
-                                ],
-                                "column-definitions": [
-                                    "1rate"
-                                ],
+                                "row-definitions": ["1rate"],
+                                "column-definitions": ["1rate"],
                                 "cells": [
-                                    {
-                                        "row": 0,
-                                        "col": 0
-                                    }
+                                    { "row": 0, "col": 0 }
                                 ]
                             },
                             "children": [
@@ -256,14 +183,8 @@
                         "name": "csPageDock",
                         "type": "DockLayout",
                         "cells": [
-                            {
-                                "dock": "bottom",
-                                "size": "80px"
-                            },
-                            {
-                                "dock": "center",
-                                "size": "remaining"
-                            }
+                            { "dock": "bottom", "size": "80px" },
+                            { "dock": "center", "size": "remaining" }
                         ]
                     },
                     "children": [
@@ -273,114 +194,48 @@
                             "layout": {
                                 "name": "csLayoutShowcaseGridLayout",
                                 "type": "GridLayout",
-                                "row-definitions": [
-                                    "60px",
-                                    "52px",
-                                    "1rate"
-                                ],
-                                "column-definitions": [
-                                    "1rate",
-                                    "2rate"
-                                ],
+                                "row-definitions": ["60px", "52px", "1rate"],
+                                "column-definitions": ["1rate", "2rate"],
                                 "children": [
                                     {
                                         "id": "grid",
                                         "type": "GridLayout",
-                                        "row-definitions": [
-                                            "1rate",
-                                            "1rate",
-                                            "1rate"
-                                        ],
-                                        "column-definitions": [
-                                            "1rate",
-                                            "1rate",
-                                            "1rate"
-                                        ],
+                                        "row-definitions": ["1rate", "1rate", "1rate"],
+                                        "column-definitions": ["1rate", "1rate", "1rate"],
                                         "row": 2,
                                         "col": 1,
                                         "children": [
                                             {
                                                 "id": "nestedGrid",
                                                 "type": "GridLayout",
-                                                "row-definitions": [
-                                                    "1rate",
-                                                    "1rate"
-                                                ],
-                                                "column-definitions": [
-                                                    "1rate",
-                                                    "1rate"
-                                                ],
+                                                "row-definitions": ["1rate", "1rate"],
+                                                "column-definitions": ["1rate", "1rate"],
                                                 "row": 0,
                                                 "col": 1,
                                                 "rowspan": 2,
                                                 "colspan": 2,
                                                 "cells": [
-                                                    {
-                                                        "row": 0,
-                                                        "col": 0
-                                                    },
-                                                    {
-                                                        "row": 0,
-                                                        "col": 1
-                                                    },
-                                                    {
-                                                        "row": 1,
-                                                        "col": 0
-                                                    },
-                                                    {
-                                                        "row": 1,
-                                                        "col": 1
-                                                    }
+                                                    { "row": 0, "col": 0 },
+                                                    { "row": 0, "col": 1 },
+                                                    { "row": 1, "col": 0 },
+                                                    { "row": 1, "col": 1 }
                                                 ]
                                             }
                                         ],
                                         "cells": [
-                                            {
-                                                "row": 0,
-                                                "col": 0,
-                                                "rowspan": 2
-                                            },
-                                            {
-                                                "row": 2,
-                                                "col": 0,
-                                                "colspan": 3
-                                            }
+                                            { "row": 0, "col": 0, "rowspan": 2 },
+                                            { "row": 2, "col": 0, "colspan": 3 }
                                         ]
                                     }
                                 ],
-                                "padding": {
-                                    "top": "4px",
-                                    "right": "4px",
-                                    "bottom": "4px",
-                                    "left": "4px"
-                                },
-                                "margin": {
-                                    "top": "4px",
-                                    "right": "4px",
-                                    "bottom": "4px",
-                                    "left": "4px"
-                                },
+                                "padding": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" },
+                                "margin": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" },
                                 "cells": [
-                                    {
-                                        "row": 0,
-                                        "col": 0
-                                    },
-                                    {
-                                        "row": 0,
-                                        "col": 1
-                                    },
-                                    {
-                                        "row": 1,
-                                        "col": 0
-                                    },
-                                    {
-                                        "row": 1,
-                                        "col": 1
-                                    },
-                                    {
-                                        "row": 2,
-                                        "col": 0
-                                    }
+                                    { "row": 0, "col": 0 },
+                                    { "row": 0, "col": 1 },
+                                    { "row": 1, "col": 0 },
+                                    { "row": 1, "col": 1 },
+                                    { "row": 2, "col": 0 }
                                 ]
                             },
                             "children": [
@@ -390,18 +245,8 @@
                                     "layout": {
                                         "name": "csTopDemoLinkBox",
                                         "type": "BoxLayout",
-                                        "padding": {
-                                            "top": "0px",
-                                            "right": "0px",
-                                            "bottom": "0px",
-                                            "left": "0px"
-                                        },
-                                        "margin": {
-                                            "top": "4px",
-                                            "right": "4px",
-                                            "bottom": "4px",
-                                            "left": "4px"
-                                        }
+                                        "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" },
+                                        "margin": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" }
                                     },
                                     "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlTopDemoLink",
@@ -433,24 +278,9 @@
                                     "layout": {
                                         "name": "csBoxLayout",
                                         "type": "BoxLayout",
-                                        "padding": {
-                                            "top": "24px",
-                                            "right": "24px",
-                                            "bottom": "24px",
-                                            "left": "24px"
-                                        },
-                                        "margin": {
-                                            "top": "8px",
-                                            "right": "8px",
-                                            "bottom": "8px",
-                                            "left": "8px"
-                                        },
-                                        "border": {
-                                            "top": "2px",
-                                            "right": "2px",
-                                            "bottom": "2px",
-                                            "left": "2px"
-                                        }
+                                        "padding": { "top": "24px", "right": "24px", "bottom": "24px", "left": "24px" },
+                                        "margin": { "top": "8px", "right": "8px", "bottom": "8px", "left": "8px" },
+                                        "border": { "top": "2px", "right": "2px", "bottom": "2px", "left": "2px" }
                                     },
                                     "place": { "row": 3, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlBoxContent",
@@ -470,9 +300,7 @@
                                 {
                                     "type": "Layout",
                                     "name": "vGridLayout",
-                                    "layout": {
-                                        "ref": "grid"
-                                    },
+                                    "layout": { "ref": "grid" },
                                     "children": [
                                         {
                                             "type": "TextBlock",
@@ -480,18 +308,8 @@
                                             "layout": {
                                                 "name": "csSpanCellBox",
                                                 "type": "BoxLayout",
-                                                "padding": {
-                                                    "top": "0px",
-                                                    "right": "0px",
-                                                    "bottom": "0px",
-                                                    "left": "0px"
-                                                },
-                                                "margin": {
-                                                    "top": "16px",
-                                                    "right": "16px",
-                                                    "bottom": "16px",
-                                                    "left": "16px"
-                                                }
+                                                "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" },
+                                                "margin": { "top": "16px", "right": "16px", "bottom": "16px", "left": "16px" }
                                             },
                                             "place": { "row": 1, "col": 1, "colspan": 2, "rowspan": 1 },
                                             "controlHandle": "ctrlSpanCell",
@@ -502,9 +320,7 @@
                                         {
                                             "type": "Layout",
                                             "name": "vNestedGridLayout",
-                                            "layout": {
-                                                "ref": "nestedGrid"
-                                            },
+                                            "layout": { "ref": "nestedGrid" },
                                             "children": [
                                                 {
                                                     "type": "TextBlock",
@@ -566,17 +382,10 @@
                             "layout": {
                                 "name": "csInspectorContentsGridLayout",
                                 "type": "GridLayout",
-                                "row-definitions": [
-                                    "1rate"
-                                ],
-                                "column-definitions": [
-                                    "1rate"
-                                ],
+                                "row-definitions": ["1rate"],
+                                "column-definitions": ["1rate"],
                                 "cells": [
-                                    {
-                                        "row": 0,
-                                        "col": 0
-                                    }
+                                    { "row": 0, "col": 0 }
                                 ]
                             },
                             "children": [
@@ -602,14 +411,8 @@
                         "name": "csPageDockFullscreen",
                         "type": "DockLayout",
                         "cells": [
-                            {
-                                "dock": "bottom",
-                                "size": "0px"
-                            },
-                            {
-                                "dock": "center",
-                                "size": "remaining"
-                            }
+                            { "dock": "bottom", "size": "0px" },
+                            { "dock": "center", "size": "remaining" }
                         ]
                     },
                     "children": [
@@ -619,39 +422,14 @@
                             "layout": {
                                 "name": "csSplitDemoGridLayout",
                                 "type": "GridLayout",
-                                "row-definitions": [
-                                    "64px",
-                                    "1rate",
-                                    "1rate"
-                                ],
-                                "column-definitions": [
-                                    "1rate"
-                                ],
-                                "padding": {
-                                    "top": "4px",
-                                    "right": "4px",
-                                    "bottom": "4px",
-                                    "left": "4px"
-                                },
-                                "margin": {
-                                    "top": "4px",
-                                    "right": "4px",
-                                    "bottom": "4px",
-                                    "left": "4px"
-                                },
+                                "row-definitions": ["64px", "1rate", "1rate"],
+                                "column-definitions": ["1rate"],
+                                "padding": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" },
+                                "margin": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" },
                                 "cells": [
-                                    {
-                                        "row": 0,
-                                        "col": 0
-                                    },
-                                    {
-                                        "row": 1,
-                                        "col": 0
-                                    },
-                                    {
-                                        "row": 2,
-                                        "col": 0
-                                    }
+                                    { "row": 0, "col": 0 },
+                                    { "row": 1, "col": 0 },
+                                    { "row": 2, "col": 0 }
                                 ]
                             },
                             "children": [
@@ -661,18 +439,8 @@
                                     "layout": {
                                         "name": "csTopDemoLinkBox",
                                         "type": "BoxLayout",
-                                        "padding": {
-                                            "top": "0px",
-                                            "right": "0px",
-                                            "bottom": "0px",
-                                            "left": "0px"
-                                        },
-                                        "margin": {
-                                            "top": "4px",
-                                            "right": "4px",
-                                            "bottom": "4px",
-                                            "left": "4px"
-                                        }
+                                        "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" },
+                                        "margin": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" }
                                     },
                                     "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
                                     "controlHandle": "ctrlTopDemoLink",
@@ -763,17 +531,10 @@
                             "layout": {
                                 "name": "csInspectorContentsGridLayout",
                                 "type": "GridLayout",
-                                "row-definitions": [
-                                    "1rate"
-                                ],
-                                "column-definitions": [
-                                    "1rate"
-                                ],
+                                "row-definitions": ["1rate"],
+                                "column-definitions": ["1rate"],
                                 "cells": [
-                                    {
-                                        "row": 0,
-                                        "col": 0
-                                    }
+                                    { "row": 0, "col": 0 }
                                 ]
                             },
                             "children": [
@@ -807,70 +568,31 @@
                         "id": "mdlBody",
                         "type": "container",
                         "children": [
-                            {
-                                "id": "mdlNameField",
-                                "type": "textBox"
-                            },
-                            {
-                                "id": "mdlMemoField",
-                                "type": "textBox"
-                            },
-                            {
-                                "id": "mdlThemeButton",
-                                "type": "button"
-                            },
-                            {
-                                "id": "mdlScaleButton",
-                                "type": "button"
-                            },
-                            {
-                                "id": "mdlApplyTitleButton",
-                                "type": "button"
-                            },
-                            {
-                                "id": "mdlOpenDialogButton",
-                                "type": "button"
-                            },
-                            {
-                                "id": "mdlSampleTree",
-                                "type": "tree"
-                            },
+                            { "id": "mdlNameField", "type": "textBox" },
+                            { "id": "mdlMemoField", "type": "textBox" },
+                            { "id": "mdlThemeButton", "type": "button" },
+                            { "id": "mdlScaleButton", "type": "button" },
+                            { "id": "mdlApplyTitleButton", "type": "button" },
+                            { "id": "mdlOpenDialogButton", "type": "button" },
+                            { "id": "mdlSampleTree", "type": "tree" },
                             {
                                 "id": "mdlEditDialog",
                                 "type": "dialog",
                                 "children": [
-                                    {
-                                        "id": "mdlNameField",
-                                        "type": "textBox"
-                                    },
-                                    {
-                                        "id": "mdlCancelButton",
-                                        "type": "button"
-                                    },
-                                    {
-                                        "id": "mdlSaveButton",
-                                        "type": "button"
-                                    }
+                                    { "id": "mdlNameField", "type": "textBox" },
+                                    { "id": "mdlCancelButton", "type": "button" },
+                                    { "id": "mdlSaveButton", "type": "button" }
                                 ]
                             },
-                            {
-                                "id": "mdlSplitPaneDemoLink",
-                                "type": "link"
-                            },
-                            {
-                                "id": "mdlLayoutDemoLink",
-                                "type": "link"
-                            }
+                            { "id": "mdlSplitPaneDemoLink", "type": "link" },
+                            { "id": "mdlLayoutDemoLink", "type": "link" }
                         ]
                     },
                     {
                         "id": "mdlInspectorPanel",
                         "type": "container",
                         "children": [
-                            {
-                                "id": "mdlToolHint",
-                                "type": "textBlock"
-                            }
+                            { "id": "mdlToolHint", "type": "textBlock" }
                         ]
                     }
                 ]
@@ -883,36 +605,21 @@
                         "id": "mdlBody",
                         "type": "container",
                         "children": [
-                            {
-                                "id": "mdlTopDemoLink",
-                                "type": "link"
-                            },
+                            { "id": "mdlTopDemoLink", "type": "link" },
                             {
                                 "id": "mdlVerticalSplit",
                                 "type": "splitPane",
                                 "children": [
-                                    {
-                                        "id": "mdlLeftPane",
-                                        "type": "textBox"
-                                    },
-                                    {
-                                        "id": "mdlRightPane",
-                                        "type": "textBox"
-                                    }
+                                    { "id": "mdlLeftPane", "type": "textBox" },
+                                    { "id": "mdlRightPane", "type": "textBox" }
                                 ]
                             },
                             {
                                 "id": "mdlHorizontalSplit",
                                 "type": "splitPane",
                                 "children": [
-                                    {
-                                        "id": "mdlTopPane",
-                                        "type": "textBox"
-                                    },
-                                    {
-                                        "id": "mdlBottomPane",
-                                        "type": "textBox"
-                                    }
+                                    { "id": "mdlTopPane", "type": "textBox" },
+                                    { "id": "mdlBottomPane", "type": "textBox" }
                                 ]
                             }
                         ]
@@ -921,10 +628,7 @@
                         "id": "mdlInspectorPanel",
                         "type": "container",
                         "children": [
-                            {
-                                "id": "mdlToolHint",
-                                "type": "textBlock"
-                            }
+                            { "id": "mdlToolHint", "type": "textBlock" }
                         ]
                     }
                 ]
@@ -937,60 +641,24 @@
                         "id": "mdlBody",
                         "type": "container",
                         "children": [
-                            {
-                                "id": "mdlTopDemoLink",
-                                "type": "link"
-                            },
-                            {
-                                "id": "mdlTitle",
-                                "type": "textBlock"
-                            },
-                            {
-                                "id": "mdlBoxTitle",
-                                "type": "textBlock"
-                            },
-                            {
-                                "id": "mdlBoxContent",
-                                "type": "textBlock"
-                            },
-                            {
-                                "id": "mdlGridTitle",
-                                "type": "textBlock"
-                            },
-                            {
-                                "id": "mdlSpanCell",
-                                "type": "textBlock"
-                            },
-                            {
-                                "id": "mdlNestedA",
-                                "type": "textBlock"
-                            },
-                            {
-                                "id": "mdlNestedB",
-                                "type": "textBlock"
-                            },
-                            {
-                                "id": "mdlNestedC",
-                                "type": "textBlock"
-                            },
-                            {
-                                "id": "mdlNestedD",
-                                "type": "textBlock"
-                            },
-                            {
-                                "id": "mdlGridFooter",
-                                "type": "textBlock"
-                            }
+                            { "id": "mdlTopDemoLink", "type": "link" },
+                            { "id": "mdlTitle", "type": "textBlock" },
+                            { "id": "mdlBoxTitle", "type": "textBlock" },
+                            { "id": "mdlBoxContent", "type": "textBlock" },
+                            { "id": "mdlGridTitle", "type": "textBlock" },
+                            { "id": "mdlSpanCell", "type": "textBlock" },
+                            { "id": "mdlNestedA", "type": "textBlock" },
+                            { "id": "mdlNestedB", "type": "textBlock" },
+                            { "id": "mdlNestedC", "type": "textBlock" },
+                            { "id": "mdlNestedD", "type": "textBlock" },
+                            { "id": "mdlGridFooter", "type": "textBlock" }
                         ]
                     },
                     {
                         "id": "mdlInspectorPanel",
                         "type": "container",
                         "children": [
-                            {
-                                "id": "mdlToolHint",
-                                "type": "textBlock"
-                            }
+                            { "id": "mdlToolHint", "type": "textBlock" }
                         ]
                     }
                 ]
