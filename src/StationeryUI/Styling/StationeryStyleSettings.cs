@@ -40,8 +40,12 @@ public sealed class ViewNode(string type, string name)
 {
     public string Type { get; set; } = type;
     public string Name { get; set; } = name;
+    public string? Style { get; set; }
     public List<ViewNode> ChildNodes { get; } = [];
 }
+
+/// <summary>A named style definition from the style settings file.</summary>
+public sealed record StationeryViewStyle(string Name, string Type, JsonElement Definition);
 
 /// <summary>Creates the conventional control handle for a model Id.</summary>
 public static class StationeryControlHandle
@@ -496,6 +500,9 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
     public ViewNode ViewportSnapshotTree { get; init; } = new("ViewportSnapshot", "initialViewportSnapshot");
     /// <summary>Root containing every configured viewport node.</summary>
     public ViewNode ViewportsTree { get; init; } = new("Viewports", "viewports");
+    /// <summary>Named view style definitions, keyed by style name.</summary>
+    public IReadOnlyDictionary<string, StationeryViewStyle> Styles { get; init; }
+        = new ReadOnlyDictionary<string, StationeryViewStyle>(new Dictionary<string, StationeryViewStyle>(StringComparer.Ordinal));
     public IReadOnlyDictionary<string, StationeryControlBinding> ControlTree { get; init; }
         = new ReadOnlyDictionary<string, StationeryControlBinding>(new Dictionary<string, StationeryControlBinding>(StringComparer.Ordinal));
 
@@ -541,13 +548,28 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
             throw new JsonException("Use modelTree, layouts and controlTree; legacy models/bindings sections are not supported.");
         if (!root.TryGetProperty("modelTree", out var modelJson)) throw new JsonException("modelTree is required.");
 
+        var styles = new Dictionary<string, StationeryViewStyle>(StringComparer.Ordinal);
+        if (root.TryGetProperty("styles", out var stylesJson))
+        {
+            if (stylesJson.ValueKind != JsonValueKind.Array) throw new JsonException("styles must be an array.");
+            foreach (var (item, index) in stylesJson.EnumerateArray().Select((item, index) => (item, index)))
+            {
+                var path = $"styles[{index}]";
+                RequireObject(item, path);
+                var name = ReadString(item, "name", path);
+                var type = ReadString(item, "type", path);
+                if (!styles.TryAdd(name, new(name, type, item.Clone())))
+                    throw new JsonException($"{path}: duplicate style name '{name}'.");
+            }
+        }
+
         var viewportsRoot = new ViewNode("Viewports", "viewports");
         if (root.TryGetProperty("viewports", out var viewportsJson))
         {
             if (viewportsJson.ValueKind != JsonValueKind.Array)
                 throw new JsonException("viewports must be an array.");
             foreach (var (item, index) in viewportsJson.EnumerateArray().Select((item, index) => (item, index)))
-                viewportsRoot.ChildNodes.Add(ReadViewNode(item, $"viewports[{index}]", null));
+                viewportsRoot.ChildNodes.Add(ReadViewNode(item, $"viewports[{index}]", null, styles));
         }
 
         var viewNodesByName = new Dictionary<string, ViewNode>(StringComparer.Ordinal);
@@ -564,7 +586,7 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
             if (snapshotJson.ValueKind != JsonValueKind.Array)
                 throw new JsonException("initialViewportSnapshot must be an array.");
             foreach (var (item, index) in snapshotJson.EnumerateArray().Select((item, index) => (item, index)))
-                snapshotRoot.ChildNodes.Add(ReadViewNode(item, $"initialViewportSnapshot[{index}]", viewNodesByName));
+                snapshotRoot.ChildNodes.Add(ReadViewNode(item, $"initialViewportSnapshot[{index}]", viewNodesByName, styles));
         }
 
         var model = ReadModel(modelJson, "modelTree");
@@ -912,13 +934,18 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
         {
             ViewportSnapshotTree = snapshotRoot,
             ViewportsTree = viewportsRoot,
+            Styles = new ReadOnlyDictionary<string, StationeryViewStyle>(styles),
             ControlTree = controlTree
         };
 
-        static ViewNode ReadViewNode(JsonElement value, string path, IReadOnlyDictionary<string, ViewNode>? knownNodes)
+        static ViewNode ReadViewNode(JsonElement value, string path, IReadOnlyDictionary<string, ViewNode>? knownNodes,
+            IReadOnlyDictionary<string, StationeryViewStyle> styles)
         {
             RequireObject(value, path);
             var name = ReadString(value, "name", path);
+            ViewNode? knownNode = null;
+            if (knownNodes is not null && knownNodes.TryGetValue(name, out var resolvedNode))
+                knownNode = resolvedNode;
             string type;
             if (value.TryGetProperty("type", out var typeJson))
             {
@@ -926,16 +953,26 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
                     throw new JsonException($"{path}.type must be a nonempty string.");
                 type = typeJson.GetString()!;
             }
-            else if (knownNodes is not null && knownNodes.TryGetValue(name, out var knownNode)) type = knownNode.Type;
+            else if (knownNode is not null) type = knownNode.Type;
             else throw new JsonException($"{path}.type is required unless the node can be resolved by name from viewports.");
 
-            var node = new ViewNode(type, name);
+            string? style = knownNode?.Style;
+            if (value.TryGetProperty("style", out var styleJson))
+            {
+                if (styleJson.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(styleJson.GetString()))
+                    throw new JsonException($"{path}.style must be a nonempty style name.");
+                style = styleJson.GetString();
+            }
+            if (style is not null && !styles.ContainsKey(style))
+                throw new JsonException($"{path}.style references unknown style '{style}'.");
+
+            var node = new ViewNode(type, name) { Style = style };
             if (value.TryGetProperty("children", out var children))
             {
                 if (children.ValueKind != JsonValueKind.Array)
                     throw new JsonException($"{path}.children must be an array.");
                 foreach (var (child, index) in children.EnumerateArray().Select((child, index) => (child, index)))
-                    node.ChildNodes.Add(ReadViewNode(child, $"{path}.children[{index}]", knownNodes));
+                    node.ChildNodes.Add(ReadViewNode(child, $"{path}.children[{index}]", knownNodes, styles));
             }
             return node;
         }
