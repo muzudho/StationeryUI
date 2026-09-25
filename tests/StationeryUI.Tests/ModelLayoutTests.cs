@@ -6,7 +6,7 @@ internal static class ModelLayoutTests
 {
     public static void Run()
     {
-        var shippedText = File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
+        var shippedText = File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-ui.json"));
         var shipped = StationeryStyleSettings.Parse(shippedText);
         Require(shipped.ModelTree.Type == "viewport" && shipped.Layouts.Any(l => l.Type == "dock-layout") && shipped.Bindings.Any(b => b.DockChildren.Count > 0), "shipped model tree and layouts");
         Require(DemoModelBinding.Create(shipped).Main["nameField"].Kind == "textBox", "shipped code binding");

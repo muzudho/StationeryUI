@@ -115,10 +115,10 @@ internal static class DeveloperInspectionTests
     private static void CheckNestedLayouts()
     {
         var directory = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !System.IO.File.Exists(System.IO.Path.Combine(directory.FullName, "App_Data", "demo.stationery-style.json")))
+        while (directory is not null && !System.IO.File.Exists(System.IO.Path.Combine(directory.FullName, "App_Data", "demo.stationery-ui.json")))
             directory = directory.Parent;
         var settings = StationeryUI.Styling.StationeryStyleSettings.Parse(System.IO.File.ReadAllText(
-            System.IO.Path.Combine(directory!.FullName, "App_Data", "demo.stationery-style.json")));
+            System.IO.Path.Combine(directory!.FullName, "App_Data", "demo.stationery-ui.json")));
         const string owner = "/demo/layoutDemoPage/body";
         StationeryInspectionEntry[] entries = [
             new("body", owner, null, "container", "", true, null),

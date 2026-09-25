@@ -19,7 +19,7 @@
 
 - 内部データ構造や JSON 形式は変更しません。
   - C# の `StationeryNode.Id`（同一親内で一意）や `StationeryNode.Path`（ツリー内で一意）の仕様はそのまま維持します。
-  - 出力される `.stationery-style.json` のスキーマ変更は行いません。
+  - 出力される `.stationery-ui.json` のスキーマ変更は行いません。
 - 既存の自動テストや外部ツールが、従来のツリーラベル文字列を期待している場合は、必要に応じて表示差分に対応してください。内部検査用のフォーマット（DeveloperInspectionLayout.FormatLabel）はそのまま維持されます。
 
 影響範囲:

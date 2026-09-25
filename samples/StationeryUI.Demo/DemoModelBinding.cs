@@ -12,7 +12,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
 
     private static StationeryStyleSettings LoadFallback()
     {
-        using var stream = typeof(DemoModelBinding).Assembly.GetManifestResourceStream("StationeryUI.Demo.demo.stationery-style.json")
+        using var stream = typeof(DemoModelBinding).Assembly.GetManifestResourceStream("StationeryUI.Demo.demo.stationery-ui.json")
             ?? throw new InvalidOperationException("The embedded demo style fallback is missing.");
         using var reader = new StreamReader(stream);
         return StationeryStyleSettings.Parse(reader.ReadToEnd());

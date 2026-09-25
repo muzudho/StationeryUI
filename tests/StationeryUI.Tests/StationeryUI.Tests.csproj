@@ -5,5 +5,5 @@
   <ItemGroup><Compile Include="../../samples/StationeryUI.StyleDesigner/StyleSaveSession.cs" Link="StyleSaveSession.cs" /></ItemGroup>
   <ItemGroup><ProjectReference Include="../../src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj" /></ItemGroup>
   <ItemGroup><Compile Include="../../samples/StationeryUI.Demo/DemoModelBinding.cs" Link="DemoModelBinding.cs" /></ItemGroup>
-  <ItemGroup><None Include="../../App_Data/demo.stationery-style.json" Link="Fixtures/demo.stationery-style.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><None Include="../../App_Data/demo.stationery-ui.json" Link="Fixtures/demo.stationery-ui.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

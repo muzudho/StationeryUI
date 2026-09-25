@@ -621,8 +621,8 @@ public sealed class StyleBlueprint
     /// <summary>Export a new file only; an existing target is never overwritten.</summary>
     public void Export(string path)
     {
-        if (!path.EndsWith(".stationery-style.json", StringComparison.OrdinalIgnoreCase))
-            throw new ArgumentException("出力先の末尾を .stationery-style.json にしてください。");
+        if (!path.EndsWith(".stationery-ui.json", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("出力先の末尾を .stationery-ui.json にしてください。");
         var bytes = new UTF8Encoding(false).GetBytes(BuildJson());
         var destination = Path.GetFullPath(path);
         var temporary = destination + "." + Guid.NewGuid().ToString("N") + ".tmp";

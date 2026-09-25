@@ -16,13 +16,13 @@ StationeryUI のコミットを固定し、次を同じ版から取り込みま�
 | `StationeryUI.MonoGame` | `StationeryUiHost`、`StationeryDeveloperView`、`StationeryDeveloperStyle`、開発者ウィンドウ用の埋め込み JSON |
 | `StationeryUI.Windows` | 文字描画・IME・クリップボードと `StationeryDeveloperWindow`（親側のプロセス起動・通信） |
 | 利用アプリの `App_Data/app.stationery-config.json` | スタイルの読み込み先と監視方針 |
-| 利用アプリの `App_Data/app.stationery-style.json` | アプリ固有の models / layouts / bindings |
+| 利用アプリの `App_Data/app.stationery-ui.json` | アプリ固有の models / layouts / bindings |
 | [InspectorGame.cs](../../../samples/StationeryUI.Demo/InspectorGame.cs) | **サンプル側にある子プロセスのホスト。利用アプリのソースへコピーする** |
 | 利用アプリのエントリーポイント | `--stationery-inspector` の分岐を追加する |
 | 利用アプリの Game クラス | F12、スナップショット更新、終了時の Dispose を追加する |
-| [dev-window.stationery-style.json](../../../App_Data/dev-window.stationery-style.json) | F12 自身の見た目を編集する場合に、利用アプリの `App_Data` へコピーする。標準表示だけなら DLL 内の既定設定で動く |
+| [dev-window.stationery-ui.json](../../../App_Data/dev-window.stationery-ui.json) | F12 自身の見た目を編集する場合に、利用アプリの `App_Data` へコピーする。標準表示だけなら DLL 内の既定設定で動く |
 
-ProjectReference の場合は、固定したチェックアウト全体を `vendor/StationeryUI` などへ置きます。`src` だけを抜き出すと、`Directory.Build.props` や `App_Data/dev-window.stationery-style.json` の埋め込み参照が欠けます。NuGet を使う場合も `InspectorGame.cs` とエントリーポイントは別途必要です。StyleDesigner の実行ファイルは人間が JSON を編集するための道具で、F12 の子プロセスホストにはなりません。
+ProjectReference の場合は、固定したチェックアウト全体を `vendor/StationeryUI` などへ置きます。`src` だけを抜き出すと、`Directory.Build.props` や `App_Data/dev-window.stationery-ui.json` の埋め込み参照が欠けます。NuGet を使う場合も `InspectorGame.cs` とエントリーポイントは別途必要です。StyleDesigner の実行ファイルは人間が JSON を編集するための道具で、F12 の子プロセスホストにはなりません。
 
 ## 2. スタイル読み込みと実画面への適用を接続する
 
@@ -127,11 +127,11 @@ JSON の Arrange 結果だけを表示しても、実画面への適用漏れは
 
 ## 5. 開発者ウィンドウ用の設定と配布を確認する
 
-標準設定は `StationeryUI.MonoGame.dll` に埋め込まれています。F12 自身のサイズ・余白・行列・初期分割を調整する場合は、同じ版の `App_Data/dev-window.stationery-style.json` を利用アプリのプロジェクトへコピーし、次を `.csproj` に追加します。
+標準設定は `StationeryUI.MonoGame.dll` に埋め込まれています。F12 自身のサイズ・余白・行列・初期分割を調整する場合は、同じ版の `App_Data/dev-window.stationery-ui.json` を利用アプリのプロジェクトへコピーし、次を `.csproj` に追加します。
 
 ```xml
 <ItemGroup>
-  <None Update="App_Data/dev-window.stationery-style.json"
+  <None Update="App_Data/dev-window.stationery-ui.json"
         CopyToOutputDirectory="PreserveNewest"
         CopyToPublishDirectory="PreserveNewest" />
 </ItemGroup>
@@ -143,7 +143,7 @@ JSON の Arrange 結果だけを表示しても、実画面への適用漏れは
 
 1. `Load(filePath)` に明示したパス。
 2. 環境変数 `STATIONERYUI_DEV_WINDOW_STYLE_PATH`。
-3. Debug のライブラリーに付いた `StationeryDeveloperStyleSource` メタデータの原本パス。メタデータがなければ `AppContext.BaseDirectory/App_Data/dev-window.stationery-style.json`。
+3. Debug のライブラリーに付いた `StationeryDeveloperStyleSource` メタデータの原本パス。メタデータがなければ `AppContext.BaseDirectory/App_Data/dev-window.stationery-ui.json`。
 
 選ばれた外部ファイルがなければ埋め込み設定を使い、不正な場合も埋め込み設定へ戻ります。不正な設定の理由は `StationeryDeveloperStyle.LastError` と Trace で確認します。親側の `StationeryDeveloperWindow.LastError` は起動・通信エラー用です。
 

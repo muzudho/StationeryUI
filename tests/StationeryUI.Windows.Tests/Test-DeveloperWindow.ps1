@@ -39,7 +39,7 @@ $outputPath = Join-Path $workspacePath 'artifacts/developer-window-stationery'
 New-Item -ItemType Directory -Force $outputPath | Out-Null
 $reportPath = Join-Path $outputPath 'report.json'
 if (Test-Path -LiteralPath $reportPath) { Remove-Item -LiteralPath $reportPath }
-Copy-Item -LiteralPath (Join-Path $workspacePath 'App_Data/demo.stationery-style.json') -Destination (Join-Path $outputPath 'style.json')
+Copy-Item -LiteralPath (Join-Path $workspacePath 'App_Data/demo.stationery-ui.json') -Destination (Join-Path $outputPath 'style.json')
 '{"styleFile":"style.json","autoReload":true}' | Set-Content (Join-Path $outputPath 'config.json') -Encoding UTF8
 $inputPath = Join-Path $outputPath 'input.json'
 if (Test-Path -LiteralPath $inputPath) { Remove-Item -LiteralPath $inputPath }

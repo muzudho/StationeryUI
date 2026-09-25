@@ -55,11 +55,11 @@ TaroMax ＞　ここからの見た目の微調整は、
 ```plaintxt
 白田さん＞　このアプリケーションの［文房具スタイル設定ファイル］は、どこにあるんだぜ（＾～＾）？
 
-TaroMax ＞　`App_Data/demo.stationery-style.json` にあります［ー＿ー］
+TaroMax ＞　`App_Data/demo.stationery-ui.json` にあります［ー＿ー］
 ```
 
 * 別途［スタイルデザイナー］アプリケーションを起動。
-* ［スタイルデザイナー］で、`App_Data/demo.stationery-style.json` を開く。
+* ［スタイルデザイナー］で、`App_Data/demo.stationery-ui.json` を開く。
 * ［スタイルデザイナー］の［レイアウトツリー］から、目的の［文房具レイアウトパス］を選択。
 * 入力欄で、寸法・比率・余白等を編集。
 * ［オートセーブ］なので、そのまま［スタイルデザイナー］を閉じる。

@@ -40,7 +40,7 @@ internal sealed partial class DesignerGame
             var folder = WindowsStyleFileDialog.ChooseFolder(selectedOutputFolder);
             if (folder is null) return;
             selectedOutputFolder = folder;
-            outputPath = Path.Combine(folder, "my-plan.stationery-style.json");
+            outputPath = Path.Combine(folder, "my-plan.stationery-ui.json");
             SetText(output, outputPath);
             message = "出力フォルダーを選択しました。";
         }));
@@ -52,9 +52,9 @@ internal sealed partial class DesignerGame
         createFileButton = dialog.AddButton("createFile", new(788, 368, 240, 44), "新規作成", () => utilityAction = () => Guard(() =>
         {
             if (selectedOutputFolder is null) return;
-            var path = Path.Combine(selectedOutputFolder, "my-plan.stationery-style.json");
+            var path = Path.Combine(selectedOutputFolder, "my-plan.stationery-ui.json");
             for (var suffix = 2; File.Exists(path) || Directory.Exists(path); suffix++)
-                path = Path.Combine(selectedOutputFolder, $"my-plan-{suffix}.stationery-style.json");
+                path = Path.Combine(selectedOutputFolder, $"my-plan-{suffix}.stationery-ui.json");
             ExportAndTrack(path);
         }));
         dialog.Focus.SetEnabled(createFileButton.Path, selectedOutputFolder is not null);

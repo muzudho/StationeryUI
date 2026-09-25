@@ -15,6 +15,6 @@
 - [ツリー](tree.md)：枝の開閉と選択。
 - [スプリットペーン](split-pane.md)：別ページへの移動と表示領域の分割。
 - [F12 開発者ウィンドウ](developer-window.md)：部品の Id・パス・位置を確認。
-- [スタイル設定](stationery-style-settings.md)：配置の変更と再読み込み。
+- [スタイル設定](stationery-ui-settings.md)：配置の変更と再読み込み。
 
 [利用者向け目次](README.md)

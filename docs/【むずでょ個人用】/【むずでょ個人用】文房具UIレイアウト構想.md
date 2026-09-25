@@ -400,7 +400,7 @@ C# ソースコードでは［コントロール］の `LayoutKey` にキー名�
 ## 廃止方針
 
 現在の［スタイル設定ファイル］が持つ、  
-D:\github.com\muzudho\StationeryUI\App_Data\demo.stationery-style.json  
+D:\github.com\muzudho\StationeryUI\App_Data\demo.stationery-ui.json  
 
 `models` セクションは、将来廃止予定です。  
 代わりに、［コントロール・ハンドル］を［コントロール］に設定してください。  

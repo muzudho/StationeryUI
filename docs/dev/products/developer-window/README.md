@@ -94,13 +94,13 @@ Windows Forms の UI Automation ツリーではなく、自前描画のスナッ
 
 1. `Load(filePath)` で明示したパス。
 2. 環境変数 `STATIONERYUI_DEV_WINDOW_STYLE_PATH`。
-3. 開発時の `StationeryDeveloperStyleSource` メタデータ、または `AppContext.BaseDirectory/App_Data/dev-window.stationery-style.json`。
+3. 開発時の `StationeryDeveloperStyleSource` メタデータ、または `AppContext.BaseDirectory/App_Data/dev-window.stationery-ui.json`。
 4. 外部ファイルが存在しない、または不正な場合は DLL 内の既定設定。
 
 参照先は `FilePath`、読み込み失敗は `LastError` と Trace で確認する。必須モデルの種類、ツリーと詳細の split binding、インスペクターパネルの配置を検証する。読み込みはウィンドウ作成時に行い、一般の StationeryStyleFile によるオートリロードとは別の機能である。
 
 現在のモデルは `/developerViewport/developerWindow` を作業ページとし、その下の `inspectorPanel/toolHint` に説明を表示する。ルートの viewport と作業ページを分けることで、本文の余白を除外した下端 80px を確保する。
 
-`src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj` の EmbeddedResource により、既定 JSON を `StationeryUI.dev-window.stationery-style.json` として DLL に含める。NuGet にもこの DLL が入るため、外部 JSON がなくても既定設定を読み込める。DeveloperStyleTests で埋め込み既定値、外部設定、異常時のフォールバックとリサイズを検査する。
+`src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj` の EmbeddedResource により、既定 JSON を `StationeryUI.dev-window.stationery-ui.json` として DLL に含める。NuGet にもこの DLL が入るため、外部 JSON がなくても既定設定を読み込める。DeveloperStyleTests で埋め込み既定値、外部設定、異常時のフォールバックとリサイズを検査する。
 
 [モデルと検査情報の接続](model-inspection.md) ／ [開発者向け目次](README.md)

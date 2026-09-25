@@ -63,7 +63,7 @@ F12 開発者ウィンドウも導入範囲に含め、一式で取り込んで�
 一式の手順: <StationeryUI>/docs/dev/style-settings/full-integration.md
 使用する StationeryUI のコミットまたはパッケージ: <固定した版>
 対象画面・C# ファイル: <パス>
-設計図: <画面名>.stationery-style.json
+設計図: <画面名>.stationery-ui.json
 今回移す範囲: <例: 外周余白と本文／サイドバーの幅>
 C# に残す範囲: <例: ツリー内容、イベント、独自グラフ、保存処理>
 

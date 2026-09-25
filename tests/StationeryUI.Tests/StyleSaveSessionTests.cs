@@ -10,7 +10,7 @@ internal static class StyleSaveSessionTests
         Directory.CreateDirectory(directory);
         try
         {
-            var path = Path.Combine(directory, "banana.stationery-style.json");
+            var path = Path.Combine(directory, "banana.stationery-ui.json");
             var draft = new StyleBlueprint();
             var original = draft.BuildJson();
             File.WriteAllText(path, original, new UTF8Encoding(true));
@@ -50,7 +50,7 @@ internal static class StyleSaveSessionTests
             session.Restore(points[^1].Path); // Selected oldest can be pruned during restore backup.
             Check(session.ListSavePoints().Count == 20, "restore also limits retention");
             session.Observe(original); Check(!session.Tick(2), "same content remains clean");
-            var bad = Path.Combine(directory, "invalid.stationery-style.json");
+            var bad = Path.Combine(directory, "invalid.stationery-ui.json");
             File.WriteAllText(bad, "invalid");
             Expect<JsonException>(() => StyleSaveSession.Open(bad));
             Check(!File.Exists(bad + ".1.bak"), "failed import does not start session");

@@ -31,7 +31,7 @@
 
 ```text
 app.stationery-config.json → 読み込み先・監視方針
-app.stationery-style.json  → models + layouts + bindings
+app.stationery-ui.json  → models + layouts + bindings
                                   ↓ Parse / validate
                         StationeryStyleSettings
                                   ↓ Arrange(幅, 高さ)
@@ -65,5 +65,5 @@ JSON は画面構成の設計図です。**JSON を読んだだけでは、コ�
 
 デモ専用の必須 Id や部品数を、別アプリの仕様としてコピーしないでください。自分のアプリの契約に置き換えます。
 
-[デモのスタイル設定仕様](../../user/stationery-style-settings.md) ／ [ライブラリーの組み込み](../library-integration.md) ／ [開発者向け目次](../README.md)
+[デモのスタイル設定仕様](../../user/stationery-ui-settings.md) ／ [ライブラリーの組み込み](../library-integration.md) ／ [開発者向け目次](../README.md)
 

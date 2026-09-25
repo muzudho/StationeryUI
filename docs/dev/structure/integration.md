@@ -24,7 +24,7 @@
 </ItemGroup>
 <ItemGroup>
   <None Update="App_Data/app.stationery-config.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-  <None Update="App_Data/app.stationery-style.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  <None Update="App_Data/app.stationery-ui.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 </ItemGroup>
 ```
 
@@ -36,12 +36,12 @@
 
 ```json
 {
-    "styleFile": "app.stationery-style.json",
+    "styleFile": "app.stationery-ui.json",
     "autoReload": true
 }
 ```
 
-`App_Data/app.stationery-style.json` は次の内容です。入力欄とボタンを上下に配置します。下の C# の `FallbackJson` も同じ設計図にしてあります。
+`App_Data/app.stationery-ui.json` は次の内容です。入力欄とボタンを上下に配置します。下の C# の `FallbackJson` も同じ設計図にしてあります。
 
 ```json
 {

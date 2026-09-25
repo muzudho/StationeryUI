@@ -51,7 +51,7 @@ internal static class StyleBlueprintTests
         Directory.CreateDirectory(directory);
         try
         {
-            var path = Path.Combine(directory, "plan.stationery-style.json");
+            var path = Path.Combine(directory, "plan.stationery-ui.json");
             plan.Export(path);
             var original = File.ReadAllText(path);
             Check(!original.Contains("\r\r") && !original.ReplaceLineEndings("\n").Contains("\n\n"), "exported file has single line endings");
@@ -59,14 +59,14 @@ internal static class StyleBlueprintTests
             try { plan.Export(path); throw new Exception("Existing file overwritten."); } catch (IOException) { }
             Check(File.ReadAllText(path) == original && Directory.GetFiles(directory).Length == 1, "existing file untouched and temporary cleaned");
             plan.Rows[0].Number = "invalid";
-            Reject(() => plan.Export(Path.Combine(directory, "invalid.stationery-style.json")));
+            Reject(() => plan.Export(Path.Combine(directory, "invalid.stationery-ui.json")));
             Check(Directory.GetFiles(directory).Length == 1, "invalid draft creates no output");
         }
         finally { Directory.Delete(directory, true); }
     }
     private static void ImportedStyles()
     {
-        var source = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json")))!;
+        var source = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-ui.json")))!;
         source["extraMetadata"] = new JsonObject { ["memo"] = "既存の拡張情報" };
         var imported = StyleBlueprint.Parse(source.ToJsonString());
         Check(imported.IsImported && imported.SelectedLayoutId == "/topDemoLayout", "opens existing layout");
@@ -111,7 +111,7 @@ internal static class StyleBlueprintTests
         plan.Columns[0].Number = "0";
         preview = plan.CreatePreview(500, 300);
         Check(preview.Standalone && preview.Cells[0].Bounds.Width == 0 && preview.Cells[1].Bounds.Width == 500, "empty zero-width tracks remain configurable");
-        var imported = StyleBlueprint.Open(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
+        var imported = StyleBlueprint.Open(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-ui.json"));
         imported.SelectLayout("/splitDemoLayout");
         preview = imported.CreatePreview(700, 500);
         Check(preview.ScopePath.EndsWith("/splitPaneDemoPage", StringComparison.Ordinal), "preview chooses bound page");
@@ -145,7 +145,7 @@ internal static class StyleBlueprintTests
         try { plan.RenameId(["models", "0", "children", "0", "children", "0"], "cellR1C2"); throw new Exception("Duplicate rename accepted"); } catch (ArgumentException) { }
         Check(plan.BuildJson() == before, "duplicate rename is atomic");
         Check(StyleBlueprint.CheckId("MyPanel", ["myPanel"]).Error is null, "case-sensitive sibling ids");
-        var fixture = StyleBlueprint.Open(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
+        var fixture = StyleBlueprint.Open(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-ui.json"));
         fixture.RenameId(["models", "0", "children", "0", "children", "0", "children", "0"], "renamedName");
         var root = JsonNode.Parse(fixture.BuildJson())!;
         var pageChildren = root["models"]![0]!["children"]![0]!["children"]![0]!["children"]!.AsArray();

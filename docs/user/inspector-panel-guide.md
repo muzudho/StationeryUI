@@ -21,6 +21,6 @@
 
 ## スタイル設定
 
-作業ページを定義する際は `work-page-layout` の `inspectorHeight` を `"80px"` とし、`bindings` で本文とは別の inspector 用モデルを指定できます。本文の余白でパネルの横幅を狭めないようにします。具体的な定義は [スタイル設定のページレイアウト](stationery-style-settings.md) を参照してください。
+作業ページを定義する際は `work-page-layout` の `inspectorHeight` を `"80px"` とし、`bindings` で本文とは別の inspector 用モデルを指定できます。本文の余白でパネルの横幅を狭めないようにします。具体的な定義は [スタイル設定のページレイアウト](stationery-ui-settings.md) を参照してください。
 
 操作説明の内容はアプリ側で設定します。配置用 JSON だけでは C# の操作内容を推測できません。

@@ -21,7 +21,7 @@ internal sealed partial class DesignerGame
             if (layoutSmoke is null)
             {
                 selectedOutputFolder = smokeOutput;
-                File.WriteAllText(Path.Combine(smokeOutput, "my-plan.stationery-style.json"), "existing file");
+                File.WriteAllText(Path.Combine(smokeOutput, "my-plan.stationery-ui.json"), "existing file");
             }
         }
         if (layoutSmoke is not null)

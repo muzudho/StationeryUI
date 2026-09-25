@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <EmbeddedResource Include="../../App_Data/dev-window.stationery-style.json" LogicalName="StationeryUI.dev-window.stationery-style.json" />
-    <AssemblyMetadata Include="StationeryDeveloperStyleSource" Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../App_Data/dev-window.stationery-style.json'))" Condition="'$(Configuration)' == 'Debug'" />
+    <EmbeddedResource Include="../../App_Data/dev-window.stationery-ui.json" LogicalName="StationeryUI.dev-window.stationery-ui.json" />
+    <AssemblyMetadata Include="StationeryDeveloperStyleSource" Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../App_Data/dev-window.stationery-ui.json'))" Condition="'$(Configuration)' == 'Debug'" />
     <ProjectReference Include="../StationeryUI/StationeryUI.csproj" />
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.5.1" />
   </ItemGroup>

@@ -524,7 +524,7 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
 
     private static StationeryStyleSettings LoadDefault()
     {
-        using var stream = typeof(StationeryStyleSettings).Assembly.GetManifestResourceStream("StationeryUI.Styling.Default.stationery-style.json")
+        using var stream = typeof(StationeryStyleSettings).Assembly.GetManifestResourceStream("StationeryUI.Styling.Default.stationery-ui.json")
             ?? throw new InvalidOperationException("The embedded default stationery style is missing.");
         using var reader = new StreamReader(stream);
         return Parse(reader.ReadToEnd());

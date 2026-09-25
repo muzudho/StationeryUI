@@ -64,7 +64,7 @@ internal sealed partial class DesignerGame
                 if (!FlushAutoSave()) return;
                 saveSession = null; saveError = null; invalidDraft = false;
                 blueprint = new(); selectedRow = selectedColumn = 0;
-                outputPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "my-plan.stationery-style.json");
+                outputPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "my-plan.stationery-ui.json");
                 if (!string.IsNullOrEmpty(smokeOutput))
                 {
                     blueprint.Resize(3, 2); blueprint.Columns[0].Number = "1.5";
@@ -88,7 +88,7 @@ internal sealed partial class DesignerGame
         editingPage = hasDraft = true; sidebarActive = false; applicationBarActive = false; rebuild = false;
         message = text; treeJson = null; lastTreeSelection = null;
         revealLayout = blueprint.IsImported ? blueprint.SelectedLayoutId : blueprint.DefaultLayoutPath;
-        if (!string.IsNullOrEmpty(smokeOutput) && saveSession is null) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-style.json");
+        if (!string.IsNullOrEmpty(smokeOutput) && saveSession is null) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-ui.json");
         BuildUi();
         var scale = BodyScale;
         ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, BodyTop);
@@ -435,10 +435,10 @@ internal sealed partial class DesignerGame
         if (blueprint.Columns.Count != 2 || blueprint.Rows.Count != 1) throw new InvalidOperationException("Designer resize/confirmation failed.");
         if (selectedColumn != 1 || selectedRow != 0) throw new InvalidOperationException("Preview cell selection failed.");
         if (blueprint.At(0, 1).Label != "") throw new InvalidOperationException("Selecting an empty cell copied the previous label.");
-        var created = System.IO.Path.Combine(smokeOutput!, "my-plan-2.stationery-style.json");
-        if (!File.Exists(created) || File.ReadAllText(System.IO.Path.Combine(smokeOutput!, "my-plan.stationery-style.json")) != "existing file")
+        var created = System.IO.Path.Combine(smokeOutput!, "my-plan-2.stationery-ui.json");
+        if (!File.Exists(created) || File.ReadAllText(System.IO.Path.Combine(smokeOutput!, "my-plan.stationery-ui.json")) != "existing file")
             throw new InvalidOperationException("New file creation or collision handling failed.");
-        outputPath = System.IO.Path.Combine(smokeOutput!, "plan.stationery-style.json");
+        outputPath = System.IO.Path.Combine(smokeOutput!, "plan.stationery-ui.json");
     }
 
     private void VerifyUntargetedSmoke()

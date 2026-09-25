@@ -26,7 +26,7 @@ static class DeveloperStyleTests
                 Check(hint.X >= panel.X && hint.Y >= panel.Y && hint.X + hint.Width <= panel.Width && hint.Y + hint.Height <= size.Item2);
                 Check(layout.Bounds["/developerViewport/developerWindow/copyPath"].Y + layout.Bounds["/developerViewport/developerWindow/copyPath"].Height <= panel.Y);
             }
-            using var stream = typeof(StationeryDeveloperStyle).Assembly.GetManifestResourceStream("StationeryUI.dev-window.stationery-style.json")!;
+            using var stream = typeof(StationeryDeveloperStyle).Assembly.GetManifestResourceStream("StationeryUI.dev-window.stationery-ui.json")!;
             using var reader = new StreamReader(stream);
             var json = reader.ReadToEnd().Replace("1000", "1200").Replace("56px", "80px").Replace("0.4", "0.6");
             File.WriteAllText(path, json);

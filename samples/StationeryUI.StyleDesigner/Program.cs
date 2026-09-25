@@ -39,7 +39,7 @@ internal sealed partial class DesignerGame : Game
     private int selectedRow, selectedColumn;
     private bool rebuild;
     private string message = "列数・行数とサイズを指定し、エクスポートから保存先を設定できます。";
-    private string outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "my-plan.stationery-style.json");
+    private string outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "my-plan.stationery-ui.json");
     private StationeryTheme theme = StationeryTheme.Light with { FontSize = 16, Padding = 4 };
     private int frames;
     private readonly string? smokeOutput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_OUTPUT");
@@ -243,7 +243,7 @@ internal sealed partial class DesignerGame : Game
             using var file = File.Create(Path.Combine(smokeOutput, "designer.png")); texture.SaveAsPng(file, texture.Width, texture.Height);
             ValidateDesignerSmoke();
             VerifyUntargetedSmoke();
-            if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") != "1") blueprint.Export(Path.Combine(smokeOutput, "plan.stationery-style.json"));
+            if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") != "1") blueprint.Export(Path.Combine(smokeOutput, "plan.stationery-ui.json"));
             Exit();
         }
         base.Draw(gameTime);

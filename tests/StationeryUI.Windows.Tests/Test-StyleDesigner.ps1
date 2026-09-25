@@ -21,8 +21,8 @@ try {
     $env:STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG = if ($CancelDialog) { '1' } else { '' }
     $env:STATIONERYUI_DESIGNER_TEST_DARK = if ($Dark) { '1' } else { '' }
     if ($Existing) {
-        $source = Join-Path $testDirectory 'demo.stationery-style.json'
-        Copy-Item -LiteralPath (Join-Path $workspace 'App_Data/demo.stationery-style.json') -Destination $source
+        $source = Join-Path $testDirectory 'demo.stationery-ui.json'
+        Copy-Item -LiteralPath (Join-Path $workspace 'App_Data/demo.stationery-ui.json') -Destination $source
         $sourceHash = (Get-FileHash -LiteralPath $source).Hash
         $env:STATIONERYUI_DESIGNER_TEST_INPUT = $source
     }
@@ -30,11 +30,11 @@ try {
     if (!$process.WaitForExit(30000)) { throw 'Style designer test timed out.' }
     if ($process.ExitCode -ne 0) { throw "Style designer failed: $($process.ExitCode). Check $testDirectory/error.txt" }
     if ($CancelDialog) {
-        if (Test-Path -LiteralPath (Join-Path $testDirectory 'plan.stationery-style.json')) { throw 'Cancel exported a file.' }
+        if (Test-Path -LiteralPath (Join-Path $testDirectory 'plan.stationery-ui.json')) { throw 'Cancel exported a file.' }
         Write-Output "PASS native dialog cancellation stays on first page: $testDirectory"
         return
     }
-    $json = Get-Content -LiteralPath (Join-Path $testDirectory 'plan.stationery-style.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $json = Get-Content -LiteralPath (Join-Path $testDirectory 'plan.stationery-ui.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($SavePoints) {
         if ((Get-FileHash -LiteralPath $source).Hash -ne $sourceHash) { throw 'Restore did not recover original bytes.' }
         if (!(Test-Path -LiteralPath (Join-Path $testDirectory 'savepoints.png'))) { throw 'Savepoint picker screenshot missing.' }

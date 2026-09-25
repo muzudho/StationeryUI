@@ -36,7 +36,7 @@ internal sealed partial class DesignerGame
         "theme" => "明るいテーマと暗いテーマを切り替えます。",
         "kind" => blueprint.IsImported ? "既存モデルの種類は保持します。" : "プレビューで選んだセルの文房具の種類を切り替えます。",
         "label" => blueprint.IsImported ? "このセルに配置されたモデルを表示しています。" : "選択したセルの表示名を入力します。右のプレビューへ反映されます。",
-        "output" => "新しい JSON の出力先。末尾は .stationery-style.json にします。既存ファイルは上書きしません。",
+        "output" => "新しい JSON の出力先。末尾は .stationery-ui.json にします。既存ファイルは上書きしません。",
         "export" => "出力先を設定するエクスポートダイアログを開きます。",
         "writeOutput" => "指定パスへ書き出し、以後のオートセーブ先にします。編集中の元ファイルと同じパスなら即時保存します。",
         "restore" => "バックアップのファイル名と変更日時を確認し、選んだセーブポイントへ戻します。最大20世代を保持します。",

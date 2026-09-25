@@ -12,7 +12,7 @@ bindings でこのパスを使い、モデルとレイアウトを結び付け�
 | ファイル | 内容 |
 |---|---|
 | `App_Data/demo.stationery-config.json` | スタイルの読み込み先とオートリロード設定 |
-| `App_Data/demo.stationery-style.json` | models の文房具構造、layouts の配置設定、bindings の対応付け |
+| `App_Data/demo.stationery-ui.json` | models の文房具構造、layouts の配置設定、bindings の対応付け |
 
 配布されたデモでは、実行ファイル横の `App_Data` にある設定を編集します。
 
@@ -27,13 +27,13 @@ Release 版で編集するのは出力先のコピー。再ビルドや再配布
 
 ```json
 {
-    "styleFile": "demo.stationery-style.json",
+    "styleFile": "demo.stationery-ui.json",
     "autoReload": true
 }
 ```
 
 `styleFile` は、この設定ファイルのあるフォルダーを基準とする相対パス、または絶対パス。
-省略時は `demo.stationery-style.json`。空文字や文字列以外はエラー。
+省略時は `demo.stationery-ui.json`。空文字や文字列以外はエラー。
 `autoReload` は `true` / `false` の真偽値で、省略時は `true`。
 
 **読み込み設定ファイルは常に監視する。** `autoReload` が制御するのはスタイルファイルの変更監視だけ。
@@ -275,7 +275,7 @@ F5 と自動リロードは継続する。
 | `dock-layout` の bottom が `0px` | 本文がページ全体を使い、インスペクターは非表示 |
 | `dock-layout` の bottom が `80px` | 本文の下に高さ80pxのインスペクターを確保 |
 
-デモのトップとレイアウトページは `pageDock`、スプリットページは `pageDockFullscreen` を使う。トップとレイアウトデモの下端は80px、スプリットペーンデモは0px。原本は `App_Data/demo.stationery-style.json`。
+デモのトップとレイアウトページは `pageDock`、スプリットページは `pageDockFullscreen` を使う。トップとレイアウトデモの下端は80px、スプリットペーンデモは0px。原本は `App_Data/demo.stationery-ui.json`。
 
 関連部分の抜粋：
 

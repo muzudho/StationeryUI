@@ -6,7 +6,7 @@ internal static class PageLayoutTests
 {
     public static void Run()
     {
-        var json = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json")))!;
+        var json = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-ui.json")))!;
         var settings = StationeryStyleSettings.Parse(json.ToJsonString());
         var model = DemoModelBinding.Create(settings);
         Check(settings.Layouts.Count(l => l.Type == "box-layout") == 3, "border demonstration and model-owned margin boxes remain");

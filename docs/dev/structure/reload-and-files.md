@@ -8,12 +8,12 @@
 
 ```json
 {
-    "styleFile": "app.stationery-style.json",
+    "styleFile": "app.stationery-ui.json",
     "autoReload": true
 }
 ```
 
-styleFile の相対パスは、この読み込み設定ファイルのあるフォルダーが基準です。絶対パスも使えます。省略すると `demo.stationery-style.json` になるため、別アプリでは明示指定を勧めます。autoReload は真偽値で、省略時 true です。
+styleFile の相対パスは、この読み込み設定ファイルのあるフォルダーが基準です。絶対パスも使えます。省略すると `demo.stationery-ui.json` になるため、別アプリでは明示指定を勧めます。autoReload は真偽値で、省略時 true です。
 
 **読み込み設定ファイルは常に監視**します。autoReload が制御するのはスタイルファイルの監視だけです。false にしても、読み込み設定を true に変更すれば再開できます。スタイル JSON 内の autoReload は監視方針になりません。
 
@@ -69,7 +69,7 @@ var configurationPath = string.IsNullOrWhiteSpace(configured)
 
 ```xml
 <ItemGroup>
-  <EmbeddedResource Include="Defaults/app.stationery-style.json"
+  <EmbeddedResource Include="Defaults/app.stationery-ui.json"
                     LogicalName="MyTool.DefaultStyle.json" />
 </ItemGroup>
 ```

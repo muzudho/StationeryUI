@@ -5,8 +5,8 @@
     <ProjectReference Include="../../src/StationeryUI.Windows/StationeryUI.Windows.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="../../App_Data/demo.stationery-style.json" Link="App_Data/demo.stationery-style.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-    <EmbeddedResource Include="../../App_Data/demo.stationery-style.json" LogicalName="StationeryUI.Demo.demo.stationery-style.json" />
+    <None Include="../../App_Data/demo.stationery-ui.json" Link="App_Data/demo.stationery-ui.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <EmbeddedResource Include="../../App_Data/demo.stationery-ui.json" LogicalName="StationeryUI.Demo.demo.stationery-ui.json" />
     <None Include="../../App_Data/demo.stationery-config.json" Link="App_Data/demo.stationery-config.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <AssemblyMetadata Include="StationeryConfigurationSource" Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../App_Data/demo.stationery-config.json'))" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>

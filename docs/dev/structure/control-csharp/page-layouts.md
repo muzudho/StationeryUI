@@ -32,4 +32,4 @@ binding の layout だけの変更ではモデルを再接続せず、コント�
 PageLayoutTests は全幅の 80px、本文領域、フルスクリーン、小さいウィンドウ、無効な binding、再読み込みと Id の維持を検査する。
 Test-DemoPages.ps1 は通常／150% の明暗テーマで、ヒントの表示・解除、ページ移動、分割操作を検査する。
 
-設定例と移行方法は [ユーザー向けスタイル設定](../user/stationery-style-settings.md) を参照。
+設定例と移行方法は [ユーザー向けスタイル設定](../user/stationery-ui-settings.md) を参照。

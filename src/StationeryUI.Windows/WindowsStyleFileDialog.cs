@@ -25,7 +25,7 @@ public static class WindowsStyleFileDialog
         using var dialog = new OpenFileDialog
         {
             Title = "既存のスタイル設定ファイルを選択",
-            Filter = "文房具 UI スタイル (*.stationery-style.json)|*.stationery-style.json|JSON ファイル (*.json)|*.json",
+            Filter = "文房具 UI スタイル (*.stationery-ui.json)|*.stationery-ui.json|JSON ファイル (*.json)|*.json",
             CheckFileExists = true,
             CheckPathExists = true,
             Multiselect = false,

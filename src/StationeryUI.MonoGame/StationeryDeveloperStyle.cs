@@ -64,7 +64,7 @@ public sealed class StationeryDeveloperStyle
     public static StationeryDeveloperStyle Load(string? filePath = null)
     {
         var assembly = typeof(StationeryDeveloperStyle).Assembly;
-        using var stream = assembly.GetManifestResourceStream("StationeryUI.dev-window.stationery-style.json")
+        using var stream = assembly.GetManifestResourceStream("StationeryUI.dev-window.stationery-ui.json")
             ?? throw new InvalidOperationException("Missing embedded developer-window style.");
         using var reader = new StreamReader(stream);
         var fallback = Parse(reader.ReadToEnd());
@@ -72,7 +72,7 @@ public sealed class StationeryDeveloperStyle
         if (string.IsNullOrWhiteSpace(filePath))
             filePath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .FirstOrDefault(a => a.Key == "StationeryDeveloperStyleSource")?.Value
-                ?? Path.Combine(AppContext.BaseDirectory, "App_Data", "dev-window.stationery-style.json");
+                ?? Path.Combine(AppContext.BaseDirectory, "App_Data", "dev-window.stationery-ui.json");
         try
         {
             fallback.FilePath = Path.GetFullPath(filePath);

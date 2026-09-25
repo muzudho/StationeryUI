@@ -22,7 +22,7 @@ internal static class SplitPaneTests
         Check(a.First.Height == 0 && a.Second.Height == 0 && a.Divider.Height == 5, "tiny viewport");
         split.Drag(new(0, 0, 100, 108), -100, 4);
         Check(split.Arrange(new(0, 0, 100, 108)).First.Height == 20, "minimum start clamp");
-        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-style.json"));
+        var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-ui.json"));
         var settings = StationeryStyleSettings.Parse(source);
         var result = StationeryLayoutEngine.Arrange(settings, 1000, 780);
         Check(result.Bounds["/demo/splitPaneDemoPage/body/verticalSplit/leftPane"].Width > 0, "bound split content");

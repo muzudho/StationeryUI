@@ -1,11 +1,11 @@
-﻿namespace StationeryUI.Styling;
+namespace StationeryUI.Styling;
 
 using System.Text.Json;
 
 /// <summary>Loading policy, stored separately from visual styles.</summary>
 public sealed record StationeryStyleConfiguration(string StyleFile, bool AutoReload)
 {
-    public static StationeryStyleConfiguration Default { get; } = new("demo.stationery-style.json", true);
+    public static StationeryStyleConfiguration Default { get; } = new("demo.stationery-ui.json", true);
 
     public static StationeryStyleConfiguration Parse(string json)
     {

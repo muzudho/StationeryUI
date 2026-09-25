@@ -3,7 +3,7 @@
 Formats JSON with compact leaf objects and arrays, wrapping at 80 columns.
 
 .EXAMPLE
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/Format-Json.ps1 App_Data/demo.stationery-style.json
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/Format-Json.ps1 App_Data/demo.stationery-ui.json
 #>
 param(
     [Parameter(Mandatory = $true, Position = 0)]
