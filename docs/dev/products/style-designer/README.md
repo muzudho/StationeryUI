@@ -10,7 +10,7 @@ StyleBlueprint など設計・出力専用のコードは設計ツールのプ�
 配布用アプリには依存 DLL が含まれるが、ライブラリーを使うアプリへ設計ツールを同梱する必要はない。
 
 設計ツールの UI は文房具 UI で描画する。入力中の数値は文字列として保持し、エクスポート前に StationeryStyleSettings.Parse で検証する。
-プレビューには同じ StationeryLayoutEngine を使う。出力は models/layouts/bindings 形式の UTF-8 JSON。日本語 label は設計メタデータとして保持する。
+プレビューには同じ StationeryLayoutEngine を使う。新規デザインの出力は models/layouts/bindingsV2 形式の UTF-8 JSON。日本語 label は設計メタデータとして保持する。
 エクスポートは隣接する一時ファイルへ完成した JSON を書いてから、新しい名前に移動する。移動時に同名ファイルがあれば失敗し、上書きしない。
 
 ## ２ページ構成と既存ファイル

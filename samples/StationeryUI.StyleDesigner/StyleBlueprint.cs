@@ -56,9 +56,10 @@ public sealed class StyleBlueprint
             {
                 ["models"] = new JsonArray(new JsonObject { ["id"] = "previewRoot", ["type"] = "viewport" }),
                 ["layouts"] = new JsonArray(layout),
-                ["bindings"] = new JsonArray(CanEditPanel
-                    ? new JsonObject { ["layout"] = selectedId, ["model"] = "previewRoot" }
-                    : new JsonObject { ["layout"] = selectedId, ["parentModel"] = "previewRoot", ["childrenModel"] = new JsonArray() })
+                ["bindingsV2"] = new JsonObject
+                {
+                    ["ctrlPreviewRoot"] = $"root:previewRoot@{selectedId!.Split('/')[1]}"
+                }
             };
             json = root.ToJsonString();
             settings = StationeryStyleSettings.Parse(json);
@@ -231,7 +232,7 @@ public sealed class StyleBlueprint
             return Serialize(draft);
         }
         var models = new JsonArray();
-        var bindings = new JsonArray();
+        var bindingsV2 = new JsonObject();
         var cells = new JsonArray();
         for (var row = 0; row < Rows.Count; row++)
             for (var column = 0; column < Columns.Count; column++)
@@ -241,8 +242,8 @@ public sealed class StyleBlueprint
                 var id = $"cellR{row + 1}C{column + 1}";
                 models.Add(new JsonObject { ["id"] = id, ["type"] = cell.Kind, ["label"] = cell.Label });
                 cells.Add(new JsonObject { ["row"] = row, ["col"] = column });
-                bindings.Add(new JsonObject { ["model"] = id,
-                    ["cell"] = new JsonObject { ["row"] = row, ["col"] = column } });
+                var handle = "ctrl" + char.ToUpperInvariant(id[0]) + id[1..];
+                bindingsV2[handle] = $"root:design@designRoot/single:mainPage@mainGrid/{row + 1}y.{column + 1}x.1w.1h:{id}";
             }
         var root = new JsonObject
         {
@@ -251,15 +252,16 @@ public sealed class StyleBlueprint
                 ["id"] = "design", ["type"] = "viewport", ["children"] = new JsonArray(new JsonObject
                 { ["id"] = "mainPage", ["type"] = "page", ["children"] = models })
             }),
-            ["layouts"] = new JsonArray(new JsonObject
-            {
-                ["id"] = "mainGrid", ["type"] = "grid-layout", ["cells"] = cells,
-                ["row-definitions"] = new JsonArray(Rows.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
-                ["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
-                ["margin"] = EdgeObject("margin"), ["padding"] = EdgeObject("padding")
-            }),
-            ["bindings"] = new JsonArray(new JsonObject
-            { ["layout"] = "/mainGrid", ["parentModel"] = "design/mainPage", ["childrenModel"] = bindings })
+            ["layouts"] = new JsonArray(
+                new JsonObject { ["id"] = "designRoot", ["type"] = "box-layout" },
+                new JsonObject
+                {
+                    ["id"] = "mainGrid", ["type"] = "grid-layout", ["cells"] = cells,
+                    ["row-definitions"] = new JsonArray(Rows.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
+                    ["column-definitions"] = new JsonArray(Columns.Select(t => JsonValue.Create(t.Length())).ToArray<JsonNode?>()),
+                    ["margin"] = EdgeObject("margin"), ["padding"] = EdgeObject("padding")
+                }),
+            ["bindingsV2"] = bindingsV2
         };
         return Serialize(root);
     }
