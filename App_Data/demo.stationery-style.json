@@ -58,7 +58,7 @@
                                 {
                                     "type": "TextBox",
                                     "name": "vNameField",
-                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 1, "col": 1 },
                                     "controlHandle": "ctrlNameField",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField"
@@ -67,7 +67,7 @@
                                 {
                                     "type": "TextBox",
                                     "name": "vMemoField",
-                                    "place": { "row": 2, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 2, "col": 1 },
                                     "controlHandle": "ctrlMemoField",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlMemoField"
@@ -76,7 +76,7 @@
                                 {
                                     "type": "Button",
                                     "name": "vThemeButton",
-                                    "place": { "row": 3, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 3, "col": 1 },
                                     "controlHandle": "ctrlThemeButton",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlThemeButton"
@@ -85,7 +85,7 @@
                                 {
                                     "type": "Button",
                                     "name": "vScaleButton",
-                                    "place": { "row": 3, "col": 2, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 3, "col": 2 },
                                     "controlHandle": "ctrlScaleButton",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlScaleButton"
@@ -94,7 +94,7 @@
                                 {
                                     "type": "Button",
                                     "name": "vApplyTitleButton",
-                                    "place": { "row": 4, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 4, "col": 1 },
                                     "controlHandle": "ctrlApplyTitleButton",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlApplyTitleButton"
@@ -103,7 +103,7 @@
                                 {
                                     "type": "Button",
                                     "name": "vOpenDialogButton",
-                                    "place": { "row": 5, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 5, "col": 1 },
                                     "controlHandle": "ctrlOpenDialogButton",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlOpenDialogButton"
@@ -112,7 +112,7 @@
                                 {
                                     "type": "Tree",
                                     "name": "vSampleTree",
-                                    "place": { "row": 1, "col": 2, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 1, "col": 2 },
                                     "controlHandle": "ctrlSampleTree",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree"
@@ -130,7 +130,7 @@
                                 {
                                     "type": "Link",
                                     "name": "vSplitPaneDemoLink",
-                                    "place": { "row": 5, "col": 2, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 5, "col": 2 },
                                     "controlHandle": "ctrlSplitPaneDemoLink",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSplitPaneDemoLink"
@@ -139,7 +139,7 @@
                                 {
                                     "type": "Link",
                                     "name": "vLayoutDemoLink",
-                                    "place": { "row": 4, "col": 2, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 4, "col": 2 },
                                     "controlHandle": "ctrlLayoutDemoLink",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlLayoutDemoLink"
@@ -164,7 +164,7 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vToolHint",
-                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 1, "col": 1 },
                                     "controlHandle": "ctrlToolHint",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint"
@@ -248,7 +248,7 @@
                                         "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" },
                                         "margin": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" }
                                     },
-                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 1, "col": 1 },
                                     "controlHandle": "ctrlTopDemoLink",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
@@ -257,7 +257,7 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vTitle",
-                                    "place": { "row": 1, "col": 2, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 1, "col": 2 },
                                     "controlHandle": "ctrlTitle",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTitle"
@@ -266,7 +266,7 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vBoxTitle",
-                                    "place": { "row": 2, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 2, "col": 1 },
                                     "controlHandle": "ctrlBoxTitle",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxTitle"
@@ -282,7 +282,7 @@
                                         "margin": { "top": "8px", "right": "8px", "bottom": "8px", "left": "8px" },
                                         "border": { "top": "2px", "right": "2px", "bottom": "2px", "left": "2px" }
                                     },
-                                    "place": { "row": 3, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 3, "col": 1 },
                                     "controlHandle": "ctrlBoxContent",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxContent"
@@ -291,7 +291,7 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vGridTitle",
-                                    "place": { "row": 2, "col": 2, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 2, "col": 2 },
                                     "controlHandle": "ctrlGridTitle",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridTitle"
@@ -311,7 +311,7 @@
                                                 "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" },
                                                 "margin": { "top": "16px", "right": "16px", "bottom": "16px", "left": "16px" }
                                             },
-                                            "place": { "row": 1, "col": 1, "colspan": 2, "rowspan": 1 },
+                                            "place": { "row": 1, "col": 1, "colspan": 2 },
                                             "controlHandle": "ctrlSpanCell",
                                             "modelPath": {
                                                 "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlSpanCell"
@@ -325,7 +325,7 @@
                                                 {
                                                     "type": "TextBlock",
                                                     "name": "vNestedA",
-                                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                                    "place": { "row": 1, "col": 1 },
                                                     "controlHandle": "ctrlNestedA",
                                                     "modelPath": {
                                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedA"
@@ -334,7 +334,7 @@
                                                 {
                                                     "type": "TextBlock",
                                                     "name": "vNestedB",
-                                                    "place": { "row": 1, "col": 2, "colspan": 1, "rowspan": 1 },
+                                                    "place": { "row": 1, "col": 2 },
                                                     "controlHandle": "ctrlNestedB",
                                                     "modelPath": {
                                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedB"
@@ -343,7 +343,7 @@
                                                 {
                                                     "type": "TextBlock",
                                                     "name": "vNestedC",
-                                                    "place": { "row": 2, "col": 1, "colspan": 1, "rowspan": 1 },
+                                                    "place": { "row": 2, "col": 1 },
                                                     "controlHandle": "ctrlNestedC",
                                                     "modelPath": {
                                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedC"
@@ -352,7 +352,7 @@
                                                 {
                                                     "type": "TextBlock",
                                                     "name": "vNestedD",
-                                                    "place": { "row": 2, "col": 2, "colspan": 1, "rowspan": 1 },
+                                                    "place": { "row": 2, "col": 2 },
                                                     "controlHandle": "ctrlNestedD",
                                                     "modelPath": {
                                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
@@ -364,14 +364,14 @@
                                         {
                                             "type": "TextBlock",
                                             "name": "vGridFooter",
-                                            "place": { "row": 3, "col": 1, "colspan": 3, "rowspan": 1 },
+                                            "place": { "row": 3, "col": 1, "colspan": 3 },
                                             "controlHandle": "ctrlGridFooter",
                                             "modelPath": {
                                                 "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlBody": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridFooter"
                                             }
                                         }
                                     ],
-                                    "place": { "row": 3, "col": 2, "colspan": 1, "rowspan": 1 }
+                                    "place": { "row": 3, "col": 2 }
                                 }
                             ],
                             "place": "center_2"
@@ -392,7 +392,7 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vToolHint",
-                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 1, "col": 1 },
                                     "controlHandle": "ctrlToolHint",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
@@ -442,7 +442,7 @@
                                         "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" },
                                         "margin": { "top": "4px", "right": "4px", "bottom": "4px", "left": "4px" }
                                     },
-                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 1, "col": 1 },
                                     "controlHandle": "ctrlTopDemoLink",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink"
@@ -479,7 +479,7 @@
                                             }
                                         }
                                     ],
-                                    "place": { "row": 2, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 2, "col": 1 },
                                     "controlHandle": "ctrlVerticalSplit",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit"
@@ -516,7 +516,7 @@
                                             }
                                         }
                                     ],
-                                    "place": { "row": 3, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 3, "col": 1 },
                                     "controlHandle": "ctrlHorizontalSplit",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlBody": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit"
@@ -541,7 +541,7 @@
                                 {
                                     "type": "TextBlock",
                                     "name": "vToolHint",
-                                    "place": { "row": 1, "col": 1, "colspan": 1, "rowspan": 1 },
+                                    "place": { "row": 1, "col": 1 },
                                     "controlHandle": "ctrlToolHint",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint"

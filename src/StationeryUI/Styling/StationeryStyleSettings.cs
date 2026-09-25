@@ -1115,10 +1115,11 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
             if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var index)) return index.ToString(CultureInfo.InvariantCulture);
             if (value.ValueKind == JsonValueKind.Object)
             {
-                int Part(string key, string alternate) => value.TryGetProperty(key, out var part) && part.TryGetInt32(out var number)
+                int Part(string key, string alternate, int? defaultValue = null) => value.TryGetProperty(key, out var part) && part.TryGetInt32(out var number)
                     ? number : value.TryGetProperty(alternate, out part) && part.TryGetInt32(out number)
-                    ? number : throw new JsonException($"View node '{nodeName}'.place.{key} must be an integer.");
-                return $"{Part("row", "y")}y_{Part("col", "x")}x_{Part("colspan", "w")}w_{Part("rowspan", "h")}h".Replace('_', '.');
+                    ? number : !value.TryGetProperty(key, out _) && !value.TryGetProperty(alternate, out _) && defaultValue is { } fallback ? fallback
+                    : throw new JsonException($"View node '{nodeName}'.place.{key} must be an integer.");
+                return $"{Part("row", "y")}y_{Part("col", "x")}x_{Part("colspan", "w", 1)}w_{Part("rowspan", "h", 1)}h".Replace('_', '.');
             }
             throw new JsonException($"View node '{nodeName}'.place must be a string, integer or grid address object.");
         }

@@ -18,6 +18,24 @@ $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
 $jsonText = [System.IO.File]::ReadAllText($resolvedPath)
 $document = ConvertFrom-Json -InputObject $jsonText
 
+function Remove-UnitSpans($Value) {
+    if ($Value -is [System.Array]) {
+        foreach ($item in $Value) { Remove-UnitSpans $item }
+        return
+    }
+    if ($Value -isnot [System.Management.Automation.PSCustomObject]) { return }
+    foreach ($property in @($Value.PSObject.Properties)) {
+        Remove-UnitSpans $property.Value
+        if ($property.Name -in @('colspan', 'rowspan') -and
+            ($property.Value -is [int] -or $property.Value -is [long] -or $property.Value -is [double]) -and
+            $property.Value -eq 1) {
+            $Value.PSObject.Properties.Remove($property.Name)
+        }
+    }
+}
+
+Remove-UnitSpans $document
+
 function Test-JsonContainer($Value) {
     return $null -ne $Value -and ($Value -is [System.Array] -or $Value -is [System.Management.Automation.PSCustomObject])
 }
