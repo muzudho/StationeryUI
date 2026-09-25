@@ -547,126 +547,126 @@
     ],
     "bindingsV2": {
         "ctrlNameField": {
-            "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/1y.1x.1w.1h",
+            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[1y_1x_1w_1h]",
             "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField"
         },
         "ctrlMemoField": {
-            "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/2y.1x.1w.1h",
+            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[2y_1x_1w_1h]",
             "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlMemoField"
         },
         "ctrlThemeButton": {
-            "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/3y.1x.1w.1h",
+            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[3y_1x_1w_1h]",
             "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlThemeButton"
         },
         "ctrlScaleButton": {
-            "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/3y.2x.1w.1h",
+            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[3y_2x_1w_1h]",
             "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlScaleButton"
         },
         "ctrlApplyTitleButton": {
-            "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/4y.1x.1w.1h",
+            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[4y_1x_1w_1h]",
             "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlApplyTitleButton"
         },
         "ctrlOpenDialogButton": {
-            "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/5y.1x.1w.1h",
+            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[5y_1x_1w_1h]",
             "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlOpenDialogButton"
         },
         "ctrlSampleTree": {
-            "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/1y.2x.1w.1h",
+            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[1y_2x_1w_1h]",
             "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree"
         },
         "ctrlSplitPaneDemoLink": {
-            "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/5y.2x.1w.1h",
+            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[5y_2x_1w_1h]",
             "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSplitPaneDemoLink"
         },
         "ctrlLayoutDemoLink": {
-            "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/4y.2x.1w.1h",
+            "layoutPath": "tabbedPages[0].pageDock[center_2].topDemoLayout[4y_2x_1w_1h]",
             "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlLayoutDemoLink"
         },
         "ctrlVerticalSplit": {
-            "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/2y.1x.1w.1h:verticalSplitLayout",
+            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout",
             "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit"
         },
         "ctrlHorizontalSplit": {
-            "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/3y.1x.1w.1h:horizontalSplitLayout",
+            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout",
             "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit"
         },
         "ctrlLeftPane": {
-            "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/2y.1x.1w.1h:verticalSplitLayout/first",
+            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout.first",
             "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlLeftPane"
         },
         "ctrlRightPane": {
-            "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/2y.1x.1w.1h:verticalSplitLayout/second",
+            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[2y_1x_1w_1h].verticalSplitLayout.second",
             "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlRightPane"
         },
         "ctrlTopPane": {
-            "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/3y.1x.1w.1h:horizontalSplitLayout/first",
+            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout.first",
             "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlTopPane"
         },
         "ctrlBottomPane": {
-            "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/3y.1x.1w.1h:horizontalSplitLayout/second",
+            "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[3y_1x_1w_1h].horizontalSplitLayout.second",
             "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlBottomPane"
         },
         "ctrlTitle": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/1y.2x.1w.1h",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_2x_1w_1h]",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTitle"
         },
         "ctrlBoxTitle": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/2y.1x.1w.1h",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[2y_1x_1w_1h]",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxTitle"
         },
         "ctrlBoxContent": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.1x.1w.1h:box",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_1x_1w_1h].box",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxContent"
         },
         "ctrlGridTitle": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/2y.2x.1w.1h",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[2y_2x_1w_1h]",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridTitle"
         },
         "ctrlSpanCell": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.1x.2w.1h:spanCellBox",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_1x_2w_1h].spanCellBox",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlSpanCell"
         },
         "ctrlGridFooter": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/3y.1x.1w.3h",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[3y_1x_1w_3h]",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridFooter"
         },
         "ctrlNestedA": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.1x.1w.1h",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_1x_1w_1h]",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedA"
         },
         "ctrlNestedB": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.2x.1w.1h",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[1y_2x_1w_1h]",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedB"
         },
         "ctrlNestedC": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.1x.1w.1h",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_1x_1w_1h]",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedC"
         },
         "ctrlNestedD": {
-            "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.2x.1w.1h",
+            "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[3y_2x_1w_1h].grid[1y_2x_2w_2h].nestedGrid[2y_2x_1w_1h]",
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
         },
         "ctrlTopDemoLink": {
             "lytSplitPaneDemoPage": {
-                "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/1y.1x.1w.1h",
+                "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[1y_1x_1w_1h]",
                 "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink"
             },
             "lytLayoutDemoPage": {
-                "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/1y.1x.1w.1h:topDemoLinkBox",
+                "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_1x_1w_1h].topDemoLinkBox",
                 "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
             }
         },
         "ctrlToolHint": {
             "lytTopDemoPage": {
-                "layoutPath": "root:tabbedPages/0:pageDock/bottom.1:inspectorContents/1y.1x.1w.1h",
+                "layoutPath": "tabbedPages[0].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]",
                 "modelPath": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint"
             },
             "lytSplitPaneDemoPage": {
-                "layoutPath": "root:tabbedPages/1:pageDockFullscreen/bottom.1:inspectorContents/1y.1x.1w.1h",
+                "layoutPath": "tabbedPages[1].pageDockFullscreen[bottom_1].inspectorContents[1y_1x_1w_1h]",
                 "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint"
             },
             "lytLayoutDemoPage": {
-                "layoutPath": "root:tabbedPages/2:pageDock/bottom.1:inspectorContents/1y.1x.1w.1h",
+                "layoutPath": "tabbedPages[2].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]",
                 "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
             }
         }

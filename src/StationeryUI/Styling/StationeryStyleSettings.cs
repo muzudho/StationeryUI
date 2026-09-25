@@ -926,12 +926,53 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
         if (value.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(value.GetString()))
             throw new JsonException($"{path}: expected a nonempty layout path string.");
         var layoutPath = value.GetString()!;
+        if (!layoutPath.StartsWith("root:", StringComparison.Ordinal))
+            layoutPath = NormalizeBracketLayoutPath(layoutPath, path);
         if (layoutPath.Any(char.IsWhiteSpace) || (layoutPath != "root" && !layoutPath.StartsWith("root:", StringComparison.Ordinal)) ||
             layoutPath.EndsWith('/') || layoutPath.Contains("//", StringComparison.Ordinal) ||
             layoutPath.Split('/').Any(segment => segment.Length == 0 || segment is "." or ".." || segment.Count(c => c == ':') > 1 || segment.StartsWith(':') || segment.EndsWith(':') ||
                 segment.Split(':').Any(part => part.StartsWith("mdl", StringComparison.Ordinal) && part.Length > 3 && char.IsUpper(part[3]))))
             throw new JsonException($"{path}: layout paths must be root-based slash-separated routes without whitespace or empty segments.");
         return layoutPath;
+    }
+
+    private static string NormalizeBracketLayoutPath(string pathValue, string path)
+    {
+        // Public bracket syntax: tabbedPages[0].pageDock[center_2].grid[1y_1x_2w_1h].
+        // Normalize to the existing internal route grammar so all route resolution stays shared.
+        var tokens = pathValue.Split('.');
+        if (tokens.Length == 0 || tokens.Any(string.IsNullOrEmpty))
+            throw new JsonException($"{path}: expected a dot-separated layout path.");
+
+        static bool TryToken(string token, out string name, out string? cell)
+        {
+            name = token;
+            cell = null;
+            var open = token.IndexOf('[');
+            if (open < 0) return token.IndexOf(']') < 0 && token.Length > 0;
+            if (open == 0 || token[^1] != ']' || token.IndexOf('[', open + 1) >= 0 || token.IndexOf(']') != token.Length - 1)
+                return false;
+            name = token[..open];
+            cell = token[(open + 1)..^1];
+            return name.Length > 0 && cell.Length > 0;
+        }
+
+        if (!TryToken(tokens[0], out var rootName, out var pendingCell))
+            throw new JsonException($"{path}: the first dot-syntax segment must be a root layout ID.");
+        var route = new System.Text.StringBuilder("root:").Append(rootName);
+        for (var i = 1; i < tokens.Length; i++)
+        {
+            if (!TryToken(tokens[i], out var name, out var cell))
+                throw new JsonException($"{path}: invalid dot-syntax segment '{tokens[i]}'.");
+            route.Append('/');
+            if (pendingCell is not null)
+                route.Append(pendingCell.Replace('_', '.')).Append(':').Append(name);
+            else
+                route.Append(name);
+            pendingCell = cell;
+        }
+        if (pendingCell is not null) route.Append('/').Append(pendingCell.Replace('_', '.'));
+        return route.ToString();
     }
 
     private static string ReadModelPath(JsonElement value, string path)
