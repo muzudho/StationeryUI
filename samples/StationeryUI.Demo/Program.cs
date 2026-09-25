@@ -154,7 +154,7 @@ internal sealed partial class Demo : Game
             appliedStyle = styles.Current;
         }
         var elements = styledElements.Concat(splitElements).Concat(layoutElements).ToArray();
-        var activePageKey = "lyt" + char.ToUpperInvariant(activePage[0]) + activePage[1..];
+        var activePageKey = "key" + char.ToUpperInvariant(activePage[0]) + activePage[1..];
         var controlLayoutKeys = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var (handle, binding) in styles.Current.BindingsV2.Where(pair => pair.Value.LayoutPath is null))
         {

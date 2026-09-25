@@ -47,7 +47,7 @@ internal sealed partial class Demo
         styledElements.Add(forwardLink);
         splitUi = new(GraphicsDevice, input!, family => new WindowsTextRasterizer(family), modelBinding.SplitPage);
         backLink = splitUi.AddLink(modelBinding.SplitControls["topDemoLink"], new(), "← トップデモページに戻る", () => Navigate("topDemoPage"));
-        backLink.LayoutKey = "lytSplitPaneDemoPage";
+        backLink.LayoutKey = "keySplitPaneDemoPage";
         verticalSplit = splitUi.AddSplitPane(modelBinding.SplitControls["verticalSplit"], new(), "垂直分割（左右）", new());
         horizontalSplit = splitUi.AddSplitPane(modelBinding.SplitControls["horizontalSplit"], new(), "水平分割（上下）", new(true));
         var left = splitUi.AddTextBox(modelBinding.SplitControls["leftPane"], new(), "左ペーン", "垂直分割：左ペーン");
@@ -80,9 +80,9 @@ internal sealed partial class Demo
             };
         CreateLayoutPage();
         topToolHint.ControlHandle = splitToolHint.ControlHandle = layoutToolHint.ControlHandle = "ctrlToolHint";
-        topToolHint.LayoutKey = "lytTopDemoPage";
-        splitToolHint.LayoutKey = "lytSplitPaneDemoPage";
-        layoutToolHint.LayoutKey = "lytLayoutDemoPage";
+        topToolHint.LayoutKey = "keyTopDemoPage";
+        splitToolHint.LayoutKey = "keySplitPaneDemoPage";
+        layoutToolHint.LayoutKey = "keyLayoutDemoPage";
         layoutLink.ToolHint = "ボックスとグリッドの入れ子を、レイアウトデモページで確認できます。";
         Navigate("topDemoPage");
     }

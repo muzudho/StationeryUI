@@ -887,17 +887,33 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
                 throw new JsonException($"{path}: control handles must be nonempty and contain no whitespace.");
             if (result.ContainsKey(property.Name)) throw new JsonException($"{path}: duplicate control handle.");
             RequireObject(property.Value, path);
-            if (property.Value.TryGetProperty("modelPath", out _) || property.Value.TryGetProperty("layoutPath", out _))
+            var hasModelPath = property.Value.TryGetProperty("modelPath", out var modelPathValue);
+            var hasLayoutPath = property.Value.TryGetProperty("layoutPath", out var layoutPathValue);
+            if (hasModelPath || hasLayoutPath)
             {
-                if (!property.Value.TryGetProperty("modelPath", out var modelPathValue) ||
-                    !property.Value.TryGetProperty("layoutPath", out var layoutPathValue) ||
+                if (!property.Value.TryGetProperty("modelPath", out modelPathValue) ||
+                    !property.Value.TryGetProperty("layoutPath", out layoutPathValue) ||
                     property.Value.EnumerateObject().Any(p => p.Name is not ("modelPath" or "layoutPath")))
                     throw new JsonException($"{path}: expected exactly modelPath and layoutPath.");
-                var modelPath = ReadModelPath(modelPathValue, path + ".modelPath");
-                var layoutPath = ReadBindingPath(layoutPathValue, path + ".layoutPath");
-                result.Add(property.Name, new(layoutPath, new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(StringComparer.Ordinal)))
-                { ModelReference = modelPath });
-                continue;
+                if (modelPathValue.ValueKind == JsonValueKind.String && layoutPathValue.ValueKind == JsonValueKind.String)
+                {
+                    var modelPath = ReadModelPath(modelPathValue, path + ".modelPath");
+                    var layoutPath = ReadBindingPath(layoutPathValue, path + ".layoutPath");
+                    result.Add(property.Name, new(layoutPath, new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(StringComparer.Ordinal)))
+                    { ModelReference = modelPath });
+                    continue;
+                }
+                if (modelPathValue.ValueKind == JsonValueKind.Object && layoutPathValue.ValueKind == JsonValueKind.Object)
+                {
+                    var keyedModelMap = ReadPathMap(modelPathValue, path + ".modelPath", ReadModelPath);
+                    var keyedLayoutMap = ReadPathMap(layoutPathValue, path + ".layoutPath", ReadBindingPath);
+                    if (keyedLayoutMap.Count == 0 || !keyedLayoutMap.Keys.ToHashSet(StringComparer.Ordinal).SetEquals(keyedModelMap.Keys))
+                        throw new JsonException($"{path}: modelPath and layoutPath must define the same nonempty set of keys.");
+                    result.Add(property.Name, new(null, new ReadOnlyDictionary<string, string>(keyedLayoutMap))
+                    { ModelReferences = new ReadOnlyDictionary<string, string>(keyedModelMap) });
+                    continue;
+                }
+                throw new JsonException($"{path}: modelPath and layoutPath must both be strings or both be keyed objects.");
             }
             var keyedPaths = new Dictionary<string, string>(StringComparer.Ordinal);
             var keyedModels = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -919,6 +935,19 @@ public sealed record StationeryStyleSettings(IReadOnlyList<StationeryModelNode> 
             { ModelReferences = new ReadOnlyDictionary<string, string>(keyedModels) });
         }
         return new ReadOnlyDictionary<string, StationeryControlBindingV2>(result);
+
+        static Dictionary<string, string> ReadPathMap(JsonElement value, string mapPath,
+            Func<JsonElement, string, string> readValue)
+        {
+            var entries = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var entry in value.EnumerateObject())
+            {
+                if (string.IsNullOrWhiteSpace(entry.Name) || entry.Name.Any(char.IsWhiteSpace))
+                    throw new JsonException($"{mapPath}: keys must be nonempty and contain no whitespace.");
+                entries.Add(entry.Name, readValue(entry.Value, mapPath + "." + entry.Name));
+            }
+            return entries;
+        }
     }
 
     private static string ReadBindingPath(JsonElement value, string path)

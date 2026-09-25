@@ -647,27 +647,25 @@
             "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
         },
         "ctrlTopDemoLink": {
-            "lytSplitPaneDemoPage": {
-                "layoutPath": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[1y_1x_1w_1h]",
-                "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink"
+            "layoutPath": {
+                "keySplitPaneDemoPage": "tabbedPages[1].pageDockFullscreen[center_2].splitDemoLayout[1y_1x_1w_1h]",
+                "keyLayoutDemoPage": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_1x_1w_1h].topDemoLinkBox"
             },
-            "lytLayoutDemoPage": {
-                "layoutPath": "tabbedPages[2].pageDock[center_2].layoutShowcase[1y_1x_1w_1h].topDemoLinkBox",
-                "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
+            "modelPath": {
+                "keySplitPaneDemoPage": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink",
+                "keyLayoutDemoPage": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
             }
         },
         "ctrlToolHint": {
-            "lytTopDemoPage": {
-                "layoutPath": "tabbedPages[0].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]",
-                "modelPath": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint"
+            "layoutPath": {
+                "keyTopDemoPage": "tabbedPages[0].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]",
+                "keySplitPaneDemoPage": "tabbedPages[1].pageDockFullscreen[bottom_1].inspectorContents[1y_1x_1w_1h]",
+                "keyLayoutDemoPage": "tabbedPages[2].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]"
             },
-            "lytSplitPaneDemoPage": {
-                "layoutPath": "tabbedPages[1].pageDockFullscreen[bottom_1].inspectorContents[1y_1x_1w_1h]",
-                "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint"
-            },
-            "lytLayoutDemoPage": {
-                "layoutPath": "tabbedPages[2].pageDock[bottom_1].inspectorContents[1y_1x_1w_1h]",
-                "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
+            "modelPath": {
+                "keyTopDemoPage": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint",
+                "keySplitPaneDemoPage": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint",
+                "keyLayoutDemoPage": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
             }
         }
     }
