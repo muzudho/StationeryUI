@@ -1,4 +1,12 @@
 {
+    "viewports": [
+        {
+            "type": "Viewport",
+            "name": "mainViewport",
+            "children": {
+            }
+        }
+    ],
     "controlTree": {
         "ctrlNameField": {
             "layoutPath": {
