@@ -30,12 +30,12 @@ public sealed class StationeryDeveloperStyle
             splitBinding.LayoutPath is not { } splitRoute)
             throw new JsonException("bindingsV2 must bind ctrlInspectorSplit to the inspectorSplit model.");
         var splitLayout = settings.Layouts.SingleOrDefault(layout => layout.Type == "split-pane" &&
-            splitRoute.Contains("@" + layout.Id, StringComparison.Ordinal));
+            splitRoute.Contains(":" + layout.Id, StringComparison.Ordinal));
         if (splitLayout?.Split is not { } splitOptions ||
             !settings.BindingsV2.Values.Any(binding => binding.ModelPath == "/developerViewport/developerWindow/inspectorSplit/stationeryTree" &&
-                binding.LayoutPath?.EndsWith("/first:stationeryTree", StringComparison.Ordinal) == true) ||
+                binding.LayoutPath?.EndsWith("/first", StringComparison.Ordinal) == true) ||
             !settings.BindingsV2.Values.Any(binding => binding.ModelPath == "/developerViewport/developerWindow/inspectorSplit/details" &&
-                binding.LayoutPath?.EndsWith("/second:details", StringComparison.Ordinal) == true))
+                binding.LayoutPath?.EndsWith("/second", StringComparison.Ordinal) == true))
             throw new JsonException("The inspector split must bind stationeryTree first and details second in bindingsV2.");
         SplitOptions = splitOptions;
         foreach (var path in new[] { "/developerViewport/developerWindow/inspectorPanel", "/developerViewport/developerWindow/instructions", "/developerViewport/developerWindow/inspectorSplit", "/developerViewport/developerWindow/copyPath", "/developerViewport/developerWindow/inspectorPanel/toolHint" })

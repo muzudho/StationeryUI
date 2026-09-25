@@ -230,7 +230,12 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     {
       "id": "tabbedPages",
       "type": "tabbed-box-layout",
-      "padding": { "top": "0px", "right": "0px", "bottom": "0px", "left": "0px" }
+      "padding": {
+        "top": "0px",
+        "right": "0px",
+        "bottom": "0px",
+        "left": "0px"
+      }
     },
     {
       "id": "topDemoLayout",
@@ -532,39 +537,129 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     }
   ],
   "bindingsV2": {
-    "ctrlNameField": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/1y.1x.1w.1h:mdlNameField",
-    "ctrlMemoField": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/2y.1x.1w.1h:mdlMemoField",
-    "ctrlThemeButton": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/3y.1x.1w.1h:mdlThemeButton",
-    "ctrlScaleButton": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/3y.2x.1w.1h:mdlScaleButton",
-    "ctrlApplyTitleButton": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/4y.1x.1w.1h:mdlApplyTitleButton",
-    "ctrlOpenDialogButton": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/5y.1x.1w.1h:mdlOpenDialogButton",
-    "ctrlSampleTree": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/1y.2x.1w.1h:mdlSampleTree",
-    "ctrlSplitPaneDemoLink": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/5y.2x.1w.1h:mdlSplitPaneDemoLink",
-    "ctrlLayoutDemoLink": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/center.2:mdlBody@topDemoLayout/4y.2x.1w.1h:mdlLayoutDemoLink",
-    "ctrlVerticalSplit": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/2y.1x.1w.1h:mdlVerticalSplit@verticalSplitLayout",
-    "ctrlHorizontalSplit": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/3y.1x.1w.1h:mdlHorizontalSplit@horizontalSplitLayout",
-    "ctrlLeftPane": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/2y.1x.1w.1h:mdlVerticalSplit@verticalSplitLayout/first:mdlLeftPane",
-    "ctrlRightPane": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/2y.1x.1w.1h:mdlVerticalSplit@verticalSplitLayout/second:mdlRightPane",
-    "ctrlTopPane": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/3y.1x.1w.1h:mdlHorizontalSplit@horizontalSplitLayout/first:mdlTopPane",
-    "ctrlBottomPane": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/3y.1x.1w.1h:mdlHorizontalSplit@horizontalSplitLayout/second:mdlBottomPane",
-    "ctrlTitle": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/1y.2x.1w.1h:mdlTitle",
-    "ctrlBoxTitle": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/2y.1x.1w.1h:mdlBoxTitle",
-    "ctrlBoxContent": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.1x.1w.1h:mdlBoxContent@box",
-    "ctrlGridTitle": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/2y.2x.1w.1h:mdlGridTitle",
-    "ctrlSpanCell": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.1x.2w.1h:mdlSpanCell",
-    "ctrlGridFooter": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/3y.1x.1w.3h:mdlGridFooter",
-    "ctrlNestedA": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.1x.1w.1h:mdlNestedA",
-    "ctrlNestedB": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.2x.1w.1h:mdlNestedB",
-    "ctrlNestedC": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.1x.1w.1h:mdlNestedC",
-    "ctrlNestedD": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.2x.1w.1h:mdlNestedD",
+    "ctrlNameField": {
+      "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/1y.1x.1w.1h",
+      "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField"
+    },
+    "ctrlMemoField": {
+      "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/2y.1x.1w.1h",
+      "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlMemoField"
+    },
+    "ctrlThemeButton": {
+      "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/3y.1x.1w.1h",
+      "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlThemeButton"
+    },
+    "ctrlScaleButton": {
+      "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/3y.2x.1w.1h",
+      "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlScaleButton"
+    },
+    "ctrlApplyTitleButton": {
+      "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/4y.1x.1w.1h",
+      "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlApplyTitleButton"
+    },
+    "ctrlOpenDialogButton": {
+      "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/5y.1x.1w.1h",
+      "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlOpenDialogButton"
+    },
+    "ctrlSampleTree": {
+      "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/1y.2x.1w.1h",
+      "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree"
+    },
+    "ctrlSplitPaneDemoLink": {
+      "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/5y.2x.1w.1h",
+      "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlSplitPaneDemoLink"
+    },
+    "ctrlLayoutDemoLink": {
+      "layoutPath": "root:tabbedPages/0:pageDock/center.2:topDemoLayout/4y.2x.1w.1h",
+      "modelPath": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlLayoutDemoLink"
+    },
+    "ctrlVerticalSplit": {
+      "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/2y.1x.1w.1h:verticalSplitLayout",
+      "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit"
+    },
+    "ctrlHorizontalSplit": {
+      "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/3y.1x.1w.1h:horizontalSplitLayout",
+      "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit"
+    },
+    "ctrlLeftPane": {
+      "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/2y.1x.1w.1h:verticalSplitLayout/first",
+      "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlLeftPane"
+    },
+    "ctrlRightPane": {
+      "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/2y.1x.1w.1h:verticalSplitLayout/second",
+      "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlVerticalSplit/mdlRightPane"
+    },
+    "ctrlTopPane": {
+      "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/3y.1x.1w.1h:horizontalSplitLayout/first",
+      "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlTopPane"
+    },
+    "ctrlBottomPane": {
+      "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/3y.1x.1w.1h:horizontalSplitLayout/second",
+      "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlHorizontalSplit/mdlBottomPane"
+    },
+    "ctrlTitle": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/1y.2x.1w.1h",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTitle"
+    },
+    "ctrlBoxTitle": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/2y.1x.1w.1h",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxTitle"
+    },
+    "ctrlBoxContent": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.1x.1w.1h:box",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlBoxContent"
+    },
+    "ctrlGridTitle": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/2y.2x.1w.1h",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridTitle"
+    },
+    "ctrlSpanCell": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.1x.2w.1h",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlSpanCell"
+    },
+    "ctrlGridFooter": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/3y.1x.1w.3h",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlGridFooter"
+    },
+    "ctrlNestedA": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.1x.1w.1h",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedA"
+    },
+    "ctrlNestedB": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/1y.2x.1w.1h",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedB"
+    },
+    "ctrlNestedC": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.1x.1w.1h",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedC"
+    },
+    "ctrlNestedD": {
+      "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/3y.2x.1w.1h:grid/1y.2x.2w.2h:nestedGrid/2y.2x.1w.1h",
+      "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlNestedD"
+    },
     "ctrlTopDemoLink": {
-      "lytSplitPaneDemoPage": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/center.2:mdlBody@splitDemoLayout/1y.1x.1w.1h:mdlTopDemoLink",
-      "lytLayoutDemoPage": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/center.2:mdlBody@layoutShowcase/1y.1x.1w.1h:mdlTopDemoLink"
+      "lytSplitPaneDemoPage": {
+        "layoutPath": "root:tabbedPages/1:pageDockFullscreen/center.2:splitDemoLayout/1y.1x.1w.1h",
+        "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlBody/mdlTopDemoLink"
+      },
+      "lytLayoutDemoPage": {
+        "layoutPath": "root:tabbedPages/2:pageDock/center.2:layoutShowcase/1y.1x.1w.1h",
+        "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlBody/mdlTopDemoLink"
+      }
     },
     "ctrlToolHint": {
-      "lytTopDemoPage": "root:mdlDemo@tabbedPages/0:mdlTopDemoPage@pageDock/bottom.1:mdlInspectorPanel@inspectorContents/1y.1x.1w.1h:mdlToolHint",
-      "lytSplitPaneDemoPage": "root:mdlDemo@tabbedPages/1:mdlSplitPaneDemoPage@pageDockFullscreen/bottom.1:mdlInspectorPanel@inspectorContents/1y.1x.1w.1h:mdlToolHint",
-      "lytLayoutDemoPage": "root:mdlDemo@tabbedPages/2:mdlLayoutDemoPage@pageDock/bottom.1:mdlInspectorPanel@inspectorContents/1y.1x.1w.1h:mdlToolHint"
+      "lytTopDemoPage": {
+        "layoutPath": "root:tabbedPages/0:pageDock/bottom.1:inspectorContents/1y.1x.1w.1h",
+        "modelPath": "/mdlDemo/mdlTopDemoPage/mdlInspectorPanel/mdlToolHint"
+      },
+      "lytSplitPaneDemoPage": {
+        "layoutPath": "root:tabbedPages/1:pageDockFullscreen/bottom.1:inspectorContents/1y.1x.1w.1h",
+        "modelPath": "/mdlDemo/mdlSplitPaneDemoPage/mdlInspectorPanel/mdlToolHint"
+      },
+      "lytLayoutDemoPage": {
+        "layoutPath": "root:tabbedPages/2:pageDock/bottom.1:inspectorContents/1y.1x.1w.1h",
+        "modelPath": "/mdlDemo/mdlLayoutDemoPage/mdlInspectorPanel/mdlToolHint"
+      }
     }
   }
 }
@@ -573,8 +668,6 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     public static DemoModelBinding Create(StationeryStyleSettings settings)
     {
         var root = settings.Models[0].CreateTree();
-        static IEnumerable<string> Routes(StationeryControlBindingV2 binding)
-            => binding.LayoutPath is { } route ? [route] : binding.LayoutPaths.Values;
         var all = Descendants(root).ToArray();
         var topPage = root.Children.SingleOrDefault(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "topDemoPage" && node.Kind == "page")
             ?? throw new JsonException("topDemoPage is required.");
@@ -582,9 +675,9 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             ?? throw new JsonException("splitPaneDemoPage is required.");
         var layoutPage = root.Children.Single(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "layoutDemoPage" && node.Kind == "page");
         foreach (var page in new[] { topPage, splitPage, layoutPage })
-            if (!settings.BindingsV2.Values.Any(binding => Routes(binding).Any(route =>
-                route.Contains("/bottom", StringComparison.Ordinal) && route.Contains(":mdlInspectorPanel@", StringComparison.Ordinal) &&
-                route.Contains(":" + page.Id + "@", StringComparison.Ordinal))))
+            if (!settings.BindingsV2.Values.Any(binding =>
+                (binding.ModelPath is { } modelPath && modelPath.Contains("/" + page.Id + "/mdlInspectorPanel/", StringComparison.Ordinal)) ||
+                binding.ModelPaths.Values.Any(modelPath => modelPath.Contains("/" + page.Id + "/mdlInspectorPanel/", StringComparison.Ordinal))))
                 throw new JsonException($"{page.Path} requires a page layout bound to inspectorPanel.");
         var dialogs = all.Where(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "editDialog" && node.Kind == "dialog").ToArray();
         if (dialogs.Length != 1) throw new JsonException("Demo models requires one editDialog of type dialog.");
@@ -631,19 +724,18 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         }
         if (settings.BindingsV2.Values.Any(binding =>
             (binding.ModelPath is { } modelPath && root.Resolve(modelPath)?.IsWithin(dialog) == true) ||
-            binding.ModelPaths.Values.Any(path => root.Resolve(path)?.IsWithin(dialog) == true) ||
-            Routes(binding).Any(route => route.Contains(":" + dialog.Id + "@", StringComparison.Ordinal))))
+            binding.ModelPaths.Values.Any(path => root.Resolve(path)?.IsWithin(dialog) == true)))
             throw new JsonException("The demo dialog currently uses its code-defined layout; bind the main controls only.");
         foreach (var id in new[] { "verticalSplit", "horizontalSplit" })
         {
             var node = splitControls[id];
             var expected = id == "verticalSplit" ? new[] { "leftPane", "rightPane" } : new[] { "topPane", "bottomPane" };
             var first = settings.BindingsV2.Values.Any(binding => binding.ModelPath == splitControls[expected[0]].Path &&
-                binding.LayoutPath?.EndsWith("/first:mdl" + char.ToUpperInvariant(expected[0][0]) + expected[0][1..], StringComparison.Ordinal) == true);
+                binding.LayoutPath?.EndsWith("/first", StringComparison.Ordinal) == true);
             var second = settings.BindingsV2.Values.Any(binding => binding.ModelPath == splitControls[expected[1]].Path &&
-                binding.LayoutPath?.EndsWith("/second:mdl" + char.ToUpperInvariant(expected[1][0]) + expected[1][1..], StringComparison.Ordinal) == true);
+                binding.LayoutPath?.EndsWith("/second", StringComparison.Ordinal) == true);
             var hasSplitLayout = settings.BindingsV2.Values.Any(binding => binding.ModelPath == node.Path &&
-                binding.LayoutPath is { } route && route.Contains("@" + id + "Layout", StringComparison.Ordinal));
+                binding.LayoutPath is { } route && route.Contains(":" + id + "Layout", StringComparison.Ordinal));
             if (!hasSplitLayout || !first || !second)
                 throw new JsonException("Split content must match the demo roles.");
         }
@@ -681,3 +773,4 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             foreach (var descendant in Descendants(child)) yield return descendant;
     }
 }
+

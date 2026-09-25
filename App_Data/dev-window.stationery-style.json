@@ -164,13 +164,37 @@
         }
     ],
     "bindingsV2": {
-        "ctrlDeveloperWindow": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout",
-        "ctrlInstructions": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/1y.1x.1w.1h:instructions",
-        "ctrlInspectorSplit": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/2y.1x.1w.1h:inspectorSplit@inspectorColumns",
-        "ctrlStationeryTree": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/2y.1x.1w.1h:inspectorSplit@inspectorColumns/first:stationeryTree",
-        "ctrlDetails": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/2y.1x.1w.1h:inspectorSplit@inspectorColumns/second:details",
-        "ctrlCopyPath": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/3y.1x.1w.1h:copyPath",
-        "ctrlInspectorPanel": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/2y.1x.1w.1h:inspectorPanel@inspectorContents",
-        "ctrlToolHint": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/2y.1x.1w.1h:inspectorPanel@inspectorContents/1y.1x.1w.1h:toolHint"
+        "ctrlDeveloperWindow": {
+            "layoutPath": "root:viewportRoot/single:windowLayout",
+            "modelPath": "/developerViewport/developerWindow"
+        },
+        "ctrlInstructions": {
+            "layoutPath": "root:viewportRoot/single:windowLayout/1y.1x.1w.1h:windowRows/1y.1x.1w.1h",
+            "modelPath": "/developerViewport/developerWindow/instructions"
+        },
+        "ctrlInspectorSplit": {
+            "layoutPath": "root:viewportRoot/single:windowLayout/1y.1x.1w.1h:windowRows/2y.1x.1w.1h:inspectorColumns",
+            "modelPath": "/developerViewport/developerWindow/inspectorSplit"
+        },
+        "ctrlStationeryTree": {
+            "layoutPath": "root:viewportRoot/single:windowLayout/1y.1x.1w.1h:windowRows/2y.1x.1w.1h:inspectorColumns/first",
+            "modelPath": "/developerViewport/developerWindow/inspectorSplit/stationeryTree"
+        },
+        "ctrlDetails": {
+            "layoutPath": "root:viewportRoot/single:windowLayout/1y.1x.1w.1h:windowRows/2y.1x.1w.1h:inspectorColumns/second",
+            "modelPath": "/developerViewport/developerWindow/inspectorSplit/details"
+        },
+        "ctrlCopyPath": {
+            "layoutPath": "root:viewportRoot/single:windowLayout/1y.1x.1w.1h:windowRows/3y.1x.1w.1h",
+            "modelPath": "/developerViewport/developerWindow/copyPath"
+        },
+        "ctrlInspectorPanel": {
+            "layoutPath": "root:viewportRoot/single:windowLayout/2y.1x.1w.1h:inspectorContents",
+            "modelPath": "/developerViewport/developerWindow/inspectorPanel"
+        },
+        "ctrlToolHint": {
+            "layoutPath": "root:viewportRoot/single:windowLayout/2y.1x.1w.1h:inspectorContents/1y.1x.1w.1h",
+            "modelPath": "/developerViewport/developerWindow/inspectorPanel/toolHint"
+        }
     }
 }

@@ -102,7 +102,7 @@ internal sealed partial class Demo
                 var route = styles.Current.BindingsV2[handle].LayoutPath
                     ?? throw new InvalidOperationException($"Control '{handle}' requires one split-pane route.");
                 var splitLayout = styles.Current.Layouts.Single(layout => layout.Type == "split-pane" &&
-                    route.Contains("@" + layout.Id, StringComparison.Ordinal));
+                    route.Contains(":" + layout.Id, StringComparison.Ordinal));
                 element.Split.Configure(splitLayout.Split!);
             }
         }

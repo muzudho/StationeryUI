@@ -58,7 +58,11 @@ public sealed class StyleBlueprint
                 ["layouts"] = new JsonArray(layout),
                 ["bindingsV2"] = new JsonObject
                 {
-                    ["ctrlPreviewRoot"] = $"root:previewRoot@{selectedId!.Split('/')[1]}"
+                    ["ctrlPreviewRoot"] = new JsonObject
+                    {
+                        ["modelPath"] = "/previewRoot",
+                        ["layoutPath"] = $"root:{selectedId!.Split('/')[1]}"
+                    }
                 }
             };
             json = root.ToJsonString();
@@ -130,7 +134,7 @@ public sealed class StyleBlueprint
             {
                 var rootLayoutId = syntheticRootId ?? GetRootLayoutId(model.Path);
                 if (rootLayoutId is null) { route = ""; return false; }
-                route = $"root:{model.Id}@{rootLayoutId}";
+                route = $"root:{rootLayoutId}";
                 return true;
             }
             if (!TryRoute(model.Parent, out var parentRoute)) { route = ""; return false; }
@@ -139,7 +143,7 @@ public sealed class StyleBlueprint
                 : GetPlacementRoute(model.Parent.Path, model.Path);
             if (edge is null) { route = ""; return false; }
             var layoutId = GetRootLayoutId(model.Path);
-            route = parentRoute + "/" + edge + ":" + model.Id + (layoutId is null ? "" : "@" + layoutId);
+            route = parentRoute + "/" + edge + (layoutId is null ? "" : ":" + layoutId);
             return true;
         }
 
@@ -222,7 +226,7 @@ public sealed class StyleBlueprint
         {
             if (!TryRoute(model, out var route)) continue;
             var handle = "model" + Convert.ToHexString(Encoding.UTF8.GetBytes(model.Path));
-            migrated.Add(handle, route);
+            migrated.Add(handle, new JsonObject { ["modelPath"] = model.Path, ["layoutPath"] = route });
         }
 
         try
@@ -386,7 +390,11 @@ public sealed class StyleBlueprint
                 models.Add(new JsonObject { ["id"] = id, ["type"] = cell.Kind, ["label"] = cell.Label });
                 cells.Add(new JsonObject { ["row"] = row, ["col"] = column });
                 var handle = StationeryControlHandle.FromModelId(id);
-                bindingsV2[handle] = $"root:design@designRoot/single:mainPage@mainGrid/{row + 1}y.{column + 1}x.1w.1h:{id}";
+                bindingsV2[handle] = new JsonObject
+                {
+                    ["modelPath"] = $"/design/mainPage/{id}",
+                    ["layoutPath"] = $"root:designRoot/single:mainGrid/{row + 1}y.{column + 1}x.1w.1h"
+                };
             }
         var root = new JsonObject
         {
@@ -564,70 +572,30 @@ public sealed class StyleBlueprint
     {
         if (draft["bindingsV2"] is not JsonObject bindingsV2) return;
 
-        void RewriteNode(JsonNode node)
+        void RewriteEntry(JsonNode node)
         {
-            if (node is JsonValue value && value.TryGetValue<string>(out var route))
+            if (node is JsonObject obj && obj["modelPath"] is JsonValue modelValue && modelValue.TryGetValue<string>(out var modelPath))
             {
-                value.ReplaceWith(RewriteRoute(route));
+                if (oldModelPath is not null && (modelPath == oldModelPath || modelPath.StartsWith(oldModelPath + "/", StringComparison.Ordinal)))
+                    obj["modelPath"] = oldModelPath[..^oldId.Length] + newId + modelPath[oldModelPath.Length..];
+                if (obj["layoutPath"] is JsonValue routeValue && routeValue.TryGetValue<string>(out var route))
+                    obj["layoutPath"] = RewriteLayoutRoute(route);
                 return;
             }
-            if (node is JsonObject obj)
-                foreach (var objectEntry in obj.ToArray()) if (objectEntry.Value is not null) RewriteNode(objectEntry.Value);
+            if (node is JsonObject keyed)
+                foreach (var objectEntry in keyed.ToArray()) if (objectEntry.Value is not null) RewriteEntry(objectEntry.Value);
             else if (node is JsonArray array)
-                foreach (var arrayItem in array) if (arrayItem is not null) RewriteNode(arrayItem);
+                foreach (var arrayItem in array) if (arrayItem is not null) RewriteEntry(arrayItem);
         }
 
-        foreach (var entry in bindingsV2.ToArray()) if (entry.Value is not null) RewriteNode(entry.Value);
+        foreach (var entry in bindingsV2.ToArray()) if (entry.Value is not null) RewriteEntry(entry.Value);
 
-        string RewriteRoute(string route)
+        string RewriteLayoutRoute(string route)
         {
-            var segments = route.Split('/');
-            if (segments.Length == 0 || !segments[0].StartsWith("root:", StringComparison.Ordinal)) return route;
-            var rootTarget = ParseTarget(segments[0][5..]);
-            var owner = settings.Models[0].CreateTree();
-            var rootId = oldModelPath == owner.Path && rootTarget.Id == oldId ? newId : rootTarget.Id;
-            var activeLayout = ResolveRootLayout(rootTarget.LayoutId);
-            var rootLayoutId = rootTarget.LayoutId;
-            if (oldLayoutPath is not null && activeLayout?.Path == oldLayoutPath) rootLayoutId = newId;
-            segments[0] = "root:" + rootId + (rootLayoutId is null ? "" : "@" + rootLayoutId);
-
-            for (var index = 1; index < segments.Length; index++)
-            {
-                var separator = segments[index].IndexOf(':');
-                if (separator < 0) return route;
-                var edge = segments[index][..separator];
-                var target = ParseTarget(segments[index][(separator + 1)..]);
-                var targetId = target.Id;
-                var modelChild = owner.Children.FirstOrDefault(child => child.Id == targetId);
-                if (modelChild is not null)
-                {
-                    if (oldModelPath == modelChild.Path && targetId == oldId) targetId = newId;
-                    owner = modelChild;
-                    activeLayout = ResolveRootLayout(target.LayoutId);
-                    var targetLayoutId = target.LayoutId;
-                    if (oldLayoutPath is not null && activeLayout?.Path == oldLayoutPath) targetLayoutId = newId;
-                    segments[index] = edge + ":" + targetId + (targetLayoutId is null ? "" : "@" + targetLayoutId);
-                    continue;
-                }
-
-                var nested = activeLayout?.Children.FirstOrDefault(child => child.Id == targetId);
-                if (nested is not null)
-                {
-                    if (nested.Path == oldLayoutPath && targetId == oldId) targetId = newId;
-                    segments[index] = edge + ":" + targetId;
-                    activeLayout = nested;
-                }
-            }
-            return string.Join('/', segments);
-        }
-
-        StationeryLayoutNode? ResolveRootLayout(string? id)
-            => id is null ? null : settings.Layouts.FirstOrDefault(layout => layout.ParentPath is null && layout.Id == id);
-
-        static (string Id, string? LayoutId) ParseTarget(string target)
-        {
-            var at = target.IndexOf('@');
-            return at < 0 ? (target, null) : (target[..at], target[(at + 1)..]);
+            if (oldLayoutPath is null) return route;
+            var oldLayoutId = oldLayoutPath.Split('/').Last();
+            return route.Replace("root:" + oldLayoutId, "root:" + newId, StringComparison.Ordinal)
+                .Replace(":" + oldLayoutId, ":" + newId, StringComparison.Ordinal);
         }
     }
 
