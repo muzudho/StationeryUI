@@ -98,8 +98,12 @@ internal sealed partial class Demo
             element.Bounds = new(bounds.X / requestedScale, bounds.Y / requestedScale, bounds.Width / requestedScale, bounds.Height / requestedScale);
             if (element.Split is not null)
             {
-                var binding = styles.Current.Bindings.Single(b => b.ModelPath == element.Path && b.FirstModel is not null);
-                element.Split.Configure(styles.Current.Layouts.Single(l => l.Path == binding.Layout).Split!);
+                var handle = "ctrl" + char.ToUpperInvariant(element.Id[0]) + element.Id[1..];
+                var route = styles.Current.BindingsV2[handle].LayoutPath
+                    ?? throw new InvalidOperationException($"Control '{handle}' requires one split-pane route.");
+                var splitLayout = styles.Current.Layouts.Single(layout => layout.Type == "split-pane" &&
+                    route.Contains("@" + layout.Id, StringComparison.Ordinal));
+                element.Split.Configure(splitLayout.Split!);
             }
         }
     }

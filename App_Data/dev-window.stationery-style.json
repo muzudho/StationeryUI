@@ -51,6 +51,10 @@
     ],
     "layouts": [
         {
+            "id": "viewportRoot",
+            "type": "box-layout"
+        },
+        {
             "id": "windowLayout",
             "type": "grid-layout",
             "row-definitions": [
@@ -159,50 +163,14 @@
             "minimumPaneSize": "120px"
         }
     ],
-    "bindings": [
-        {
-            "layout": "/windowLayout",
-            "parentModel": "developerViewport/developerWindow",
-            "childrenModel": [
-                {
-                    "model": "inspectorPanel",
-                    "slot": "inspectorPanel"
-                }
-            ]
-        },
-        {
-            "layout": "/inspectorContents",
-            "parentModel": "developerViewport/developerWindow/inspectorPanel",
-            "childrenModel": [
-                {
-                    "model": "toolHint",
-                    "slot": "toolHint"
-                }
-            ]
-        },
-        {
-            "layout": "/windowLayout/windowRows",
-            "parentModel": "developerViewport/developerWindow",
-            "childrenModel": [
-                {
-                    "model": "instructions",
-                    "slot": "instructions"
-                },
-                {
-                    "model": "inspectorSplit",
-                    "slot": "inspectorSplit"
-                },
-                {
-                    "model": "copyPath",
-                    "slot": "copyPath"
-                }
-            ]
-        },
-        {
-            "layout": "/inspectorColumns",
-            "model": "developerViewport/developerWindow/inspectorSplit",
-            "firstModel": "stationeryTree",
-            "secondModel": "details"
-        }
-    ]
+    "bindingsV2": {
+        "ctrlDeveloperWindow": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout",
+        "ctrlInstructions": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/1y.1x.1w.1h:instructions",
+        "ctrlInspectorSplit": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/2y.1x.1w.1h:inspectorSplit@inspectorColumns",
+        "ctrlStationeryTree": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/2y.1x.1w.1h:inspectorSplit@inspectorColumns/first:stationeryTree",
+        "ctrlDetails": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/2y.1x.1w.1h:inspectorSplit@inspectorColumns/second:details",
+        "ctrlCopyPath": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/1y.1x.1w.1h:windowRows/3y.1x.1w.1h:copyPath",
+        "ctrlInspectorPanel": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/2y.1x.1w.1h:inspectorPanel@inspectorContents",
+        "ctrlToolHint": "root:developerViewport@viewportRoot/single:developerWindow@windowLayout/2y.1x.1w.1h:inspectorPanel@inspectorContents/1y.1x.1w.1h:toolHint"
+    }
 }

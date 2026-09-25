@@ -573,6 +573,8 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
     public static DemoModelBinding Create(StationeryStyleSettings settings)
     {
         var root = settings.Models[0].CreateTree();
+        static IEnumerable<string> Routes(StationeryControlBindingV2 binding)
+            => binding.LayoutPath is { } route ? [route] : binding.LayoutPaths.Values;
         var all = Descendants(root).ToArray();
         var topPage = root.Children.SingleOrDefault(node => node.Id == "topDemoPage" && node.Kind == "page")
             ?? throw new JsonException("topDemoPage is required.");
@@ -580,8 +582,9 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             ?? throw new JsonException("splitPaneDemoPage is required.");
         var layoutPage = root.Children.Single(node => node.Id == "layoutDemoPage" && node.Kind == "page");
         foreach (var page in new[] { topPage, splitPage, layoutPage })
-            if (!settings.Bindings.Any(b => b.ModelPath == page.Path && (b.InspectorModel == page.Path + "/inspectorPanel"
-                || b.DockChildren.Any(c => c.ModelPath == page.Path + "/inspectorPanel"))))
+            if (!settings.BindingsV2.Values.Any(binding => Routes(binding).Any(route =>
+                route.Contains("/bottom", StringComparison.Ordinal) && route.Contains(":inspectorPanel@", StringComparison.Ordinal) &&
+                route.Contains(":" + page.Id + "@", StringComparison.Ordinal))))
                 throw new JsonException($"{page.Path} requires a page layout bound to inspectorPanel.");
         var dialogs = all.Where(node => node.Id == "editDialog" && node.Kind == "dialog").ToArray();
         if (dialogs.Length != 1) throw new JsonException("Demo models requires one editDialog of type dialog.");
@@ -626,19 +629,22 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             if (!resolvedPaths.Contains(node.Path, StringComparer.Ordinal))
                 throw new JsonException($"bindingsV2 entry '{handle}' does not resolve to demo control {node.Path}.");
         }
-        if (settings.Bindings.Any(binding => root.Resolve(binding.ModelPath)!.IsWithin(dialog)) ||
-            settings.Bindings.SelectMany(binding => binding.Children.Select(child => child.ModelPath)
-                .Concat(binding.DockChildren.Select(child => child.ModelPath))
-                .Concat(binding.FirstModel is null ? [] : [binding.FirstModel, binding.SecondModel!]))
-                .Any(path => root.Resolve(path)!.IsWithin(dialog)))
+        if (settings.BindingsV2.Values.Any(binding =>
+            (binding.ModelPath is { } modelPath && root.Resolve(modelPath)?.IsWithin(dialog) == true) ||
+            binding.ModelPaths.Values.Any(path => root.Resolve(path)?.IsWithin(dialog) == true) ||
+            Routes(binding).Any(route => route.Contains(":" + dialog.Id + "@", StringComparison.Ordinal))))
             throw new JsonException("The demo dialog currently uses its code-defined layout; bind the main controls only.");
         foreach (var id in new[] { "verticalSplit", "horizontalSplit" })
         {
             var node = splitControls[id];
-            var splitBinding = settings.Bindings.SingleOrDefault(binding => binding.ModelPath == node.Path && binding.FirstModel is not null)
-                ?? throw new JsonException($"{id} requires a split-pane binding.");
             var expected = id == "verticalSplit" ? new[] { "leftPane", "rightPane" } : new[] { "topPane", "bottomPane" };
-            if (splitBinding.FirstModel != splitControls[expected[0]].Path || splitBinding.SecondModel != splitControls[expected[1]].Path)
+            var first = settings.BindingsV2.Values.Any(binding => binding.ModelPath == splitControls[expected[0]].Path &&
+                binding.LayoutPath?.EndsWith("/first:" + expected[0], StringComparison.Ordinal) == true);
+            var second = settings.BindingsV2.Values.Any(binding => binding.ModelPath == splitControls[expected[1]].Path &&
+                binding.LayoutPath?.EndsWith("/second:" + expected[1], StringComparison.Ordinal) == true);
+            var hasSplitLayout = settings.BindingsV2.Values.Any(binding => binding.ModelPath == node.Path &&
+                binding.LayoutPath is { } route && route.Contains("@" + id + "Layout", StringComparison.Ordinal));
+            if (!hasSplitLayout || !first || !second)
                 throw new JsonException("Split content must match the demo roles.");
         }
         var bound = main.Values.Concat(dialogControls.Values).Concat(splitControls.Values).Concat(layoutControls.Values).ToHashSet();
