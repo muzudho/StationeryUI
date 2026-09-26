@@ -119,3 +119,7 @@ Tab で入力欄やボタンへ移動し、Enter／Space でボタンを操作�
 GitHub Release の Windows x64 ZIP は .NET ランタイム同梱版。ZIP を新しいフォルダーへすべて展開し、その中の `StationeryUI.StyleDesigner.exe` を起動する。別途 .NET をインストールする必要はない。EXE だけを取り出さず、DLL・licenses などを含むフォルダー全体を使う。
 
 v0.2.0 の設計ツールは未署名で配布する。Windows の保護機能によって起動可否が異なる場合がある。
+
+## 操作ログ
+
+操作ログは `%LOCALAPPDATA%\StationeryUI\Logs` に `style-designer-*.jsonl` として保存されます。クリックしたページ、画面上の座標、対象 UI のパス、ページ遷移の移動元と移動先を記録します。ファイル名だけを記録し、入力欄の文字列やファイルのフルパスは記録しません。

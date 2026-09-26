@@ -28,6 +28,7 @@ internal sealed partial class DesignerGame : Game
 {
     private static readonly string AppVersion = typeof(DesignerGame).Assembly.GetName().Version!.ToString(3);
     private readonly GraphicsDeviceManager manager;
+    private readonly StyleDesignerOperationLog operationLog;
     private readonly System.Drawing.Rectangle startupWorkArea;
     private readonly int startupFrameWidth, startupFrameHeight;
     private StyleBlueprint blueprint = new();
@@ -42,10 +43,12 @@ internal sealed partial class DesignerGame : Game
     private string outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "my-plan.stationery-ui.json");
     private StationeryTheme theme = StationeryTheme.Light with { FontSize = 16, Padding = 4 };
     private int frames;
+    private ButtonState previousLoggedLeftButton;
     private readonly string? smokeOutput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_OUTPUT");
 
     public DesignerGame()
     {
+        operationLog = new();
         // WorkingArea excludes the taskbar, including taskbars on the top or left.
         startupWorkArea = System.Windows.Forms.Screen.FromPoint(System.Windows.Forms.Cursor.Position).WorkingArea;
         startupFrameWidth = Math.Max(32, System.Windows.Forms.SystemInformation.FrameBorderSize.Width * 2);
@@ -163,6 +166,72 @@ internal sealed partial class DesignerGame : Game
     }
     protected override void Update(GameTime gameTime)
     {
+        var pageBefore = CurrentPageName;
+        var mouse = Mouse.GetState();
+        string? clickTarget = null;
+        var clicked = false;
+        if (IsActive && string.IsNullOrEmpty(smokeOutput) && mouse.LeftButton == ButtonState.Pressed
+            && previousLoggedLeftButton == ButtonState.Released)
+        {
+            clicked = true;
+            clickTarget = FindClickedPath(mouse.X, mouse.Y);
+            operationLog.Record("click", new
+            {
+                Page = pageBefore,
+                X = mouse.X,
+                Y = mouse.Y,
+                TargetPath = clickTarget,
+                Document = string.IsNullOrEmpty(sourceFile) ? null : Path.GetFileName(sourceFile)
+            });
+        }
+        previousLoggedLeftButton = mouse.LeftButton;
+        try { UpdateFrame(gameTime); }
+        finally
+        {
+            var pageAfter = CurrentPageName;
+            if (pageBefore != pageAfter)
+                operationLog.Record("page-transition", new
+                {
+                    From = pageBefore,
+                    To = pageAfter,
+                    Trigger = clicked ? new { X = mouse.X, Y = mouse.Y, TargetPath = clickTarget } : null,
+                    Document = string.IsNullOrEmpty(sourceFile) ? null : Path.GetFileName(sourceFile)
+                });
+        }
+    }
+
+    private string CurrentPageName => layoutDialog is not null ? "layout-dialog"
+        : restoreDialog is not null ? "restore-dialog"
+        : utilityDialog is not null ? exportDialog ? "export-dialog" : "resize-confirm-dialog"
+        : editingPage ? "editor" : "welcome";
+
+    private string? FindClickedPath(int x, int y)
+    {
+        bool Contains(StationeryUI.Canvas.ScreenRectangle? bounds) => bounds is { } rect
+            && x >= rect.X && x < rect.X + rect.Width && y >= rect.Y && y < rect.Y + rect.Height;
+        var hosts = new List<StationeryUiHost>();
+        if (layoutDialog is not null) hosts.Add(layoutDialog);
+        else if (restoreDialog is not null) hosts.Add(restoreDialog);
+        else if (utilityDialog is not null) hosts.Add(utilityDialog);
+        else if (editingPage)
+        {
+            if (y < ApplicationBarHeight) hosts.Add(applicationBar);
+            hosts.Add(sidebar!);
+            hosts.Add(ui);
+        }
+        else hosts.Add(ui);
+        hosts.Add(inspector);
+        foreach (var host in hosts)
+        {
+            var hit = host.Inspect().LastOrDefault(entry => Contains(entry.WindowBounds));
+            if (hit is not null) return hit.Path;
+        }
+        if (editingPage && Contains(previewWindow)) return "preview";
+        return null;
+    }
+
+    private void UpdateFrame(GameTime gameTime)
+    {
         var scale = BodyScale;
         if (utilityDialog is not null || restoreDialog is not null || layoutDialog is not null)
             previewWasActive = false;
@@ -249,5 +318,5 @@ internal sealed partial class DesignerGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { operationLog.Dispose(); modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }
