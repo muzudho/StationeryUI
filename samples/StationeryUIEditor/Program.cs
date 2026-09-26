@@ -75,7 +75,8 @@ internal sealed partial class EditorGame : Game
         };
         Window.Title = "StationeryUIEditor";
         Window.AllowUserResizing = true; IsMouseVisible = true;
-        Exiting += (_, args) => { if (utilityDialog is not null || layoutDialog is not null || restoreDialog is not null || !FlushAutoSave()) args.Cancel = true; };
+        Exiting += (_, args) => { if (utilityDialog is not null || layoutDialog is not null || restoreDialog is not null
+            || externalConflictDialog is not null || !FlushAutoSave()) args.Cancel = true; };
     }
     protected override void Initialize()
     {
@@ -219,6 +220,7 @@ internal sealed partial class EditorGame : Game
     }
 
     private string CurrentPageName => layoutDialog is not null ? "layout-dialog"
+        : externalConflictDialog is not null ? "external-conflict-dialog"
         : restoreDialog is not null ? "restore-dialog"
         : utilityDialog is not null ? exportDialog ? "export-dialog" : "resize-confirm-dialog"
         : editingPage ? "editor" : readMode ? "read" : "welcome";
@@ -229,6 +231,7 @@ internal sealed partial class EditorGame : Game
             && x >= rect.X && x < rect.X + rect.Width && y >= rect.Y && y < rect.Y + rect.Height;
         var hosts = new List<StationeryUiHost>();
         if (layoutDialog is not null) hosts.Add(layoutDialog);
+        else if (externalConflictDialog is not null) hosts.Add(externalConflictDialog);
         else if (restoreDialog is not null) hosts.Add(restoreDialog);
         else if (utilityDialog is not null) hosts.Add(utilityDialog);
         else if (editingPage)
@@ -252,8 +255,10 @@ internal sealed partial class EditorGame : Game
     {
         if (readMode) { UpdateReadMode(gameTime); return; }
         var scale = BodyScale;
-        if (utilityDialog is not null || restoreDialog is not null || layoutDialog is not null || pageDialog is not null)
+        if (utilityDialog is not null || restoreDialog is not null || layoutDialog is not null
+            || pageDialog is not null || externalConflictDialog is not null)
             previewWasActive = false;
+        if (externalConflictDialog is not null) { UpdateExternalConflictDialog(gameTime); base.Update(gameTime); return; }
         if (utilityDialog is not null) { UpdateUtilityDialog(gameTime); base.Update(gameTime); return; }
         if (restoreDialog is not null) { UpdateRestoreDialog(gameTime); base.Update(gameTime); return; }
         if (layoutDialog is not null) { UpdateLayoutDialog(gameTime, scale); base.Update(gameTime); return; }
@@ -319,6 +324,7 @@ internal sealed partial class EditorGame : Game
         DrawInspector();
         DrawModalBackdrop();
         layoutDialog?.Draw();
+        externalConflictDialog?.Draw();
         pageDialog?.Draw();
         restoreDialog?.Draw();
         utilityDialog?.Draw();
@@ -340,5 +346,5 @@ internal sealed partial class EditorGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { liveConnection?.Dispose(); operationLog.Dispose(); readPreview?.Dispose(); readView?.Dispose(); readActions?.Dispose(); modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); pageDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { liveConnection?.Dispose(); operationLog.Dispose(); readPreview?.Dispose(); readView?.Dispose(); readActions?.Dispose(); modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); externalConflictDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); pageDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }

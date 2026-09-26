@@ -40,6 +40,7 @@ internal sealed partial class EditorGame
         "export" => "出力先を設定するエクスポートダイアログを開きます。",
         "writeOutput" => "指定パスへ書き出し、以後のオートセーブ先にします。編集中の元ファイルと同じパスなら即時保存します。",
         "restore" => "バックアップのファイル名と変更日時を確認し、選んだセーブポイントへ戻します。最大20世代を保持します。",
+        "externalConflict" => "元ファイルが外部で変更されました。下書きを別名で保存するか、破棄して外部版を開くか選びます。",
         "chooseFolder" => "新規作成先のフォルダーを Windows のダイアログで選びます。",
         "createFile" => selectedOutputFolder is null ? "先にフォルダーを選択してください。" : "選択フォルダーへ現在の設計を作成します。同名があれば連番にして上書きを避けます。",
         "styleTree" => "＋／－で開閉。水色の枠が操作対象です。layouts 内の box-layout や表をクリックすると設定を編集できます。",
@@ -75,11 +76,12 @@ internal sealed partial class EditorGame
         saveBarTrack.Bounds = new(saveX, GraphicsDevice.Viewport.Height - 6, saveX, 6);
         saveBarTrack.Theme = theme with { Surface = theme.Border };
         saveBar.Bounds = saveBarTrack.Bounds with { Width = saveX * (saveSession?.Progress ?? 0) };
-        saveBar.Theme = theme with { Surface = saveError is not null ? new(210, 65, 65) : invalidDraft ? new(210, 155, 45) : theme.Accent };
+        saveBar.Theme = theme with { Surface = externalConflict || saveError is not null ? new(210, 65, 65) : invalidDraft ? new(210, 155, 45) : theme.Accent };
         string? hint = null;
         if ((IsActive || !string.IsNullOrEmpty(smokeOutput)) && inspectorMouse.Y < y)
         {
-            if (utilityDialog is not null) hint = utilityDialog.HoveredToolHint;
+            if (externalConflictDialog is not null) hint = externalConflictDialog.HoveredToolHint;
+            else if (utilityDialog is not null) hint = utilityDialog.HoveredToolHint;
             else if (restoreDialog is not null) hint = restoreDialog.HoveredToolHint;
             else if (layoutDialog is not null) hint = layoutDialog.HoveredToolHint;
             else if (editingPage && inspectorMouse.Y < ApplicationBarHeight) hint = applicationBar.HoveredToolHint;

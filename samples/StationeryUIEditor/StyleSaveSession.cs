@@ -12,6 +12,12 @@ internal sealed class StyleSaveSession
     private string saved, pending;
     private double elapsed;
     public bool IsDirty => pending != saved;
+    public bool HasExternalChange()
+    {
+        try { return !File.ReadAllBytes(FilePath).AsSpan().SequenceEqual(expected); }
+        catch (FileNotFoundException) { return true; }
+        catch (DirectoryNotFoundException) { return true; }
+    }
     public void RestartTimer() => elapsed = 0;
     public double Progress => IsDirty ? Math.Clamp(elapsed / DelaySeconds, 0, 1) : 1;
     public sealed record SavePoint(long Generation, string Path, DateTime Modified);
@@ -96,7 +102,7 @@ internal sealed class StyleSaveSession
 
     private void CheckUnchanged()
     {
-        if (!File.ReadAllBytes(FilePath).AsSpan().SequenceEqual(expected))
+        if (HasExternalChange())
             throw new IOException("元ファイルが外部で変更されています。上書きを停止しました。別名でエクスポートしてから開き直してください。");
     }
 

@@ -8,7 +8,7 @@ internal sealed partial class EditorGame
     private int BodyTop => editingPage ? ApplicationBarHeight : 0;
     private StationeryUiHost applicationBar = null!;
     private StationeryUiHost.Element applicationBackground = null!, restoreButton = null!;
-    private StationeryUiHost.Element liveStatusLabel = null!;
+    private StationeryUiHost.Element liveStatusLabel = null!, externalConflictButton = null!;
     private bool applicationBarActive;
 
     private void BuildApplicationBar()
@@ -28,6 +28,8 @@ internal sealed partial class EditorGame
             () => pendingPage = () => Guard(OpenRestoreDialog));
         applicationBar.AddButton("export", new(552, 4, 144, 32), "エクスポート", () => pendingPage = () => Guard(OpenExportDialog));
         pageButton = applicationBar.AddButton("pages", new(704, 4, 144, 32), "ページ編集", () => pendingPage = () => Guard(OpenPageDialog));
+        externalConflictButton = applicationBar.AddButton("externalConflict", new(), "外部変更に対処",
+            () => pendingPage = OpenExternalConflictDialog);
         liveStatusLabel = applicationBar.AddTextBlock(applicationBar.Root.AddChild("liveStatus", "textBlock"), new(), "");
     }
 
@@ -37,7 +39,10 @@ internal sealed partial class EditorGame
         applicationBackground.Bounds = new(0, 0, GraphicsDevice.Viewport.Width, ApplicationBarHeight);
         applicationBar.Focus.SetEnabled(restoreButton.Path, saveSession is not null);
         applicationBar.Focus.SetEnabled(pageButton.Path, blueprint.CanEditPages);
-        liveStatusLabel.Bounds = new(856, 4, Math.Max(0, GraphicsDevice.Viewport.Width - 864), 32);
+        externalConflictButton.Bounds = externalConflict ? new(856, 4, 170, 32) : new();
+        applicationBar.Focus.SetEnabled(externalConflictButton.Path, externalConflict);
+        var liveX = externalConflict ? 1034 : 856;
+        liveStatusLabel.Bounds = new(liveX, 4, Math.Max(0, GraphicsDevice.Viewport.Width - liveX - 8), 32);
         liveStatusLabel.Label = liveStyleStatus;
     }
 }

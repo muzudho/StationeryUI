@@ -18,7 +18,7 @@ internal sealed partial class EditorGame
 
     private void DrawModalBackdrop()
     {
-        var dialog = utilityDialog ?? restoreDialog ?? layoutDialog ?? pageDialog;
+        var dialog = utilityDialog ?? restoreDialog ?? layoutDialog ?? pageDialog ?? externalConflictDialog;
         if (dialog is null) return;
         modalSprites ??= new SpriteBatch(GraphicsDevice);
         if (modalPixel is null)
@@ -28,6 +28,7 @@ internal sealed partial class EditorGame
         }
         ScreenRectangle logical = utilityDialog is not null ? new(180, 200, 1240, 380)
             : restoreDialog is not null ? new(184, 64, 1232, 688)
+            : externalConflictDialog is not null ? new(300, 190, 1000, 430)
             : pageDialog is not null ? new(430, 150, 740, 600) : new(430, 210, 740, placementFields.Count > 0 ? 480 : 370);
         var bounds = dialog.Viewport.ToWindow(logical);
         var rectangle = new Rectangle((int)Math.Floor(bounds.X) - 2, (int)Math.Floor(bounds.Y) - 2,

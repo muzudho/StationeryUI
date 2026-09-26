@@ -18,6 +18,7 @@ internal static class StyleSaveSessionTests
             var timestamp = new DateTime(2025, 1, 2, 3, 4, 5, DateTimeKind.Utc);
             File.SetLastWriteTimeUtc(path, timestamp);
             var (session, loaded) = StyleSaveSession.Open(path);
+            Check(!session.HasExternalChange(), "new edit session matches the source");
             Check(File.ReadAllBytes(path + ".1.bak").SequenceEqual(originalBytes), "exact opening backup including BOM");
             Check(File.GetLastWriteTimeUtc(path + ".1.bak") == timestamp, "source modification time retained");
             Check(!session.Tick(10) && File.GetLastWriteTimeUtc(path) == timestamp, "opening alone does not rewrite");
@@ -39,9 +40,12 @@ internal static class StyleSaveSessionTests
             Check(File.ReadAllText(path).Contains("4rate"), "invalid content never overwrites");
             session.Observe(original);
             File.WriteAllText(path, "external update");
+            Check(session.HasExternalChange(), "external content change is visible before attempting to save");
             Expect<IOException>(session.Flush);
             Expect<IOException>(() => session.Restore(path + ".1.bak"));
             Check(File.ReadAllText(path) == "external update", "external update protected");
+            File.Delete(path);
+            Check(session.HasExternalChange(), "deleted source is reported as an external change");
             File.WriteAllText(path, original);
             for (var i = 0; i < 25; i++) session = StyleSaveSession.Open(path).Session;
             var points = session.ListSavePoints();

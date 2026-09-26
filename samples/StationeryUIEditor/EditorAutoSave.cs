@@ -11,9 +11,12 @@ internal sealed partial class EditorGame
     private StyleSaveSession? saveSession;
     private string? saveError;
     private bool invalidDraft;
+    private bool externalConflict;
+    private double externalCheckElapsed;
     private StationeryUiHost? restoreDialog;
     private string? restoreChoice;
-    private string SaveState => saveError is not null ? "保存失敗：" + saveError
+    private string SaveState => externalConflict ? "元ファイルが外部で変更されました。上部の「外部変更に対処」を開いてください"
+        : saveError is not null ? "保存失敗：" + saveError
         : saveSession is null ? "未保存：新規作成かエクスポートで保存先を決めてください"
         : invalidDraft ? "保存待機：入力を確認してください"
         : saveSession.IsDirty ? "オートセーブ待ち…" : "保存済み：" + Path.GetFileName(saveSession.FilePath);
@@ -28,7 +31,7 @@ internal sealed partial class EditorGame
         {
             readMode = false;
             saveSession = opened.Session; blueprint = opened.Blueprint;
-            saveError = null; invalidDraft = false;
+            saveError = null; invalidDraft = false; externalConflict = false; externalCheckElapsed = 0;
             sourceFile = outputPath = saveSession.FilePath;
             selectedRow = selectedColumn = 0;
             BeginEditing("読み込み時のセーブポイントを作成しました。変更は元ファイルへ自動保存します。");
@@ -41,6 +44,15 @@ internal sealed partial class EditorGame
         invalidDraft = false;
         if (saveSession is null) return;
         saveSession.Observe(json);
+        externalCheckElapsed += time.ElapsedGameTime.TotalSeconds;
+        if (externalCheckElapsed >= .5)
+        {
+            externalCheckElapsed = 0;
+            try { externalConflict = saveSession.HasExternalChange(); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            { saveError = ex.Message; return; }
+        }
+        if (externalConflict) { saveSession.RestartTimer(); return; }
         if (ui.IsComposing) { saveSession.RestartTimer(); return; }
         try { if (saveSession.Tick(time.ElapsedGameTime.TotalSeconds)) saveError = null; }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { saveError = ex.Message; }
@@ -53,8 +65,15 @@ internal sealed partial class EditorGame
         {
             ValidateGridCounts();
             if (ui.IsComposing) throw new IOException("日本語入力を確定してから操作してください。");
-            Capture(); saveSession.Observe(blueprint.BuildJson()); saveSession.Flush();
-            saveError = null; invalidDraft = false;
+            Capture(); saveSession.Observe(blueprint.BuildJson());
+            if (saveSession.IsDirty && saveSession.HasExternalChange())
+            {
+                externalConflict = true;
+                message = "元ファイルが外部で変更されました。編集内容は保持しています。「外部変更に対処」を開いてください。";
+                return false;
+            }
+            saveSession.Flush();
+            saveError = null; invalidDraft = false; externalConflict = false;
             return true;
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
@@ -70,7 +89,7 @@ internal sealed partial class EditorGame
         blueprint.Export(path);
         // A new output becomes the active autosave destination; keep the editable draft.
         saveSession = StyleSaveSession.Open(path).Session;
-        saveError = null; invalidDraft = false;
+        saveError = null; invalidDraft = false; externalConflict = false; externalCheckElapsed = 0;
         sourceFile = outputPath = saveSession.FilePath;
         if (utilityDialog is not null && exportDialog) SetText(output, outputPath);
         rebuild = true;
@@ -130,7 +149,7 @@ internal sealed partial class EditorGame
             {
                 blueprint = saveSession!.Restore(choice);
                 revealLayout = blueprint.SelectedLayoutId;
-                saveError = null; invalidDraft = false; selectedRow = selectedColumn = 0;
+                saveError = null; invalidDraft = false; externalConflict = false; selectedRow = selectedColumn = 0;
                 outputPath = saveSession.FilePath;
                 treeJson = lastValidTreeJson = null; lastTreeSelection = null;
                 message = "セーブポイントを復元して元ファイルへ保存しました。";
