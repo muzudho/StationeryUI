@@ -330,6 +330,7 @@ internal sealed partial class DesignerGame
     {
         if (string.IsNullOrEmpty(smokeOutput)) return;
         keyboard = new();
+        if (startupFile is not null) { mouse = new(); return; }
         if (!editingPage)
         {
             var area = ui.Viewport.ToWindow(new(540, string.IsNullOrEmpty(smokeInput) ? 349 : 525, 520, 64));
@@ -390,6 +391,9 @@ internal sealed partial class DesignerGame
     }
     private void ValidateDesignerSmoke()
     {
+        if (startupFile is not null && (!editingPage || !blueprint.IsImported ||
+            sourceFile != Path.GetFullPath(startupFile) || saveSession?.FilePath != sourceFile))
+            throw new InvalidOperationException("Command-line file did not open for editing.");
         if (editingPage && styleTree?.Tree is { } tree)
         {
             var previous = tree.TargetItem;
@@ -426,6 +430,7 @@ internal sealed partial class DesignerGame
             return;
         }
         if (!editingPage || styleTree?.Tree?.Roots.Count < 1) throw new InvalidOperationException("Page navigation or style tree failed.");
+        if (startupFile is not null) return;
         if (!string.IsNullOrEmpty(smokeInput))
         {
             if (!blueprint.IsImported) throw new InvalidOperationException("Imported style editing failed.");

@@ -50,6 +50,7 @@ internal sealed partial class Demo : Game
     private readonly StationeryDeveloperWindow developerWindow = new();
     private bool captureMouseDown;
     private bool previousDeveloperKey;
+    private bool previousDesignerKey;
     private double inspectionElapsed;
     public Demo()
     {
@@ -210,9 +211,14 @@ internal sealed partial class Demo : Game
             Window.Title = reportedStyleError is null ? "StationeryUI — スタイル読み込み成功" : "StationeryUI — スタイル読み込み失敗（F5 で再試行）";
         }
         ApplyStyles();
-        var developerKey = keyboard.IsKeyDown(Keys.F12);
+        var controlKey = keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl);
+        var f12Key = keyboard.IsKeyDown(Keys.F12);
+        var developerKey = f12Key && !controlKey;
         if (IsActive && developerKey && !previousDeveloperKey) developerWindow.Show(InspectStationery());
-        previousDeveloperKey = developerKey;
+        previousDeveloperKey = f12Key;
+        var designerKey = f12Key && controlKey;
+        if (IsActive && designerKey && !previousDesignerKey) OpenLayoutDesigner();
+        previousDesignerKey = f12Key;
         inspectionElapsed += gameTime.ElapsedGameTime.TotalSeconds;
         if (developerWindow.IsOpen && inspectionElapsed >= .25)
         {

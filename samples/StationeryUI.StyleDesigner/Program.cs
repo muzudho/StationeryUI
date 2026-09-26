@@ -12,9 +12,14 @@ using System.Text.Json;
 internal static class Program
 {
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
-        try { using var game = new DesignerGame(); game.Run(); }
+        try
+        {
+            if (args.Length > 1) throw new ArgumentException("引数には開く文房具UIファイルを1つ指定してください。");
+            using var game = new DesignerGame(args.FirstOrDefault());
+            game.Run();
+        }
         catch (Exception ex)
         {
             var testOutput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_OUTPUT");
@@ -45,9 +50,11 @@ internal sealed partial class DesignerGame : Game
     private int frames;
     private ButtonState previousLoggedLeftButton;
     private readonly string? smokeOutput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_OUTPUT");
+    private readonly string? startupFile;
 
-    public DesignerGame()
+    public DesignerGame(string? startupFile = null)
     {
+        this.startupFile = startupFile;
         operationLog = new();
         // WorkingArea excludes the taskbar, including taskbars on the top or left.
         startupWorkArea = System.Windows.Forms.Screen.FromPoint(System.Windows.Forms.Cursor.Position).WorkingArea;
@@ -81,6 +88,7 @@ internal sealed partial class DesignerGame : Game
         if (!string.IsNullOrEmpty(smokeOutput) && Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_DARK") == "1")
             theme = StationeryTheme.Dark with { FontSize = 16, Padding = 4 };
         BuildWelcome();
+        if (startupFile is not null) Guard(() => OpenStyle(Path.GetFullPath(startupFile)));
     }
     private StationeryUiHost.Element Text(string id, ScreenRectangle bounds, string text) =>
         ui.AddTextBlock(ui.Root.AddChild(id, "textBlock"), bounds, text);
