@@ -340,5 +340,5 @@ internal sealed partial class EditorGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { liveConnection?.Dispose(); operationLog.Dispose(); readView?.Dispose(); readActions?.Dispose(); modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); pageDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { liveConnection?.Dispose(); operationLog.Dispose(); readPreview?.Dispose(); readView?.Dispose(); readActions?.Dispose(); modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); pageDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }

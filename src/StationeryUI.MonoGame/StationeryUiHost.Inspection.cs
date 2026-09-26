@@ -8,68 +8,20 @@ public sealed partial class StationeryUiHost
 {
     /// <summary>Draw an inspector selection in window pixels, independent of UI scale.</summary>
     public void DrawInspectionOutline(ScreenRectangle bounds)
-    {
-        sprites.Begin(blendState: BlendState.NonPremultiplied);
-        try
-        {
-            var color = new Color(255, 105, 180);
-            void Strip(double x, double y, double w, double h) => sprites.Draw(pixel, RectangleOf(new(x, y, w, h)), color);
-            Strip(bounds.X, bounds.Y, bounds.Width, 3);
-            Strip(bounds.X, bounds.Y + bounds.Height - 3, bounds.Width, 3);
-            Strip(bounds.X, bounds.Y, 3, bounds.Height);
-            Strip(bounds.X + bounds.Width - 3, bounds.Y, 3, bounds.Height);
-        }
-        finally { sprites.End(); }
-    }
+        => DrawPreviewGuides(null, bounds, []);
 
-    /// <summary>Draws the selected model/layout outline, thin margin boundary and dashed partitions in window pixels.</summary>
+    /// <summary>Uses the editor preview's guides for live model and layout selections too.</summary>
     public void DrawInspectionSelection(StationeryUI.Inspection.StationeryInspectionEntry entry)
     {
         if (!entry.Visible) return;
-        if (entry.WindowBounds is { Width: > 0, Height: > 0 } bounds) DrawInspectionOutline(bounds);
-        var lines = entry.PartitionLines ?? [];
-        var margin = entry.MarginBounds;
-        if (lines.Count == 0 && margin is null) return;
-        sprites.Begin(blendState: BlendState.NonPremultiplied);
-        try
-        {
-            var color = new Color(255, 105, 180);
-            // One physical pixel, unaffected by UI zoom. Use the original allocation,
-            // not expanded content bounds: large margins may have been clamped.
-            if (margin is { Width: > 0, Height: > 0 } m && margin != entry.WindowBounds)
-            {
-                void Strip(double x, double y, double w, double h)
-                    => sprites.Draw(pixel, RectangleOf(new(x, y, w, h)), color);
-                var inset = entry.BoxModel?.Margin;
-                var inner = entry.WindowBounds;
-                if (inset?.Top > 0 || inset is null && inner is { } top && top.Y > m.Y)
-                    Strip(m.X, m.Y, m.Width, Math.Min(1, m.Height));
-                if (inset?.Bottom > 0 || inset is null && inner is { } bottom && bottom.Y + bottom.Height < m.Y + m.Height)
-                    Strip(m.X, m.Y + Math.Max(0, m.Height - 1), m.Width, Math.Min(1, m.Height));
-                if (inset?.Left > 0 || inset is null && inner is { } left && left.X > m.X)
-                    Strip(m.X, m.Y, Math.Min(1, m.Width), m.Height);
-                if (inset?.Right > 0 || inset is null && inner is { } right && right.X + right.Width < m.X + m.Width)
-                    Strip(m.X + Math.Max(0, m.Width - 1), m.Y, Math.Min(1, m.Width), m.Height);
-            }
-            foreach (var line in lines)
-            {
-                var vertical = line.Start.X == line.End.X;
-                var length = vertical ? line.End.Y - line.Start.Y : line.End.X - line.Start.X;
-                for (double offset = 0; offset < length; offset += 10)
-                {
-                    var dash = Math.Min(5, length - offset);
-                    var rect = vertical ? new ScreenRectangle(line.Start.X - 1, line.Start.Y + offset, 2, dash)
-                        : new ScreenRectangle(line.Start.X + offset, line.Start.Y - 1, dash, 2);
-                    sprites.Draw(pixel, RectangleOf(rect), color);
-                }
-            }
-        }
-        finally { sprites.End(); }
+        DrawPreviewGuides(entry.MarginBounds, entry.WindowBounds,
+            entry.ParentPartitionLines ?? entry.PartitionLines ?? [], entry.ParentBounds);
     }
 
     /// <summary>Draws the style designer's component, margin and parent-layout guides.</summary>
     public void DrawPreviewGuides(ScreenRectangle? marginBounds, ScreenRectangle? componentBounds,
-        IReadOnlyList<StationeryUI.Inspection.StationeryInspectionLine> partitions)
+        IReadOnlyList<StationeryUI.Inspection.StationeryInspectionLine> partitions,
+        ScreenRectangle? parentBounds = null)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         sprites.Begin(blendState: BlendState.NonPremultiplied);
@@ -80,6 +32,14 @@ public sealed partial class StationeryUiHost
             void Strip(ScreenRectangle bounds, Color color)
             {
                 if (bounds.Width > 0 && bounds.Height > 0) sprites.Draw(pixel, RectangleOf(bounds), color);
+            }
+            if (parentBounds is { Width: > 0, Height: > 0 } parent)
+            {
+                const double thickness = 2;
+                Strip(new(parent.X, parent.Y, parent.Width, thickness), pink);
+                Strip(new(parent.X, parent.Y + parent.Height - thickness, parent.Width, thickness), pink);
+                Strip(new(parent.X, parent.Y, thickness, parent.Height), pink);
+                Strip(new(parent.X + parent.Width - thickness, parent.Y, thickness, parent.Height), pink);
             }
             if (componentBounds is { Width: > 0, Height: > 0 } component)
             {

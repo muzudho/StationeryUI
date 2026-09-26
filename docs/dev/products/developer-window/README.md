@@ -1,10 +1,10 @@
 # 開発者ウィンドウ
 
-将来の文房具UIエディターとの統合案は[検査と編集の統合計画](../ui-editor/inspection-integration-plan.md)を参照。以下は現行の F12 実装についての説明。
+文房具UIエディターとの統合状況と残る作業は[検査と編集の統合計画](../ui-editor/inspection-integration-plan.md)を参照。以下はエディター未配置のアプリで残す独立ウィンドウと、共通の検査表示の説明。
 
 * 📖 [レイアウト・インスペクター](layout-inspector/switch-tree.md)
 
-F12 の別ウィンドウを、StationeryUI のツリー・スプリットペーン・読み取り専用テキスト・ボタンで構成する。
+検査画面を StationeryUI のツリー・スプリットペーン・読み取り専用テキスト・ボタンで構成する。デモはエディターが見つかれば統合した読取画面を使い、なければ独立ウィンドウへ切り替える。
 Windows Forms の Form / TreeView / SplitContainer / TextBox による描画は廃止した。
 Windows 接続の既存クリップボード実装には System.Windows.Forms.Clipboard を引き続き使用するが、ウィンドウの UI は MonoGame で描画する。
 
@@ -45,9 +45,9 @@ Refresh は座標・表示状態の更新だけならツリーを作り直さな
 
 ## ［指でつまむ］機能の接続
 
-`Show` / `Update` によるツリー表示に加え、検査対象のアプリ側でキャプチャー入力と桃色の枠の描画を接続する必要がある。NuGet パッケージを参照して開発者ウィンドウを開くだけでは、この接続は追加されない。
+`Show` / `Update` によるツリー表示に加え、検査対象のアプリ側でキャプチャー入力と水色の対象枠・桃色の分割点線の描画を接続する必要がある。NuGet パッケージを参照して開発者ウィンドウを開くだけでは、この接続は追加されない。
 
-ゲームの `Update` で `CaptureEnabled` を確認し、クリック位置を `DeveloperCapture.HitTest` で検査して `SelectCaptured(hit.Path)` を呼ぶ。キャプチャー中は通常の UI・ゲーム操作への入力を抑止する。`Draw` では `SelectedPath` に一致する表示中の部品の `WindowBounds` を取り、画面の描画後に `StationeryUiHost.DrawInspectionOutline` で枠を重ねる。
+ゲームの `Update` で `CaptureEnabled` を確認し、クリック位置を `DeveloperCapture.HitTest` で検査して `SelectCaptured(hit.Path)` を呼ぶ。キャプチャー中は通常の UI・ゲーム操作への入力を抑止する。`Draw` では `SelectedPath` に一致する要素を `DeveloperInspectionLayout.FindVisibleEntry` で探し、画面の描画後に `StationeryUiHost.DrawInspectionSelection` で枠と分割線を重ねる。
 
 コピーして組み込めるコードと枠が出ない場合の確認点は、[ライブラリー導入ガイドの［指でつまむ］機能](library-integration.md#f12-開発者ウィンドウと指でつまむ機能の組み込み)を参照。
 

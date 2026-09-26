@@ -337,7 +337,11 @@ internal static class DeveloperInspectionTests
         var received = System.Text.Json.JsonSerializer.Deserialize<StationeryInspectionEntry[]>(System.Text.Json.JsonSerializer.Serialize(snapshot))!;
         Check(received[1].MarginBounds == arranged.MarginBounds["/screen/child"] && received[1].BoxModel!.Margin.Left == 3
             && received[1].BoxModel!.Margin.Top == 6 && received[1].BoxModel!.Margin.Right == 0, "merged model margin extents survive transport");
+        Check(received[1].ParentBounds == arranged.Bounds["/screen"] && received[1].ParentPartitionLines is { Count: > 0 },
+            "child carries its parent's outline and grid partitions through transport");
         Check(received[0].LayoutNodes!.Single(e => e.Id == "nested").MarginBounds == arranged.LayoutMarginBounds["/screen:/grid/nested"], "nested margin metadata survives transport");
+        Check(received[0].LayoutNodes!.Single(e => e.Id == "nested").ParentBounds == arranged.LayoutBounds["/screen:/grid"],
+            "nested layout carries its parent outline through transport");
         var tiny = StyleTestData.Arrange(settings, 42, 61);
         Check(tiny.MarginBounds["/screen/child"] == new StationeryUI.Canvas.ScreenRectangle(11, 20, 1, 1)
             && tiny.Bounds["/screen/child"].Width == 0, "clamped margin retains original allocation instead of expanding empty bounds");

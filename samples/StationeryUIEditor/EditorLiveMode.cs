@@ -20,6 +20,7 @@ internal sealed partial class EditorGame
         if (launch.LivePipe is null) return;
         readView ??= new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), StationeryDeveloperStyle.Load());
         readView.EmbeddedInEditor = true;
+        readView.Theme = theme with { Selected = theme.Surface };
         liveConnection = new(launch.LivePipe);
     }
 

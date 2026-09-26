@@ -47,6 +47,8 @@ public sealed class StationeryDeveloperView : IDisposable
         var treeNode = root.Resolve("/developerViewport/developerWindow/inspectorSplit/stationeryTree")!;
         var detailsNode = root.Resolve("/developerViewport/developerWindow/inspectorSplit/details")!;
         ui = new(graphics, input, rasterizerFactory, root);
+        var theme = StationeryTheme.Light with { FontSize = 16, Padding = 4 };
+        ui.Theme = theme with { Selected = theme.Surface };
         header = ui.AddTextBlock(root.Resolve("/developerViewport/developerWindow/instructions")!, new(), "開発者ウィンドウ");
         split = ui.AddSplitPane(splitNode, new(), "階層と詳細", Style.SplitOptions);
         tree = ui.AddTree(treeNode, new(), "文房具の階層", Model.Tree);

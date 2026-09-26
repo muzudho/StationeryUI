@@ -178,9 +178,13 @@ internal sealed partial class EditorGame
             ? Shift(selectedPath == dialogSelectionPath ? dialog : previewDialogChildren.GetValueOrDefault(selectedPath, dialog))
             : selectedPath is not null && layout.Bounds.TryGetValue(selectedPath, out var selectedBounds) ? Shift(selectedBounds) : (ScreenRectangle?)null;
         var margin = previewDialogBounds is null && selectedPath is not null && layout.MarginBounds.TryGetValue(selectedPath, out var selectedMargin) ? Shift(selectedMargin) : (ScreenRectangle?)null;
-        var partitions = ParentPreviewPartitions();
+        var selectedIdentity = editorTreeMode == EditorTreeMode.Json || styleTree?.Tree?.TargetItem is not { } target
+            ? null : semanticTree.PathFor(target);
+        var guides = EditorPreviewGuides.ForSelection(previewSnapshot, selectedIdentity);
         ScreenPoint ShiftPoint(ScreenPoint point) => new(point.X + previewWindow.X, point.Y + previewWindow.Y);
-        livePreview.DrawPreviewGuides(margin, component, partitions.Select(line => new StationeryInspectionLine(ShiftPoint(line.Start), ShiftPoint(line.End))).ToArray());
+        livePreview.DrawPreviewGuides(margin, component,
+            guides.Partitions.Select(line => new StationeryInspectionLine(ShiftPoint(line.Start), ShiftPoint(line.End))).ToArray(),
+            guides.ParentBounds is { } parent ? Shift(parent) : null);
 
         string? snapshotDialogPath()
         {
@@ -201,24 +205,4 @@ internal sealed partial class EditorGame
         return separator >= 0 ? path[..separator] : path;
     }
 
-    private IReadOnlyList<StationeryInspectionLine> ParentPreviewPartitions()
-    {
-        if (previewSnapshot is null || TargetLayoutId is null) return [];
-        var settings = previewSnapshot.Settings;
-        var target = settings.Layouts.FirstOrDefault(layout => layout.Path == TargetLayoutId);
-        if (target is null) return [];
-        var parentPath = target.ParentPath;
-        if (parentPath is null)
-        {
-            var owner = settings.Bindings.FirstOrDefault(binding => binding.Layout == target.Path)?.ModelPath;
-            if (owner is not null)
-                parentPath = settings.Bindings.FirstOrDefault(binding =>
-                    binding.Children.Any(child => child.ModelPath == owner) ||
-                    binding.DockChildren.Any(child => child.ModelPath == owner))?.Layout;
-        }
-        if (parentPath is null) return [];
-        var parentBinding = settings.Bindings.FirstOrDefault(binding => binding.Layout == parentPath);
-        if (parentBinding is null || !previewSnapshot.Layout.LayoutContentBounds.TryGetValue(parentBinding.ModelPath + ":" + parentPath, out var content)) return [];
-        return DeveloperInspectionPartitions.Create(settings.Layouts.Single(layout => layout.Path == parentPath), content);
-    }
 }

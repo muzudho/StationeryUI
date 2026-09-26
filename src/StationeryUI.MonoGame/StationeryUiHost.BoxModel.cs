@@ -38,7 +38,7 @@ public sealed partial class StationeryUiHost
         DrawBorderInside(padding, model.Border, theme.Border);
         var content = new ScreenRectangle(x + width * .36, y + 76, width * .28, 66);
         Fill(content, theme.Surface);
-        DrawButtonOutline(content, 1, theme.Accent);
+        DrawButtonOutline(content, 1, new ButtonColor(80, 200, 255));
         Center("content", x + width / 2, y + 99);
         Center("px / schematic", x + width / 2, y + 224);
     }

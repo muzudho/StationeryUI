@@ -67,6 +67,10 @@ public sealed record StationeryInspectionEntry(string Id, string Path, string? P
 {
     public ScreenRectangle? MarginBounds { get; init; }
     public IReadOnlyList<StationeryInspectionLine>? PartitionLines { get; init; }
+    /// <summary>Allocated rectangle of the selected element's parent, when known.</summary>
+    public ScreenRectangle? ParentBounds { get; init; }
+    /// <summary>Visible partitions of that parent's layout.</summary>
+    public IReadOnlyList<StationeryInspectionLine>? ParentPartitionLines { get; init; }
     public IReadOnlyList<StationeryInspectionEntry>? LayoutNodes { get; init; }
     public string? LayoutParentPath { get; init; }
     public IReadOnlyList<string>? LayoutTypes { get; init; }

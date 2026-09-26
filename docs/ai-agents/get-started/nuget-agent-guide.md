@@ -27,12 +27,12 @@
 
 ## ［指でつまむ］機能まで接続する
 
-F12 開発者ウィンドウを組み込む場合は、表示に加えて次の接続を行ってください。**アイコンが表示されるだけでは、元のアプリのクリック判定も桃色の枠の描画も動きません。** コアのモデルだけを利用するアプリには、このウィンドウの導入は不要です。
+F12 開発者ウィンドウを組み込む場合は、表示に加えて次の接続を行ってください。**アイコンが表示されるだけでは、元のアプリのクリック判定も水色の対象枠の描画も動きません。** コアのモデルだけを利用するアプリには、このウィンドウの導入は不要です。
 
 1. F12 で `StationeryDeveloperWindow.Show(snapshot)` を呼び、開いている間は `Update(snapshot)` で検査情報を更新します。別プロセスの起動引数を処理するホストも必要です。
 2. 元の画面の `Update` で `CaptureEnabled` とアクティブ状態を確認します。左ボタンを押した瞬間に `DeveloperCapture.HitTest` を呼び、ヒットした完全パスを `SelectCaptured(hit.Path)` へ渡します。
 3. キャプチャー中は UI を `ui.Update(gameTime, false, keyboard, mouse)` で更新し、ゲーム側や `GameComponent` 側の通常入力も抑止します。調べるためのクリックでボタンのアクションを実行しないでください。
-4. `Draw` では `SelectedPath` に一致する表示中の部品を探し、`WindowBounds` を `ui.DrawInspectionOutline(bounds)` へ渡します。通常描画と `SpriteBatch.End` を終えてから枠を重ねます。
+4. `Draw` では `SelectedPath` に一致する表示中の要素を `DeveloperInspectionLayout.FindVisibleEntry` で探し、その要素を `ui.DrawInspectionSelection(entry)` へ渡します。通常描画と `SpriteBatch.End` を終えてから枠と分割線を重ねます。
 5. アプリの終了時に `StationeryDeveloperWindow.Dispose()` を呼びます。
 
 検査スナップショットはゲームスレッドで取得します。クリック判定・ツリー表示・枠描画には同じ検査ツリーを使い、マウス位置と `WindowBounds` の座標系を揃えます。独自描画の部品も検査情報へ登録し、モーダル表示中は `HitTest` の `scope` を対象の完全パスに限定します。
@@ -53,7 +53,7 @@ F12 開発者ウィンドウを組み込む場合は、表示に加えて次の�
 
 ## 導入後の確認と報告
 
-- F12 → ［指でつまむ］ → 元の画面の部品をクリックすると、ツリーの該当ノードが選ばれ、同じ部品に桃色の枠が出る。
+- F12 → ［指でつまむ］ → 元の画面の部品をクリックすると、ツリーの該当ノードが選ばれ、同じ部品に水色の枠が出る。
 - キャプチャー中のクリックでは通常のボタン操作が実行されず、アイコンを再度押すと通常操作に戻る。
 - 移動・リサイズ後も枠が部品に一致し、非表示の部品を選ばない。
 
@@ -79,18 +79,18 @@ cells は layouts 内に定義し、モデルとの対応は GridLayout の `row
 `DeveloperViewState` には表示モードと両ツリーの選択・開閉状態を保存する。操作ログの `TreeMode` は Model=0、Layout=1。
 
 
-レイアウトの桃色の枠には、画面の配置に使った最新の `StationeryLayoutResult` を `arranged` として検査データへ渡す。座標はウィンドウのピクセル単位で、ズーム変換を重ねて掛けない。
-枠の対象は `DeveloperInspectionLayout.FindVisibleEntry(entries, selectedPath)` で検索し、その `WindowBounds` を `DrawInspectionOutline` に渡す。モデルだけの検索ではレイアウトノードが見つからない。キャプチャーのヒット判定には従来のモデル配列を使う。
+レイアウトの水色の枠には、画面の配置に使った最新の `StationeryLayoutResult` を `arranged` として検査データへ渡す。座標はウィンドウのピクセル単位で、ズーム変換を重ねて掛けない。
+枠の対象は `DeveloperInspectionLayout.FindVisibleEntry(entries, selectedPath)` で検索し、その要素を `DrawInspectionSelection` に渡す。モデルだけの検索ではレイアウトノードが見つからない。キャプチャーのヒット判定には従来のモデル配列を使う。
 
 
 分割境界も描く場合は、検索した entry を `ui.DrawInspectionSelection(entry)` に渡す。
-外周は実線、`PartitionLines` は桃色の点線で描画される。grid は結合セルの内部を省き、dock は配列順に切り取った境界を表示する。`DrawInspectionOutline(bounds)` は引き続き外周だけを描く。
+外周は水色の実線、`PartitionLines` は桃色の点線で描画される。grid は結合セルの内部を省き、dock は配列順に切り取った境界を表示する。`DrawInspectionOutline(bounds)` は引き続き外周だけを描く。
 
 
 レイアウトツリーでは、文房具とその所有するルートレイアウトを１行にまとめる。例えば `(demoPage : Page) (- : gridLayout)` の下へ配置されたモデルを直接表示し、同じ gridLayout のノードは重ねて表示しない。ルートの内部にネストしたレイアウトは別ノードとして残す。
 統合ノードの識別子は文房具のパスを使い、外周・分割点線・margin／padding を確認できる。詳細欄の「所有レイアウト」で定義パスも確認できる。古いルートレイアウトの選択・開閉パスは所有モデルへ読み替える。検査データの `LayoutNodes` は維持し、表示上の階層だけをまとめる。
 
 
-選択した要素の margin の外側は、細い桃色の実線（1px）で表示する。0px の辺は描画しない。従来の太い実線は要素の外周、点線は grid／dock の分割境界を表す。
+選択した要素の margin の外側は、細い水色の実線（1px）で表示する。0px の辺は描画しない。太い水色の実線は要素の外周、桃色の点線は grid／dock の分割境界を表す。
 margin の外側は、親の padding を除いた領域内で割り当てられたセル・dock 領域を基準にする。スロット自身に padding はない。狭い画面で margin が切り詰められても、配置計算時の元の枠を表示する。
 `StationeryLayoutResult.MarginBounds` はモデルと所有ルートの margin 適用前、`LayoutMarginBounds` は各レイアウト自身の margin 適用前のウィンドウ座標。検査エントリーの `MarginBounds` と `BoxModel.Margin` を `DrawInspectionSelection(entry)` が使用する。既存の検査・描画の接続を変更する必要はない。

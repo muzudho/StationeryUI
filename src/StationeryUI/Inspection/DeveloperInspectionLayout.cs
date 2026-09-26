@@ -1,5 +1,6 @@
 namespace StationeryUI.Inspection;
 
+using StationeryUI.Canvas;
 using StationeryUI.Styling;
 
 /// <summary>Attaches current style bindings to inspection snapshots without changing model identities.</summary>
@@ -39,6 +40,19 @@ public static class DeveloperInspectionLayout
         IReadOnlyList<StationeryInspectionLine> Partitions(string owner, StationeryLayoutNode layout)
             => !errors.ContainsKey(owner) && arranged?.LayoutContentBounds.TryGetValue(owner + ":" + layout.Path, out var content) == true
                 ? DeveloperInspectionPartitions.Create(layout, content) : [];
+        IReadOnlyList<StationeryInspectionLine>? ParentPartitions(string? parentKey)
+        {
+            if (parentKey is null) return null;
+            var separator = parentKey.IndexOf(':');
+            if (separator < 0 || !layouts.TryGetValue(parentKey[(separator + 1)..], out var parentLayout)) return null;
+            return Partitions(parentKey[..separator], parentLayout);
+        }
+        ScreenRectangle? ParentModelBounds(string? parentKey)
+        {
+            if (parentKey is null || arranged is null) return null;
+            var separator = parentKey.IndexOf(':');
+            return separator >= 0 && arranged.Bounds.TryGetValue(parentKey[..separator], out var bounds) ? bounds : null;
+        }
         StationeryInspectionEntry[] LayoutNodes(StationeryInspectionEntry owner)
         {
             if (!roots.TryGetValue(owner.Path, out var root)) return [];
@@ -50,6 +64,11 @@ public static class DeveloperInspectionLayout
                 {
                     MarginBounds = arranged?.LayoutMarginBounds.TryGetValue(owner.Path + ":" + l.Path, out var marginBounds) == true ? marginBounds : null,
                     PartitionLines = Partitions(owner.Path, l),
+                    ParentBounds = l.ParentPath is { } parentPath
+                        ? arranged?.LayoutBounds.TryGetValue(owner.Path + ":" + parentPath, out var parentBounds) == true ? parentBounds : null
+                        : ParentModelBounds(parents.GetValueOrDefault(owner.Path)),
+                    ParentPartitionLines = ParentPartitions(l.ParentPath is { } parent
+                        ? owner.Path + ":" + parent : parents.GetValueOrDefault(owner.Path)),
                     LayoutTypes = [l.Type],
                     Cell = l.Path == root.Path ? null : new(l.Column, l.Row, l.ColumnSpan, l.RowSpan),
                     BoxModel = new(l.Margin, l.Padding, l.Border)
@@ -61,6 +80,8 @@ public static class DeveloperInspectionLayout
                 entry.Kind is "textBlock" or "link" && arranged?.Bounds.TryGetValue(entry.Path, out var bounds) == true ? bounds : null),
             MarginBounds = arranged?.MarginBounds.TryGetValue(entry.Path, out var marginBounds) == true ? marginBounds : null,
             PartitionLines = roots.TryGetValue(entry.Path, out var rootLayout) ? Partitions(entry.Path, rootLayout) : [],
+            ParentBounds = ParentModelBounds(parents.GetValueOrDefault(entry.Path)),
+            ParentPartitionLines = ParentPartitions(parents.GetValueOrDefault(entry.Path)),
             LayoutNodes = LayoutNodes(entry),
             LayoutParentPath = parents.GetValueOrDefault(entry.Path),
             LayoutTypes = types.GetValueOrDefault(entry.Path),
