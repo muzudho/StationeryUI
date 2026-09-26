@@ -1,4 +1,4 @@
-namespace StationeryUI.StyleDesigner;
+namespace StationeryUI.Editor;
 
 using StationeryUI.Styling;
 using System.Globalization;

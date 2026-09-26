@@ -1,10 +1,10 @@
-# スタイルデザイナーのオートセーブ
+# 文房具UIエディターのオートセーブ
 
 参考：`CircleSpaceCoordinator/Docs/Dev/設計/オートセーブの仕組み.md`。最後の変更から1.5秒、IME・モーダル中の待機、退出時の即時保存、インスペクターのタイマーバーを採用した。変更コメントの仕組みは導入していない。
 
 ## 責務
 
-- `samples/StationeryUI.StyleDesigner/StyleSaveSession.cs`：保存先の絶対パス、最後に保存したJSON、保存待ちJSON、元ファイルのバイト列、待ち時間を保持。読み込み時の検証とバックアップ、20世代管理、復元を担当する。
+- `samples/StationeryUIEditor/StyleSaveSession.cs`：保存先の絶対パス、最後に保存したJSON、保存待ちJSON、元ファイルのバイト列、待ち時間を保持。読み込み時の検証とバックアップ、20世代管理、復元を担当する。
 - `DesignerAutoSave.cs`：ページ遷移・終了と保存の接続、失敗表示、文房具UIのツリーを使った復元ダイアログ。
 - `DesignerInspector.cs`：80px内にツールヒント、操作結果、保存状態、待ち時間バーを配置。
 
@@ -20,8 +20,8 @@
 
 ```powershell
 dotnet run --project tests/StationeryUI.Tests -c Release
-dotnet build samples/StationeryUI.StyleDesigner -c Release
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StyleDesigner.ps1 -SavePoints
+dotnet build samples/StationeryUIEditor -c Release
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StationeryUIEditor.ps1 -SavePoints
 ```
 
 コアテストは待ち時間リセット、読み込みのみで保存しないこと、元ファイル更新、バイト一致のバックアップ・復元、復元前の下書き退避、20世代の削除、不正JSONと外部更新の拒否を検証する。GUIテストは一時コピーを編集し、タイマー保存、復元ボタン、日時付き一覧、復元結果、PNGを確認する。リポジトリーのデモJSONへは書き込まない。

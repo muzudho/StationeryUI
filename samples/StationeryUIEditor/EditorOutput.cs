@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using StationeryUI.MonoGame;
 using StationeryUI.Windows;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private string? selectedOutputFolder;
     private StationeryUiHost? utilityDialog;
@@ -16,7 +16,7 @@ internal sealed partial class DesignerGame
         SuspendBackgroundInput();
         exportDialog = exporting; utilityAction = null;
         utilityDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family))
-            { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
+            { Theme = theme, UseStationeryButtons = true, ToolHintProvider = EditorToolHint };
         utilityDialog.Viewport.Scale = BodyScale;
         utilityDialog.AddTextBlock(utilityDialog.Root.AddChild("dialogBackground", "textBlock"), new(180, 200, 1240, 380), "");
         utilityDialog.AddTextBlock(utilityDialog.Root.AddChild("dialogTitle", "textBlock"), new(204, 220, 1192, 60), title);

@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
 $workspacePath = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $demoPath = Join-Path $workspacePath 'samples/StationeryUI.Demo/bin/Release/net8.0-windows/StationeryUI.Demo.exe'
 $outputPath = Join-Path $workspacePath 'artifacts/tree-smoke'

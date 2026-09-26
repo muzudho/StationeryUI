@@ -15,4 +15,4 @@ ZIP を展開し、`StationeryUI.StyleDesigner/StationeryUI.StyleDesigner.exe` �
 
 Windows x64 を対象とします。macOS、Linux、Windows ARM64、.NET ランタイム未同梱の環境は今回の検証対象外です。
 
-関連：[使い方](../style-designer.md) ／ [開発日誌](../../dev/log/2026/09.md)
+関連：[使い方](../ui-editor.md) ／ [開発日誌](../../dev/log/2026/09.md)

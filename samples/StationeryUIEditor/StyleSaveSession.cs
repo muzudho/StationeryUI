@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace StationeryUI.StyleDesigner;
+namespace StationeryUI.Editor;
 
 /// <summary>One source file, debounced writes, and numbered savepoints.</summary>
 internal sealed class StyleSaveSession

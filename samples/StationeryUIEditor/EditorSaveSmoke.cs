@@ -1,9 +1,9 @@
 using Microsoft.Xna.Framework.Input;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private bool SaveSmoke => !string.IsNullOrEmpty(smokeOutput)
-        && Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_SAVEPOINTS") == "1";
+        && Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_SAVEPOINTS") == "1";
 
     private bool PrepareSaveSmoke(ref MouseState mouse)
     {

@@ -33,14 +33,14 @@ internal static class ModelLayoutTests
         Require(DemoModelBinding.Create(shippedSettings).Main["nameField"].Kind == "textBox", "shipped code binding");
         Require(DemoModelBinding.Create(DemoModelBinding.Fallback).Signature == DemoModelBinding.Create(shippedSettings).Signature, "fallback identities");
         var view = StyleTestData.Objects(shipped["viewports"]!).First(n => (string?)n["name"] == "vNameField");
-        var originalLayouts = StationeryUI.StyleDesigner.StyleBlueprint.LayoutNodes(shipped).ToDictionary(p => p.Path, p => p.Node.ToJsonString());
+        var originalLayouts = StationeryUI.Editor.StyleBlueprint.LayoutNodes(shipped).ToDictionary(p => p.Path, p => p.Node.ToJsonString());
         // Model and control IDs are independent: change the model ID and its explicit reference only.
         var model = shipped["modelTree"]!["children"]![0]!["children"]![0]!["children"]![0]!;
         model["id"] = "nameField";
         foreach (var entry in view["modelPath"]!.AsObject().ToArray()) view["modelPath"]![entry.Key] = "/mdlDemo/mdlTopDemoPage/mdlBody/nameField";
         var renamed = StationeryStyleSettings.Parse(shipped.ToJsonString());
         Require(DemoModelBinding.Create(renamed).Main["nameField"].Path.EndsWith("/nameField"), "explicit model reference preserves code role");
-        Require(StationeryUI.StyleDesigner.StyleBlueprint.LayoutNodes(shipped).All(p => originalLayouts[p.Path] == p.Node.ToJsonString()), "model change leaves layouts untouched");
+        Require(StationeryUI.Editor.StyleBlueprint.LayoutNodes(shipped).All(p => originalLayouts[p.Path] == p.Node.ToJsonString()), "model change leaves layouts untouched");
         model["type"] = "button";
         StyleTestData.Reject(() => DemoModelBinding.Create(StationeryStyleSettings.Parse(shipped.ToJsonString())));
         var directory = Path.Combine(Path.GetTempPath(), "model-layout-" + Guid.NewGuid());

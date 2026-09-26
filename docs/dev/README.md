@@ -26,8 +26,8 @@
 - [ページレイアウト](page-layouts.md)
 - [アンダーラインとアクションバッジ](action-badges.md)
 - [リスト UI 設計の目安](list-ui-guidelines.md)
-- [ライブラリーとエディターの成果物分離](style-designer.md)
-- [エディターのオートセーブ](style-designer-autosave.md)
+- [文房具UIエディターの開発](products/ui-editor/README.md)
+- [エディターのオートセーブ](products/ui-editor/autosave.md)
 - [検証記録](validation.md)
 - 構造
 	- [*.style-settings.json ファイルの作り方](structure/style-settings-file/layouts/README.md)

@@ -1,11 +1,11 @@
 using StationeryUI.MonoGame;
 using StationeryUI.Windows;
-using StationeryUI.StyleDesigner;
+using StationeryUI.Editor;
 using System.Text.Json.Nodes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private readonly Dictionary<string, string[]> treePaths = [];
     private readonly List<(StationeryUiHost.Element Field, string Key)> panelFields = [];
@@ -47,7 +47,7 @@ internal sealed partial class DesignerGame
         var target = styleTree?.Tree?.TargetItem;
         var path = target is not null ? treePaths.GetValueOrDefault(target.Id) : null;
         var canAdd = blueprint.CanAddLayout && path is ["layouts"];
-        if (blueprint.CanAddLayout && designerTreeMode != DesignerTreeMode.Json && TargetLayoutId is { } semanticLayout)
+        if (blueprint.CanAddLayout && editorTreeMode != EditorTreeMode.Json && TargetLayoutId is { } semanticLayout)
         {
             try
             {
@@ -69,13 +69,13 @@ internal sealed partial class DesignerGame
             catch (System.Text.Json.JsonException) { }
         }
         sidebar.Focus.SetEnabled(addChild.Path, canAdd);
-        sidebar.Focus.SetEnabled(deleteNode.Path, designerTreeMode == DesignerTreeMode.Json && IsEditableLayoutPath(path));
+        sidebar.Focus.SetEnabled(deleteNode.Path, editorTreeMode == EditorTreeMode.Json && IsEditableLayoutPath(path));
         if (renameId is not null)
         {
             var enabled = false;
             try { enabled = IsEditableLayoutPath(path) && blueprint.NodeId(path!) is not null; }
             catch (System.Text.Json.JsonException) { }
-            if (designerTreeMode != DesignerTreeMode.Json) enabled = false;
+            if (editorTreeMode != EditorTreeMode.Json) enabled = false;
             sidebar.Focus.SetEnabled(renameId.Path, enabled);
         }
     }
@@ -88,7 +88,7 @@ internal sealed partial class DesignerGame
             Capture();
             var target = styleTree?.Tree?.TargetItem;
             var path = target is null ? null : treePaths.GetValueOrDefault(target.Id);
-            addParentLayout = designerTreeMode != DesignerTreeMode.Json
+            addParentLayout = editorTreeMode != EditorTreeMode.Json
                 ? (TargetLayoutId is { } selectedLayout && selectedLayout.Count(c => c == '/') > 1 ? selectedLayout : null)
                 : path is null or ["layouts"] ? null : blueprint.LayoutPathFor(path[^1] == "children" ? path[..^1] : path);
             var suffix = 1;
@@ -104,7 +104,7 @@ internal sealed partial class DesignerGame
         if (path is not null) addParentLayout = null;
         placementFields.Clear();
         idConfirmButtons.Clear();
-        layoutDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
+        layoutDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = EditorToolHint };
         var help = layoutDialog.AddTextBlock(layoutDialog.Root.AddChild("dialogHelp", "textBlock"), new(430, 210, 740, 370),
             path is null ? "子要素追加 — 文房具Ｉｄを入力し、種類を選んでください\n英字・数字・アンダースコア。推奨：camelCase" : "Ｉｄ変更 — 新しい文房具Ｉｄを入力してください\n既存の controlTree の参照も更新します。");
         idField = layoutDialog.AddTextBox("stationeryId", new(460, 312, 680, 48), "文房具Ｉｄ", id, 256);
@@ -210,7 +210,8 @@ internal sealed partial class DesignerGame
         { idFeedback!.Label = ex.Message; }
     }
 
-    private readonly string? layoutSmoke = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_LAYOUT");
+    private readonly string? layoutSmoke = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_LAYOUT"))
+        ? null : Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_LAYOUT");
     private static MouseState SmokeMouse(StationeryUiHost host, double x, double y, bool pressed)
     {
         var point = host.Viewport.ToWindow(new StationeryUI.Canvas.ScreenRectangle(x, y, 1, 1));

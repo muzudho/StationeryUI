@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StationeryUI.Canvas;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private SpriteBatch? modalSprites;
     private Texture2D? modalPixel;

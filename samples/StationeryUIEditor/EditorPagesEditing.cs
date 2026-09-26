@@ -3,11 +3,11 @@ using Microsoft.Xna.Framework.Input;
 using StationeryUI.Controls;
 using StationeryUI.MonoGame;
 using StationeryUI.Styling;
-using StationeryUI.StyleDesigner;
+using StationeryUI.Editor;
 using StationeryUI.Windows;
 using System.Text.Json;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private StationeryUiHost? pageDialog;
     private StationeryUiHost.Element? pageNameField, pageList, pageFeedback;
@@ -22,7 +22,7 @@ internal sealed partial class DesignerGame
         SuspendBackgroundInput();
         pageAction = null; pageDeleteArmed = false; armedPageName = null;
         pageDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family))
-            { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
+            { Theme = theme, UseStationeryButtons = true, ToolHintProvider = EditorToolHint };
         pageDialog.AddTextBlock(pageDialog.Root.AddChild("pageBackground", "textBlock"), new(430, 150, 740, 600), "");
         pageDialog.AddTextBlock(pageDialog.Root.AddChild("pageHeading", "textBlock"), new(454, 174, 690, 48), "ページの追加・削除");
         pageNameField = pageDialog.AddTextBox("pageName", new(454, 232, 450, 48), "新しいページ名", "newPage", 100);

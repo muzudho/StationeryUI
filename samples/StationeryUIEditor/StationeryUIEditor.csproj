@@ -9,7 +9,7 @@
     <FileVersion>0.4.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="../../docs/user/style-designer.md" Link="README.md" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="../../docs/user/ui-editor.md" Link="README.md" CopyToPublishDirectory="PreserveNewest" />
     <None Include="../../LICENSE" Link="LICENSE" CopyToPublishDirectory="PreserveNewest" />
     <None Include="../../THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToPublishDirectory="PreserveNewest" />
     <None Include="../../docs/user/CircleSpaceCoordinator-LICENSE.txt" Link="licenses/CircleSpaceCoordinator-LICENSE.txt" CopyToPublishDirectory="PreserveNewest" />

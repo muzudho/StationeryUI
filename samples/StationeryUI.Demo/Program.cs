@@ -50,7 +50,7 @@ internal sealed partial class Demo : Game
     private readonly StationeryDeveloperWindow developerWindow = new();
     private bool captureMouseDown;
     private bool previousDeveloperKey;
-    private bool previousDesignerKey;
+    private bool previousEditorKey;
     private double inspectionElapsed;
     public Demo()
     {
@@ -216,9 +216,9 @@ internal sealed partial class Demo : Game
         var developerKey = f12Key && !controlKey;
         if (IsActive && developerKey && !previousDeveloperKey) developerWindow.Show(InspectStationery());
         previousDeveloperKey = f12Key;
-        var designerKey = f12Key && controlKey;
-        if (IsActive && designerKey && !previousDesignerKey) OpenLayoutDesigner();
-        previousDesignerKey = f12Key;
+        var editorKey = f12Key && controlKey;
+        if (IsActive && editorKey && !previousEditorKey) OpenUiEditor();
+        previousEditorKey = f12Key;
         inspectionElapsed += gameTime.ElapsedGameTime.TotalSeconds;
         if (developerWindow.IsOpen && inspectionElapsed >= .25)
         {

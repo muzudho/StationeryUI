@@ -1,4 +1,4 @@
-using StationeryUI.StyleDesigner;
+using StationeryUI.Editor;
 using StationeryUI.Styling;
 using System.Text.Json;
 using System.Text.Json.Nodes;

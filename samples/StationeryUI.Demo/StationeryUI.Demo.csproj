@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework><IsPackable>false</IsPackable><EnableWindowsTargeting>true</EnableWindowsTargeting></PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../StationeryUI.StyleDesigner/StationeryUI.StyleDesigner.csproj" />
+    <ProjectReference Include="../StationeryUIEditor/StationeryUIEditor.csproj" />
     <ProjectReference Include="../../src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj" />
     <ProjectReference Include="../../src/StationeryUI.Windows/StationeryUI.Windows.csproj" />
   </ItemGroup>
@@ -11,12 +11,12 @@
     <None Include="../../App_Data/demo.stationery-config.json" Link="App_Data/demo.stationery-config.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <AssemblyMetadata Include="StationeryConfigurationSource" Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../App_Data/demo.stationery-config.json'))" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
-  <Target Name="ResolveDesignerExecutable" BeforeTargets="GetAssemblyAttributes">
-    <MSBuild Projects="../StationeryUI.StyleDesigner/StationeryUI.StyleDesigner.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
-      <Output TaskParameter="TargetOutputs" ItemName="DesignerTargetPath" />
+  <Target Name="ResolveEditorExecutable" BeforeTargets="GetAssemblyAttributes">
+    <MSBuild Projects="../StationeryUIEditor/StationeryUIEditor.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="EditorTargetPath" />
     </MSBuild>
     <ItemGroup>
-      <AssemblyMetadata Include="StationeryDesignerPath" Value="$([System.IO.Path]::ChangeExtension('%(DesignerTargetPath.FullPath)', '.exe'))" />
+      <AssemblyMetadata Include="StationeryEditorPath" Value="$([System.IO.Path]::ChangeExtension('%(EditorTargetPath.FullPath)', '.exe'))" />
     </ItemGroup>
   </Target>
 </Project>

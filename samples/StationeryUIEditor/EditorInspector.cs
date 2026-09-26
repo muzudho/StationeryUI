@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework.Input;
 using StationeryUI.MonoGame;
 using StationeryUI.Windows;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private StationeryUiHost inspector = null!;
     private StationeryUiHost.Element toolHint = null!;
@@ -22,7 +22,7 @@ internal sealed partial class DesignerGame
         saveBar = inspector.AddTextBlock(inspector.Root.AddChild("autoSaveTimer", "textBlock"), new(), "");
     }
 
-    private string? DesignerToolHint(StationeryUiHost.Element element) => element.Id switch
+    private string? EditorToolHint(StationeryUiHost.Element element) => element.Id switch
     {
         "new" => "新しい設計を始めます。現在のプランは置き換わるため、必要な内容は先にエクスポートしてください。",
         "resume" => hasDraft ? "メモリー上に残っているプランの編集を再開します。" : "再開できる編集がありません。新規作成か既存ファイルの選択から始めてください。",

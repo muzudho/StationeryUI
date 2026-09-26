@@ -176,12 +176,12 @@ internal static class GridLayoutTests
         Reject(n => n["controlTree"]!["a"]!["modelPath"]!["in /"] = "/missing");
         var unbound = JsonNode.Parse(Source)!;
         unbound["controlTree"] = new JsonObject { ["root"] = StyleTestData.Control("/screen", "frame") };
-        var plan = StationeryUI.StyleDesigner.StyleBlueprint.Parse(unbound.ToJsonString());
+        var plan = StationeryUI.Editor.StyleBlueprint.Parse(unbound.ToJsonString());
         var before = plan.BuildJson();
         try { plan.Resize(1, 1); throw new Exception("Out-of-bounds unbound cells accepted."); } catch (ArgumentException) { }
         Require(plan.BuildJson() == before, "invalid resize is atomic");
         // Slot names are metadata; current control routes address cells directly.
-        var named = StationeryUI.StyleDesigner.StyleBlueprint.Parse(Source);
+        var named = StationeryUI.Editor.StyleBlueprint.Parse(Source);
         named.RenameId(["layouts", "0", "children", "0", "cells", "0", "slots", "0"], "firstCell");
         Equal(result.Bounds["/screen/a"], StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(named.BuildJson()), 100, 200).Bounds["/screen/a"]);
     }

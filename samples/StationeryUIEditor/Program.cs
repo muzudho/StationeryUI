@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using StationeryUI.Canvas;
 using StationeryUI.MonoGame;
 using StationeryUI.Styling;
-using StationeryUI.StyleDesigner;
+using StationeryUI.Editor;
 using StationeryUI.Theming;
 using StationeryUI.Windows;
 using System.Globalization;
@@ -17,23 +17,23 @@ internal static class Program
         try
         {
             if (args.Length > 1) throw new ArgumentException("引数には開く文房具UIファイルを1つ指定してください。");
-            using var game = new DesignerGame(args.FirstOrDefault());
+            using var game = new EditorGame(args.FirstOrDefault());
             game.Run();
         }
         catch (Exception ex)
         {
-            var testOutput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_OUTPUT");
+            var testOutput = Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_OUTPUT");
             if (!string.IsNullOrEmpty(testOutput)) File.WriteAllText(Path.Combine(testOutput, "error.txt"), ex.ToString());
             throw;
         }
     }
 }
 
-internal sealed partial class DesignerGame : Game
+internal sealed partial class EditorGame : Game
 {
-    private static readonly string AppVersion = typeof(DesignerGame).Assembly.GetName().Version!.ToString(3);
+    private static readonly string AppVersion = typeof(EditorGame).Assembly.GetName().Version!.ToString(3);
     private readonly GraphicsDeviceManager manager;
-    private readonly StyleDesignerOperationLog operationLog;
+    private readonly EditorOperationLog operationLog;
     private readonly System.Drawing.Rectangle startupWorkArea;
     private readonly int startupFrameWidth, startupFrameHeight;
     private StyleBlueprint blueprint = new();
@@ -49,13 +49,13 @@ internal sealed partial class DesignerGame : Game
     private StationeryTheme theme = StationeryTheme.Light with { FontSize = 16, Padding = 4 };
     private int frames;
     private ButtonState previousLoggedLeftButton;
-    private readonly string? smokeOutput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_OUTPUT");
-    private bool PageSmoke => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_PAGES"));
-    private bool DeletePageSmoke => Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_PAGES") == "delete";
+    private readonly string? smokeOutput = Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_OUTPUT");
+    private bool PageSmoke => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_PAGES"));
+    private bool DeletePageSmoke => Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_PAGES") == "delete";
     private StationeryUiHost.Element pageButton = null!;
     private readonly string? startupFile;
 
-    public DesignerGame(string? startupFile = null)
+    public EditorGame(string? startupFile = null)
     {
         this.startupFile = startupFile;
         operationLog = new();
@@ -71,7 +71,7 @@ internal sealed partial class DesignerGame : Game
             PreferredBackBufferWidth = Math.Max(1, (int)(1600 * scale)),
             PreferredBackBufferHeight = Math.Max(1, (int)(900 * scale))
         };
-        Window.Title = "StationeryUI Style Designer";
+        Window.Title = "StationeryUIEditor";
         Window.AllowUserResizing = true; IsMouseVisible = true;
         Exiting += (_, args) => { if (utilityDialog is not null || layoutDialog is not null || restoreDialog is not null || !FlushAutoSave()) args.Cancel = true; };
     }
@@ -84,11 +84,11 @@ internal sealed partial class DesignerGame : Game
     }
     protected override void LoadContent()
     {
-        Window.Title = $"文房具 UI — スタイル設計ツール v{AppVersion}";
+        Window.Title = $"文房具UIエディター v{AppVersion}";
         input = new(Window.Handle);
         BuildInspector();
         BuildApplicationBar();
-        if (!string.IsNullOrEmpty(smokeOutput) && Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_DARK") == "1")
+        if (!string.IsNullOrEmpty(smokeOutput) && Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_DARK") == "1")
             theme = StationeryTheme.Dark with { FontSize = 16, Padding = 4 };
         BuildWelcome();
         if (startupFile is not null) Guard(() => OpenStyle(Path.GetFullPath(startupFile)));
@@ -117,7 +117,7 @@ internal sealed partial class DesignerGame : Game
     private void BuildUi()
     {
         ui?.Dispose(); tracks.Clear(); panelFields.Clear(); ResetLivePreview();
-        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
+        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = EditorToolHint };
         gridEditorVisible = false;
         BuildSidebar();
         if (!HasLayoutTarget) return;
@@ -256,7 +256,7 @@ internal sealed partial class DesignerGame : Game
                 (GraphicsDevice.Viewport.Height - InspectorHeight - 850 * scale) / 2);
         if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Viewport.Offset = new(0, BodyTop); sidebar.Theme = theme; }
         var mouse = Mouse.GetState(); var keyboard = Keyboard.GetState();
-        PrepareDesignerSmoke(ref mouse, ref keyboard);
+        PrepareEditorSmoke(ref mouse, ref keyboard);
         inspectorMouse = mouse;
         var active = IsActive || !string.IsNullOrEmpty(smokeOutput);
         inspector.Update(gameTime, active, new(), mouse);
@@ -322,10 +322,10 @@ internal sealed partial class DesignerGame : Game
             GraphicsDevice.GetBackBufferData(data);
             using var texture = new Microsoft.Xna.Framework.Graphics.Texture2D(GraphicsDevice, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
             texture.SetData(data);
-            using var file = File.Create(Path.Combine(smokeOutput, "designer.png")); texture.SaveAsPng(file, texture.Width, texture.Height);
-            ValidateDesignerSmoke();
+            using var file = File.Create(Path.Combine(smokeOutput, "editor.png")); texture.SaveAsPng(file, texture.Width, texture.Height);
+            ValidateEditorSmoke();
             VerifyUntargetedSmoke();
-            if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") != "1") blueprint.Export(Path.Combine(smokeOutput, "plan.stationery-ui.json"));
+            if (Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_CANCEL_DIALOG") != "1") blueprint.Export(Path.Combine(smokeOutput, "plan.stationery-ui.json"));
             Exit();
         }
         base.Draw(gameTime);

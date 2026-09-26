@@ -3,13 +3,13 @@ using Microsoft.Xna.Framework.Input;
 using StationeryUI.Controls;
 using StationeryUI.Inspection;
 using StationeryUI.MonoGame;
-using StationeryUI.StyleDesigner;
+using StationeryUI.Editor;
 using StationeryUI.Styling;
 using StationeryUI.Windows;
 using System.Linq;
 using System.Text.Json.Nodes;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private bool editingPage, hasDraft, sidebarActive;
     private Action? pendingPage;
@@ -18,7 +18,7 @@ internal sealed partial class DesignerGame
     private StationeryUiHost.Element? propNodeName, propKind, propPosition, propLayout;
     private StationeryUiHost.Element? modelTreeModeButton, layoutTreeModeButton, jsonTreeModeButton;
     private readonly DeveloperInspectionModel semanticTree = new();
-    private DesignerTreeMode designerTreeMode = DesignerTreeMode.Layout;
+    private EditorTreeMode editorTreeMode = EditorTreeMode.Layout;
     private string sourceFile = "";
     private string? treeJson;
     private string? lastValidTreeJson;
@@ -43,16 +43,16 @@ internal sealed partial class DesignerGame
             return item is not null && treeLayouts.TryGetValue(item.Id, out var id) ? id : null;
         }
     }
-    private readonly string? smokeInput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_INPUT");
+    private readonly string? smokeInput = Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_INPUT");
 
-    private enum DesignerTreeMode { Model, Layout, Json }
+    private enum EditorTreeMode { Model, Layout, Json }
 
     private void BuildWelcome()
     {
         if (!FlushAutoSave()) return;
         editingPage = false; sidebarActive = false; applicationBarActive = false;
         ui?.Dispose(); sidebar?.Dispose(); sidebar = null;
-        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
+        ui = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = EditorToolHint };
         const string title = "スタイル設定ファイル選択";
         var titleWidth = new WindowsTextRasterizer(theme.FontFamily).MeasureTextWidth(title, theme.FontSize, false);
         Text("welcomeTitle", new(800 - titleWidth / 2 - theme.Padding, 261, titleWidth + 48, 64), title)
@@ -107,18 +107,18 @@ internal sealed partial class DesignerGame
         if (sidebar is not null && styleTree is not null)
         {
             sidebar.Theme = theme;
-            UpdateDesignerTreeButtons();
+            UpdateEditorTreeButtons();
             try { RefreshTree(blueprint.BuildJson()); } catch (System.Text.Json.JsonException) { }
             return;
         }
         sidebar?.Dispose();
-        sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
+        sidebar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family)) { Theme = theme, UseStationeryButtons = true, ToolHintProvider = EditorToolHint };
         sidebar.AddTextBlock(sidebar.Root.AddChild("heading", "textBlock"), new(8, 8, 300, 36), "スタイルツリー");
-        modelTreeModeButton = sidebar.AddButton("modelTreeMode", new(8, 46, 94, 32), "モデル", () => SetDesignerTreeMode(DesignerTreeMode.Model));
-        layoutTreeModeButton = sidebar.AddButton("layoutTreeMode", new(106, 46, 94, 32), "レイアウト", () => SetDesignerTreeMode(DesignerTreeMode.Layout));
-        jsonTreeModeButton = sidebar.AddButton("jsonTreeMode", new(204, 46, 94, 32), "JSON", () => SetDesignerTreeMode(DesignerTreeMode.Json));
+        modelTreeModeButton = sidebar.AddButton("modelTreeMode", new(8, 46, 94, 32), "モデル", () => SetEditorTreeMode(EditorTreeMode.Model));
+        layoutTreeModeButton = sidebar.AddButton("layoutTreeMode", new(106, 46, 94, 32), "レイアウト", () => SetEditorTreeMode(EditorTreeMode.Layout));
+        jsonTreeModeButton = sidebar.AddButton("jsonTreeMode", new(204, 46, 94, 32), "JSON", () => SetEditorTreeMode(EditorTreeMode.Json));
         styleTree = sidebar.AddTree(sidebar.Root.AddChild("styleTree", "tree"), new(8, 84, 300, 608), "スタイルの構造", new());
-        UpdateDesignerTreeButtons();
+        UpdateEditorTreeButtons();
         BuildTreeActions();
         treeJson = null;
         try { RefreshTree(blueprint.BuildJson()); }
@@ -127,28 +127,28 @@ internal sealed partial class DesignerGame
 
     private void RefreshTree(string json)
     {
-        if (designerTreeMode == DesignerTreeMode.Json) RefreshJsonTree(json);
+        if (editorTreeMode == EditorTreeMode.Json) RefreshJsonTree(json);
         else RefreshSemanticTree(json);
     }
 
-    private void SetDesignerTreeMode(DesignerTreeMode mode)
+    private void SetEditorTreeMode(EditorTreeMode mode)
     {
-        if (designerTreeMode == mode) return;
+        if (editorTreeMode == mode) return;
         Capture();
-        designerTreeMode = mode;
+        editorTreeMode = mode;
         treeJson = null;
         lastTreeSelection = null;
-        UpdateDesignerTreeButtons();
+        UpdateEditorTreeButtons();
         try { RefreshTree(blueprint.BuildJson()); }
         catch (System.Text.Json.JsonException) { }
     }
 
-    private void UpdateDesignerTreeButtons()
+    private void UpdateEditorTreeButtons()
     {
         if (modelTreeModeButton is null) return;
-        modelTreeModeButton.Label = (designerTreeMode == DesignerTreeMode.Model ? "● " : "") + "モデル";
-        layoutTreeModeButton!.Label = (designerTreeMode == DesignerTreeMode.Layout ? "● " : "") + "レイアウト";
-        jsonTreeModeButton!.Label = (designerTreeMode == DesignerTreeMode.Json ? "● " : "") + "JSON";
+        modelTreeModeButton.Label = (editorTreeMode == EditorTreeMode.Model ? "● " : "") + "モデル";
+        layoutTreeModeButton!.Label = (editorTreeMode == EditorTreeMode.Layout ? "● " : "") + "レイアウト";
+        jsonTreeModeButton!.Label = (editorTreeMode == EditorTreeMode.Json ? "● " : "") + "JSON";
     }
 
     private void RefreshSemanticTree(string json)
@@ -167,7 +167,7 @@ internal sealed partial class DesignerGame
         }
         Visit(root);
         var enriched = DeveloperInspectionLayout.Apply(entries, snapshot.Settings, snapshot.Layout);
-        var targetMode = designerTreeMode == DesignerTreeMode.Model ? DeveloperTreeMode.Model : DeveloperTreeMode.Layout;
+        var targetMode = editorTreeMode == EditorTreeMode.Model ? DeveloperTreeMode.Model : DeveloperTreeMode.Layout;
         semanticTree.SetTreeMode(targetMode);
         semanticTree.Refresh(enriched);
         if (revealLayout is not null)
@@ -294,7 +294,7 @@ internal sealed partial class DesignerGame
     private void UpdatePropertyPanel()
     {
         if (propNodeName is null) return;
-        var entry = designerTreeMode == DesignerTreeMode.Json
+        var entry = editorTreeMode == EditorTreeMode.Json
             ? null
             : semanticTree.EntryFor(styleTree?.Tree?.TargetItem);
         if (entry is null)
@@ -327,7 +327,7 @@ internal sealed partial class DesignerGame
         catch (System.Text.Json.JsonException) { return "入力を確認"; }
     }
 
-    private void PrepareDesignerSmoke(ref MouseState mouse, ref KeyboardState keyboard)
+    private void PrepareEditorSmoke(ref MouseState mouse, ref KeyboardState keyboard)
     {
         if (string.IsNullOrEmpty(smokeOutput)) return;
         keyboard = new();
@@ -358,7 +358,7 @@ internal sealed partial class DesignerGame
                 var visible = styleTree!.Tree!.VisibleRows();
                 var index = visible.ToList().FindIndex(r => treeLayouts.GetValueOrDefault(r.Item.Id) == target);
                 if (index < 0) throw new InvalidOperationException("Layout missing from style tree.");
-                if (designerTreeMode != DesignerTreeMode.Json)
+                if (editorTreeMode != EditorTreeMode.Json)
                 {
                     if (editFrame == 5)
                     {
@@ -395,7 +395,7 @@ internal sealed partial class DesignerGame
         texture.SetData(data);
         using var file = System.IO.File.Create(System.IO.Path.Combine(smokeOutput, "welcome.png")); texture.SaveAsPng(file, texture.Width, texture.Height);
     }
-    private void ValidateDesignerSmoke()
+    private void ValidateEditorSmoke()
     {
         if (startupFile is not null && (!editingPage || !blueprint.IsImported ||
             sourceFile != Path.GetFullPath(startupFile) || saveSession?.FilePath != sourceFile))
@@ -430,9 +430,9 @@ internal sealed partial class DesignerGame
         if (toolHint.Bounds.Height + status.Bounds.Height != 80 || status.Bounds.Y + status.Bounds.Height != GraphicsDevice.Viewport.Height)
             throw new InvalidOperationException("Inspector must reserve exactly 80 viewport pixels.");
         if (ValidateLayoutEditingSmoke()) return;
-        if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_NATIVE_DIALOG") == "1" && !testedNativeDialog)
+        if (Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_NATIVE_DIALOG") == "1" && !testedNativeDialog)
             throw new InvalidOperationException("Native file dialog was not observed.");
-        if (Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_CANCEL_DIALOG") == "1")
+        if (Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_CANCEL_DIALOG") == "1")
         {
             if (editingPage) throw new InvalidOperationException("Cancel should stay on the first page.");
             return;
@@ -445,7 +445,7 @@ internal sealed partial class DesignerGame
             if (blueprint.EditableLayouts.Count > 1 && blueprint.SelectedLayoutId != blueprint.EditableLayouts[1]) throw new InvalidOperationException("Tree layout selection failed.");
             return;
         }
-        if (blueprint.Columns.Count != 2 || blueprint.Rows.Count != 1) throw new InvalidOperationException("Designer resize/confirmation failed.");
+        if (blueprint.Columns.Count != 2 || blueprint.Rows.Count != 1) throw new InvalidOperationException("Editor resize/confirmation failed.");
         if (selectedColumn != 1 || selectedRow != 0) throw new InvalidOperationException("Preview cell selection failed.");
         if (blueprint.At(0, 1).Label != "") throw new InvalidOperationException("Selecting an empty cell copied the previous label.");
         var created = System.IO.Path.Combine(smokeOutput!, "my-plan-2.stationery-ui.json");

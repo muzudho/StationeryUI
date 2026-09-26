@@ -6,7 +6,7 @@
 
 設計ツールは独立したアプリで、`IsPackable=false` です。版番号はアプリの csproj で管理します。共通の `Directory.Build.props` のライブラリー版を、アプリ公開のためだけに変更しません。
 
-タグは `style-designer-v<版>`、ZIP は `StationeryUI.StyleDesigner-v<版>-win-x64.zip` です。既存ライブラリー用の `v0.1.0` と設計ツールの `style-designer-v0.1.0` は別です。公開済みのタグや ZIP を差し替えず、修正版には新しい版を付けます。
+名称変更後のタグは `ui-editor-v<版>`、ZIP は `StationeryUIEditor-v<版>-win-x64.zip` です。公開済み v0.4.0 以前の `style-designer-v<版>` タグと `StationeryUI.StyleDesigner-v<版>-win-x64.zip` はそのまま保存します。ライブラリー用の `v<版>` タグとは別です。
 
 ## 同梱物
 
@@ -14,15 +14,15 @@ EXE 単体ではなく、DLL、ランタイム、README、LICENSE、THIRD-PARTY-
 
 v0.1.0 は Windows x64、.NET 8.0.30 同梱でした。この番号を将来の推奨値とはみなさず、次回の採用版はその時点で確認・固定・記録します。依存パッケージを変更したらライセンス本文と第三者通知も更新します。OpenAL 関連ではパッケージ側の通知と OpenAL Soft の COPYING の両方を確認します。
 
-[アプリの csproj](../../../samples/StationeryUI.StyleDesigner/StationeryUI.StyleDesigner.csproj) と [THIRD-PARTY-NOTICES](../../../THIRD-PARTY-NOTICES.md) が同梱物の確認元です。
+[アプリの csproj](../../../samples/StationeryUIEditor/StationeryUIEditor.csproj) と [THIRD-PARTY-NOTICES](../../../THIRD-PARTY-NOTICES.md) が同梱物の確認元です。
 
 ## 自動検査の範囲
 
-[発行スクリプト](../../../scripts/Publish-StyleDesigner.ps1) は EXE の FileVersion、ランタイム同梱設定、主要ファイルの存在、拡張子、JSON 名、ZIP 展開後の各ファイルのハッシュを検査します。
+[発行スクリプト](../../../scripts/Publish-StationeryUIEditor.ps1) は EXE の FileVersion、ランタイム同梱設定、主要ファイルの存在、拡張子、JSON 名、ZIP 展開後の各ファイルのハッシュを検査します。
 
 許可した `.txt` や `.md` の内容まで公開可否を判定するわけではありません。すべてのライセンス、ソース履歴、GUI 動作、別 PC での起動、署名状態も自動保証しません。個人用メモ、編集対象の JSON、ログ、画像、証明書・秘密鍵の混入は別途確認します。`build-record.json` は絶対パスを含む作業記録なので通常は添付しません。
 
-テスト出力は `artifacts/style-designer-test/` に保存されます。配布フォルダーへコピーしません。テスト用環境変数 `STATIONERYUI_DESIGNER_TEST_*` は通常起動や利用者の環境へ設定しません。
+テスト出力は `artifacts/ui-editor-test/` に保存されます。配布フォルダーへコピーしません。テスト用環境変数 `STATIONERYUI_EDITOR_TEST_*` は通常起動や利用者の環境へ設定しません。
 
 ## 署名
 

@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private void ValidateGridCounts()
     {

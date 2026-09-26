@@ -261,7 +261,7 @@ static class DockLayoutTests
             try { StationeryStyleSettings.Parse(invalid); throw new Exception("Invalid dock accepted"); }
             catch (JsonException) { }
         }
-        var plan = StationeryUI.StyleDesigner.StyleBlueprint.Parse(Source);
+        var plan = StationeryUI.Editor.StyleBlueprint.Parse(Source);
         Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].DockChildren.Count == 5, "designer roundtrip preserves dock");
         plan.RenameId(["modelTree", "children", "0"], "heading");
         Check(StationeryStyleSettings.Parse(plan.BuildJson()).Bindings[0].DockChildren.Any(c => c.ModelPath == "/app/heading"), "designer renames dock references");

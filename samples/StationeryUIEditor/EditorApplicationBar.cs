@@ -2,7 +2,7 @@ using StationeryUI.MonoGame;
 using StationeryUI.Theming;
 using StationeryUI.Windows;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private const int ApplicationBarHeight = 40;
     private int BodyTop => editingPage ? ApplicationBarHeight : 0;
@@ -13,7 +13,7 @@ internal sealed partial class DesignerGame
     private void BuildApplicationBar()
     {
         applicationBar = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family))
-            { UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
+            { UseStationeryButtons = true, ToolHintProvider = EditorToolHint };
         applicationBackground = applicationBar.AddTextBlock(applicationBar.Root.AddChild("applicationBar", "textBlock"), new(), "");
         applicationBar.AddButton("theme", new(8, 4, 144, 32), "明るい／暗い", () =>
         {

@@ -1,11 +1,11 @@
-namespace StationeryUI.StyleDesigner;
+namespace StationeryUI.Editor;
 
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
-/// <summary>Append-only, privacy-conscious operation history for the layout designer.</summary>
-internal sealed class StyleDesignerOperationLog : IDisposable
+/// <summary>Append-only operation history for the UI editor.</summary>
+internal sealed class EditorOperationLog : IDisposable
 {
     private long sequence;
     private bool disposed;
@@ -13,15 +13,15 @@ internal sealed class StyleDesignerOperationLog : IDisposable
     public string FilePath { get; }
     public string? LastError { get; private set; }
 
-    public StyleDesignerOperationLog()
+    public EditorOperationLog()
     {
         var directory = Environment.GetEnvironmentVariable("STATIONERYUI_OPERATION_LOG_DIR");
         if (string.IsNullOrWhiteSpace(directory))
             directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "StationeryUI", "Logs");
         FilePath = Path.Combine(directory,
-            $"style-designer-{DateTime.UtcNow:yyyyMMdd-HHmmssfff}-{Environment.ProcessId}-{Guid.NewGuid():N}.jsonl");
-        Write("session-start", new { Application = "StationeryUI.StyleDesigner" });
+            $"ui-editor-{DateTime.UtcNow:yyyyMMdd-HHmmssfff}-{Environment.ProcessId}-{Guid.NewGuid():N}.jsonl");
+        Write("session-start", new { Application = "StationeryUIEditor" });
     }
 
     public void Record(string kind, object? data)
@@ -50,7 +50,7 @@ internal sealed class StyleDesignerOperationLog : IDisposable
             or NotSupportedException or System.Security.SecurityException)
         {
             LastError = ex.Message;
-            Trace.WriteLine("StationeryUI Style Designer operation log: " + ex.Message);
+            Trace.WriteLine("StationeryUI UI Editor operation log: " + ex.Message);
         }
     }
 

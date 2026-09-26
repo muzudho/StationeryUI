@@ -1,8 +1,8 @@
-using StationeryUI.StyleDesigner;
+using StationeryUI.Editor;
 using StationeryUI.Styling;
 using System.Text.Json.Nodes;
 
-internal static class DesignerReferenceTests
+internal static class EditorReferenceTests
 {
     public static void Run()
     {

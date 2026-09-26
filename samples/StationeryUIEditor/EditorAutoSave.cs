@@ -2,11 +2,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using StationeryUI.Controls;
 using StationeryUI.MonoGame;
-using StationeryUI.StyleDesigner;
+using StationeryUI.Editor;
 using StationeryUI.Windows;
 using System.Text.Json;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private StyleSaveSession? saveSession;
     private string? saveError;
@@ -83,7 +83,7 @@ internal sealed partial class DesignerGame
         SuspendBackgroundInput();
         restoreChoice = null;
         restoreDialog = new(GraphicsDevice, input, family => new WindowsTextRasterizer(family))
-            { Theme = theme, UseStationeryButtons = true, ToolHintProvider = DesignerToolHint };
+            { Theme = theme, UseStationeryButtons = true, ToolHintProvider = EditorToolHint };
         restoreDialog.AddTextBlock(restoreDialog.Root.AddChild("restoreBackground", "textBlock"), new(184, 64, 1232, 688), "");
         restoreDialog.AddTextBlock(restoreDialog.Root.AddChild("restoreHeading", "textBlock"), new(200, 80, 1200, 80),
             "セーブポイントに戻す — ファイル名 ／ ファイル変更日時（ローカル時刻）");

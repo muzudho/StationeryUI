@@ -3,12 +3,12 @@ using StationeryUI.Canvas;
 using StationeryUI.Controls;
 using StationeryUI.Inspection;
 using StationeryUI.MonoGame;
-using StationeryUI.StyleDesigner;
+using StationeryUI.Editor;
 using StationeryUI.Styling;
 using StationeryUI.Windows;
 using System.Text.Json.Nodes;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private StationeryUiHost? livePreview;
     private StationeryUiHost.Element? livePreviewTitle;
@@ -195,7 +195,7 @@ internal sealed partial class DesignerGame
     {
         var item = styleTree?.Tree?.TargetItem;
         if (item is null) return null;
-        var path = designerTreeMode == DesignerTreeMode.Json ? null : semanticTree.PathFor(item);
+        var path = editorTreeMode == EditorTreeMode.Json ? null : semanticTree.PathFor(item);
         if (path is null) return null;
         var separator = path.IndexOf(':');
         return separator >= 0 ? path[..separator] : path;

@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework.Input;
 
-internal sealed partial class DesignerGame
+internal sealed partial class EditorGame
 {
     private bool disabledExportHintVerified;
     private bool exportSmokeFolderChosen;

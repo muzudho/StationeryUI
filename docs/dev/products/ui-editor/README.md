@@ -3,7 +3,7 @@
 | 成果物 | プロジェクト | 配布方法 |
 |---|---|---|
 | 文房具 UI | `src/StationeryUI`、`src/StationeryUI.MonoGame`、`src/StationeryUI.Windows` | 各プロジェクトを `dotnet pack -c Release` で NuGet 化 |
-| スタイル設計ツール | `samples/StationeryUI.StyleDesigner` | `dotnet publish` で Windows アプリのフォルダーを作る |
+| 文房具UIエディター | `samples/StationeryUIEditor` | `dotnet publish` で Windows アプリのフォルダーを作る |
 
 依存方向は設計ツール → MonoGame／Windows → コア。ライブラリーから設計ツールを参照しない。
 StyleBlueprint など設計・出力専用のコードは設計ツールのプロジェクトに置く。設計ツールは IsPackable=false なのでライブラリーの NuGet 配布物にならない。
@@ -25,8 +25,8 @@ StationeryUiHost.ReplaceTree は UI の要素 Id とスクロール位置を保�
 
 ```powershell
 dotnet run --project tests/StationeryUI.Tests -c Release
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StyleDesigner.ps1
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StyleDesigner.ps1 -Existing
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StationeryUIEditor.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StationeryUIEditor.ps1 -Existing
 ```
 
 StyleBlueprintTests は設計ツールのモデルだけをソースリンクし、小数・単位・日本語・モデル Id・サイズ変更・不正入力・新規出力・既存ファイル保護を検査する。
@@ -43,10 +43,10 @@ WindowsStyleFileDialog は Windows の OpenFileDialog を開き、スタイル J
 実際の OS ダイアログを使う検査：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StyleDesigner.ps1 -Existing -NativeDialog -Dark
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StyleDesigner.ps1 -Existing -NativeDialog -CancelDialog
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StationeryUIEditor.ps1 -Existing -NativeDialog -Dark
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/StationeryUI.Windows.Tests/Test-StationeryUIEditor.ps1 -Existing -NativeDialog -CancelDialog
 ```
 
 ネイティブダイアログの自動操作は専用テスト環境変数が指定された場合だけ有効。同じプロセスのダイアログを確認してから、テスト用に選択済みのファイルを確定またはキャンセルする。通常起動では自動操作しない。
 
-操作方法と対象範囲は [ユーザー向けガイド](../user/style-designer.md) を参照。
+操作方法と対象範囲は [ユーザー向けガイド](../../../user/ui-editor.md) を参照。
