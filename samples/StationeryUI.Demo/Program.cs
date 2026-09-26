@@ -240,7 +240,7 @@ internal sealed partial class Demo : Game
         inspectionElapsed += gameTime.ElapsedGameTime.TotalSeconds;
         if (developerWindow.IsOpen && inspectionElapsed >= .25)
         {
-            developerWindow.Update(InspectStationery(), styles.FilePath, styles.LastError);
+            developerWindow.Update(InspectStationery(), styles.FilePath, styles.LastError, styles.AppliedStyleFingerprint);
             inspectionElapsed = 0;
         }
         var captureDown = mouse.LeftButton == ButtonState.Pressed;

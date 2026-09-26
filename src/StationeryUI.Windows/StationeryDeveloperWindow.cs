@@ -19,7 +19,7 @@ public sealed class StationeryDeveloperWindow : IDisposable
     private bool visible, requested, disposed;
     private long showSequence, captureSequence;
     private string? capturePath;
-    private string? editorExecutable, styleFilePath, styleError;
+    private string? editorExecutable, styleFilePath, styleError, appliedStyleFingerprint;
     private string requestedMode = "read";
     public bool CaptureEnabled { get { lock (gate) return visible && viewState?.CaptureEnabled == true; } }
     public string? SelectedPath { get { lock (gate) return capturePath ?? viewState?.SelectedPath; } }
@@ -55,7 +55,8 @@ public sealed class StationeryDeveloperWindow : IDisposable
             if (worker is null || worker.IsCompleted) worker = Task.Run(RunAsync);
         }
     }
-    public void Update(IReadOnlyList<StationeryInspectionEntry> entries, string? filePath = null, string? error = null)
+    public void Update(IReadOnlyList<StationeryInspectionEntry> entries, string? filePath = null, string? error = null,
+        string? appliedFingerprint = null)
     {
         lock (gate)
         {
@@ -63,6 +64,7 @@ public sealed class StationeryDeveloperWindow : IDisposable
             snapshot = entries.ToArray();
             if (filePath is not null) styleFilePath = Path.GetFullPath(filePath);
             styleError = error;
+            appliedStyleFingerprint = appliedFingerprint;
         }
     }
 
@@ -103,7 +105,8 @@ public sealed class StationeryDeveloperWindow : IDisposable
             {
                 DeveloperInspectionMessage message;
                 lock (gate) message = new(snapshot, showSequence, viewState, capturePath, captureSequence)
-                { EditorMode = requestedMode, StyleFilePath = styleFilePath, StyleError = styleError };
+                { EditorMode = requestedMode, StyleFilePath = styleFilePath, StyleError = styleError,
+                    AppliedStyleFingerprint = appliedStyleFingerprint };
                 await writer.WriteLineAsync(JsonSerializer.Serialize(message).AsMemory(), stopping.Token);
                 // The editor may ask whether to save, discard, or cancel an in-progress draft.
                 var response = await reader.ReadLineAsync(stopping.Token).AsTask().WaitAsync(TimeSpan.FromMinutes(5), stopping.Token);

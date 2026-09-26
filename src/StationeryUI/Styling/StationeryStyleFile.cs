@@ -1,6 +1,8 @@
 ﻿namespace StationeryUI.Styling;
 
 using System.Text.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 /// <summary>Always watches loading configuration; watches visual styles only when enabled.
 /// Call Update from the game loop. All reads and state changes occur on the calling thread.</summary>
@@ -22,6 +24,8 @@ public sealed class StationeryStyleFile
     public StationeryStyleConfiguration Configuration { get; private set; } = StationeryStyleConfiguration.Default;
     public StationeryStyleSettings Current { get; private set; } = StationeryStyleSettings.Default;
     public string? LastError => configurationError ?? styleError;
+    /// <summary>Fingerprint of the last style text accepted by the running application.</summary>
+    public string? AppliedStyleFingerprint { get; private set; }
 
     public StationeryStyleFile(string configurationFilePath, StationeryStyleSettings? fallback = null,
         Action<StationeryStyleSettings>? validate = null)
@@ -112,6 +116,7 @@ public sealed class StationeryStyleFile
             validate?.Invoke(next);
             Current = next;
             acceptedStyleText = text;
+            AppliedStyleFingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
             pendingStyleText = null;
             styleError = DockErrors(next);
             needsInitialStyle = false;

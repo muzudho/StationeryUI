@@ -11,7 +11,7 @@ internal sealed partial class EditorGame
     private string? readFile;
     private StationeryDeveloperView? readView;
     private StationeryUiHost? readActions;
-    private StationeryUiHost.Element? readEditButton, readCloseButton, readPreviewButton, readPreviewHeading;
+    private StationeryUiHost.Element? readEditButton, readCloseButton, readPreviewButton, readPreviewHeading, readLiveStatus;
     private bool readSmokeSelectionApplied;
 
     private void OpenReadStyle(string? path, bool discardChanges = false)
@@ -51,6 +51,7 @@ internal sealed partial class EditorGame
             readPreviewButton!.Label = showReadPreview ? "詳細を見る" : "プレビューを見る";
         });
         readPreviewHeading = actions.AddTextBlock(actions.Root.AddChild("readPreviewHeading", "textBlock"), new(), "レイアウトプレビュー");
+        readLiveStatus = actions.AddTextBlock(actions.Root.AddChild("readLiveStatus", "textBlock"), new(), "");
         readEditButton = actions.AddButton("readEdit", new(), "編集を開始", () =>
         {
             if (readFile is null) return;
@@ -96,6 +97,8 @@ internal sealed partial class EditorGame
         readPreviewButton!.Bounds = new(width - buttonWidth * 3, 4, buttonWidth, 40);
         readEditButton!.Bounds = new(width - buttonWidth * 2, 4, buttonWidth, 40);
         readCloseButton!.Bounds = new(width - buttonWidth, 4, buttonWidth, 40);
+        readLiveStatus!.Bounds = new(260, 4, Math.Max(0, width - buttonWidth * 3 - 268), 40);
+        readLiveStatus.Label = liveStyleStatus;
         actions.Focus.SetEnabled(readEditButton.Path, readFile is not null);
         actions.Focus.SetEnabled(readPreviewButton.Path, readPreviewBlueprint is not null);
         readView.OperationLog.HostIsActive = IsActive;

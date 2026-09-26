@@ -5,6 +5,8 @@ using StationeryUI.Inspection;
 using StationeryUI.MonoGame;
 using StationeryUI.Windows;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows.Forms;
 
 internal sealed partial class EditorGame
@@ -14,6 +16,7 @@ internal sealed partial class EditorGame
     private long lastShowSequence = -1, lastCaptureSequence;
     private bool liveDisconnectedReported;
     private string? lastStyleError;
+    private string liveStyleStatus = "";
 
     private void StartLiveConnection()
     {
@@ -22,6 +25,7 @@ internal sealed partial class EditorGame
         readView.EmbeddedInEditor = true;
         readView.Theme = theme with { Selected = theme.Surface };
         liveConnection = new(launch.LivePipe);
+        liveStyleStatus = "アプリへの接続を待っています…";
     }
 
     private void ReceiveLivePacket()
@@ -29,6 +33,7 @@ internal sealed partial class EditorGame
         livePacket = liveConnection?.Take();
         if (livePacket is null) return;
         var message = livePacket.Message;
+        liveStyleStatus = GetLiveStyleStatus(message);
         readView!.Refresh(message.Entries);
         if (lastShowSequence < 0) readView.Restore(message.RestoreState);
         if (message.CaptureSequence != lastCaptureSequence)
@@ -73,7 +78,29 @@ internal sealed partial class EditorGame
             liveDisconnectedReported = true;
             readView?.Restore(readView.Capture() with { CaptureEnabled = false });
             Window.Title = "文房具UIエディター — アプリとの接続が終了（最後の検査結果）";
+            liveStyleStatus = "アプリとの接続が終了しました（最後の検査結果）";
         }
+    }
+
+    private string GetLiveStyleStatus(DeveloperInspectionMessage packet)
+    {
+        if (packet.StyleError is not null) return "アプリの再読込失敗：" + packet.StyleError;
+        var file = readMode ? readFile : saveSession?.FilePath;
+        if (file is null) return "アプリ接続中（比較するファイルなし）";
+        if (packet.StyleFilePath is null || !string.Equals(Path.GetFullPath(packet.StyleFilePath), file, StringComparison.OrdinalIgnoreCase))
+            return "アプリは別の文房具UIファイルを表示中";
+        if (saveSession?.IsDirty == true || invalidDraft || saveError is not null)
+            return "編集内容は保存待ち。アプリへの反映も待機中";
+        if (packet.AppliedStyleFingerprint is null) return "アプリの反映状態は確認できません";
+        try
+        {
+            var text = File.ReadAllText(file);
+            var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
+            return string.Equals(packet.AppliedStyleFingerprint, fingerprint, StringComparison.OrdinalIgnoreCase)
+                ? "アプリへ反映済み" : "保存済み。アプリの再読込を待っています";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        { return "反映状態を確認できません：" + ex.Message; }
     }
 
     private void SwitchToEdit(string? path)

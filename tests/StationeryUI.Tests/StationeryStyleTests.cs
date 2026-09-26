@@ -1,6 +1,8 @@
 using StationeryUI.Canvas;
 using StationeryUI.Styling;
 using System.Text.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 internal static class StationeryStyleTests
 {
@@ -36,14 +38,18 @@ internal static class StationeryStyleTests
             Poll(file);
             Equal(24d, file.Current.Padding.Left);
             Equal(null, file.LastError);
+            var applied = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(File.ReadAllText(path))));
+            Equal(applied, file.AppliedStyleFingerprint);
             File.WriteAllText(path, "{\"viewport\":");
             Poll(file); Poll(file);
             Equal(true, file.Configuration.AutoReload);
             Equal(24d, file.Current.Padding.Left);
             Equal(true, file.LastError is not null);
+            Equal(applied, file.AppliedStyleFingerprint); // A failed reload must not claim the invalid file was applied.
             File.WriteAllText(path, Style("""{"bottom":"80px"}"""));
             Poll(file); Poll(file);
             Equal(80d, file.Current.Padding.Bottom);
+            Equal(false, file.AppliedStyleFingerprint == applied);
             Equal(8d, file.Current.Padding.Left); // Omitted sides reset to defaults.
             Configure(false);
             Poll(file); Poll(file);

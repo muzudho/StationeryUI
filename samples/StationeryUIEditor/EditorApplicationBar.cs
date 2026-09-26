@@ -8,6 +8,7 @@ internal sealed partial class EditorGame
     private int BodyTop => editingPage ? ApplicationBarHeight : 0;
     private StationeryUiHost applicationBar = null!;
     private StationeryUiHost.Element applicationBackground = null!, restoreButton = null!;
+    private StationeryUiHost.Element liveStatusLabel = null!;
     private bool applicationBarActive;
 
     private void BuildApplicationBar()
@@ -27,6 +28,7 @@ internal sealed partial class EditorGame
             () => pendingPage = () => Guard(OpenRestoreDialog));
         applicationBar.AddButton("export", new(552, 4, 144, 32), "エクスポート", () => pendingPage = () => Guard(OpenExportDialog));
         pageButton = applicationBar.AddButton("pages", new(704, 4, 144, 32), "ページ編集", () => pendingPage = () => Guard(OpenPageDialog));
+        liveStatusLabel = applicationBar.AddTextBlock(applicationBar.Root.AddChild("liveStatus", "textBlock"), new(), "");
     }
 
     private void ArrangeApplicationBar()
@@ -35,5 +37,7 @@ internal sealed partial class EditorGame
         applicationBackground.Bounds = new(0, 0, GraphicsDevice.Viewport.Width, ApplicationBarHeight);
         applicationBar.Focus.SetEnabled(restoreButton.Path, saveSession is not null);
         applicationBar.Focus.SetEnabled(pageButton.Path, blueprint.CanEditPages);
+        liveStatusLabel.Bounds = new(856, 4, Math.Max(0, GraphicsDevice.Viewport.Width - 864), 32);
+        liveStatusLabel.Label = liveStyleStatus;
     }
 }

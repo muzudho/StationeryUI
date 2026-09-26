@@ -16,6 +16,7 @@ public sealed record DeveloperInspectionMessage(StationeryInspectionEntry[] Entr
     public string EditorMode { get; init; } = "read";
     public string? StyleFilePath { get; init; }
     public string? StyleError { get; init; }
+    public string? AppliedStyleFingerprint { get; init; }
 }
 
 /// <summary>Read-only inspector model. Refreshes snapshots without losing tree expansion or selection.</summary>
