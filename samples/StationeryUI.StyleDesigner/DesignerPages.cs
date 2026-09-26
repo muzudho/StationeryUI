@@ -93,6 +93,7 @@ internal sealed partial class DesignerGame
         var scale = BodyScale;
         ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, BodyTop);
         if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Viewport.Offset = new(0, BodyTop); }
+        if (PageSmoke) OpenPageDialog();
     }
 
     private void BuildReadOnly()
@@ -330,7 +331,12 @@ internal sealed partial class DesignerGame
     {
         if (string.IsNullOrEmpty(smokeOutput)) return;
         keyboard = new();
-        if (startupFile is not null) { mouse = new(); return; }
+        if (startupFile is not null)
+        {
+            mouse = new();
+            if (DeletePageSmoke && frames == 12) pendingPage = OpenPageDialog;
+            return;
+        }
         if (!editingPage)
         {
             var area = ui.Viewport.ToWindow(new(540, string.IsNullOrEmpty(smokeInput) ? 349 : 525, 520, 64));
@@ -394,6 +400,8 @@ internal sealed partial class DesignerGame
         if (startupFile is not null && (!editingPage || !blueprint.IsImported ||
             sourceFile != Path.GetFullPath(startupFile) || saveSession?.FilePath != sourceFile))
             throw new InvalidOperationException("Command-line file did not open for editing.");
+        if (PageSmoke && blueprint.PageNames.Contains("vTestPage") == DeletePageSmoke)
+            throw new InvalidOperationException("Page dialog did not add/delete the page.");
         if (editingPage && styleTree?.Tree is { } tree)
         {
             var previous = tree.TargetItem;

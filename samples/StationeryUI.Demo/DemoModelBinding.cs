@@ -110,7 +110,12 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             else if (node != root && node != dialog && node.Kind is not ("page" or "container"))
                 throw new JsonException($"The demo has no code binding for {node.Path} ({node.Kind}).");
         }
-        return new(root, topPage, splitPage, layoutPage, dialog, layoutControls, splitControls, main, dialogControls, string.Join('\n', all.Select(node => node.Path + ":" + node.Kind)));
+        // Only nodes owned by the code-defined demo controls require a host rebind.
+        // Extra pages are document content, not additional controls in these hosts.
+        var hosted = new[] { root, topPage, splitPage, layoutPage, dialog }
+            .Concat(bound).Distinct();
+        return new(root, topPage, splitPage, layoutPage, dialog, layoutControls, splitControls, main, dialogControls,
+            string.Join('\n', hosted.Select(node => node.Path + ":" + node.Kind).Order(StringComparer.Ordinal)));
     }
 
     private static IEnumerable<string> LayoutIds(string layoutPath)

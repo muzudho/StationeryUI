@@ -50,6 +50,9 @@ internal sealed partial class DesignerGame : Game
     private int frames;
     private ButtonState previousLoggedLeftButton;
     private readonly string? smokeOutput = Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_OUTPUT");
+    private bool PageSmoke => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_PAGES"));
+    private bool DeletePageSmoke => Environment.GetEnvironmentVariable("STATIONERYUI_DESIGNER_TEST_PAGES") == "delete";
+    private StationeryUiHost.Element pageButton = null!;
     private readonly string? startupFile;
 
     public DesignerGame(string? startupFile = null)
@@ -241,11 +244,12 @@ internal sealed partial class DesignerGame : Game
     private void UpdateFrame(GameTime gameTime)
     {
         var scale = BodyScale;
-        if (utilityDialog is not null || restoreDialog is not null || layoutDialog is not null)
+        if (utilityDialog is not null || restoreDialog is not null || layoutDialog is not null || pageDialog is not null)
             previewWasActive = false;
         if (utilityDialog is not null) { UpdateUtilityDialog(gameTime); base.Update(gameTime); return; }
         if (restoreDialog is not null) { UpdateRestoreDialog(gameTime); base.Update(gameTime); return; }
         if (layoutDialog is not null) { UpdateLayoutDialog(gameTime, scale); base.Update(gameTime); return; }
+        if (pageDialog is not null) { UpdatePageDialog(gameTime, scale); base.Update(gameTime); return; }
         ui.Viewport.Scale = scale;
         ui.Viewport.Offset = editingPage ? new(320 * scale, BodyTop)
             : new((GraphicsDevice.Viewport.Width - 1600 * scale) / 2,
@@ -306,12 +310,13 @@ internal sealed partial class DesignerGame : Game
         DrawInspector();
         DrawModalBackdrop();
         layoutDialog?.Draw();
+        pageDialog?.Draw();
         restoreDialog?.Draw();
         utilityDialog?.Draw();
         CaptureWelcomeSmoke();
         SavePickerScreenshot();
         CaptureUtilitySmoke();
-        if (!string.IsNullOrEmpty(smokeOutput) && ++frames == (SaveSmoke ? 150 : 32))
+        if (!string.IsNullOrEmpty(smokeOutput) && ++frames == (SaveSmoke || PageSmoke ? 150 : 32))
         {
             var data = new Microsoft.Xna.Framework.Color[GraphicsDevice.Viewport.Width * GraphicsDevice.Viewport.Height];
             GraphicsDevice.GetBackBufferData(data);
@@ -326,5 +331,5 @@ internal sealed partial class DesignerGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { operationLog.Dispose(); modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { operationLog.Dispose(); modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); pageDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }

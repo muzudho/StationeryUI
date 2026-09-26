@@ -146,10 +146,10 @@ internal sealed partial class Demo : Game
             var next = DemoModelBinding.Create(styles.Current);
             if (next.Signature != modelBinding.Signature)
             {
-                ui!.RebindModel(next.TopPage, element => next.Main[element.Id]);
-                popupUi!.RebindModel(next.Dialog, element => next.DialogControls[element.Id]);
-                splitUi!.RebindModel(next.SplitPage, element => next.SplitControls[element.Id]);
-                layoutUi!.RebindModel(next.LayoutPage, element => next.LayoutControls[element.Id]);
+                ui!.RebindModel(next.TopPage, element => next.Main[StationeryControlHandle.ModelRoleFromId(element.Id)]);
+                popupUi!.RebindModel(next.Dialog, element => next.DialogControls[StationeryControlHandle.ModelRoleFromId(element.Id)]);
+                splitUi!.RebindModel(next.SplitPage, element => next.SplitControls[StationeryControlHandle.ModelRoleFromId(element.Id)]);
+                layoutUi!.RebindModel(next.LayoutPage, element => next.LayoutControls[StationeryControlHandle.ModelRoleFromId(element.Id)]);
                 modelBinding = next;
             }
             appliedStyle = styles.Current;

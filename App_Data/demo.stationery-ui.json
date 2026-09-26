@@ -880,6 +880,34 @@
                         }
                     ],
                     "place": 1
+                },
+                {
+                    "type": "Page",
+                    "name": "vVNewPage1",
+                    "layout": {
+                        "name": "csVNewPage1Layout",
+                        "type": "BoxLayout"
+                    },
+                    "controlHandle": "ctrlVNewPage1",
+                    "modelPath": {
+                        "in /ctrlViewPort/ctrlVNewPage1": "/mdlDemo/mdlVNewPage1"
+                    },
+                    "children": [],
+                    "place": 3
+                },
+                {
+                    "type": "Page",
+                    "name": "vNewPage2",
+                    "layout": {
+                        "name": "csNewPage2Layout",
+                        "type": "BoxLayout"
+                    },
+                    "controlHandle": "ctrlNewPage2",
+                    "modelPath": {
+                        "in /ctrlViewPort/ctrlNewPage2": "/mdlDemo/mdlNewPage2"
+                    },
+                    "children": [],
+                    "place": 4
                 }
             ]
         }
@@ -1083,6 +1111,16 @@
                         ]
                     }
                 ]
+            },
+            {
+                "id": "mdlVNewPage1",
+                "type": "page",
+                "children": []
+            },
+            {
+                "id": "mdlNewPage2",
+                "type": "page",
+                "children": []
             }
         ]
     }

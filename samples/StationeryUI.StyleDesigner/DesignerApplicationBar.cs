@@ -26,6 +26,7 @@ internal sealed partial class DesignerGame
         restoreButton = applicationBar.AddButton("restore", new(336, 4, 208, 32), "セーブポイントに戻す",
             () => pendingPage = () => Guard(OpenRestoreDialog));
         applicationBar.AddButton("export", new(552, 4, 144, 32), "エクスポート", () => pendingPage = () => Guard(OpenExportDialog));
+        pageButton = applicationBar.AddButton("pages", new(704, 4, 144, 32), "ページ編集", () => pendingPage = () => Guard(OpenPageDialog));
     }
 
     private void ArrangeApplicationBar()
@@ -33,5 +34,6 @@ internal sealed partial class DesignerGame
         applicationBar.Theme = theme with { FontSize = 14, Padding = 2 };
         applicationBackground.Bounds = new(0, 0, GraphicsDevice.Viewport.Width, ApplicationBarHeight);
         applicationBar.Focus.SetEnabled(restoreButton.Path, saveSession is not null);
+        applicationBar.Focus.SetEnabled(pageButton.Path, blueprint.CanEditPages);
     }
 }

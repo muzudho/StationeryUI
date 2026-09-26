@@ -9,6 +9,30 @@ internal static class DesignerReferenceTests
         var source = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-ui.json"));
         var plan = StyleBlueprint.Parse(source);
         var original = JsonNode.Parse(source)!;
+        plan.AddPage("testPage");
+        var demoBefore = DemoModelBinding.Create(StationeryStyleSettings.Parse(source));
+        var demoAfter = DemoModelBinding.Create(StationeryStyleSettings.Parse(plan.BuildJson()));
+        Check(demoBefore.Signature == demoAfter.Signature, "an extra page does not rebind the code-defined demo controls");
+        foreach (var controls in new[] { demoAfter.Main, demoAfter.DialogControls, demoAfter.SplitControls, demoAfter.LayoutControls })
+            foreach (var node in controls.Values)
+                Check(controls[StationeryControlHandle.ModelRoleFromId(node.Id)] == node,
+                    "host rebinding resolves the model role: " + node.Id);
+        Check(plan.CreatePreview(1000, 700, "/csTestPageLayout").Layout.Bounds.Count > 0,
+            "new page layout is previewable");
+        var added = StyleBlueprint.Parse(plan.BuildJson());
+        Check(added.PageNames.Contains("vTestPage"), "new page survives reopening");
+        added.DeletePage("vTestPage");
+        Check(JsonNode.DeepEquals(original, JsonNode.Parse(added.BuildJson())), "deleting a new page restores the original document");
+        foreach (var pageName in added.PageNames)
+        {
+            var withoutPage = StyleBlueprint.Parse(source);
+            withoutPage.DeletePage(pageName);
+            Check(withoutPage.PageNames.Count == added.PageNames.Count - 1, "existing page deletion survives validation: " + pageName);
+            var snapshot = JsonNode.Parse(withoutPage.BuildJson())!["initialViewportSnapshot"]![0]!["children"]!.AsArray();
+            Check(snapshot.Count > 0 && withoutPage.PageNames.Contains((string?)snapshot[0]?["name"] ?? ""),
+                "deleting the visible page selects a remaining page: " + pageName);
+        }
+        plan = StyleBlueprint.Parse(source);
         Check(JsonNode.DeepEquals(original, JsonNode.Parse(plan.BuildJson())), "opening preserves references and definitions");
         var settings = StationeryStyleSettings.Parse(source);
         var paths = StyleBlueprint.LayoutNodes(original).Select(l => l.Path).ToArray();

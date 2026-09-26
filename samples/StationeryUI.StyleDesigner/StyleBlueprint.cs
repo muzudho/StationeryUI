@@ -16,6 +16,76 @@ public sealed class StyleBlueprint
     public string DefaultLayoutPath => "/" + DefaultLayoutId;
     public bool IsImported => imported is not null;
     public bool CanAddLayout => imported?.ContainsKey("layouts") == true;
+    public bool CanEditPages => imported?["viewports"] is JsonArray;
+    public IReadOnlyList<string> PageNames => imported is null ? [] : ViewportPages(imported)
+        .Select(page => (string?)page?["name"] ?? "").ToArray();
+    private static JsonArray ViewportPages(JsonObject root)
+    {
+        if (root["viewports"] is not JsonArray views || views.Count != 1 ||
+            views[0]?["children"] is not JsonArray pages ||
+            pages.Any(page => (string?)page?["type"] != "Page"))
+            throw new ArgumentException("ページの編集には、単一の viewports に Page が並ぶ形式が必要です。");
+        return pages;
+    }
+    public void AddPage(string name)
+    {
+        if (imported is null) throw new ArgumentException("先に文房具UIファイルを開いてください。");
+        if (!System.Text.RegularExpressions.Regex.IsMatch(name, "^[a-z][a-zA-Z0-9]*$"))
+            throw new ArgumentException("ページ名は英小文字で始まる英数字にしてください。");
+        var draft = JsonNode.Parse(BuildJson())!.AsObject();
+        var pages = ViewportPages(draft);
+        var suffix = char.ToUpperInvariant(name[0]) + name[1..];
+        var viewName = "v" + suffix;
+        var modelName = "mdl" + suffix;
+        if (pages.Any(page => (string?)page?["name"] == viewName) ||
+            draft["modelTree"]?["children"] is not JsonArray modelPages ||
+            modelPages.Any(page => (string?)page?["id"] == modelName))
+            throw new ArgumentException("そのページ名はすでに使われています。");
+        pages.Add(new JsonObject
+        {
+            ["type"] = "Page", ["name"] = viewName,
+            ["layout"] = new JsonObject { ["name"] = "cs" + suffix + "Layout", ["type"] = "BoxLayout" },
+            ["controlHandle"] = "ctrl" + suffix,
+            ["modelPath"] = new JsonObject { ["in /ctrlViewPort/ctrl" + suffix] = "/" + (string?)draft["modelTree"]?["id"] + "/" + modelName },
+            ["children"] = new JsonArray(), ["place"] = pages.Count
+        });
+        modelPages.Add(new JsonObject { ["id"] = modelName, ["type"] = "page", ["children"] = new JsonArray() });
+        Serialize(draft);
+        imported = draft;
+    }
+    public void DeletePage(string viewName)
+    {
+        if (imported is null) throw new ArgumentException("先に文房具UIファイルを開いてください。");
+        var draft = JsonNode.Parse(BuildJson())!.AsObject();
+        var pages = ViewportPages(draft);
+        var index = pages.ToList().FindIndex(page => (string?)page?["name"] == viewName);
+        if (index < 0) throw new ArgumentException("ページが見つかりません。");
+        if (pages.Count == 1) throw new ArgumentException("最後のページは削除できません。");
+        var modelName = "mdl" + viewName[1..];
+        if (draft["modelTree"]?["children"] is not JsonArray modelPages)
+            throw new ArgumentException("対応する modelTree が見つかりません。");
+        var modelIndex = modelPages.ToList().FindIndex(page => (string?)page?["id"] == modelName);
+        if (modelIndex < 0) throw new ArgumentException("対応するモデルページが見つかりません。");
+        pages.RemoveAt(index);
+        modelPages.RemoveAt(modelIndex);
+        if (draft["initialViewportSnapshot"] is JsonArray snapshots)
+            foreach (var snapshot in snapshots)
+                if (snapshot?["children"] is JsonArray visible)
+                {
+                    var removed = false;
+                    foreach (var item in visible.ToArray())
+                        if ((string?)item?["name"] == viewName) { visible.Remove(item); removed = true; }
+                    if (removed && visible.Count == 0)
+                        visible.Add(new JsonObject { ["name"] = (string?)pages[0]?["name"], ["children"] = new JsonArray() });
+                }
+        Serialize(draft);
+        imported = draft;
+        if (SelectedLayoutId is not null && FindLayout(draft, SelectedLayoutId) is null)
+        {
+            SelectedLayoutId = null; PanelEdges.Clear();
+            if (EditableLayouts.Count > 0) SelectLayout(EditableLayouts[0]);
+        }
+    }
     public string? SelectedLayoutId { get; private set; }
     public static IEnumerable<(string Path, JsonNode Node)> LayoutNodes(JsonNode root)
     {
