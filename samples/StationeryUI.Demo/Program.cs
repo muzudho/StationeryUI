@@ -78,6 +78,7 @@ internal sealed partial class Demo : Game
             _ = new StationeryViewNavigator(settings);
         });
         modelBinding = DemoModelBinding.Create(styles.Current);
+        ConfigureIntegratedEditor();
         viewNavigator = new(styles.Current);
         appliedStyle = styles.Current;
         System.Diagnostics.Trace.WriteLine($"StationeryUI configuration: {styles.ConfigurationFilePath}");
@@ -232,14 +233,14 @@ internal sealed partial class Demo : Game
         var f12Key = keyboard.IsKeyDown(Keys.F12);
         var developerKey = f12Key && !controlKey;
         if (IsActive && developerKey && !previousDeveloperKey) developerWindow.Show(InspectStationery());
-        previousDeveloperKey = f12Key;
+        previousDeveloperKey = developerKey;
         var editorKey = f12Key && controlKey;
         if (IsActive && editorKey && !previousEditorKey) OpenUiEditor();
-        previousEditorKey = f12Key;
+        previousEditorKey = editorKey;
         inspectionElapsed += gameTime.ElapsedGameTime.TotalSeconds;
         if (developerWindow.IsOpen && inspectionElapsed >= .25)
         {
-            developerWindow.Update(InspectStationery());
+            developerWindow.Update(InspectStationery(), styles.FilePath, styles.LastError);
             inspectionElapsed = 0;
         }
         var captureDown = mouse.LeftButton == ButtonState.Pressed;

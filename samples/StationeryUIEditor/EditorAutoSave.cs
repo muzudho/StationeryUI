@@ -24,11 +24,13 @@ internal sealed partial class EditorGame
         var opened = StyleSaveSession.Open(path);
         pendingPage = () =>
         {
+            readMode = false;
             saveSession = opened.Session; blueprint = opened.Blueprint;
             saveError = null; invalidDraft = false;
             sourceFile = outputPath = saveSession.FilePath;
             selectedRow = selectedColumn = 0;
             BeginEditing("読み込み時のセーブポイントを作成しました。変更は元ファイルへ自動保存します。");
+            Window.Title = "文房具UIエディター — 編集 — " + Path.GetFileName(saveSession.FilePath);
         };
     }
 

@@ -16,14 +16,15 @@ internal static class Program
     {
         try
         {
-            if (args.Length > 1) throw new ArgumentException("引数には開く文房具UIファイルを1つ指定してください。");
-            using var game = new EditorGame(args.FirstOrDefault());
+            using var game = new EditorGame(EditorLaunchOptions.Parse(args));
             game.Run();
         }
         catch (Exception ex)
         {
             var testOutput = Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_OUTPUT");
             if (!string.IsNullOrEmpty(testOutput)) File.WriteAllText(Path.Combine(testOutput, "error.txt"), ex.ToString());
+            var crashLog = Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_CRASH_LOG");
+            if (!string.IsNullOrEmpty(crashLog)) File.WriteAllText(crashLog, ex.ToString());
             throw;
         }
     }
@@ -53,11 +54,12 @@ internal sealed partial class EditorGame : Game
     private bool PageSmoke => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_PAGES"));
     private bool DeletePageSmoke => Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_PAGES") == "delete";
     private StationeryUiHost.Element pageButton = null!;
-    private readonly string? startupFile;
+    private readonly EditorLaunchOptions launch;
+    private string? startupFile => launch.FilePath;
 
-    public EditorGame(string? startupFile = null)
+    public EditorGame(EditorLaunchOptions launch)
     {
-        this.startupFile = startupFile;
+        this.launch = launch;
         operationLog = new();
         // WorkingArea excludes the taskbar, including taskbars on the top or left.
         startupWorkArea = System.Windows.Forms.Screen.FromPoint(System.Windows.Forms.Cursor.Position).WorkingArea;
@@ -91,7 +93,11 @@ internal sealed partial class EditorGame : Game
         if (!string.IsNullOrEmpty(smokeOutput) && Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_DARK") == "1")
             theme = StationeryTheme.Dark with { FontSize = 16, Padding = 4 };
         BuildWelcome();
-        if (startupFile is not null) Guard(() => OpenStyle(Path.GetFullPath(startupFile)));
+        if (launch.Mode == EditorLaunchMode.Edit && launch.FilePath is not null)
+            Guard(() => OpenStyle(launch.FilePath));
+        else if (launch.Mode == EditorLaunchMode.Read)
+            Guard(() => OpenReadStyle(launch.FilePath));
+        StartLiveConnection();
     }
     private StationeryUiHost.Element Text(string id, ScreenRectangle bounds, string text) =>
         ui.AddTextBlock(ui.Root.AddChild(id, "textBlock"), bounds, text);
@@ -177,6 +183,7 @@ internal sealed partial class EditorGame : Game
     }
     protected override void Update(GameTime gameTime)
     {
+        ReceiveLivePacket();
         var pageBefore = CurrentPageName;
         var mouse = Mouse.GetState();
         string? clickTarget = null;
@@ -196,7 +203,7 @@ internal sealed partial class EditorGame : Game
             });
         }
         previousLoggedLeftButton = mouse.LeftButton;
-        try { UpdateFrame(gameTime); }
+        try { UpdateFrame(gameTime); RespondLivePacket(gameTime); }
         finally
         {
             var pageAfter = CurrentPageName;
@@ -214,7 +221,7 @@ internal sealed partial class EditorGame : Game
     private string CurrentPageName => layoutDialog is not null ? "layout-dialog"
         : restoreDialog is not null ? "restore-dialog"
         : utilityDialog is not null ? exportDialog ? "export-dialog" : "resize-confirm-dialog"
-        : editingPage ? "editor" : "welcome";
+        : editingPage ? "editor" : readMode ? "read" : "welcome";
 
     private string? FindClickedPath(int x, int y)
     {
@@ -243,6 +250,7 @@ internal sealed partial class EditorGame : Game
 
     private void UpdateFrame(GameTime gameTime)
     {
+        if (readMode) { UpdateReadMode(gameTime); return; }
         var scale = BodyScale;
         if (utilityDialog is not null || restoreDialog is not null || layoutDialog is not null || pageDialog is not null)
             previewWasActive = false;
@@ -304,6 +312,7 @@ internal sealed partial class EditorGame : Game
     }
     protected override void Draw(GameTime gameTime)
     {
+        if (readMode) { DrawReadMode(gameTime); return; }
         GraphicsDevice.Clear(StationeryUiHost.Convert(ui.Theme.Background)); ui.Draw();
         if (editingPage) { sidebar?.Draw(); DrawLivePreview(); }
         if (editingPage) { ArrangeApplicationBar(); applicationBar.Draw(); }
@@ -331,5 +340,5 @@ internal sealed partial class EditorGame : Game
         base.Draw(gameTime);
     }
     protected override void Dispose(bool disposing)
-    { if (disposing) { operationLog.Dispose(); modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); pageDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
+    { if (disposing) { liveConnection?.Dispose(); operationLog.Dispose(); readView?.Dispose(); readActions?.Dispose(); modalSprites?.Dispose(); modalPixel?.Dispose(); utilityDialog?.Dispose(); applicationBar?.Dispose(); restoreDialog?.Dispose(); inspector?.Dispose(); livePreview?.Dispose(); layoutDialog?.Dispose(); pageDialog?.Dispose(); ui?.Dispose(); sidebar?.Dispose(); input?.Dispose(); } base.Dispose(disposing); }
 }

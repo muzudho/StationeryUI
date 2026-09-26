@@ -10,7 +10,13 @@ public sealed record DeveloperViewState(string? SelectedPath, string[] Collapsed
     public DeveloperTreeMode TreeMode { get; init; }
     public DeveloperViewState? OtherTreeState { get; init; }
 }
-public sealed record DeveloperInspectionMessage(StationeryInspectionEntry[] Entries, long ShowSequence, DeveloperViewState? RestoreState, string? CapturePath = null, long CaptureSequence = 0);
+public sealed record DeveloperInspectionMessage(StationeryInspectionEntry[] Entries, long ShowSequence, DeveloperViewState? RestoreState, string? CapturePath = null, long CaptureSequence = 0)
+{
+    public int ProtocolVersion { get; init; } = 1;
+    public string EditorMode { get; init; } = "read";
+    public string? StyleFilePath { get; init; }
+    public string? StyleError { get; init; }
+}
 
 /// <summary>Read-only inspector model. Refreshes snapshots without losing tree expansion or selection.</summary>
 public sealed class DeveloperInspectionModel

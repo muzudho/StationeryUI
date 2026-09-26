@@ -61,7 +61,11 @@ function Wait-Window([int]$processId,[string]$prefix,[bool]$visible=$true) {
 }
 function Send-Input([bool]$down=$false,[int[]]$keys=@()) {
  $script:inputSequence++
- @{Sequence=$script:inputSequence;X=$script:inputX;Y=$script:inputY;Down=$down;Keys=@($keys)} | ConvertTo-Json -Compress | Set-Content -LiteralPath $inputPath -Encoding UTF8
+ $payload=@{Sequence=$script:inputSequence;X=$script:inputX;Y=$script:inputY;Down=$down;Keys=@($keys)} | ConvertTo-Json -Compress
+ for($attempt=0;$attempt -lt 20;$attempt++) {
+  try { Set-Content -LiteralPath $inputPath -Value $payload -Encoding UTF8; break }
+  catch [System.IO.IOException] { if($attempt -eq 19){throw}; Start-Sleep -Milliseconds 25 }
+ }
  $null=Wait-Report {param($r) $r.InputSequence -eq $script:inputSequence}
 }
 function Key([IntPtr]$h,[int]$code) {
@@ -123,21 +127,23 @@ try {
  $inspectorProcess=Get-Process -Id $r.ProcessId
  if($inspectorProcess.Id -eq $demo.Id){throw 'Inspector must have its own MonoGame process'}
  $dev=Wait-Window $inspectorProcess.Id 'F12 開発者ウィンドウ'
- $r=Select-Path '/demo/topDemoPage/body/nameField'
+ $r=Select-Path '/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField'
  if(!$r.Details.Contains('種類: textBox')){throw 'Details missing'}
+ if($r.Details -notmatch 'X=(\d+)'){throw 'Initial X coordinate missing'}
+ $initialX=[int]$Matches[1]
  $style=Get-Content (Join-Path $outputPath 'style.json') -Raw -Encoding UTF8 | ConvertFrom-Json
- ($style.layouts | Where-Object { $_.id -eq 'bodyPadding' }).padding.left='64px'
+ $style.viewports[0].children[0].children[0].layout.padding.left='64px'
  $style | ConvertTo-Json -Depth 30 | Set-Content (Join-Path $outputPath 'style.json') -Encoding UTF8
- $r=Wait-Report {param($r) $r.Details.Contains('X=64') -and $r.State.SelectedPath -eq '/demo/topDemoPage/body/nameField'}
+ $r=Wait-Report {param($r) $r.State.SelectedPath -eq '/mdlDemo/mdlTopDemoPage/mdlBody/mdlNameField' -and $r.Details -match 'X=(\d+)' -and [int]$Matches[1] -gt $initialX}
  Write-Output 'PASS live coordinates update without losing selection'
- $r=Select-Path '/demo/topDemoPage/body/sampleTree'
+ $r=Select-Path '/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree'
  Key $dev 0x25
- $null=Wait-Report {param($r) $r.State.CollapsedPaths -contains '/demo/topDemoPage/body/sampleTree'}
+ $null=Wait-Report {param($r) $r.State.CollapsedPaths -contains '/mdlDemo/mdlTopDemoPage/mdlBody/mdlSampleTree'}
  Write-Output 'PASS StationeryUI tree collapse survives live refresh'
- $r=Select-Path '/demo/topDemoPage/body/editDialog/nameField'
+ $r=Select-Path '/mdlDemo/mdlTopDemoPage/mdlBody/mdlEditDialog/mdlNameField'
  if(!$r.Details.Contains('非表示')){throw 'Hidden dialog should be marked hidden'}
  Click $dev ([int]($r.CopyBounds.X+80)) ([int]($r.CopyBounds.Y+20))
- $null=Wait-Report {param($r) $r.CopiedPath -eq '/demo/topDemoPage/body/editDialog/nameField'}
+ $null=Wait-Report {param($r) $r.CopiedPath -eq '/mdlDemo/mdlTopDemoPage/mdlBody/mdlEditDialog/mdlNameField'}
  Write-Output 'PASS copy complete selected path'
  $r=Report
  $splitX=$r.TreeBounds.X+$r.TreeBounds.Width+5
@@ -181,7 +187,7 @@ try {
  $r=Wait-Report {param($r) $r.State.Visible -and $r.ProcessId -ne $oldInspectorId}
  $inspectorProcess=Get-Process -Id $r.ProcessId
  $script:dev=Wait-Window $inspectorProcess.Id 'F12 開発者ウィンドウ' $false
- if($r.State.SplitRatio -le .5 -or $r.State.SelectedPath -ne '/demo/topDemoPage/body/editDialog/nameField'){throw 'Close/reopen lost view state'}
+ if($r.State.SplitRatio -le .5 -or $r.State.SelectedPath -ne '/mdlDemo/mdlTopDemoPage/mdlBody/mdlEditDialog/mdlNameField'){throw 'Close/reopen lost view state'}
  Write-Output 'PASS close button and new process restore view state'
  $null=[DevNative]::PostMessageW($main,0x10,[IntPtr]::Zero,[IntPtr]::Zero)
  if(!$demo.WaitForExit(10000)){throw 'Demo did not exit'}

@@ -19,6 +19,8 @@ public sealed class StationeryDeveloperWindow : IDisposable
     private bool visible, requested, disposed;
     private long showSequence, captureSequence;
     private string? capturePath;
+    private string? editorExecutable, styleFilePath, styleError;
+    private string requestedMode = "read";
     public bool CaptureEnabled { get { lock (gate) return visible && viewState?.CaptureEnabled == true; } }
     public string? SelectedPath { get { lock (gate) return capturePath ?? viewState?.SelectedPath; } }
     public void SelectCaptured(string path)
@@ -28,19 +30,40 @@ public sealed class StationeryDeveloperWindow : IDisposable
     public bool IsOpen { get { lock (gate) return visible || requested; } }
     public string? LastError { get; private set; }
 
+    /// <summary>Use the external UI editor as this host's inspector while retaining the legacy fallback.</summary>
+    public void UseEditor(string executable, string? filePath)
+    {
+        lock (gate)
+        {
+            if (worker is { IsCompleted: false }) throw new InvalidOperationException("Configure the editor before opening the inspector.");
+            editorExecutable = Path.GetFullPath(executable);
+            styleFilePath = filePath is null ? null : Path.GetFullPath(filePath);
+        }
+    }
+
     public void Show(IReadOnlyList<StationeryInspectionEntry> entries)
+        => Show(entries, edit: false);
+
+    public void Show(IReadOnlyList<StationeryInspectionEntry> entries, bool edit)
     {
         lock (gate)
         {
             ObjectDisposedException.ThrowIf(disposed, this);
             snapshot = entries.ToArray();
+            requestedMode = edit ? "edit" : "read";
             requested = true; showSequence++;
             if (worker is null || worker.IsCompleted) worker = Task.Run(RunAsync);
         }
     }
-    public void Update(IReadOnlyList<StationeryInspectionEntry> entries)
+    public void Update(IReadOnlyList<StationeryInspectionEntry> entries, string? filePath = null, string? error = null)
     {
-        lock (gate) { if (!disposed) snapshot = entries.ToArray(); }
+        lock (gate)
+        {
+            if (disposed) return;
+            snapshot = entries.ToArray();
+            if (filePath is not null) styleFilePath = Path.GetFullPath(filePath);
+            styleError = error;
+        }
     }
 
     private async Task RunAsync()
@@ -50,11 +73,18 @@ public sealed class StationeryDeveloperWindow : IDisposable
             PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
         try
         {
-            var executable = Environment.ProcessPath ?? throw new InvalidOperationException("No inspector host executable.");
+            var executable = editorExecutable ?? Environment.ProcessPath ?? throw new InvalidOperationException("No inspector host executable.");
             var start = new ProcessStartInfo(executable) { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Normal };
-            if (Path.GetFileNameWithoutExtension(executable).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
+            if (editorExecutable is null && Path.GetFileNameWithoutExtension(executable).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
                 start.ArgumentList.Add(Assembly.GetEntryAssembly()!.Location);
-            start.ArgumentList.Add("--stationery-inspector"); start.ArgumentList.Add(pipeName);
+            if (editorExecutable is null)
+            { start.ArgumentList.Add("--stationery-inspector"); start.ArgumentList.Add(pipeName); }
+            else
+            {
+                start.ArgumentList.Add("--live"); start.ArgumentList.Add(pipeName);
+                start.ArgumentList.Add("--mode"); start.ArgumentList.Add(requestedMode == "edit" && styleFilePath is not null ? "edit" : "read");
+                if (styleFilePath is not null) { start.ArgumentList.Add("--file"); start.ArgumentList.Add(styleFilePath); }
+            }
             // A helper must not inherit the demo's screenshot/automatic-input switches.
             foreach (var key in start.Environment.Keys.Where(key => key.StartsWith("STATIONERYUI_SMOKE_", StringComparison.Ordinal)).ToArray())
                 start.Environment.Remove(key);
@@ -72,9 +102,11 @@ public sealed class StationeryDeveloperWindow : IDisposable
             while (!stopping.IsCancellationRequested)
             {
                 DeveloperInspectionMessage message;
-                lock (gate) message = new(snapshot, showSequence, viewState, capturePath, captureSequence);
+                lock (gate) message = new(snapshot, showSequence, viewState, capturePath, captureSequence)
+                { EditorMode = requestedMode, StyleFilePath = styleFilePath, StyleError = styleError };
                 await writer.WriteLineAsync(JsonSerializer.Serialize(message).AsMemory(), stopping.Token);
-                var response = await reader.ReadLineAsync(stopping.Token).AsTask().WaitAsync(TimeSpan.FromSeconds(10), stopping.Token);
+                // The editor may ask whether to save, discard, or cancel an in-progress draft.
+                var response = await reader.ReadLineAsync(stopping.Token).AsTask().WaitAsync(TimeSpan.FromMinutes(5), stopping.Token);
                 if (response is null) break;
                 var state = JsonSerializer.Deserialize<DeveloperViewState>(response);
                 lock (gate)
@@ -97,7 +129,7 @@ public sealed class StationeryDeveloperWindow : IDisposable
             {
                 if (process is not null)
                 {
-                    if (!process.HasExited) process.Kill();
+                    if (editorExecutable is null && !process.HasExited) process.Kill();
                     process.Dispose(); process = null;
                 }
                 visible = requested = false;
@@ -117,7 +149,7 @@ public sealed class StationeryDeveloperWindow : IDisposable
         try { current?.Wait(2000); } catch (AggregateException) { }
         lock (gate)
         {
-            if (process is { HasExited: false }) process.Kill();
+            if (editorExecutable is null && process is { HasExited: false }) process.Kill();
         }
     }
 }

@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 
 var tests = new (string Name, Action Run)[]
 {
+    ("editor launch modes distinguish read, edit and legacy file arguments", EditorLaunchTests.Run),
     ("designer opens, previews and edits referenced viewport layouts", EditorReferenceTests.Run),
     ("dock layout preserves edge priority, repeats, center, clipping and grid composition", DockLayoutTests.Run),
     ("tree scrollbars handle both axes, resize, zoom and tiny viewports", TreeScrollLayoutTests.Run),

@@ -75,11 +75,13 @@ internal sealed partial class EditorGame
         });
         var resume = ui.AddButton("resume", new(540, 437, 520, 64), "現在の編集を再開", () => pendingPage = () => BeginEditing("編集を再開しました。"));
         ui.Focus.SetEnabled(resume.Path, hasDraft);
-        ui.AddButton("open", new(540, 525, 520, 64), "既存のファイルを編集する", () => Guard(() =>
+        ui.AddButton("open", new(540, 525, 520, 64), "既存ファイルを読み取る", () => Guard(() =>
         {
             var path = ChooseStyleFile();
             if (path is null) { message = "ファイルの選択をキャンセルしました。"; return; }
-            OpenStyle(path);
+            // Existing editing smoke scenarios exercise the legacy edit flow; normal file picks open read-only.
+            if (!string.IsNullOrEmpty(smokeInput)) OpenStyle(path);
+            else OpenReadStyle(path);
         }));
     }
 

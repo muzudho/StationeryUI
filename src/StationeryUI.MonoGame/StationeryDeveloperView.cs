@@ -21,6 +21,7 @@ public sealed class StationeryDeveloperView : IDisposable
     public ScreenRectangle ToolHintBounds => toolHint.Bounds;
     public string ToolHintText => toolHint.Label;
     public bool CaptureEnabled { get; private set; }
+    public bool EmbeddedInEditor { get; set; }
     public ScreenRectangle CaptureBounds => capture.Bounds;
     public StationeryDeveloperStyle Style { get; }
     public DeveloperInspectionModel Model { get; } = new();
@@ -117,6 +118,7 @@ public sealed class StationeryDeveloperView : IDisposable
     }
     public void Update(GameTime time, bool active, KeyboardState keyboard, MouseState mouse, int width, int height)
     {
+        header.Label = EmbeddedInEditor ? "文房具UIの検査" : "開発者ウィンドウ";
         var layout = StationeryLayoutEngine.Arrange(Style.Settings, width, height);
         latestLayout = layout;
         header.Bounds = layout.ContentBounds[header.Path];
@@ -138,7 +140,8 @@ public sealed class StationeryDeveloperView : IDisposable
         ui.Update(time, active, keyboard, mouse);
         toolHint.Label = ui.HoveredToolHint ?? (CaptureEnabled
             ? "キャプチャー中：画面上の文房具をクリック。手のボタンで解除。"
-            : "手のボタンでキャプチャー。F12 / Esc で閉じる。");
+            : EmbeddedInEditor ? "手のボタンでキャプチャー。編集を始めるには右上のボタンを押します。"
+                : "手のボタンでキャプチャー。F12 / Esc で閉じる。");
         if (before != Model.SelectedPath) { details.Scroll = 0; copy.Label = "パスをコピー"; }
         details.Label = Model.Details;
         details.BoxModel = Model.SelectedEntry?.BoxModel;
