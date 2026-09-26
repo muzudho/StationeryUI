@@ -242,6 +242,19 @@ internal sealed partial class EditorGame
             if (layoutSmoke == "panel") SetText(panelFields.Single(f => f.Key == "margin.left").Field, "12.5");
             else SetText(tracks[0].Field, "2.5");
         }
+        else if (frames == 13 && layoutSmoke is "delete" or "rename")
+        {
+            SetEditorTreeMode(EditorTreeMode.Json);
+            var added = styleTree!.Tree!.VisibleRows().Select(row => row.Item)
+                .FirstOrDefault(item => treePaths.TryGetValue(item.Id, out var path)
+                    && path is ["layouts", _] && blueprint.NodeId(path) == "123_layout");
+            if (added is null) throw new InvalidOperationException("Added layout is missing from the JSON tree.");
+            styleTree.Tree.SetTarget(added);
+            UpdateTreeActions();
+            var action = layoutSmoke == "delete" ? deleteNode! : renameId!;
+            if (!sidebar!.Focus.IsEnabled(action.Path))
+                throw new InvalidOperationException("JSON tree action is disabled for the added layout.");
+        }
         if (layoutSmoke == "delete" && frames is >= 14 and <= 15)
             mouse = SmokeMouse(sidebar!, 200, 730, frames == 14);
         if (layoutSmoke == "rename" && frames is >= 14 and <= 15)
@@ -256,20 +269,21 @@ internal sealed partial class EditorGame
         if (layoutSmoke is null) return false;
         if (!disabledExportHintVerified)
             throw new InvalidOperationException("Disabled control tooltip is missing.");
-        if (layoutDialog is not null || styleTree!.Tree!.SelectedItem is not null)
+        if (layoutDialog is not null || editorTreeMode == EditorTreeMode.Json && styleTree!.Tree!.SelectedItem is not null)
             throw new InvalidOperationException($"Dialog open: {layoutDialog is not null}; selection: {styleTree!.Tree!.SelectedItem?.Id}; message: {message}");
         var settings = StationeryUI.Styling.StationeryStyleSettings.Parse(blueprint.BuildJson());
         if (layoutSmoke == "rename" && blueprint.SelectedLayoutId != "/renamedLayout") throw new InvalidOperationException("Rename Id button failed.");
         if (layoutSmoke == "delete")
         {
-            if (settings.Layouts.Count != 1) throw new InvalidOperationException("Delete button failed.");
+            if (settings.Layouts.Count != 2 || settings.Layouts.Any(layout => layout.Id == "123_layout"))
+                throw new InvalidOperationException("Delete button failed.");
         }
         else if (layoutSmoke == "panel")
         {
-            if (!blueprint.CanEditPanel || settings.Layouts.Single(l => l.Type == "box-layout").Margin.Left != 12.5)
+            if (!blueprint.CanEditPanel || settings.Layouts.Single(l => l.Id == "123_layout").Margin.Left != 12.5)
                 throw new InvalidOperationException("Panel dialog/editor failed.");
         }
-        else if (!blueprint.CanEditGrid || settings.Layouts.Count != 2 || blueprint.Columns[0].Number != "2.5")
+        else if (!blueprint.CanEditGrid || settings.Layouts.Count != 3 || blueprint.Columns[0].Number != "2.5")
             throw new InvalidOperationException("Grid layout dialog/editor failed.");
         return true;
     }

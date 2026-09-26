@@ -15,7 +15,7 @@ public sealed class StyleBlueprint
     public string DefaultLayoutId { get; } = "layout" + Guid.NewGuid().ToString("N");
     public string DefaultLayoutPath => "/" + DefaultLayoutId;
     public bool IsImported => imported is not null;
-    public bool CanAddLayout => imported?.ContainsKey("layouts") == true;
+    public bool CanAddLayout => imported is null || imported.ContainsKey("layouts");
     public bool CanEditPages => imported?["viewports"] is JsonArray;
     public IReadOnlyList<string> PageNames => imported is null ? [] : ViewportPages(imported)
         .Select(page => (string?)page?["name"] ?? "").ToArray();

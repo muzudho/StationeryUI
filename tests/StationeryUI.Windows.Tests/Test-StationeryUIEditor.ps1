@@ -13,6 +13,8 @@ $previousSavePoints = $env:STATIONERYUI_EDITOR_TEST_SAVEPOINTS
 $process = $null
 try {
     if ($SavePoints) { $Existing = $true }
+    if ($NativeDialog -or $CancelDialog) { $Existing = $true }
+    if ($CancelDialog) { $NativeDialog = $true }
     $env:STATIONERYUI_EDITOR_TEST_SAVEPOINTS = if ($SavePoints) { '1' } else { '' }
     $env:STATIONERYUI_EDITOR_TEST_OUTPUT = $testDirectory
     $env:STATIONERYUI_EDITOR_TEST_INPUT = ''
@@ -39,7 +41,7 @@ try {
         if ((Get-FileHash -LiteralPath $source).Hash -ne $sourceHash) { throw 'Restore did not recover original bytes.' }
         if (!(Test-Path -LiteralPath (Join-Path $testDirectory 'savepoints.png'))) { throw 'Savepoint picker screenshot missing.' }
     } elseif ($LayoutEditing) {
-        if ($json.layouts.Count -ne $(if ($LayoutEditing -eq 'delete') { 1 } else { 2 })) { throw 'Layout count mismatch.' }
+        if ($json.layouts.Count -ne $(if ($LayoutEditing -eq 'delete') { 2 } else { 3 })) { throw 'Layout count mismatch.' }
     } elseif ($Existing) {
         $layout = $json.viewports[0].children[0].children[0].layout
         if ($layout.'column-definitions'[0] -ne '2.5rate') { throw 'Imported edit missing.' }
