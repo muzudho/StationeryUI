@@ -17,14 +17,15 @@ internal sealed partial class EditorGame
     private void OpenReadStyle(string? path, bool discardChanges = false)
     {
         if (!discardChanges && !FlushAutoSave()) return;
-        StyleBlueprint? plan = null;
+        ReadStyleSnapshot? document = null;
         if (path is not null)
         {
             path = Path.GetFullPath(path);
             if (!File.Exists(path)) throw new FileNotFoundException("文房具UIファイルが見つかりません。", path);
             // Parse before changing mode. Reading must not create a save session or backup.
-            plan = StyleBlueprint.Open(path);
+            document = ReadStyleSnapshot.Open(path);
         }
+        var plan = document?.Blueprint;
         var selectionFromEdit = editingPage && editorTreeMode != EditorTreeMode.Json
             ? semanticTree.Capture() : null;
         readView ??= new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), StationeryDeveloperStyle.Load());
@@ -35,7 +36,7 @@ internal sealed partial class EditorGame
         if (selectionFromEdit is not null)
             readView.Restore(selectionFromEdit with { SplitRatio = readView.SplitRatio });
         // Commit the mode change only after the file and preview have passed validation.
-        SetReadPreviewDocument(plan, path);
+        SetReadPreviewDocument(document);
         saveSession = null;
         saveError = null;
         invalidDraft = false;

@@ -2,6 +2,7 @@
   <PropertyGroup><OutputType>Exe</OutputType><IsPackable>false</IsPackable></PropertyGroup>
   <ItemGroup><ProjectReference Include="../../src/StationeryUI/StationeryUI.csproj" /></ItemGroup>
   <ItemGroup><Compile Include="../../samples/StationeryUIEditor/StyleBlueprint.cs" Link="StyleBlueprint.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../samples/StationeryUIEditor/ReadStyleSnapshot.cs" Link="ReadStyleSnapshot.cs" /></ItemGroup>
     <ItemGroup><Compile Include="../../samples/StationeryUIEditor/StyleSaveSession.cs" Link="StyleSaveSession.cs" /></ItemGroup>
   <ItemGroup><Compile Include="../../samples/StationeryUIEditor/EditorLaunchOptions.cs" Link="EditorLaunchOptions.cs" /></ItemGroup>
   <ItemGroup><ProjectReference Include="../../src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj" /></ItemGroup>

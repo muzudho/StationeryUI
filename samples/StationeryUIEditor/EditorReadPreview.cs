@@ -12,23 +12,25 @@ using System.Text.Json.Nodes;
 internal sealed partial class EditorGame
 {
     private StyleBlueprint? readPreviewBlueprint;
+    private ReadStyleSnapshot? readPreviewDocument;
     private StationeryUiHost? readPreview;
     private StyleBlueprint.Preview? readPreviewSnapshot;
     private ScreenRectangle readPreviewWindow;
     private string? readPreviewKey;
     private bool showReadPreview;
-    private DateTime readPreviewWriteTime;
+    private string? readPreviewError;
     private double readPreviewRefreshElapsed;
 
-    private void SetReadPreviewDocument(StyleBlueprint? plan, string? path)
+    private void SetReadPreviewDocument(ReadStyleSnapshot? document)
     {
-        readPreviewBlueprint = plan;
-        readPreviewWriteTime = path is not null && File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;
+        readPreviewDocument = document;
+        readPreviewBlueprint = document?.Blueprint;
+        readPreviewError = null;
         readPreviewRefreshElapsed = 0;
         readPreviewKey = null;
         readPreviewSnapshot = null;
         readPreview?.Dispose(); readPreview = null;
-        showReadPreview = plan is not null;
+        showReadPreview = document is not null;
         if (readPreviewButton is not null)
             readPreviewButton.Label = showReadPreview ? "詳細を見る" : "プレビューを見る";
     }
@@ -43,23 +45,29 @@ internal sealed partial class EditorGame
         readPreviewRefreshElapsed = 0;
         try
         {
-            var modified = File.GetLastWriteTimeUtc(readFile);
-            if (modified == readPreviewWriteTime) return;
-            var plan = StyleBlueprint.Open(readFile);
+            if (readPreviewDocument is null)
+                readPreviewDocument = ReadStyleSnapshot.Open(readFile);
+            else if (!readPreviewDocument.Refresh())
+            {
+                readPreviewError = null;
+                return;
+            }
+            var plan = readPreviewDocument.Blueprint;
             if (readPreviewBlueprint is null)
             {
                 showReadPreview = true;
                 readPreviewButton!.Label = "詳細を見る";
             }
             readPreviewBlueprint = plan;
-            readPreviewWriteTime = modified;
+            readPreviewError = null;
             readPreviewKey = null;
             if (launch.LivePipe is null) RefreshFileInspection(plan);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException
             or ArgumentException or InvalidOperationException)
         {
-            readPreviewHeading!.Label = "プレビューの再読込に失敗：" + ex.Message;
+            readPreviewError = "プレビューの再読込に失敗：" + ex.Message;
+            readPreviewHeading!.Label = readPreviewError;
         }
     }
 
@@ -80,7 +88,11 @@ internal sealed partial class EditorGame
             : selected?.LayoutNodes?.FirstOrDefault(node => node.ParentPath == identity)?.Path.Split(':', 2)[1]
                 ?? selected?.LayoutParentPath?.Split(':', 2)[1];
         var key = $"{width}|{height}|{identity}|{targetLayout}|{theme}";
-        if (key == readPreviewKey) return;
+        if (key == readPreviewKey)
+        {
+            if (readPreviewError is null) readPreviewHeading.Label = "レイアウトプレビュー — " + (targetLayout ?? "既定のページ");
+            return;
+        }
         StyleBlueprint.Preview snapshot;
         try { snapshot = readPreviewBlueprint.CreatePreview(width, height, targetLayout); }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.Text.Json.JsonException)
@@ -88,7 +100,7 @@ internal sealed partial class EditorGame
             readPreviewHeading.Label = "プレビューを作れません：" + ex.Message;
             return;
         }
-        readPreviewHeading.Label = "レイアウトプレビュー — " + (targetLayout ?? "既定のページ");
+        readPreviewHeading.Label = readPreviewError ?? "レイアウトプレビュー — " + (targetLayout ?? "既定のページ");
         var next = new StationeryUiHost(GraphicsDevice, input, family => new WindowsTextRasterizer(family))
             { Theme = theme, UseStationeryButtons = true };
         next.Viewport.Offset = new(readPreviewWindow.X, readPreviewWindow.Y);
