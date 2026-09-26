@@ -3,9 +3,9 @@ using StationeryUI.Styling;
 using System.Text.Json;
 
 /// <summary>Connects stable code-defined roles to models nodes. Layouts wrappers never change these roles.</summary>
-internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopPage, StationeryNode SplitPage, StationeryNode LayoutPage, StationeryNode Dialog,
+internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopPage, StationeryNode SplitPage, StationeryNode LayoutPage, StationeryNode PartialPage, StationeryNode Dialog,
     IReadOnlyDictionary<string, StationeryNode> LayoutControls,
-    IReadOnlyDictionary<string, StationeryNode> SplitControls,
+    IReadOnlyDictionary<string, StationeryNode> SplitControls, IReadOnlyDictionary<string, StationeryNode> PartialControls,
     IReadOnlyDictionary<string, StationeryNode> Main, IReadOnlyDictionary<string, StationeryNode> DialogControls, string Signature)
 {
     public static StationeryStyleSettings Fallback { get; } = LoadFallback();
@@ -27,7 +27,8 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         var splitPage = root.Children.SingleOrDefault(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "splitPaneDemoPage" && node.Kind == "page")
             ?? throw new JsonException("splitPaneDemoPage is required.");
         var layoutPage = root.Children.Single(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "layoutDemoPage" && node.Kind == "page");
-        foreach (var page in new[] { topPage, splitPage, layoutPage })
+        var partialPage = root.Children.Single(node => StationeryControlHandle.ModelRoleFromId(node.Id) == "partialDemoPage" && node.Kind == "page");
+        foreach (var page in new[] { topPage, splitPage, layoutPage, partialPage })
             if (!settings.ControlTree.Values.Any(binding =>
                 (binding.ModelPath is { } modelPath && modelPath.Contains("/" + page.Id + "/mdlInspectorPanel/", StringComparison.Ordinal)) ||
                 binding.ModelPaths.Values.Any(modelPath => modelPath.Contains("/" + page.Id + "/mdlInspectorPanel/", StringComparison.Ordinal))))
@@ -39,7 +40,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         var main = Bind(all.Where(node => node.IsWithin(topPage) && !node.IsWithin(dialog)), new Dictionary<string, string>
         {
             ["toolHint"] = "textBlock", ["nameField"] = "textBox", ["memoField"] = "textBox", ["themeButton"] = "button",
-            ["scaleButton"] = "button", ["applyTitleButton"] = "button", ["openDialogButton"] = "button", ["sampleTree"] = "tree", ["splitPaneDemoLink"] = "link", ["layoutDemoLink"] = "link"
+            ["scaleButton"] = "button", ["applyTitleButton"] = "button", ["openDialogButton"] = "button", ["sampleTree"] = "tree", ["splitPaneDemoLink"] = "link", ["layoutDemoLink"] = "link", ["partialDemoLink"] = "link"
         });
         var splitControls = Bind(Descendants(splitPage), new Dictionary<string, string>
         {
@@ -60,11 +61,17 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
             ["nestedD"] = "textBlock",
             ["gridFooter"] = "textBlock"
         });
+        var partialControls = Bind(Descendants(partialPage), new Dictionary<string, string>
+        {
+            ["topDemoLink"] = "link", ["partialTitle"] = "textBlock", ["summaryLink"] = "link",
+            ["detailsLink"] = "link", ["summaryText"] = "textBlock", ["detailsText"] = "textBlock",
+            ["toolHint"] = "textBlock"
+        });
         var dialogControls = Bind(all.Where(node => node.IsWithin(dialog)), new Dictionary<string, string>
         {
             ["nameField"] = "textBox", ["cancelButton"] = "button", ["saveButton"] = "button"
         });
-        foreach (var node in main.Values.Concat(splitControls.Values).Concat(layoutControls.Values))
+        foreach (var node in main.Values.Concat(splitControls.Values).Concat(layoutControls.Values).Concat(partialControls.Values))
         {
             var handle = StationeryControlHandle.FromModelId(node.Id);
             if (!settings.ControlTree.TryGetValue(handle, out var controlBinding))
@@ -100,7 +107,7 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
                     if (binding.ModelPaths.TryGetValue(context, out var modelPath)) yield return (modelPath, route);
         }
 
-        var bound = main.Values.Concat(dialogControls.Values).Concat(splitControls.Values).Concat(layoutControls.Values).ToHashSet();
+        var bound = main.Values.Concat(dialogControls.Values).Concat(splitControls.Values).Concat(layoutControls.Values).Concat(partialControls.Values).ToHashSet();
         foreach (var node in all)
         {
             if (bound.Contains(node))
@@ -112,9 +119,9 @@ internal sealed record DemoModelBinding(StationeryNode Root, StationeryNode TopP
         }
         // Only nodes owned by the code-defined demo controls require a host rebind.
         // Extra pages are document content, not additional controls in these hosts.
-        var hosted = new[] { root, topPage, splitPage, layoutPage, dialog }
+        var hosted = new[] { root, topPage, splitPage, layoutPage, partialPage, dialog }
             .Concat(bound).Distinct();
-        return new(root, topPage, splitPage, layoutPage, dialog, layoutControls, splitControls, main, dialogControls,
+        return new(root, topPage, splitPage, layoutPage, partialPage, dialog, layoutControls, splitControls, partialControls, main, dialogControls,
             string.Join('\n', hosted.Select(node => node.Path + ":" + node.Kind).Order(StringComparer.Ordinal)));
     }
 

@@ -46,6 +46,7 @@ internal sealed partial class Demo : Game
     private bool hasContentArea;
     private string? reportedStyleError;
     private DemoModelBinding modelBinding = null!;
+    private StationeryViewNavigator? viewNavigator;
     private StationeryStyleSettings? appliedStyle;
     private readonly StationeryDeveloperWindow developerWindow = new();
     private bool captureMouseDown;
@@ -71,8 +72,13 @@ internal sealed partial class Demo : Game
         if (string.IsNullOrWhiteSpace(configurationPath))
             configurationPath = source is not null && Directory.Exists(Path.GetDirectoryName(source))
                 ? source : Path.Combine(AppContext.BaseDirectory, "App_Data", "demo.stationery-config.json");
-        styles = new(configurationPath, DemoModelBinding.Fallback, settings => { _ = DemoModelBinding.Create(settings); });
+        styles = new(configurationPath, DemoModelBinding.Fallback, settings =>
+        {
+            _ = DemoModelBinding.Create(settings);
+            _ = new StationeryViewNavigator(settings);
+        });
         modelBinding = DemoModelBinding.Create(styles.Current);
+        viewNavigator = new(styles.Current);
         appliedStyle = styles.Current;
         System.Diagnostics.Trace.WriteLine($"StationeryUI configuration: {styles.ConfigurationFilePath}");
         System.Diagnostics.Trace.WriteLine($"StationeryUI style: {styles.FilePath}");
@@ -140,9 +146,16 @@ internal sealed partial class Demo : Game
 
     private void ApplyStyles()
     {
-        SyncSelectedTab();
         if (!ReferenceEquals(appliedStyle, styles.Current))
         {
+            var selectedPartial = viewNavigator?.SelectedChild(PartialTarget);
+            var nextNavigator = new StationeryViewNavigator(styles.Current);
+            if (selectedPartial is not null)
+            {
+                try { nextNavigator.Select(PartialTarget, selectedPartial); }
+                catch (System.Text.Json.JsonException) { /* The new document changed the available views. */ }
+            }
+            viewNavigator = nextNavigator;
             var next = DemoModelBinding.Create(styles.Current);
             if (next.Signature != modelBinding.Signature)
             {
@@ -150,11 +163,14 @@ internal sealed partial class Demo : Game
                 popupUi!.RebindModel(next.Dialog, element => next.DialogControls[StationeryControlHandle.ModelRoleFromId(element.Id)]);
                 splitUi!.RebindModel(next.SplitPage, element => next.SplitControls[StationeryControlHandle.ModelRoleFromId(element.Id)]);
                 layoutUi!.RebindModel(next.LayoutPage, element => next.LayoutControls[StationeryControlHandle.ModelRoleFromId(element.Id)]);
+                partialUi!.RebindModel(next.PartialPage, element => next.PartialControls[StationeryControlHandle.ModelRoleFromId(element.Id)]);
                 modelBinding = next;
             }
             appliedStyle = styles.Current;
         }
-        var elements = styledElements.Concat(splitElements).Concat(layoutElements).ToArray();
+        viewNavigator?.Apply();
+        SyncSelectedTab();
+        var elements = styledElements.Concat(splitElements).Concat(layoutElements).Concat(partialElements).ToArray();
         var activePageControl = "ctrl" + char.ToUpperInvariant(activePage[0]) + activePage[1..];
         var activePageKey = "/ctrlViewPort/" + activePageControl + "/ctrlInspectorPanel";
         var activePagePrefix = "/ctrlViewPort/" + activePageControl + "/";
@@ -184,6 +200,7 @@ internal sealed partial class Demo : Game
         }
         ApplySplitStyles(arranged);
         ApplyLayoutStyles(arranged);
+        ApplyPartialStyles(arranged);
         popupUi!.Viewport.Scale = Math.Min(1, Math.Min(content.Width / 800, content.Height / 320));
         popupUi.Viewport.Offset = new(content.X + (content.Width - 800 * popupUi.Viewport.Scale) / 2,
             content.Y + (content.Height - 320 * popupUi.Viewport.Scale) / 2);
@@ -239,6 +256,7 @@ internal sealed partial class Demo : Game
             popupUi?.Update(gameTime, false, keyboard, mouse);
             splitUi?.Update(gameTime, false, keyboard, mouse);
             layoutUi?.Update(gameTime, false, keyboard, mouse);
+            partialUi?.Update(gameTime, false, keyboard, mouse);
             base.Update(gameTime);
             return;
         }
@@ -255,6 +273,7 @@ internal sealed partial class Demo : Game
                 popupUi.Update(gameTime, false, keyboard, mouse);
                 splitUi!.Update(gameTime, false, keyboard, mouse);
                 layoutUi!.Update(gameTime, false, keyboard, mouse);
+                partialUi!.Update(gameTime, false, keyboard, mouse);
                 base.Update(gameTime);
                 return;
             }
@@ -314,6 +333,7 @@ internal sealed partial class Demo : Game
             PreparePageSmoke(smokeCase, smoke, ref keyboard, ref mouse);
             pointer = mouse.Position;
             if (activePage != "layoutDemoPage") layoutUi!.Update(gameTime, false, keyboard, mouse);
+            if (activePage != "partialDemoPage") partialUi!.Update(gameTime, false, keyboard, mouse);
             if (activePage == "layoutDemoPage")
             {
                 ui.Update(gameTime, false, keyboard, mouse);
@@ -328,6 +348,14 @@ internal sealed partial class Demo : Game
                 popupUi.Update(gameTime, false, keyboard, mouse);
                 splitUi!.Update(gameTime, IsActive || smoke, keyboard, mouse);
                 if (activePage != "splitPaneDemoPage") splitUi.Update(gameTime, false, keyboard, mouse);
+            }
+            else if (activePage == "partialDemoPage")
+            {
+                ui.Update(gameTime, false, keyboard, mouse);
+                popupUi.Update(gameTime, false, keyboard, mouse);
+                splitUi!.Update(gameTime, false, keyboard, mouse);
+                partialUi!.Update(gameTime, IsActive || smoke, keyboard, mouse);
+                if (activePage != "partialDemoPage") partialUi.Update(gameTime, false, keyboard, mouse);
             }
             else if (popupOpen)
             {
@@ -351,6 +379,7 @@ internal sealed partial class Demo : Game
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
         if (hasContentArea && activePage == "layoutDemoPage") { layoutUi?.Draw(); DrawPanelBorders(layoutUi); }
         else if (hasContentArea && activePage == "splitPaneDemoPage") { splitUi?.Draw(); DrawPanelBorders(splitUi); }
+        else if (hasContentArea && activePage == "partialDemoPage") { partialUi?.Draw(); DrawPanelBorders(partialUi); }
         else if (hasContentArea && popupOpen)
         {
             ui?.Draw(); DrawPanelBorders(ui);
@@ -419,6 +448,7 @@ internal sealed partial class Demo : Game
         var entries = ui!.Inspect(hasContentArea && activePage == "topDemoPage").ToDictionary(entry => entry.Path, StringComparer.Ordinal);
         foreach (var entry in layoutUi!.Inspect(hasContentArea && activePage == "layoutDemoPage")) entries[entry.Path] = entry;
         foreach (var entry in splitUi!.Inspect(hasContentArea && activePage == "splitPaneDemoPage")) entries[entry.Path] = entry;
+        foreach (var entry in partialUi!.Inspect(hasContentArea && activePage == "partialDemoPage")) entries[entry.Path] = entry;
         foreach (var entry in popupUi!.Inspect(hasContentArea && popupOpen && activePage == "topDemoPage")) entries[entry.Path] = entry;
         if (latestLayout is not null)
             foreach (var (path, entry) in entries.ToArray())

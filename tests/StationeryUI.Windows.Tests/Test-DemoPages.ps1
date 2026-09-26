@@ -1,5 +1,5 @@
 param(
- [string[]]$Scenarios = @('page-hint','page-hint-clear','page-open','page-back','page-keyboard','split-vertical','split-horizontal','split-keyboard','layout-open'),
+ [string[]]$Scenarios = @('page-hint','page-hint-clear','page-open','page-back','page-keyboard','split-vertical','split-horizontal','split-keyboard','layout-open','partial-switch'),
  [string[]]$Scales = @('1','1.5')
 )
 $ErrorActionPreference = 'Stop'

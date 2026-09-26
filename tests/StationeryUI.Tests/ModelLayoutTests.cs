@@ -30,6 +30,16 @@ internal static class ModelLayoutTests
         }
         var shipped = StyleTestData.Demo();
         var shippedSettings = StationeryStyleSettings.Parse(shipped.ToJsonString());
+        var navigator = new StationeryViewNavigator(shippedSettings);
+        const string partialTarget = "/vMainViewport/vPartialDemoPage/vBody/vContentSwitcher";
+        Require(navigator.SelectedChild(partialTarget) == "vSummaryPane", "inactive partial region loads its saved initial selection");
+        navigator.SelectLink("/vMainViewport/vPartialDemoPage/vBody/vDetailsLink");
+        Require(navigator.SelectedChild(partialTarget) == "vDetailsPane" &&
+            shippedSettings.Layouts.Single(layout => layout.Id == "csPartialContentTabs").SelectedTabIndex == 1,
+            "configured link selects only its target region");
+        Require(shippedSettings.Layouts.Single(layout => layout.Id == "csTabbedPages").SelectedTabIndex == 0,
+            "partial transition keeps the outer page selected");
+        StyleTestData.Reject(() => navigator.Select(partialTarget, "vMissingPane"));
         Require(DemoModelBinding.Create(shippedSettings).Main["nameField"].Kind == "textBox", "shipped code binding");
         Require(DemoModelBinding.Create(DemoModelBinding.Fallback).Signature == DemoModelBinding.Create(shippedSettings).Signature, "fallback identities");
         var view = StyleTestData.Objects(shipped["viewports"]!).First(n => (string?)n["name"] == "vNameField");

@@ -46,10 +46,14 @@ public sealed class ViewNode(string type, string name)
     /// <summary>Position of this node in its parent's layout.</summary>
     public JsonElement? Place { get; set; }
     public string? ControlHandle { get; set; }
+    /// <summary>View selected when this link is activated.</summary>
+    public ViewTransition? OnClick { get; set; }
     public Dictionary<string, string> LayoutPaths { get; } = new(StringComparer.Ordinal);
     public Dictionary<string, string> ModelPaths { get; } = new(StringComparer.Ordinal);
     public List<ViewNode> ChildNodes { get; } = [];
 }
+
+public sealed record ViewTransition(string Target, string Child);
 
 /// <summary>A named style definition from the style settings file.</summary>
 public sealed record StationeryViewStyle(string Name, string Type, JsonElement Definition);
@@ -529,6 +533,9 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
     public ViewNode ViewportSnapshotTree { get; init; } = new("ViewportSnapshot", "initialViewportSnapshot");
     /// <summary>Root containing every configured viewport node.</summary>
     public ViewNode ViewportsTree { get; init; } = new("Viewports", "viewports");
+    /// <summary>Initial selection for each tabbed region, including regions on inactive pages.</summary>
+    public IReadOnlyDictionary<string, string> ViewportsSnapshot { get; init; }
+        = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(StringComparer.Ordinal));
     /// <summary>Named view style definitions, keyed by style name.</summary>
     public IReadOnlyDictionary<string, StationeryViewStyle> Styles { get; init; }
         = new ReadOnlyDictionary<string, StationeryViewStyle>(new Dictionary<string, StationeryViewStyle>(StringComparer.Ordinal));
@@ -650,6 +657,23 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
                 throw new JsonException("initialViewportSnapshot must be an array.");
             foreach (var (item, index) in snapshotJson.EnumerateArray().Select((item, index) => (item, index)))
                 snapshotRoot.ChildNodes.Add(ReadViewNode(item, $"initialViewportSnapshot[{index}]", viewNodesByName, styles));
+        }
+
+        var viewportsSnapshot = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (root.TryGetProperty("viewportsSnapshot", out var selectionsJson))
+        {
+            if (selectionsJson.ValueKind != JsonValueKind.Array)
+                throw new JsonException("viewportsSnapshot must be an array.");
+            foreach (var (item, index) in selectionsJson.EnumerateArray().Select((item, index) => (item, index)))
+            {
+                var path = $"viewportsSnapshot[{index}]";
+                RequireObject(item, path);
+                if (item.EnumerateObject().Any(property => property.Name is not ("target" or "child")))
+                    throw new JsonException($"{path} accepts only target and child.");
+                var target = ReadString(item, "target", path);
+                if (!viewportsSnapshot.TryAdd(target, ReadString(item, "child", path)))
+                    throw new JsonException($"{path}: duplicate target '{target}'.");
+            }
         }
 
         var model = ReadModel(modelJson, "modelTree");
@@ -1017,6 +1041,7 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
         {
             ViewportSnapshotTree = snapshotRoot,
             ViewportsTree = viewportsRoot,
+            ViewportsSnapshot = new ReadOnlyDictionary<string, string>(viewportsSnapshot),
             Styles = new ReadOnlyDictionary<string, StationeryViewStyle>(styles),
             ControlTree = controlTree
         };
@@ -1073,6 +1098,15 @@ public sealed record StationeryStyleSettings(StationeryModelNode ModelTree,
                 throw new JsonException($"{path}.style references unknown style '{style}'.");
 
             var node = new ViewNode(type, name) { Style = style, Layout = layout, Place = place };
+            if (value.TryGetProperty("onClick", out var onClickJson))
+            {
+                RequireObject(onClickJson, path + ".onClick");
+                if (type != "Link" || onClickJson.EnumerateObject().Any(property => property.Name is not ("action" or "target" or "child")) ||
+                    ReadString(onClickJson, "action", path + ".onClick") != "selectView")
+                    throw new JsonException($"{path}.onClick requires a Link with action selectView, target and child.");
+                node.OnClick = new(ReadString(onClickJson, "target", path + ".onClick"),
+                    ReadString(onClickJson, "child", path + ".onClick"));
+            }
             if (value.TryGetProperty("controlHandle", out var handleJson))
             {
                 if (handleJson.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(handleJson.GetString()) ||

@@ -21,6 +21,7 @@ internal sealed partial class Demo
         {
             "layoutDemoPage" => "StationeryUI — レイアウトデモ",
             "splitPaneDemoPage" => "StationeryUI — スプリットペーンデモページ",
+            "partialDemoPage" => "StationeryUI — ページ内の部分切替デモ",
             _ => "StationeryUI — トップデモページ"
         };
     }
@@ -32,6 +33,7 @@ internal sealed partial class Demo
             "topDemoPage" => 0,
             "splitPaneDemoPage" => 1,
             "layoutDemoPage" => 2,
+            "partialDemoPage" => 5,
             _ => throw new ArgumentOutOfRangeException(nameof(activePage), activePage, "Unknown demo page.")
         };
         var handle = StationeryControlHandle.FromModelId(modelBinding.Main["layoutDemoLink"].Id);
@@ -64,7 +66,7 @@ internal sealed partial class Demo
         foreach (var element in styledElements.Concat(splitElements))
             element.ToolHint = element.Node.Kind switch
             {
-                "button" => element.Id switch
+                "button" => StationeryControlHandle.ModelRoleFromId(element.Id) switch
                 {
                     "themeButton" => "明るいテーマと暗いテーマを切り替えます。",
                     "scaleButton" => "文字と UI の拡大率を切り替えます。",
@@ -79,11 +81,13 @@ internal sealed partial class Demo
                 _ => null
             };
         CreateLayoutPage();
-        topToolHint.ControlHandle = splitToolHint.ControlHandle = layoutToolHint.ControlHandle = "ctrlToolHint";
+        CreatePartialPage();
+        topToolHint.ControlHandle = splitToolHint.ControlHandle = layoutToolHint.ControlHandle = partialToolHint.ControlHandle = "ctrlToolHint";
         topToolHint.LayoutKey = "/ctrlViewPort/ctrlTopDemoPage/ctrlInspectorPanel";
         splitToolHint.LayoutKey = "/ctrlViewPort/ctrlSplitPaneDemoPage/ctrlInspectorPanel";
         layoutToolHint.LayoutKey = "/ctrlViewPort/ctrlLayoutDemoPage/ctrlInspectorPanel";
         layoutLink.ToolHint = "ボックスとグリッドの入れ子を、レイアウトデモページで確認できます。";
+        partialLink.ToolHint = "同じページの右側だけを切り替えるデモを開きます。";
         Navigate("topDemoPage");
     }
     private void UpdateToolHints()
@@ -91,6 +95,7 @@ internal sealed partial class Demo
         layoutToolHint.Label = layoutUi!.HoveredToolHint ?? "各セルにマウスを合わせると説明を表示します。ウィンドウのサイズ変更で伸縮、F12 で文房具の Id を確認できます。";
         topToolHint.Label = popupOpen ? "" : ui!.HoveredToolHint ?? "ツールヒント：ボタンなどにマウスを合わせると説明を表示します。";
         splitToolHint.Label = splitUi!.HoveredToolHint ?? "ツールヒント：ボタンなどにマウスを合わせると説明を表示します。";
+        partialToolHint.Label = partialUi!.HoveredToolHint ?? "ページはそのままに、右側の内容だけを切り替えます。";
     }
     private void ApplySplitStyles(StationeryLayoutResult arranged)
     {
@@ -111,7 +116,7 @@ internal sealed partial class Demo
             }
         }
     }
-    private static bool IsPageSmoke(string? scenario) => scenario is "page-hint" or "page-hint-clear" or "page-open" or "page-back" or "page-keyboard" or "split-vertical" or "split-horizontal" or "split-keyboard" or "layout-open";
+    private static bool IsPageSmoke(string? scenario) => scenario is "page-hint" or "page-hint-clear" or "page-open" or "page-back" or "page-keyboard" or "split-vertical" or "split-horizontal" or "split-keyboard" or "layout-open" or "partial-switch";
     private void PreparePageSmoke(string? scenario, bool smoke, ref KeyboardState keyboard, ref MouseState mouse)
     {
         if (!smoke || !IsPageSmoke(scenario)) return;
@@ -143,6 +148,16 @@ internal sealed partial class Demo
             mouse = new();
             splitUi!.Focus.Focus(verticalSplit.Path);
             if (updateFrames == 5) keyboard = new(Keys.Right);
+            return;
+        }
+        if (scenario == "partial-switch")
+        {
+            var target = updateFrames >= 4 ? detailsLink : partialLink;
+            var host = updateFrames >= 4 ? partialUi! : ui!;
+            var area = host.Viewport.ToWindow(target.Bounds);
+            mouse = new((int)(area.X + Math.Min(24, area.Width / 2)), (int)(area.Y + Math.Min(24, area.Height / 2)),
+                0, updateFrames is 2 or 5 ? ButtonState.Pressed : ButtonState.Released,
+                ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             return;
         }
         var bounds = ui!.Viewport.ToWindow(scenario == "layout-open" ? layoutLink.Bounds : forwardLink.Bounds);
@@ -181,7 +196,16 @@ internal sealed partial class Demo
                 throw new InvalidOperationException("Inspector must fill the bottom 80 window pixels at any UI scale.");
             if (scenario == "page-hint" && topToolHint.Label != "明るいテーマと暗いテーマを切り替えます。" ||
                 scenario == "page-hint-clear" && !topToolHint.Label.StartsWith("ツールヒント："))
-                throw new InvalidOperationException("Tool hint hover/leave failed.");
+                throw new InvalidOperationException($"Tool hint hover/leave failed: '{topToolHint.Label}'.");
+            return;
+        }
+        if (scenario == "partial-switch")
+        {
+            if (activePage != "partialDemoPage" || viewNavigator!.SelectedChild(PartialTarget) != "vDetailsPane" ||
+                detailsText.Bounds.Width <= 0 || detailsText.Bounds.Height <= 0 ||
+                summaryText.Bounds.Width != 0 || summaryText.Bounds.Height != 0 ||
+                partialBackLink.Bounds.Width <= 0 || summaryLink.Bounds.Width <= 0)
+                throw new InvalidOperationException("Partial page transition failed.");
             return;
         }
         if (activePage == "splitPaneDemoPage" && splitToolHint.Bounds.Height != 0)

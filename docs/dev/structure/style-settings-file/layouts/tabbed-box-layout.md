@@ -52,3 +52,5 @@ TabbedBoxLayout はルートレイアウトとして使います。`bindings.chi
 ```
 
 一度に領域が割り当てられるページは１つです。`SelectedTabIndex` を変更すると、そのページへ切り替わります。選択中のページには TabbedBoxLayout の内側領域全体を割り当て、ほかのページには０サイズを割り当てます。ページ自身のレイアウトとコントロール状態は保持されます。
+
+現在の `viewports` / `modelTree` 形式では、ページ内の `Container` にも TabbedBoxLayout を適用し、その直下の `Container` を切り替えられます。デモは `viewportsSnapshot` に初期選択、リンクの `onClick` に `selectView` の対象領域と子を記述します。[部分切替の設定例](../../../../user/partial-navigation.md)を参照してください。

@@ -108,6 +108,10 @@
                                     {
                                         "row": 3,
                                         "col": 1
+                                    },
+                                    {
+                                        "row": 1,
+                                        "col": 1
                                     }
                                 ]
                             },
@@ -236,6 +240,18 @@
                                     "controlHandle": "ctrlLayoutDemoLink",
                                     "modelPath": {
                                         "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlLayoutDemoLink"
+                                    }
+                                },
+                                {
+                                    "type": "Link",
+                                    "name": "vPartialDemoLink",
+                                    "place": {
+                                        "row": 2,
+                                        "col": 2
+                                    },
+                                    "controlHandle": "ctrlPartialDemoLink",
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlTopDemoPage/ctrlBody": "/mdlDemo/mdlTopDemoPage/mdlBody/mdlPartialDemoLink"
                                     }
                                 }
                             ],
@@ -908,6 +924,248 @@
                     },
                     "children": [],
                     "place": 4
+                },
+                {
+                    "type": "Page",
+                    "name": "vPartialDemoPage",
+                    "place": 5,
+                    "layout": {
+                        "name": "csPartialPageDock",
+                        "type": "DockLayout",
+                        "cells": [
+                            {
+                                "dock": "bottom",
+                                "size": "80px"
+                            },
+                            {
+                                "dock": "center",
+                                "size": "remaining"
+                            }
+                        ]
+                    },
+                    "children": [
+                        {
+                            "type": "Container",
+                            "name": "vBody",
+                            "place": "center_2",
+                            "layout": {
+                                "name": "csPartialGrid",
+                                "type": "GridLayout",
+                                "row-definitions": [
+                                    "56px",
+                                    "56px",
+                                    "72px",
+                                    "72px",
+                                    "1rate"
+                                ],
+                                "column-definitions": [
+                                    "1rate",
+                                    "2rate"
+                                ],
+                                "padding": {
+                                    "top": "12px",
+                                    "right": "12px",
+                                    "bottom": "12px",
+                                    "left": "12px"
+                                },
+                                "cells": [
+                                    {
+                                        "row": 0,
+                                        "col": 0,
+                                        "colspan": 2
+                                    },
+                                    {
+                                        "row": 1,
+                                        "col": 0,
+                                        "colspan": 2
+                                    },
+                                    {
+                                        "row": 2,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 3,
+                                        "col": 0
+                                    },
+                                    {
+                                        "row": 2,
+                                        "col": 1,
+                                        "rowspan": 3
+                                    }
+                                ]
+                            },
+                            "children": [
+                                {
+                                    "type": "Link",
+                                    "name": "vTopDemoLink",
+                                    "place": {
+                                        "row": 1,
+                                        "col": 1,
+                                        "colspan": 2
+                                    },
+                                    "controlHandle": "ctrlTopDemoLink",
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlPartialDemoPage/ctrlBody": "/mdlDemo/mdlPartialDemoPage/mdlBody/mdlTopDemoLink"
+                                    }
+                                },
+                                {
+                                    "type": "TextBlock",
+                                    "name": "vPartialTitle",
+                                    "place": {
+                                        "row": 2,
+                                        "col": 1,
+                                        "colspan": 2
+                                    },
+                                    "controlHandle": "ctrlPartialTitle",
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlPartialDemoPage/ctrlBody": "/mdlDemo/mdlPartialDemoPage/mdlBody/mdlPartialTitle"
+                                    }
+                                },
+                                {
+                                    "type": "Link",
+                                    "name": "vSummaryLink",
+                                    "place": {
+                                        "row": 3,
+                                        "col": 1
+                                    },
+                                    "controlHandle": "ctrlSummaryLink",
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlPartialDemoPage/ctrlBody": "/mdlDemo/mdlPartialDemoPage/mdlBody/mdlSummaryLink"
+                                    },
+                                    "onClick": {
+                                        "action": "selectView",
+                                        "target": "/vMainViewport/vPartialDemoPage/vBody/vContentSwitcher",
+                                        "child": "vSummaryPane"
+                                    }
+                                },
+                                {
+                                    "type": "Link",
+                                    "name": "vDetailsLink",
+                                    "place": {
+                                        "row": 4,
+                                        "col": 1
+                                    },
+                                    "controlHandle": "ctrlDetailsLink",
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlPartialDemoPage/ctrlBody": "/mdlDemo/mdlPartialDemoPage/mdlBody/mdlDetailsLink"
+                                    },
+                                    "onClick": {
+                                        "action": "selectView",
+                                        "target": "/vMainViewport/vPartialDemoPage/vBody/vContentSwitcher",
+                                        "child": "vDetailsPane"
+                                    }
+                                },
+                                {
+                                    "type": "Container",
+                                    "name": "vContentSwitcher",
+                                    "place": {
+                                        "row": 3,
+                                        "col": 2,
+                                        "rowspan": 3
+                                    },
+                                    "layout": {
+                                        "name": "csPartialContentTabs",
+                                        "type": "TabbedBoxLayout",
+                                        "padding": {
+                                            "top": "4px",
+                                            "right": "4px",
+                                            "bottom": "4px",
+                                            "left": "4px"
+                                        }
+                                    },
+                                    "children": [
+                                        {
+                                            "type": "Container",
+                                            "name": "vSummaryPane",
+                                            "place": 0,
+                                            "layout": {
+                                                "name": "csPartialSummaryBox",
+                                                "type": "BoxLayout",
+                                                "padding": {
+                                                    "top": "24px",
+                                                    "right": "24px",
+                                                    "bottom": "24px",
+                                                    "left": "24px"
+                                                }
+                                            },
+                                            "children": [
+                                                {
+                                                    "type": "TextBlock",
+                                                    "name": "vSummaryText",
+                                                    "place": "single",
+                                                    "controlHandle": "ctrlSummaryText",
+                                                    "modelPath": {
+                                                        "in /ctrlViewPort/ctrlPartialDemoPage/ctrlBody/ctrlContentSwitcher/ctrlSummaryPane": "/mdlDemo/mdlPartialDemoPage/mdlBody/mdlContentSwitcher/mdlSummaryPane/mdlSummaryText"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "Container",
+                                            "name": "vDetailsPane",
+                                            "place": 1,
+                                            "layout": {
+                                                "name": "csPartialDetailsBox",
+                                                "type": "BoxLayout",
+                                                "padding": {
+                                                    "top": "24px",
+                                                    "right": "24px",
+                                                    "bottom": "24px",
+                                                    "left": "24px"
+                                                }
+                                            },
+                                            "children": [
+                                                {
+                                                    "type": "TextBlock",
+                                                    "name": "vDetailsText",
+                                                    "place": "single",
+                                                    "controlHandle": "ctrlDetailsText",
+                                                    "modelPath": {
+                                                        "in /ctrlViewPort/ctrlPartialDemoPage/ctrlBody/ctrlContentSwitcher/ctrlDetailsPane": "/mdlDemo/mdlPartialDemoPage/mdlBody/mdlContentSwitcher/mdlDetailsPane/mdlDetailsText"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Container",
+                            "name": "vInspectorPanel",
+                            "place": "bottom_1",
+                            "layout": {
+                                "name": "csPartialInspectorGrid",
+                                "type": "GridLayout",
+                                "row-definitions": [
+                                    "1rate"
+                                ],
+                                "column-definitions": [
+                                    "1rate"
+                                ],
+                                "cells": [
+                                    {
+                                        "row": 0,
+                                        "col": 0
+                                    }
+                                ]
+                            },
+                            "children": [
+                                {
+                                    "type": "TextBlock",
+                                    "name": "vToolHint",
+                                    "place": {
+                                        "row": 1,
+                                        "col": 1
+                                    },
+                                    "controlHandle": "ctrlToolHint",
+                                    "modelPath": {
+                                        "in /ctrlViewPort/ctrlPartialDemoPage/ctrlInspectorPanel": "/mdlDemo/mdlPartialDemoPage/mdlInspectorPanel/mdlToolHint"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         }
@@ -976,6 +1234,10 @@
                             },
                             {
                                 "id": "mdlLayoutDemoLink",
+                                "type": "link"
+                            },
+                            {
+                                "id": "mdlPartialDemoLink",
                                 "type": "link"
                             }
                         ]
@@ -1121,7 +1383,77 @@
                 "id": "mdlNewPage2",
                 "type": "page",
                 "children": []
+            },
+            {
+                "id": "mdlPartialDemoPage",
+                "type": "page",
+                "children": [
+                    {
+                        "id": "mdlBody",
+                        "type": "container",
+                        "children": [
+                            {
+                                "id": "mdlTopDemoLink",
+                                "type": "link"
+                            },
+                            {
+                                "id": "mdlPartialTitle",
+                                "type": "textBlock"
+                            },
+                            {
+                                "id": "mdlSummaryLink",
+                                "type": "link"
+                            },
+                            {
+                                "id": "mdlDetailsLink",
+                                "type": "link"
+                            },
+                            {
+                                "id": "mdlContentSwitcher",
+                                "type": "container",
+                                "children": [
+                                    {
+                                        "id": "mdlSummaryPane",
+                                        "type": "container",
+                                        "children": [
+                                            {
+                                                "id": "mdlSummaryText",
+                                                "type": "textBlock"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "id": "mdlDetailsPane",
+                                        "type": "container",
+                                        "children": [
+                                            {
+                                                "id": "mdlDetailsText",
+                                                "type": "textBlock"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mdlInspectorPanel",
+                        "type": "container",
+                        "children": [
+                            {
+                                "id": "mdlToolHint",
+                                "type": "textBlock"
+                            }
+                        ]
+                    }
+                ]
             }
         ]
-    }
+    },
+    "viewportsSnapshot": [
+        {
+            "target": "/vMainViewport/vPartialDemoPage/vBody/vContentSwitcher",
+            "child": "vSummaryPane"
+        }
+    ]
 }
