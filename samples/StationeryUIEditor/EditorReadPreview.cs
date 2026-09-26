@@ -80,7 +80,8 @@ internal sealed partial class EditorGame
     {
         readJsonTree = readPreviewDocument is null ? null : ReadJsonTree.Create(readPreviewDocument.Text, readJsonTree);
         if (readJsonTree is { } json)
-            readView?.SetDocumentTree(json.Tree, json.Details, json.InspectionPath, json.CopyPath);
+            readView?.SetDocumentTree(json.Tree, json.Details, json.InspectionPath, json.CopyPath,
+                json.LayoutInspectionPaths);
         else readView?.SetDocumentTree(null);
     }
 

@@ -21,6 +21,7 @@ public sealed class StationeryDeveloperView : IDisposable
     private TreeView? documentTree;
     private Func<TreeItem?, string>? documentDetails;
     private Func<TreeItem?, string?>? documentInspectionPath, documentCopyPath;
+    private Func<TreeItem?, IReadOnlyList<string>>? documentInspectionPaths;
     public bool DocumentTreeMode { get; private set; }
     public ScreenRectangle InspectorPanelBounds { get; private set; }
     public ScreenRectangle ToolHintBounds => toolHint.Bounds;
@@ -88,17 +89,19 @@ public sealed class StationeryDeveloperView : IDisposable
         details.BoxModel = Model.SelectedEntry?.BoxModel;
     }
     public void SetDocumentTree(TreeView? source, Func<TreeItem?, string>? describe = null,
-        Func<TreeItem?, string?>? inspectPath = null, Func<TreeItem?, string?>? copyPath = null)
+        Func<TreeItem?, string?>? inspectPath = null, Func<TreeItem?, string?>? copyPath = null,
+        Func<TreeItem?, IReadOnlyList<string>>? inspectPaths = null)
     {
         documentTree = source;
         documentDetails = describe;
         documentInspectionPath = inspectPath;
         documentCopyPath = copyPath;
+        documentInspectionPaths = inspectPaths;
         if (source is null && DocumentTreeMode) SetTreeMode(Model.TreeMode);
         else if (DocumentTreeMode && source is not null)
         {
             tree.Tree = source;
-            if (documentInspectionPath?.Invoke(source.TargetItem) is { } selected) Model.Select(selected);
+            SelectDocumentInspection(source.TargetItem);
             UpdateDetails();
         }
     }
@@ -110,7 +113,7 @@ public sealed class StationeryDeveloperView : IDisposable
         tree.TreeHorizontalScroll = 0;
         tree.TreeScroll = 0;
         details.Scroll = 0;
-        if (documentInspectionPath?.Invoke(documentTree.TargetItem) is { } selected) Model.Select(selected);
+        SelectDocumentInspection(documentTree.TargetItem);
         UpdateDetails();
     }
     private void UpdateDetails()
@@ -119,6 +122,18 @@ public sealed class StationeryDeveloperView : IDisposable
             : Model.Details;
         details.BoxModel = DocumentTreeMode ? null : Model.SelectedEntry?.BoxModel;
     }
+    private void SelectDocumentInspection(TreeItem? item)
+    {
+        var primary = documentInspectionPath?.Invoke(item);
+        IEnumerable<string> candidates = primary is null ? documentInspectionPaths?.Invoke(item) ?? []
+            : new[] { primary }.Concat(documentInspectionPaths?.Invoke(item) ?? []);
+        foreach (var path in candidates.Distinct(StringComparer.Ordinal))
+        {
+            if (path.Contains(':') && Model.TreeMode != DeveloperTreeMode.Layout)
+                Model.SetTreeMode(DeveloperTreeMode.Layout);
+            if (Model.Select(path)) return;
+        }
+    }
     public void Refresh(IReadOnlyList<StationeryInspectionEntry> entries)
     {
         var previousTree = Model.Tree;
@@ -126,7 +141,7 @@ public sealed class StationeryDeveloperView : IDisposable
         if (!DocumentTreeMode) tree.Tree = Model.Tree;
         if (DocumentTreeMode)
         {
-            if (documentInspectionPath?.Invoke(documentTree?.TargetItem) is { } selected) Model.Select(selected);
+            SelectDocumentInspection(documentTree?.TargetItem);
         }
         else if (previousTree != Model.Tree) RevealSelection();
         UpdateDetails();
@@ -200,7 +215,7 @@ public sealed class StationeryDeveloperView : IDisposable
                 : "手のボタンでキャプチャー。F12 / Esc で閉じる。");
         if (DocumentTreeMode && beforeDocument != documentTree?.TargetItem)
         {
-            if (documentInspectionPath?.Invoke(documentTree?.TargetItem) is { } selected) Model.Select(selected);
+            SelectDocumentInspection(documentTree?.TargetItem);
             details.Scroll = 0; copy.Label = "パスをコピー";
         }
         else if (!DocumentTreeMode && before != Model.SelectedPath) { details.Scroll = 0; copy.Label = "パスをコピー"; }
