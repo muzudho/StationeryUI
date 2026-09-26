@@ -6,6 +6,7 @@ using StationeryUI.Theming;
 
 var tests = new (string Name, Action Run)[]
 {
+    ("designer opens, previews and edits referenced viewport layouts", DesignerReferenceTests.Run),
     ("dock layout preserves edge priority, repeats, center, clipping and grid composition", DockLayoutTests.Run),
     ("tree scrollbars handle both axes, resize, zoom and tiny viewports", TreeScrollLayoutTests.Run),
     ("inspector operation logs record clicks, state transitions and inactive input", DeveloperOperationLogTests.Run),

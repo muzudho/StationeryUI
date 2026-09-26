@@ -19,7 +19,7 @@ public sealed class StyleBlueprint
     public string? SelectedLayoutId { get; private set; }
     public static IEnumerable<(string Path, JsonNode Node)> LayoutNodes(JsonNode root)
     {
-        if (root["layouts"] is JsonArray layouts)
+        if ((root["layouts"] ?? root["styles"]) is JsonArray layouts)
         {
             IEnumerable<(string, JsonNode)> VisitLegacy(JsonArray array, string? parent)
             {
@@ -38,16 +38,25 @@ public sealed class StyleBlueprint
         {
             foreach (var view in views)
             {
-                if (view is JsonObject obj && obj["layout"] is JsonObject layout)
+                if (view is JsonObject obj && obj["layout"] is JsonObject layout && !layout.ContainsKey("ref"))
                 {
-                    var name = (string?)layout["name"] ?? throw new JsonException("Layout name is missing.");
-                    yield return ("/" + name, layout);
+                    foreach (var definition in VisitDefinition(layout, null)) yield return definition;
                 }
                 if (view?["children"] is JsonArray children)
                     foreach (var child in VisitViews(children)) yield return child;
             }
         }
-        return root["viewports"] is JsonArray viewports ? VisitViews(viewports) : [];
+        IEnumerable<(string Path, JsonNode Node)> VisitDefinition(JsonNode layout, string? parent)
+        {
+            var name = (string?)layout["name"] ?? (string?)layout["id"] ?? throw new JsonException("Layout name is missing.");
+            var path = parent is null ? "/" + name : parent + "/" + name;
+            yield return (path, layout);
+            if (layout["children"] is JsonArray children)
+                foreach (var child in children)
+                    foreach (var definition in VisitDefinition(child!, path)) yield return definition;
+        }
+        // References point to existing definitions; they are not anonymous definitions.
+        return root["viewports"] is JsonArray viewports ? VisitViews(viewports).DistinctBy(l => l.Path) : [];
     }
     public static JsonNode? FindLayout(JsonNode root, string? path) => LayoutNodes(root).FirstOrDefault(l => l.Path == path).Node;
     public static string? NormalizeLayoutType(string? type) => type switch
@@ -104,7 +113,14 @@ public sealed class StyleBlueprint
                 if (node.Kind is "page" or "dialog") { scope = node; break; }
         }
         if (scope == tree) scope = tree.Children.FirstOrDefault(n => n.Kind == "page") ?? tree;
-        var arranged = StationeryLayoutEngine.Arrange(settings, width, height);
+        // Shared controls can have a different route on each page. The designer
+        // has no application state, so use the route within the previewed scope.
+        var controlLayoutKeys = settings.ControlTree
+            .Where(pair => pair.Value.LayoutPath is null)
+            .ToDictionary(pair => pair.Key, pair => pair.Value.ModelPaths
+                .FirstOrDefault(route => route.Value == scope.Path || route.Value.StartsWith(scope.Path + "/", StringComparison.Ordinal)).Key
+                ?? pair.Value.LayoutPaths.Keys.First(), StringComparer.Ordinal);
+        var arranged = StationeryLayoutEngine.Arrange(settings, width, height, controlLayoutKeys);
         var cells = binding is not null && settings.Layouts.Single(l => l.Path == selectedId).Type == "grid-layout"
             ? StationeryLayoutEngine.ArrangeGridCells(settings.Layouts.Single(l => l.Path == selectedId), arranged.LayoutContentBounds[binding.ModelPath + ":" + selectedId])
             : Array.Empty<(int Row, int Column, StationeryUI.Canvas.ScreenRectangle Bounds)>();
