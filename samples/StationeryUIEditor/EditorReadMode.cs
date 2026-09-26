@@ -25,11 +25,15 @@ internal sealed partial class EditorGame
             // Parse before changing mode. Reading must not create a save session or backup.
             plan = StyleBlueprint.Open(path);
         }
+        var selectionFromEdit = editingPage && editorTreeMode != EditorTreeMode.Json
+            ? semanticTree.Capture() : null;
         readView ??= new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), StationeryDeveloperStyle.Load());
         readView.EmbeddedInEditor = true;
         readView.Theme = theme with { Selected = theme.Surface };
         readActions ??= CreateReadActions();
         if (plan is not null && launch.LivePipe is null) RefreshFileInspection(plan);
+        if (selectionFromEdit is not null)
+            readView.Restore(selectionFromEdit with { SplitRatio = readView.SplitRatio });
         // Commit the mode change only after the file and preview have passed validation.
         SetReadPreviewDocument(plan, path);
         saveSession = null;

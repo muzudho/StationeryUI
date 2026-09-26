@@ -118,6 +118,8 @@ public sealed class DeveloperInspectionModel
     }
     private void RestoreSelection(DeveloperViewState? state)
     {
+        foreach (var item in items.Values)
+            if (item.Children.Count > 0) Tree.SetExpanded(item, true);
         if (state?.SelectedPath is not { } selected || !Select(selected)) Tree.Move(0);
         foreach (var path in state?.CollapsedPaths ?? [])
             if (items.TryGetValue(ResolveMergedPath(path)!, out var item)) Tree.SetExpanded(item, false);

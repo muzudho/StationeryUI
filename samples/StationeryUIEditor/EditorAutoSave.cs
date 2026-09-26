@@ -22,6 +22,7 @@ internal sealed partial class EditorGame
     {
         if (!FlushAutoSave()) return;
         var opened = StyleSaveSession.Open(path);
+        selectionFromReadMode = readMode ? readView?.Capture() : null;
         pendingPage = () =>
         {
             readMode = false;

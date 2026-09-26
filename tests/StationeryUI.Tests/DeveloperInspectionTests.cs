@@ -26,6 +26,9 @@ internal static class DeveloperInspectionTests
         Check(model.SelectedPath == "/demo", "deleted selection falls back to root");
         model.Restore(state);
         Check(model.SelectedPath == "/demo/left", "reopened state restored");
+        model.Restore(state with { CollapsedPaths = [] });
+        Check(!model.Capture().CollapsedPaths.Contains("/demo/left"), "restoring an expanded tree clears an earlier collapse");
+        model.Restore(state);
         model.Select("/demo/left/name");
         Check(model.Tree.TargetItem == model.Tree.SelectedItem && model.Tree.VisibleRows().Any(r => r.Item == model.Tree.SelectedItem),
             "captured node becomes selected and targeted and expands its ancestors");

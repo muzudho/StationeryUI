@@ -18,6 +18,7 @@ internal sealed partial class EditorGame
     private StationeryUiHost.Element? propNodeName, propKind, propPosition, propLayout;
     private StationeryUiHost.Element? modelTreeModeButton, layoutTreeModeButton, jsonTreeModeButton;
     private readonly DeveloperInspectionModel semanticTree = new();
+    private DeveloperViewState? selectionFromReadMode;
     private EditorTreeMode editorTreeMode = EditorTreeMode.Layout;
     private string sourceFile = "";
     private string? treeJson;
@@ -89,7 +90,12 @@ internal sealed partial class EditorGame
     {
         editingPage = hasDraft = true; sidebarActive = false; applicationBarActive = false; rebuild = false;
         message = text; treeJson = null; lastTreeSelection = null;
-        revealLayout = blueprint.IsImported ? blueprint.SelectedLayoutId : blueprint.DefaultLayoutPath;
+        if (selectionFromReadMode is { } readSelection && blueprint.IsImported)
+        {
+            editorTreeMode = readSelection.TreeMode == DeveloperTreeMode.Model ? EditorTreeMode.Model : EditorTreeMode.Layout;
+            revealLayout = null;
+        }
+        else revealLayout = blueprint.IsImported ? blueprint.SelectedLayoutId : blueprint.DefaultLayoutPath;
         if (!string.IsNullOrEmpty(smokeOutput) && saveSession is null) outputPath = System.IO.Path.Combine(smokeOutput, "plan.stationery-ui.json");
         BuildUi();
         var scale = BodyScale;
@@ -172,7 +178,12 @@ internal sealed partial class EditorGame
         var targetMode = editorTreeMode == EditorTreeMode.Model ? DeveloperTreeMode.Model : DeveloperTreeMode.Layout;
         semanticTree.SetTreeMode(targetMode);
         semanticTree.Refresh(enriched);
-        if (revealLayout is not null)
+        if (selectionFromReadMode is { } readSelection)
+        {
+            semanticTree.Restore(readSelection);
+            selectionFromReadMode = null;
+        }
+        else if (revealLayout is not null)
         {
             var requested = revealLayout;
             var semanticLayoutPath = enriched.SelectMany(e => e.LayoutNodes ?? [])
