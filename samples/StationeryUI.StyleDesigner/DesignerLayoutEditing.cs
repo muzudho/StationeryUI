@@ -46,25 +46,25 @@ internal sealed partial class DesignerGame
         if (addChild is null || deleteNode is null || sidebar is null) return;
         var target = styleTree?.Tree?.TargetItem;
         var path = target is not null ? treePaths.GetValueOrDefault(target.Id) : null;
-        var canAdd = path is ["layouts"];
-        if (designerTreeMode != DesignerTreeMode.Json && TargetLayoutId is { } semanticLayout)
+        var canAdd = blueprint.CanAddLayout && path is ["layouts"];
+        if (blueprint.CanAddLayout && designerTreeMode != DesignerTreeMode.Json && TargetLayoutId is { } semanticLayout)
         {
             try
             {
                 var node = StyleBlueprint.FindLayout(JsonNode.Parse(blueprint.BuildJson())!, semanticLayout);
-                canAdd = (string?)node?["type"] == "grid-layout" ||
-                    (string?)node?["type"] == "box-layout" && (node?["children"] as JsonArray)?.Count is null or 0;
+                canAdd = StyleBlueprint.NormalizeLayoutType((string?)node?["type"]) == "grid-layout" ||
+                    StyleBlueprint.NormalizeLayoutType((string?)node?["type"]) == "box-layout" && (node?["children"] as JsonArray)?.Count is null or 0;
             }
             catch (System.Text.Json.JsonException) { canAdd = false; }
         }
-        if (!canAdd && path is not null)
+        if (blueprint.CanAddLayout && !canAdd && path is not null)
         {
             try
             {
                 var layoutPath = blueprint.LayoutPathFor(path[^1] == "children" ? path[..^1] : path);
                 var node = StyleBlueprint.FindLayout(JsonNode.Parse(blueprint.BuildJson())!, layoutPath);
-                canAdd = (string?)node?["type"] == "grid-layout" ||
-                    (string?)node?["type"] == "box-layout" && (node?["children"] as JsonArray)?.Count is null or 0;
+                canAdd = StyleBlueprint.NormalizeLayoutType((string?)node?["type"]) == "grid-layout" ||
+                    StyleBlueprint.NormalizeLayoutType((string?)node?["type"]) == "box-layout" && (node?["children"] as JsonArray)?.Count is null or 0;
             }
             catch (System.Text.Json.JsonException) { }
         }
@@ -117,7 +117,7 @@ internal sealed partial class DesignerGame
         var json = JsonNode.Parse(blueprint.BuildJson())!;
         var editedPath = path is null ? null : blueprint.LayoutPathFor(path);
         var parentPath = path is null ? addParentLayout : editedPath is not null && editedPath.LastIndexOf('/') > 0 ? editedPath[..editedPath.LastIndexOf('/')] : null;
-        var needsPlacement = (string?)StyleBlueprint.FindLayout(json, parentPath)?["type"] == "grid-layout";
+        var needsPlacement = StyleBlueprint.NormalizeLayoutType((string?)StyleBlueprint.FindLayout(json, parentPath)?["type"]) == "grid-layout";
         if (needsPlacement)
         {
             help.Bounds = help.Bounds with { Height = 480 };

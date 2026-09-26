@@ -276,7 +276,7 @@ internal sealed partial class DesignerGame
         Guard(() =>
         {
             Capture();
-            var layoutType = (string?)StyleBlueprint.FindLayout(JsonNode.Parse(blueprint.BuildJson())!, layoutId)?["type"];
+            var layoutType = StyleBlueprint.NormalizeLayoutType((string?)StyleBlueprint.FindLayout(JsonNode.Parse(blueprint.BuildJson())!, layoutId)?["type"]);
             if (layoutType is not ("box-layout" or "grid-layout"))
             {
                 rebuild = true;

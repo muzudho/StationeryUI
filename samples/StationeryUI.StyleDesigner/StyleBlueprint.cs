@@ -15,29 +15,53 @@ public sealed class StyleBlueprint
     public string DefaultLayoutId { get; } = "layout" + Guid.NewGuid().ToString("N");
     public string DefaultLayoutPath => "/" + DefaultLayoutId;
     public bool IsImported => imported is not null;
+    public bool CanAddLayout => imported?.ContainsKey("layouts") == true;
     public string? SelectedLayoutId { get; private set; }
     public static IEnumerable<(string Path, JsonNode Node)> LayoutNodes(JsonNode root)
     {
-        IEnumerable<(string, JsonNode)> Visit(JsonArray array, string? parent)
+        if (root["layouts"] is JsonArray layouts)
         {
-            foreach (var node in array)
+            IEnumerable<(string, JsonNode)> VisitLegacy(JsonArray array, string? parent)
             {
-                var path = parent is null ? "/" + (string)node!["id"]! : parent + "/" + (string)node!["id"]!;
-                yield return (path, node!);
-                if (node!["children"] is JsonArray children)
-                    foreach (var child in Visit(children, path)) yield return child;
+                foreach (var node in array)
+                {
+                    var id = (string?)node!["id"] ?? (string?)node["name"] ?? throw new JsonException("Layout name is missing.");
+                    var path = parent is null ? "/" + id : parent + "/" + id;
+                    yield return (path, node);
+                    if (node["children"] is JsonArray children)
+                        foreach (var child in VisitLegacy(children, path)) yield return child;
+                }
+            }
+            return VisitLegacy(layouts, null);
+        }
+        IEnumerable<(string Path, JsonNode Node)> VisitViews(JsonArray views)
+        {
+            foreach (var view in views)
+            {
+                if (view is JsonObject obj && obj["layout"] is JsonObject layout)
+                {
+                    var name = (string?)layout["name"] ?? throw new JsonException("Layout name is missing.");
+                    yield return ("/" + name, layout);
+                }
+                if (view?["children"] is JsonArray children)
+                    foreach (var child in VisitViews(children)) yield return child;
             }
         }
-        return Visit(root["layouts"]!.AsArray(), null);
+        return root["viewports"] is JsonArray viewports ? VisitViews(viewports) : [];
     }
     public static JsonNode? FindLayout(JsonNode root, string? path) => LayoutNodes(root).FirstOrDefault(l => l.Path == path).Node;
-    public string? SelectedLayoutType => !IsImported ? "grid-layout" : (string?)FindLayout(imported!, SelectedLayoutId)?["type"];
+    public static string? NormalizeLayoutType(string? type) => type switch
+    {
+        "BoxLayout" => "box-layout", "GridLayout" => "grid-layout", "DockLayout" => "dock-layout",
+        "TabbedBoxLayout" => "tabbed-box-layout", "SplitPane" => "split-pane", _ => type
+    };
+    public string? SelectedLayoutType => !IsImported ? "grid-layout" : NormalizeLayoutType((string?)FindLayout(imported!, SelectedLayoutId)?["type"]);
     public bool CanEditPanel => SelectedLayoutType == "box-layout";
     public bool CanEditGrid => !IsImported || SelectedLayoutType == "grid-layout";
     public Dictionary<string, Track> PanelEdges { get; } = [];
     private readonly Dictionary<string, string> originalPanelNumbers = [];
     public IReadOnlyList<string> EditableLayouts => imported is null ? [DefaultLayoutPath] : LayoutNodes(imported)
-        .Where(l => (string?)l.Node["type"] == "grid-layout" && l.Node["row-definitions"]!.AsArray().Count <= 8 && l.Node["column-definitions"]!.AsArray().Count <= 8)
+        .Where(l => NormalizeLayoutType((string?)l.Node["type"]) == "grid-layout" && l.Node["row-definitions"] is JsonArray rows && rows.Count <= 8 && l.Node["column-definitions"] is JsonArray columns && columns.Count <= 8)
         .Select(l => l.Path).ToArray();
 
     public static StyleBlueprint Open(string path) => Parse(File.ReadAllText(path));
@@ -98,7 +122,7 @@ public sealed class StyleBlueprint
             if ((string?)layout!["type"] == "panel") layout["type"] = "box-layout";
         }
         if (plan.EditableLayouts.Count > 0) plan.SelectLayout(plan.EditableLayouts[0]);
-        else if (LayoutNodes(plan.imported).FirstOrDefault(l => (string?)l.Node["type"] == "box-layout") is { Node: not null } panel)
+        else if (LayoutNodes(plan.imported).FirstOrDefault(l => NormalizeLayoutType((string?)l.Node["type"]) == "box-layout") is { Node: not null } panel)
             plan.SelectLayout(panel.Path);
         return plan;
     }
@@ -240,7 +264,7 @@ public sealed class StyleBlueprint
         var committed = JsonNode.Parse(BuildJson())!.AsObject();
         var layout = FindLayout(committed, id)
             ?? throw new ArgumentException("レイアウトがありません。");
-        if ((string?)layout["type"] == "box-layout")
+        if (NormalizeLayoutType((string?)layout["type"]) == "box-layout")
         {
             imported = committed; SelectedLayoutId = id; InitializeEdges(layout);
             return;
