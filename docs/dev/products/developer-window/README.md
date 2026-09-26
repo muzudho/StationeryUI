@@ -1,5 +1,7 @@
 # 開発者ウィンドウ
 
+将来の文房具UIエディターとの統合案は[検査と編集の統合計画](../ui-editor/inspection-integration-plan.md)を参照。以下は現行の F12 実装についての説明。
+
 * 📖 [レイアウト・インスペクター](layout-inspector/switch-tree.md)
 
 F12 の別ウィンドウを、StationeryUI のツリー・スプリットペーン・読み取り専用テキスト・ボタンで構成する。

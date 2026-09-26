@@ -1,5 +1,7 @@
 # ライブラリーと設計ツールの成果物分離
 
+将来の F12 開発者ウィンドウとの統合案は[検査と編集の統合計画](inspection-integration-plan.md)を参照。現行の動作を変更する文書ではない。
+
 | 成果物 | プロジェクト | 配布方法 |
 |---|---|---|
 | 文房具 UI | `src/StationeryUI`、`src/StationeryUI.MonoGame`、`src/StationeryUI.Windows` | 各プロジェクトを `dotnet pack -c Release` で NuGet 化 |
