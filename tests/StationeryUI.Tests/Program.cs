@@ -103,7 +103,7 @@ var failures=0;
 foreach(var (name,run) in tests)
 {
     try { run(); Console.WriteLine($"PASS {name}"); }
-    catch(Exception ex) { failures++; Console.Error.WriteLine($"FAIL {name}: {ex.Message}"); }
+    catch(Exception ex) { failures++; Console.Error.WriteLine($"FAIL {name}: {ex}"); }
 }
 Console.WriteLine($"{tests.Length-failures}/{tests.Length} passed");
 return failures==0 ? 0 : 1;

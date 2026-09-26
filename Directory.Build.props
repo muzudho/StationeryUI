@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>12</LangVersion>
@@ -15,11 +15,11 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="/" />
-    <None Include="$(MSBuildThisFileDirectory)docs/dev/nuget-agent-guide.md" Pack="true" PackagePath="docs/dev/" />
-    <None Include="$(MSBuildThisFileDirectory)docs/dev/library-integration.md" Pack="true" PackagePath="docs/dev/" />
-    <None Include="$(MSBuildThisFileDirectory)docs/dev/developer-window.md" Pack="true" PackagePath="docs/dev/" />
-    <None Include="$(MSBuildThisFileDirectory)docs/dev/model-inspection.md" Pack="true" PackagePath="docs/dev/" />
-    <None Include="$(MSBuildThisFileDirectory)docs/dev/dock-layout.md" Pack="true" PackagePath="docs/dev/" />
+    <None Include="$(MSBuildThisFileDirectory)docs/ai-agents/get-started/nuget-agent-guide.md" Pack="true" PackagePath="docs/dev/" />
+    <None Include="$(MSBuildThisFileDirectory)docs/ai-agents/get-started/library-integration.md" Pack="true" PackagePath="docs/dev/" />
+    <None Include="$(MSBuildThisFileDirectory)docs/dev/products/developer-window/README.md" Pack="true" PackagePath="docs/dev/developer-window.md" />
+    <None Include="$(MSBuildThisFileDirectory)docs/dev/products/developer-window/layout-inspector/README.md" Pack="true" PackagePath="docs/dev/model-inspection.md" />
+    <None Include="$(MSBuildThisFileDirectory)docs/dev/structure/style-settings-file/layouts/dock-layout.md" Pack="true" PackagePath="docs/dev/" />
     <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="/" />
     <None Include="$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="/" />
     <None Include="$(MSBuildThisFileDirectory)docs/user/CircleSpaceCoordinator-LICENSE.txt" Pack="true" PackagePath="licenses/" />

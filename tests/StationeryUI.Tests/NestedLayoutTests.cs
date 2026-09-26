@@ -8,65 +8,185 @@ internal static class NestedLayoutTests
 {
     public const string Source = """
         {
-          "models":[
+          "modelTree": {
+            "id": "demo",
+            "type": "viewport",
+            "children": [
+              {
+                "id": "a",
+                "type": "button"
+              },
+              {
+                "id": "b",
+                "type": "button"
+              },
+              {
+                "id": "c",
+                "type": "button"
+              },
+              {
+                "id": "d",
+                "type": "button"
+              }
+            ]
+          },
+          "layouts": [
             {
-              "id":"demo",
-              "type":"viewport",
-              "children":[{"id":"a","type":"button"},{"id":"b","type":"button"},{"id":"c","type":"button"},{"id":"d","type":"button"}]
-            }
-          ],
-          "layouts":[
-            {
-              "id":"frame",
-              "type":"box-layout",
-              "padding":{"top":"10px","right":"20px","bottom":"30px","left":"40px"},
-              "children":[
+              "id": "frame",
+              "type": "box-layout",
+              "padding": {
+                "top": "10px",
+                "right": "20px",
+                "bottom": "30px",
+                "left": "40px"
+              },
+              "children": [
                 {
-                  "id":"grid",
-                  "type":"grid-layout",
-                  "row-definitions":["50px","1rate","2rate"],
-                  "column-definitions":["60px","1rate","3rate"],
-                  "children":[
+                  "id": "grid",
+                  "type": "grid-layout",
+                  "row-definitions": [
+                    "50px",
+                    "1rate",
+                    "2rate"
+                  ],
+                  "column-definitions": [
+                    "60px",
+                    "1rate",
+                    "3rate"
+                  ],
+                  "children": [
                     {
-                      "id":"box",
-                      "type":"box-layout",
-                      "row":0,
-                      "col":0,
-                      "rowspan":2,
-                      "colspan":2,
-                      "padding":{"top":"5px","right":"5px","bottom":"5px","left":"5px"},
-                      "children":[
+                      "id": "box",
+                      "type": "box-layout",
+                      "row": 0,
+                      "col": 0,
+                      "rowspan": 2,
+                      "colspan": 2,
+                      "padding": {
+                        "top": "5px",
+                        "right": "5px",
+                        "bottom": "5px",
+                        "left": "5px"
+                      },
+                      "children": [
                         {
-                          "id":"inner",
-                          "type":"grid-layout",
-                          "row-definitions":["1rate"],
-                          "column-definitions":["1rate","3rate"],
-                          "cells":[{"row":0,"col":0,"slots":[{"id":"slot1"}]},{"row":0,"col":1,"slots":[{"id":"slot2"}]}]
+                          "id": "inner",
+                          "type": "grid-layout",
+                          "row-definitions": [
+                            "1rate"
+                          ],
+                          "column-definitions": [
+                            "1rate",
+                            "3rate"
+                          ],
+                          "cells": [
+                            {
+                              "row": 0,
+                              "col": 0,
+                              "slots": [
+                                {
+                                  "id": "slot1"
+                                }
+                              ]
+                            },
+                            {
+                              "row": 0,
+                              "col": 1,
+                              "slots": [
+                                {
+                                  "id": "slot2"
+                                }
+                              ]
+                            }
+                          ]
                         }
                       ]
                     },
                     {
-                      "id":"inner",
-                      "type":"grid-layout",
-                      "row":2,
-                      "col":1,
-                      "colspan":2,
-                      "row-definitions":["1rate"],
-                      "column-definitions":["1rate","1rate"],
-                      "cells":[{"row":0,"col":0,"colspan":2,"slots":[{"id":"slot1"}]}]
+                      "id": "inner",
+                      "type": "grid-layout",
+                      "row": 2,
+                      "col": 1,
+                      "colspan": 2,
+                      "row-definitions": [
+                        "1rate"
+                      ],
+                      "column-definitions": [
+                        "1rate",
+                        "1rate"
+                      ],
+                      "cells": [
+                        {
+                          "row": 0,
+                          "col": 0,
+                          "colspan": 2,
+                          "slots": [
+                            {
+                              "id": "slot1"
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ],
-                  "cells":[{"row":0,"col":2,"rowspan":2,"slots":[{"id":"slot1"}]}]
+                  "cells": [
+                    {
+                      "row": 0,
+                      "col": 2,
+                      "rowspan": 2,
+                      "slots": [
+                        {
+                          "id": "slot1"
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
           ],
-          "bindings":[
-            {"layout":"/frame","model":"demo"},
-            {"layout":"/frame/grid","parentModel":"demo","childrenModel":[{"model":"d","slot":"slot1"}]},
-            {"layout":"/frame/grid/box/inner","parentModel":"demo","childrenModel":[{"model":"a","slot":"slot1"},{"model":"b","slot":"slot2"}]},
-            {"layout":"/frame/grid/inner","parentModel":"demo","childrenModel":[{"model":"c","slot":"slot1"}]}
-          ]
+          "controlTree": {
+            "root": {
+              "modelPath": {
+                "in /": "/demo"
+              },
+              "layoutPath": {
+                "in /": "frame"
+              }
+            },
+            "d": {
+              "modelPath": {
+                "in /": "/demo/d"
+              },
+              "layoutPath": {
+                "in /": "frame[single].grid[1y_3x_1w_2h]"
+              }
+            },
+            "a": {
+              "modelPath": {
+                "in /": "/demo/a"
+              },
+              "layoutPath": {
+                "in /": "frame[single].grid[1y_1x_2w_2h].box[single].inner[1y_1x_1w_1h]"
+              }
+            },
+            "b": {
+              "modelPath": {
+                "in /": "/demo/b"
+              },
+              "layoutPath": {
+                "in /": "frame[single].grid[1y_1x_2w_2h].box[single].inner[1y_2x_1w_1h]"
+              }
+            },
+            "c": {
+              "modelPath": {
+                "in /": "/demo/c"
+              },
+              "layoutPath": {
+                "in /": "frame[single].grid[3y_2x_2w_1h].inner[1y_1x_2w_1h]"
+              }
+            }
+          }
         }
         """;
     public static void Run()
@@ -79,7 +199,7 @@ internal static class NestedLayoutTests
         Equal(new(170, 10, 210, 120), layout.Bounds["/demo/d"]);
         Check(settings.Layouts.Count(l => l.Id == "inner") == 2, "local duplicate IDs have distinct paths");
         var reversed = JsonNode.Parse(Source)!;
-        reversed["bindings"] = new JsonArray(reversed["bindings"]!.AsArray().Reverse().Select(b => b!.DeepClone()).ToArray());
+        reversed["controlTree"] = new JsonObject(reversed["controlTree"]!.AsObject().Reverse().Select(p => KeyValuePair.Create<string, JsonNode?>(p.Key, p.Value!.DeepClone())));
         Equal(layout.Bounds["/demo/a"], StationeryLayoutEngine.Arrange(StationeryStyleSettings.Parse(reversed.ToJsonString()), 400, 300).Bounds["/demo/a"]);
         foreach (var size in new[] { 0, 1, 20, 800 })
         {
@@ -89,50 +209,122 @@ internal static class NestedLayoutTests
         var old = StationeryStyleSettings.Parse(Source.Replace("box-layout", "panel").Replace("grid-layout", "floating-layout").Replace("\"col\":", "\"column\":"));
         Equal(layout.Bounds["/demo/c"], StationeryLayoutEngine.Arrange(old, 400, 300).Bounds["/demo/c"]);
         var leafOnly = JsonNode.Parse(Source)!;
-        leafOnly["bindings"]!.AsArray().RemoveAt(0);
+        leafOnly["controlTree"]!.AsObject().Remove("root");
         var inferred = StationeryStyleSettings.Parse(leafOnly.ToJsonString());
         Equal(layout.Bounds["/demo/a"], StationeryLayoutEngine.Arrange(inferred, 400, 300).Bounds["/demo/a"]);
         Check(inferred.Padding.Left == 40, "ancestor padding is inferred from descendant binding");
         var reused = StationeryStyleSettings.Parse("""
         {
-          "models":[
+          "layouts": [
             {
-              "id":"app",
-              "type":"viewport",
-              "children":[
-                {"id":"left","type":"container","children":[{"id":"name","type":"textBox"}]},
-                {"id":"right","type":"container","children":[{"id":"name","type":"textBox"}]}
+              "id": "outer",
+              "type": "grid-layout",
+              "row-definitions": [
+                "1rate"
+              ],
+              "column-definitions": [
+                "1rate",
+                "3rate"
+              ],
+              "cells": [
+                {
+                  "row": 0,
+                  "col": 0,
+                  "slots": [
+                    {
+                      "id": "slot1"
+                    }
+                  ]
+                },
+                {
+                  "row": 0,
+                  "col": 1,
+                  "slots": [
+                    {
+                      "id": "slot2"
+                    }
+                  ]
+                }
               ]
-            }
-          ],
-          "layouts":[
-            {
-              "id":"outer",
-              "type":"grid-layout",
-              "row-definitions":["1rate"],
-              "column-definitions":["1rate","3rate"],
-              "cells":[{"row":0,"col":0,"slots":[{"id":"slot1"}]},{"row":0,"col":1,"slots":[{"id":"slot2"}]}]
             },
             {
-              "id":"frame",
-              "type":"box-layout",
-              "padding":{"top":"2px","right":"2px","bottom":"2px","left":"2px"},
-              "children":[
+              "id": "frame",
+              "type": "box-layout",
+              "padding": {
+                "top": "2px",
+                "right": "2px",
+                "bottom": "2px",
+                "left": "2px"
+              },
+              "children": [
                 {
-                  "id":"grid",
-                  "type":"grid-layout",
-                  "row-definitions":["1rate"],
-                  "column-definitions":["1rate"],
-                  "cells":[{"row":0,"col":0,"slots":[{"id":"slot1"}]}]
+                  "id": "grid",
+                  "type": "grid-layout",
+                  "row-definitions": [
+                    "1rate"
+                  ],
+                  "column-definitions": [
+                    "1rate"
+                  ],
+                  "cells": [
+                    {
+                      "row": 0,
+                      "col": 0,
+                      "slots": [
+                        {
+                          "id": "slot1"
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
           ],
-          "bindings":[
-            {"layout":"/outer","parentModel":"app","childrenModel":[{"model":"left","slot":"slot1"},{"model":"right","slot":"slot2"}]},
-            {"layout":"/frame/grid","parentModel":"app/left","childrenModel":[{"model":"name","slot":"slot1"}]},
-            {"layout":"/frame/grid","parentModel":"app/right","childrenModel":[{"model":"name","slot":"slot1"}]}
-          ]
+          "modelTree": {
+            "id": "app",
+            "type": "viewport",
+            "children": [
+              {
+                "id": "left",
+                "type": "container",
+                "children": [
+                  {
+                    "id": "name",
+                    "type": "textBox"
+                  }
+                ]
+              },
+              {
+                "id": "right",
+                "type": "container",
+                "children": [
+                  {
+                    "id": "name",
+                    "type": "textBox"
+                  }
+                ]
+              }
+            ]
+          },
+          "controlTree": {
+            "left": {
+              "modelPath": {
+                "in /": "/app/left/name"
+              },
+              "layoutPath": {
+                "in /": "outer[1y_1x_1w_1h].frame[single].grid[1y_1x_1w_1h]"
+              }
+            },
+            "right": {
+              "modelPath": {
+                "in /": "/app/right/name"
+              },
+              "layoutPath": {
+                "in /": "outer[1y_2x_1w_1h].frame[single].grid[1y_1x_1w_1h]"
+              }
+            }
+          }
         }
         """);
         var reusedLayout = StationeryLayoutEngine.Arrange(reused, 400, 100);
@@ -148,12 +340,12 @@ internal static class NestedLayoutTests
         Reject(s => Grid(s)["children"]![0]!["column"] = 0);
         Reject(s => Grid(s)["children"]![1]!["row"] = 1);
         Reject(s => Grid(s)["children"]![1]!["id"] = "box");
-        Reject(s => s["bindings"]![2]!["layout"] = "/inner");
-        Reject(s => s["bindings"]![1]!["childrenModel"]![0]!["col"] = 1);
+        Reject(s => s["controlTree"]!["a"]!["layoutPath"]!["in /"] = "inner");
+        Reject(s => s["controlTree"]!["d"]!["layoutPath"]!["in /"] = "frame[single].grid[1y_2x_1w_2h]");
         Reject(s => s["layouts"]![0]!["row"] = 0);
         Reject(s => s["layouts"]![0]!["children"] = null);
         Reject(s => Grid(s)["row"] = 0); // box has no cells
-        Reject(s => s["bindings"]![3]!["childrenModel"]![0]!["rowspan"] = 2);
+        Reject(s => s["controlTree"]!["c"]!["layoutPath"]!["in /"] = "frame[single].grid[3y_2x_2w_1h].inner[1y_1x_2w_2h]");
 
         var plan = StyleBlueprint.Parse(Source);
         plan.SelectLayout("/frame/grid/box/inner");
@@ -175,7 +367,7 @@ internal static class NestedLayoutTests
         Check(plan.BuildJson() == before, "invalid delete is atomic");
 
         var empty = StyleBlueprint.Parse("""
-        {"models":[{"id":"app","type":"viewport"}],"layouts":[],"bindings":[]}
+        {"modelTree":{"id":"app","type":"viewport"},"layouts":[],"controlTree":{}}
         """);
         empty.AddLayout("box-layout", "root");
         empty.AddLayout("grid-layout", "cells", "/root");

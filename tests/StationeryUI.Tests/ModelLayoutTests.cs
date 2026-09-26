@@ -6,102 +6,65 @@ internal static class ModelLayoutTests
 {
     public static void Run()
     {
-        var shippedText = File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-ui.json"));
-        var shipped = StationeryStyleSettings.Parse(shippedText);
-        Require(shipped.ModelTree.Type == "viewport" && shipped.Layouts.Any(l => l.Type == "dock-layout") && shipped.Bindings.Any(b => b.DockChildren.Count > 0), "shipped model tree and layouts");
-        Require(DemoModelBinding.Create(shipped).Main["nameField"].Kind == "textBox", "shipped code binding");
-        var source = """
-            {"models":[{"id":"demo","type":"viewport","children":[
-              {"id":"leftPage","type":"page","children":[{"id":"nameField","type":"textBox"}]},
-              {"id":"rightPage","type":"page","children":[{"id":"nameField","type":"textBox"}]}
-            ]}],"layouts":[{"id":"unrelatedLayoutId","type":"box-layout","padding":{"left":"24px"}}],
-            "bindings":[{"layout":"/unrelatedLayoutId","model":"/demo"}]}
-            """;
+        const string source = """
+        {"modelTree":{"id":"demo","type":"viewport","children":[
+          {"id":"leftPage","type":"page","children":[{"id":"nameField","type":"textBox"}]},
+          {"id":"rightPage","type":"page","children":[{"id":"nameField","type":"textBox"}]}]},
+         "layouts":[{"id":"unrelatedLayoutId","type":"box-layout","padding":{"left":"24px"}}],
+         "controlTree":{"arbitraryHandle":{"modelPath":{"in /":"/demo"},"layoutPath":{"in /":"unrelatedLayoutId"}}}}
+        """;
         var settings = StationeryStyleSettings.Parse(source);
         var tree = settings.ModelTree.CreateTree();
-        Require(tree.Resolve("/demo/leftPage/nameField")?.Kind == "textBox", "left path");
-        Require(tree.Resolve("/demo/rightPage/nameField")?.Kind == "textBox", "right path");
-        Require(settings.Padding.Left == 24, "padding is found through bindings");
-        var legacy = StationeryStyleSettings.Parse(source.Replace("box-layout", "panel"));
-        Require(legacy.Layouts.Single().Type == "box-layout" && legacy.Padding == settings.Padding,
-            "legacy panel normalizes and retains bound padding");
-        var expected = StationeryLayoutEngine.Arrange(settings, 300, 200);
-        var actual = StationeryLayoutEngine.Arrange(legacy, 300, 200);
-        Require(expected.Bounds.All(p => actual.Bounds[p.Key] == p.Value) &&
-            expected.ContentBounds.All(p => actual.ContentBounds[p.Key] == p.Value), "legacy box geometry unchanged");
-        foreach (var invalid in new[]
+        Require(tree.Resolve("/demo/leftPage/nameField")?.Kind == "textBox" && tree.Resolve("/demo/rightPage/nameField")?.Kind == "textBox", "scoped model identity");
+        Require(settings.Padding.Left == 24, "layout padding found through explicit model route");
+        var alias = StationeryStyleSettings.Parse(source.Replace("box-layout", "panel"));
+        Require(alias.Padding == settings.Padding && alias.Layouts.Single().Type == "box-layout", "legacy type alias preserves semantics");
+        foreach (var bad in new[] { "{}", "null", "[]", source.Replace("modelTree", "models"), source.Replace("rightPage", "leftPage"), source.Replace("leftPage", "left-page"), source.Replace("/demo\"", "/missing\""), source.Replace("box-layout", "viewport") })
+            StyleTestData.Reject(() => StationeryStyleSettings.Parse(bad));
+        foreach (var value in new[] { "null", "[]", "{}", "1" })
+            StyleTestData.Reject(() => StationeryStyleSettings.Parse("{\"modelTree\":" + value + "}"));
+        foreach (var legacySection in new[] { "models", "bindings", "bindingsV2" })
         {
-            "{}", "{\"viewport\":{}}", source.Replace("\"models\"", "\"missing\""),
-            source.Replace("\"layouts\"", "\"missing\""), source.Replace("\"bindings\"", "\"missing\""),
-            source.Replace("\"model\":\"/demo\"", "\"model\":\"/missing\""),
-            source.Replace("rightPage", "leftPage"), source.Replace("leftPage", "left-page"),
-            source.Replace("\"type\":\"box-layout\"", "\"type\":\"viewport\""),
-            source.Replace("\"models\":", "\"viewport\":{},\"models\":"),
-            source.Replace("\"models\":", "\"model\":[],\"models\":")
-        }) Reject(() => StationeryStyleSettings.Parse(invalid));
-
-        foreach (var invalidModel in new[] { "{}", "null", "[]", "[null]", "[1]",
-            "[{\"id\":\"demo\",\"type\":\"viewport\"},{\"id\":\"other\",\"type\":\"viewport\"}]" })
-            Reject(() => StationeryStyleSettings.Parse("{\"models\":" + invalidModel + ",\"layouts\":[],\"bindings\":[]}"));
-
-        var binding = DemoModelBinding.Create(DemoModelBinding.Fallback);
-        Require(binding.Main["nameField"].Path == "/demo/topDemoPage/body/nameField", "body model binding");
-        Require(binding.DialogControls["nameField"].Path == "/demo/topDemoPage/body/editDialog/nameField", "dialog binding");
-        var wrapped = JsonNode.Parse(shippedText)!;
-        var children = wrapped["models"]![0]!["children"]![0]!["children"]![0]!["children"]!.AsArray();
-        var name = children[0]!;
-        children.RemoveAt(0);
-        children.Insert(0, new JsonObject { ["id"] = "inputs", ["type"] = "container", ["children"] = new JsonArray(name) });
-        // Only bindings must change when a model moves; the layouts definition stays identical.
-        var layoutBefore = wrapped["layouts"]!.ToJsonString();
-        wrapped["bindings"]!.AsArray().Single(b => (string?)b!["layout"] == "/topDemoLayout")!["childrenModel"]![0]!["model"] = "inputs/nameField";
-        var wrappedSettings = StationeryStyleSettings.Parse(wrapped.ToJsonString());
-        Require(DemoModelBinding.Create(wrappedSettings).Main["nameField"].Path == "/demo/topDemoPage/body/inputs/nameField", "scoped child path");
-        Require(layoutBefore == wrapped["layouts"]!.ToJsonString(), "layout definitions are independent");
-        Reject(() => DemoModelBinding.Create(settings));
-        name["type"] = "button";
-        Reject(() => DemoModelBinding.Create(StationeryStyleSettings.Parse(wrapped.ToJsonString())));
-
-        var directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "stationery-model-tests-" + Guid.NewGuid().ToString("N"));
+            var bad = JsonNode.Parse(source)!; bad[legacySection] = new JsonArray();
+            StyleTestData.Reject(() => StationeryStyleSettings.Parse(bad.ToJsonString()));
+        }
+        var shipped = StyleTestData.Demo();
+        var shippedSettings = StationeryStyleSettings.Parse(shipped.ToJsonString());
+        Require(DemoModelBinding.Create(shippedSettings).Main["nameField"].Kind == "textBox", "shipped code binding");
+        Require(DemoModelBinding.Create(DemoModelBinding.Fallback).Signature == DemoModelBinding.Create(shippedSettings).Signature, "fallback identities");
+        var view = StyleTestData.Objects(shipped["viewports"]!).First(n => (string?)n["name"] == "vNameField");
+        var originalLayouts = StationeryUI.StyleDesigner.StyleBlueprint.LayoutNodes(shipped).ToDictionary(p => p.Path, p => p.Node.ToJsonString());
+        // Model and control IDs are independent: change the model ID and its explicit reference only.
+        var model = shipped["modelTree"]!["children"]![0]!["children"]![0]!["children"]![0]!;
+        model["id"] = "nameField";
+        foreach (var entry in view["modelPath"]!.AsObject().ToArray()) view["modelPath"]![entry.Key] = "/mdlDemo/mdlTopDemoPage/mdlBody/nameField";
+        var renamed = StationeryStyleSettings.Parse(shipped.ToJsonString());
+        Require(DemoModelBinding.Create(renamed).Main["nameField"].Path.EndsWith("/nameField"), "explicit model reference preserves code role");
+        Require(StationeryUI.StyleDesigner.StyleBlueprint.LayoutNodes(shipped).All(p => originalLayouts[p.Path] == p.Node.ToJsonString()), "model change leaves layouts untouched");
+        model["type"] = "button";
+        StyleTestData.Reject(() => DemoModelBinding.Create(StationeryStyleSettings.Parse(shipped.ToJsonString())));
+        var directory = Path.Combine(Path.GetTempPath(), "model-layout-" + Guid.NewGuid());
         Directory.CreateDirectory(directory);
         try
         {
-            var config = System.IO.Path.Combine(directory, "config.json");
-            var style = System.IO.Path.Combine(directory, "style.json");
-            File.WriteAllText(config, "{\"styleFile\":\"style.json\"}");
-            File.WriteAllText(style, source);
-            var file = new StationeryStyleFile(config, DemoModelBinding.Fallback, value => { _ = DemoModelBinding.Create(value); });
-            Require(ReferenceEquals(file.Current, DemoModelBinding.Fallback) && file.LastError is not null, "invalid startup retains fallback");
-            name["type"] = "textBox";
-            File.WriteAllText(style, wrapped.ToJsonString());
-            file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Require(DemoModelBinding.Create(file.Current).Main["nameField"].Path == "/demo/topDemoPage/body/inputs/nameField" && file.LastError is null, "recovery");
+            var config = Path.Combine(directory, "config.json"); var path = Path.Combine(directory, "style.json");
+            File.WriteAllText(config, """{"styleFile":"style.json","autoReload":true}"""); File.WriteAllText(path, source);
+            var file = new StationeryStyleFile(config, DemoModelBinding.Fallback, value => DemoModelBinding.Create(value));
+            Require(ReferenceEquals(file.Current, DemoModelBinding.Fallback) && file.LastError is not null, "semantic startup failure keeps fallback");
+            model["type"] = "textBox";
+            void Reload() { File.WriteAllText(path, shipped.ToJsonString()); file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5)); }
+            Reload(); Require(file.LastError is null, "recovers valid model tree");
             var good = file.Current;
-            wrapped["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "topDemoLayout")!["row-definitions"]![0] = "-1rate";
-            File.WriteAllText(style, wrapped.ToJsonString());
-            file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Require(ReferenceEquals(good, file.Current) && file.LastError is not null, "invalid rate retains whole snapshot");
-            wrapped["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "topDemoLayout")!["row-definitions"]![0] = "1.5rate";
-            File.WriteAllText(style, wrapped.ToJsonString());
-            file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Require(file.LastError is null && file.Current.Layouts.Single(l => l.Id == "topDemoLayout").Rows[0].Value == 1.5, "fractional rate reload");
-            wrapped["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "verticalSplitLayout")!["ratio"] = .65;
-            File.WriteAllText(style, wrapped.ToJsonString());
-            file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Require(file.LastError is null && file.Current.Layouts.Single(l => l.Id == "verticalSplitLayout").Split!.Ratio == .65, "split ratio reload");
-            var goodSplit = file.Current;
-            wrapped["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "verticalSplitLayout")!["ratio"] = 2;
-            File.WriteAllText(style, wrapped.ToJsonString());
-            file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Require(ReferenceEquals(goodSplit, file.Current) && file.LastError is not null, "invalid split ratio preserves snapshot");
+            StyleTestData.Layout(shipped, "/csTopDemoGridLayout")["row-definitions"]![0] = "-1rate";
+            Reload(); Require(ReferenceEquals(good, file.Current) && file.LastError is not null, "invalid rate preserves snapshot");
+            StyleTestData.Layout(shipped, "/csTopDemoGridLayout")["row-definitions"]![0] = "1.5rate";
+            Reload(); Require(file.LastError is null && file.Current.Layouts.Single(l => l.Id == "csTopDemoGridLayout").Rows[0].Value == 1.5, "fractional reload");
+            StyleTestData.Layout(shipped, "/csVerticalSplitPaneLayout")["ratio"] = .65;
+            Reload(); Require(file.LastError is null && file.Current.Layouts.Single(l => l.Id == "csVerticalSplitPaneLayout").Split!.Ratio == .65, "split ratio reload");
+            good = file.Current; StyleTestData.Layout(shipped, "/csVerticalSplitPaneLayout")["ratio"] = 2;
+            Reload(); Require(ReferenceEquals(good, file.Current) && file.LastError is not null, "invalid split retains snapshot");
         }
         finally { Directory.Delete(directory, true); }
-    }
-
-    private static void Reject(Action action)
-    {
-        try { action(); } catch (JsonException) { return; }
-        throw new Exception("Expected invalid models/layouts/bindings to be rejected.");
     }
     private static void Require(bool ok, string message) { if (!ok) throw new Exception(message); }
 }

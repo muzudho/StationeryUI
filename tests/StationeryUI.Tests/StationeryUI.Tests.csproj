@@ -6,4 +6,5 @@
   <ItemGroup><ProjectReference Include="../../src/StationeryUI.MonoGame/StationeryUI.MonoGame.csproj" /></ItemGroup>
   <ItemGroup><Compile Include="../../samples/StationeryUI.Demo/DemoModelBinding.cs" Link="DemoModelBinding.cs" /></ItemGroup>
   <ItemGroup><None Include="../../App_Data/demo.stationery-ui.json" Link="Fixtures/demo.stationery-ui.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="../../App_Data/demo.stationery-ui.json" LogicalName="StationeryUI.Demo.demo.stationery-ui.json" /></ItemGroup>
 </Project>

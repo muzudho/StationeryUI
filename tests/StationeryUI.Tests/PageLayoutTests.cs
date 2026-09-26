@@ -6,125 +6,68 @@ internal static class PageLayoutTests
 {
     public static void Run()
     {
-        var json = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "demo.stationery-ui.json")))!;
+        var json = StyleTestData.Demo();
         var settings = StationeryStyleSettings.Parse(json.ToJsonString());
         var model = DemoModelBinding.Create(settings);
-        Check(settings.Layouts.Count(l => l.Type == "box-layout") == 3, "border demonstration and model-owned margin boxes remain");
-        var oldJson = json.DeepClone();
-        var link = oldJson["models"]![0]!["children"]!.AsArray().Single(n => (string?)n!["id"] == "layoutDemoPage")!["children"]!
-            .AsArray().Single(n => (string?)n!["id"] == "body")!["children"]!.AsArray().Single(n => (string?)n!["id"] == "topDemoLink")!;
-        var oldMargin = new JsonObject { ["top"] = "4px", ["right"] = "4px", ["bottom"] = "4px", ["left"] = "4px" };
-        link["margin"] = oldMargin.DeepClone();
-        link.AsObject().Remove("margin");
-        var oldBindings = oldJson["bindings"]!.AsArray();
-        foreach (var obsoleteBinding in oldBindings.Where(b => (string?)b!["layout"] == "/topDemoLinkBox").ToArray()) oldBindings.Remove(obsoleteBinding);
-        foreach (var obsoleteBinding in oldBindings.Where(b => (string?)b!["layout"] == "/spanCellBox").ToArray()) oldBindings.Remove(obsoleteBinding);
-        oldJson["layouts"]!.AsArray().Add(new JsonObject { ["id"] = "elementMargin1", ["type"] = "box-layout",
-            ["padding"] = new JsonObject { ["top"] = "0px", ["right"] = "0px", ["bottom"] = "0px", ["left"] = "0px" }, ["margin"] = oldMargin });
-        oldJson["bindings"]!.AsArray().Add(new JsonObject { ["layout"] = "/elementMargin1", ["model"] = "demo/layoutDemoPage/body/topDemoLink" });
-        oldJson["layouts"]!.AsArray().Add(new JsonObject { ["id"] = "elementMargin2", ["type"] = "box-layout",
-            ["padding"] = new JsonObject { ["top"] = "0px", ["right"] = "0px", ["bottom"] = "0px", ["left"] = "0px" },
-            ["margin"] = new JsonObject { ["top"] = "16px", ["right"] = "16px", ["bottom"] = "16px", ["left"] = "16px" } });
-        oldJson["bindings"]!.AsArray().Add(new JsonObject { ["layout"] = "/elementMargin2", ["model"] = "demo/layoutDemoPage/body/spanCell" });
-        var oldSettings = StationeryStyleSettings.Parse(oldJson.ToJsonString());
-        foreach (var (w, h) in new[] { (1000, 660), (720, 560), (20, 20) })
-        {
-            var before = StationeryLayoutEngine.Arrange(oldSettings, w, h);
-            var after = StationeryLayoutEngine.Arrange(settings, w, h);
-            Check(before.Bounds.All(p => after.Bounds[p.Key] == p.Value) &&
-                before.ContentBounds.All(p => after.ContentBounds[p.Key] == p.Value), "margin migration preserves every model rectangle");
-        }
-        var invalidMargin = json.DeepClone();
-        invalidMargin["models"]![0]!["margin"] = new JsonObject { ["left"] = "-1px" };
-        Reject(invalidMargin.ToJsonString());
-        var bounds = StationeryLayoutEngine.Arrange(settings, 1000, 660);
-        var panel = bounds.Bounds["/demo/topDemoPage/inspectorPanel"];
-        Check(panel.X == 0 && panel.Y == 580 && panel.Width == 1000 && panel.Height == 80, "full-width bottom panel");
-        Check(bounds.Bounds[model.Main["toolHint"].Path] == panel, "hint fills panel");
-        Check(bounds.ContentBounds[model.TopPage.Path + "/body"].Height == 564, "body reserves inspector and padding");
-        Check(settings.Layouts.All(l => l.Type is not ("work-page-layout" or "fullscreen-layout")), "demo uses dock instead of legacy page layouts");
+        Check(DemoModelBinding.Create(DemoModelBinding.Fallback).Signature == model.Signature, "embedded fallback includes all demo roles");
         foreach (var page in new[] { model.TopPage, model.SplitPage, model.LayoutPage })
         {
-            var owner = settings.Bindings.Where(b => b.ModelPath == page.Path).ToArray();
-            Check(owner.Length == 1 && owner[0].Layout == (page == model.SplitPage ? "/pageDockFullscreen" : "/pageDock"), "each page owns only the shared dock layout");
-            Check(owner[0].DockChildren[0].Dock == "bottom" && owner[0].DockChildren[1].Dock == "center", "inspector precedes center body");
+            var dock = settings.Bindings.Single(b => b.ModelPath == page.Path);
+            Check(dock.DockChildren.Single(c => c.CellIndex == 0).Dock == "bottom" && dock.DockChildren.Single(c => c.CellIndex == 1).Dock == "center", "inspector precedes body");
+            foreach (var (width, height) in new[] { (1000, 660), (720, 560), (20, 20), (0, 0) })
+            {
+                var bounds = StyleTestData.Arrange(settings, width, height, page.Path);
+                var panel = bounds.Bounds[page.Path + "/mdlInspectorPanel"];
+                var reserved = page == model.SplitPage ? 0 : Math.Min(80, height);
+                Check(panel.X == 0 && panel.Width == width && panel.Height == reserved && panel.Y + panel.Height == height, "full-width inspector clamped to viewport");
+                Check(bounds.Bounds.Values.All(b => b.Width >= 0 && b.Height >= 0), "small windows remain nonnegative");
+                foreach (var other in new[] { model.TopPage, model.SplitPage, model.LayoutPage }.Where(p => p != page))
+                    Check(bounds.Bounds[other.Path].Width == 0 && bounds.Bounds[other.Path].Height == 0, "inactive tab has no area");
+            }
         }
-        Check(bounds.Bounds[model.SplitControls["toolHint"].Path].Height == 0, "fullscreen hides hint");
-        // Exercise the actual showcase bindings, including nested boxes and spanning grid cells.
         foreach (var (width, height) in new[] { (1000, 780), (720, 560), (1400, 900) })
         {
-            var showcase = StationeryLayoutEngine.Arrange(settings, width, height);
-            var owner = model.LayoutPage.Path + "/body:/layoutShowcase";
-            var box = showcase.LayoutBounds[model.LayoutControls["boxContent"].Path + ":/box"];
+            var showcase = StyleTestData.Arrange(settings, width, height, model.LayoutPage.Path);
+            var owner = model.LayoutPage.Path + "/mdlBody:/csLayoutShowcaseGridLayout";
+            var box = showcase.LayoutBounds[model.LayoutControls["boxContent"].Path + ":/csBoxLayout"];
             var content = showcase.Bounds[model.LayoutControls["boxContent"].Path];
-            Check(content.X == box.X + 24 && content.Y == box.Y + 24 && content.Width == box.Width - 48, $"box padding surrounds its model ({box} vs {content})");
+            Check(content.X == box.X + 24 && content.Y == box.Y + 24 && content.Width == box.Width - 48, "box padding surrounds text");
             var grid = showcase.LayoutContentBounds[owner + "/grid"];
             var nested = showcase.LayoutBounds[owner + "/grid/nestedGrid"];
             Check(Math.Abs(nested.Width - grid.Width * 2 / 3) < .001 && Math.Abs(nested.Height - grid.Height * 2 / 3) < .001, "nested grid spans two rows and columns");
             var a = showcase.Bounds[model.LayoutControls["nestedA"].Path];
             var d = showcase.Bounds[model.LayoutControls["nestedD"].Path];
-            Check(a.X + a.Width == d.X && a.Y + a.Height == d.Y, "nested cells occupy separate quadrants");
+            Check(Math.Abs(a.X + a.Width - d.X) < .001 && Math.Abs(a.Y + a.Height - d.Y) < .001, "quadrants are separate");
             var footer = showcase.Bounds[model.LayoutControls["gridFooter"].Path];
-            Check(footer.Width == grid.Width && footer.Y == nested.Y + nested.Height, "footer spans all three columns");
-            Check(showcase.Bounds[model.LayoutControls["toolHint"].Path].Height == 80, "layout page reserves inspector");
+            Check(Math.Abs(footer.Width - grid.Width) < .001 && Math.Abs(footer.Y - nested.Y - nested.Height) < .001, "footer spans three columns");
         }
-        Check(DemoModelBinding.Create(DemoModelBinding.Fallback).Signature == model.Signature, "fallback includes showcase roles");
-        var binding = json["bindings"]!.AsArray().Single(b => (string?)b!["parentModel"] == "demo/topDemoPage")!;
-        var inspector = binding["childrenModel"]![0]!;
-        var inspectorSlot = json["layouts"]!.AsArray().Single(l => (string?)l!["id"] == "pageDock")!["cells"]![0]!;
-        var signature = model.Signature;
-        inspectorSlot["size"] = "0px";
+        var original = json.ToJsonString();
+        foreach (var dockLayout in StyleTestData.Objects(json).Where(n => (string?)n["name"] == "csPageDock")) dockLayout["cells"]![0]!["size"] = "0px";
         var full = StationeryStyleSettings.Parse(json.ToJsonString());
-        Check(DemoModelBinding.Create(full).Signature == signature, "binding switch preserves identities");
-        Check(StationeryLayoutEngine.Arrange(full, 1000, 660).ContentBounds[model.TopPage.Path + "/body"].Height == 644, "zero-height dock gives body available height");
-        inspectorSlot["size"] = "80px";
-        foreach (var size in new[] { 0, 1, 40, 80, 81, 660 })
-        {
-            var result = StationeryLayoutEngine.Arrange(settings, 500, size);
-            var small = result.Bounds["/demo/topDemoPage/inspectorPanel"];
-            Check(small.Height == Math.Min(80, size) && small.Y + small.Height == size, "small window clamps inspector");
-            Check(result.Bounds.Values.All(r => r.Width >= 0 && r.Height >= 0), "nonnegative bounds");
-        }
-        var valid = json.ToJsonString();
-        var duplicate = binding.DeepClone();
-        inspector["model"] = "missingPanel";
-        Reject(json.ToJsonString());
-        json = JsonNode.Parse(valid)!;
-        json["bindings"]!.AsArray().Add(duplicate);
-        Reject(json.ToJsonString());
-        Reject(valid.Replace("80px", "-80px"));
-        // A real file reload changes dock size without changing models or editing state.
+        Check(DemoModelBinding.Create(full).Signature == model.Signature, "dock size change preserves model identity");
+        Check(StyleTestData.Arrange(full, 1000, 660).Bounds[model.Main["toolHint"].Path].Height == 0, "zero-height inspector");
         var directory = Path.Combine(Path.GetTempPath(), "page-layout-" + Guid.NewGuid());
         Directory.CreateDirectory(directory);
         try
         {
-            File.WriteAllText(Path.Combine(directory, "config.json"), "{\"styleFile\":\"style.json\",\"autoReload\":true}");
+            var config = Path.Combine(directory, "config.json");
             var path = Path.Combine(directory, "style.json");
-            File.WriteAllText(path, valid);
-            var file = new StationeryStyleFile(Path.Combine(directory, "config.json"), settings, s => DemoModelBinding.Create(s));
-            File.WriteAllText(path, valid.Replace("\"size\":\"80px\"", "\"size\":\"0px\""));
+            File.WriteAllText(config, """{"styleFile":"style.json","autoReload":true}""");
+            File.WriteAllText(path, original);
+            var file = new StationeryStyleFile(config, settings, value => DemoModelBinding.Create(value));
+            File.WriteAllText(path, json.ToJsonString());
             file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
-            Check(file.LastError is null && StationeryLayoutEngine.Arrange(file.Current, 1000, 660).Bounds[model.Main["toolHint"].Path].Height == 0, "reload switches layout");
+            Check(file.LastError is null && StyleTestData.Arrange(file.Current, 1000, 660).Bounds[model.Main["toolHint"].Path].Height == 0, "reload switches inspector size");
+            var good = file.Current;
+            StyleTestData.Layout(json, "/csPageDock")["cells"]![0]!["size"] = "-1px";
+            File.WriteAllText(path, json.ToJsonString());
+            file.Update(TimeSpan.FromSeconds(.5)); file.Update(TimeSpan.FromSeconds(.5));
+            Check(ReferenceEquals(good, file.Current) && file.LastError is not null, "invalid dock retains last good page");
         }
         finally { Directory.Delete(directory, true); }
-        CheckLegacyPageLayouts();
-    }
-    private static void CheckLegacyPageLayouts()
-    {
-        const string source = """
-        {"models":[{"id":"app","type":"viewport","children":[{"id":"page","type":"page","children":[{"id":"inspector","type":"container"}]}]}],
-         "layouts":[{"id":"pageLayout","type":"work-page-layout","inspectorHeight":"80px"}],
-         "bindings":[{"layout":"/pageLayout","model":"app/page","inspectorModel":"inspector"}]}
-        """;
-        var settings = StationeryStyleSettings.Parse(source);
-        Check(StationeryLayoutEngine.Arrange(settings, 1000, 660).Bounds["/app/page/inspector"].Height == 80, "legacy work page remains supported");
-        settings = StationeryStyleSettings.Parse(source.Replace("work-page-layout", "fullscreen-layout").Replace(",\"inspectorHeight\":\"80px\"", ""));
-        Check(StationeryLayoutEngine.Arrange(settings, 1000, 660).Bounds["/app/page/inspector"].Height == 0, "legacy fullscreen remains supported");
+        var invalid = StyleTestData.Demo();
+        invalid["modelTree"]!["margin"] = new JsonObject { ["left"] = "-1px" };
+        StyleTestData.Reject(() => StationeryStyleSettings.Parse(invalid.ToJsonString()));
     }
     private static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
-    private static void Reject(string json)
-    {
-        try { StationeryStyleSettings.Parse(json); } catch (JsonException) { return; }
-        throw new Exception("Invalid page binding accepted.");
-    }
 }

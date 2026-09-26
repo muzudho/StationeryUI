@@ -46,8 +46,8 @@ static class DeveloperStyleTests
         finally { Directory.Delete(directory, true); }
     }
 
-    private static void Check(bool condition)
+    private static void Check(bool condition, [System.Runtime.CompilerServices.CallerLineNumber] int line = 0)
     {
-        if (!condition) throw new Exception("Developer style assertion failed.");
+        if (!condition) throw new Exception($"Developer style assertion failed at line {line}.");
     }
 }

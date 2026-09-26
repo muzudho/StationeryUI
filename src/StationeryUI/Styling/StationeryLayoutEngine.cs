@@ -122,7 +122,8 @@ public static class StationeryLayoutEngine
                     }
                     if (binding.LayoutError is not null)
                     {
-                        foreach (var (path, dockArea) in StationeryDockLayout.Arrange(dockContent, binding.DockChildren)) positions[path] = dockArea;
+                        foreach (var (path, dockArea) in StationeryDockLayout.Arrange(dockContent,
+                            binding.DockChildren.Select(child => child with { Dock = "top", Size = 48 }).ToArray())) positions[path] = dockArea;
                     }
                     else
                     {
@@ -158,7 +159,7 @@ public static class StationeryLayoutEngine
                 content = outer with { Height = outer.Height - inspectorHeight };
                 positions.Add(page.InspectorModel!, new(outer.X, outer.Y + content.Height, outer.Width, inspectorHeight));
             }
-            if (roots.TryGetValue(node.Path, out var panel) && (panel.Type is "box-layout" or "tabbed-box-layout"))
+            if (roots.TryGetValue(node.Path, out var panel) && (panel.Type is "box-layout" or "tabbed-box-layout" or "grid-layout" or "dock-layout"))
             {
                 var inset = panel.Padding.GetContentBounds(content.Width, content.Height);
                 content = inset with { X = outer.X + inset.X, Y = outer.Y + inset.Y };

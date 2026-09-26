@@ -1,5 +1,16 @@
 # 検証記録
 
+## 2026-09-26 — v0.4.0 の公開前検証
+
+- 旧 `models`／`bindings` 形式のテストデータを `modelTree`／`controlTree` と現在のデモの `viewports` 形式へ移行した。モデルの完全パス、ページ選択、共有コントロールの LayoutKey を現在の仕様に合わせ、配置・余白・入れ子・編集の原子性・リロードの検証を更新した。
+- 移行後のテストで、ルートの grid-layout／dock-layout の padding が無視される不具合を修正した。範囲外・重複・不正なグリッド経路と、同じ split-pane 領域への重複割り当てを読み込み時に拒否するようにした。新しい経路から生成するドック配置でも、壊れたサイズを診断付きの縦並びとして表示できるようにした。
+- デモの結合セルの `place` を定義と同じ `rowspan: 2` に修正した。開発者ウィンドウと新規デザインの外側の box-layout には padding 0 を明示し、意図しない既定の余白を除いた。
+- `dotnet run --project tests/StationeryUI.Tests -c Release`：**33/33 成功**。
+- `dotnet run --project tests/StationeryUI.Windows.Tests -c Release`：**ネイティブ SDL／Windows テキストの10検証が成功**。
+- `dotnet build StationeryUI.slnx -c Release --no-restore`：**成功、警告0、エラー0**。
+- NuGet 同梱資料の移動後の参照先を修正し、`dotnet pack StationeryUI.slnx -c Release --no-restore -o artifacts/nuget/v0.4.0` で3パッケージを作成した。各パッケージの ID、0.4.0 の版番号と内部依存、DLL、README、ライセンス、同梱資料の存在を確認した。
+- NuGet 公開ワークフローに .NET SDK 10 も指定し、`.slnx` の復元に使えるようにした。今回の確認はローカルで行い、NuGet.org への公開と GitHub Actions の実行は行っていない。
+
 2026-09-08。Windows、.NET SDK 10.0.400、MonoGame.Framework.DesktopGL 3.8.5.1。ライブラリーは.NET 8、Windows接続は.NET 8 Windowsを対象とする。
 
 | 項目 | 結果 |

@@ -542,7 +542,7 @@
                                             "place": {
                                                 "row": 1,
                                                 "col": 1,
-                                                "colspan": 2
+                                                "rowspan": 2
                                             },
                                             "controlHandle": "ctrlSpanCell",
                                             "modelPath": {

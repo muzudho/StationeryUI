@@ -50,17 +50,72 @@ internal static class DeveloperInspectionTests
     {
         var settings = StationeryUI.Styling.StationeryStyleSettings.Parse("""
         {
-          "models":[{"id":"demo","type":"viewport","children":[{"id":"demoPage","type":"page","children":[{"id":"btn123","type":"button"}]}]}],
-          "layouts":[
+          "layouts": [
             {
-              "id":"grid",
-              "type":"grid-layout",
-              "row-definitions":["1rate","1rate","1rate"],
-              "column-definitions":["1rate","1rate","1rate","1rate"],
-              "cells":[{"row":0,"col":1,"rowspan":2,"colspan":3,"slots":[{"id":"slot1"}]}]
+              "id": "viewport",
+              "type": "box-layout",
+              "padding": {
+                "left": "0px",
+                "top": "0px",
+                "right": "0px",
+                "bottom": "0px"
+              }
+            },
+            {
+              "id": "grid",
+              "type": "grid-layout",
+              "row-definitions": [
+                "1rate",
+                "1rate",
+                "1rate"
+              ],
+              "column-definitions": [
+                "1rate",
+                "1rate",
+                "1rate",
+                "1rate"
+              ],
+              "cells": [
+                {
+                  "row": 0,
+                  "col": 1,
+                  "rowspan": 2,
+                  "colspan": 3,
+                  "slots": [
+                    {
+                      "id": "slot1"
+                    }
+                  ]
+                }
+              ]
             }
           ],
-          "bindings":[{"layout":"/grid","parentModel":"/demo/demoPage","childrenModel":[{"model":"btn123","slot":"slot1"}]}]
+          "modelTree": {
+            "id": "demo",
+            "type": "viewport",
+            "children": [
+              {
+                "id": "demoPage",
+                "type": "page",
+                "children": [
+                  {
+                    "id": "btn123",
+                    "type": "button"
+                  }
+                ]
+              }
+            ]
+          },
+          "controlTree": {
+            "test": {
+              "modelPath": {
+                "in /": "/demo/demoPage/btn123"
+              },
+              "layoutPath": {
+                "in /": "viewport[single].grid[1y_2x_3w_2h]"
+              }
+            }
+          }
         }
         """);
         StationeryInspectionEntry[] entries = [
@@ -75,14 +130,14 @@ internal static class DeveloperInspectionTests
         model.Select("/demo/demoPage");
         Check(model.Tree.SelectedItem!.Label == "(demoPage : Page)", "model tree hides placement");
         model.SetTreeMode(DeveloperTreeMode.Layout);
-        Check(model.Tree.SelectedItem!.Label == "(demoPage : Page) (- : gridLayout)", "layout owner label and serialization");
+        Check(model.Tree.SelectedItem!.Label == "(demoPage : Page) (0, 0, 1, 1 : gridLayout)", "layout owner label and serialization: " + model.Tree.SelectedItem!.Label);
         model.Select("/demo/demoPage/btn123");
         Check(model.Tree.SelectedItem!.Label == "(btn123 : Button) (1, 0, 3, 2 : -)", "column row column-span row-span order");
         model.Tree.ClearSelection();
         Check(model.EntryFor(model.Tree.TargetItem)?.Id == "btn123" && model.SelectedEntry is null,
             "inspection entry resolves from the actual tree target");
         model.Select("/demo/demoPage/btn123");
-        Check(model.Tree.SelectedItem!.Parent!.Label == "(demoPage : Page) (- : gridLayout)", "root layout merged into owning model");
+        Check(model.Tree.SelectedItem!.Parent!.Label == "(demoPage : Page) (0, 0, 1, 1 : gridLayout)", "root layout merged into owning model");
         Check(model.Tree.VisibleRows().Count == 3, "one row per model without duplicate root layout");
         Check(model.Select("/demo/demoPage:/grid") && model.SelectedPath == "/demo/demoPage", "legacy root selection resolves to owner");
         model.Select("/demo/demoPage:/grid");
@@ -119,30 +174,30 @@ internal static class DeveloperInspectionTests
             directory = directory.Parent;
         var settings = StationeryUI.Styling.StationeryStyleSettings.Parse(System.IO.File.ReadAllText(
             System.IO.Path.Combine(directory!.FullName, "App_Data", "demo.stationery-ui.json")));
-        const string owner = "/demo/layoutDemoPage/body";
+        const string owner = "/mdlDemo/mdlLayoutDemoPage/mdlBody";
         StationeryInspectionEntry[] entries = [
             new("body", owner, null, "container", "", true, null),
-            new("boxContent", owner + "/boxContent", owner, "textBlock", "", true, null)
+            new("boxContent", owner + "/mdlBoxContent", owner, "textBlock", "", true, null)
         ];
         var model = new DeveloperInspectionModel();
         model.Refresh(DeveloperInspectionLayout.Apply(entries, settings));
         model.SetTreeMode(DeveloperTreeMode.Layout);
-        Check(model.Select(owner + "/boxContent"), "nested model selectable by capture path");
+        Check(model.Select(owner + "/mdlBoxContent"), "nested model selectable by capture path");
         Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner, "model remains in the parent layout cell");
-        Check(model.Select(owner + "/boxContent:/box"), "box layout is associated with the model");
+        Check(model.Select(owner + "/mdlBoxContent:/csBoxLayout"), "box layout is associated with the model");
         Check(model.PathFor(model.Tree.SelectedItem!.Parent!) == owner, $"model with root layout remains in its parent ({model.PathFor(model.Tree.SelectedItem!.Parent!)})");
         Check(model.SelectedEntry!.BoxModel!.Padding.Left == 24 && model.SelectedEntry.BoxModel.Margin.Left == 8, "associated layout owns its own insets");
-        var arranged = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 1000, 700);
+        var arranged = StyleTestData.Arrange(settings, 1000, 700, "/mdlDemo/mdlLayoutDemoPage");
         var snapshot = DeveloperInspectionLayout.Apply(entries, settings, arranged);
         var received = System.Text.Json.JsonSerializer.Deserialize<StationeryInspectionEntry[]>(
             System.Text.Json.JsonSerializer.Serialize(snapshot))!;
         Check(received[0].PartitionLines!.Count > 0 &&
-            received[0].LayoutNodes!.Single(e => e.Id == "layoutShowcase").PartitionLines!.SequenceEqual(received[0].PartitionLines!),
+            received[0].LayoutNodes!.Single(e => e.Id == "csLayoutShowcaseGridLayout").PartitionLines!.SequenceEqual(received[0].PartitionLines!),
             "root and layout partitions survive transport in window pixels");
-        var key = owner + "/boxContent:/box";
+        var key = owner + "/mdlBoxContent:/csBoxLayout";
         var selection = DeveloperInspectionLayout.FindVisibleEntry(received, key);
         Check(selection?.WindowBounds == arranged.LayoutBounds[key], "nested layout window bounds survive transport");
-        var content = arranged.Bounds[owner + "/boxContent"];
+        var content = arranged.Bounds[owner + "/mdlBoxContent"];
         var outer = selection!.WindowBounds!.Value;
         Check(content.X == outer.X + 24 && content.Width == outer.Width - 48,
             $"associated box layout includes padding and model margin ({content} vs {outer})");
@@ -151,13 +206,13 @@ internal static class DeveloperInspectionTests
         Check(DeveloperInspectionLayout.FindVisibleEntry(DeveloperInspectionLayout.Apply(entries, settings), key) is null, "missing arrangement has no invented rectangle");
         model.Refresh(received);
         Check(model.Details.Contains("X="), "selected model details show actual coordinates");
-        var resized = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 1300, 900);
+        var resized = StyleTestData.Arrange(settings, 1300, 900, "/mdlDemo/mdlLayoutDemoPage");
         model.Refresh(DeveloperInspectionLayout.Apply(entries, settings, resized));
-        var resizedModelPath = owner + "/boxContent";
+        var resizedModelPath = owner + "/mdlBoxContent";
         Check(model.SelectedPath == resizedModelPath && model.SelectedEntry!.WindowBounds == resized.Bounds[resizedModelPath]
             && model.SelectedEntry.WindowBounds != content, "resize updates selected model rectangle");
         model.SetTreeMode(DeveloperTreeMode.Model);
-        model.Select(owner + "/boxContent");
+        model.Select(owner + "/mdlBoxContent");
         Check(model.Tree.SelectedItem!.Parent!.Label == "(body : Container)", "model hierarchy unchanged");
     }
     private static void CheckPartitions()
@@ -184,19 +239,94 @@ internal static class DeveloperInspectionTests
     {
         var settings = StationeryUI.Styling.StationeryStyleSettings.Parse("""
         {
-          "models":[{"id":"screen","type":"viewport","children":[{"id":"child","type":"button","margin":{"left":"3px"}}]}],
-          "layouts":[
-            {"id":"grid","type":"grid-layout","padding":{"left":"10px","top":"20px","right":"30px","bottom":"40px"},
-             "row-definitions":["1rate"],"column-definitions":["1rate","1rate"],
-             "cells":[{"row":0,"col":1,"slots":[{"id":"child"}]}],
-             "children":[{"id":"nested","type":"box-layout","row":0,"col":0,"margin":{"top":"5px","right":"7px"},"padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}}]},
-            {"id":"childLayout","type":"box-layout","margin":{"top":"6px","bottom":"8px"},"padding":{"top":"0px","right":"0px","bottom":"0px","left":"0px"}}
+          "layouts": [
+            {
+              "id": "grid",
+              "type": "grid-layout",
+              "padding": {
+                "left": "10px",
+                "top": "20px",
+                "right": "30px",
+                "bottom": "40px"
+              },
+              "row-definitions": [
+                "1rate"
+              ],
+              "column-definitions": [
+                "1rate",
+                "1rate"
+              ],
+              "cells": [
+                {
+                  "row": 0,
+                  "col": 1,
+                  "slots": [
+                    {
+                      "id": "child"
+                    }
+                  ]
+                }
+              ],
+              "children": [
+                {
+                  "id": "nested",
+                  "type": "box-layout",
+                  "row": 0,
+                  "col": 0,
+                  "margin": {
+                    "top": "5px",
+                    "right": "7px"
+                  },
+                  "padding": {
+                    "top": "0px",
+                    "right": "0px",
+                    "bottom": "0px",
+                    "left": "0px"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "childLayout",
+              "type": "box-layout",
+              "margin": {
+                "top": "6px",
+                "bottom": "8px"
+              },
+              "padding": {
+                "top": "0px",
+                "right": "0px",
+                "bottom": "0px",
+                "left": "0px"
+              }
+            }
           ],
-          "bindings":[{"layout":"/grid","parentModel":"/screen","childrenModel":[{"model":"child","slot":"child"}]},
-                      {"layout":"/childLayout","model":"/screen/child"}]
+          "modelTree": {
+            "id": "screen",
+            "type": "viewport",
+            "children": [
+              {
+                "id": "child",
+                "type": "button",
+                "margin": {
+                  "left": "3px"
+                }
+              }
+            ]
+          },
+          "controlTree": {
+            "test": {
+              "modelPath": {
+                "in /": "/screen/child"
+              },
+              "layoutPath": {
+                "in /": "grid[1y_2x_1w_1h].childLayout"
+              }
+            }
+          }
         }
         """);
-        var arranged = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 240, 160);
+        var arranged = StyleTestData.Arrange(settings, 240, 160);
         Check(arranged.MarginBounds["/screen/child"] == new StationeryUI.Canvas.ScreenRectangle(110, 20, 100, 100), "model margin boundary is allocated cell inside parent padding");
         Check(arranged.LayoutMarginBounds["/screen/child:/childLayout"] == new StationeryUI.Canvas.ScreenRectangle(113, 20, 97, 100), "root layout allocation follows model margin");
         Check(arranged.LayoutMarginBounds["/screen:/grid/nested"] == new StationeryUI.Canvas.ScreenRectangle(10, 20, 100, 100), "nested layout margin boundary is its own cell");
@@ -208,7 +338,7 @@ internal static class DeveloperInspectionTests
         Check(received[1].MarginBounds == arranged.MarginBounds["/screen/child"] && received[1].BoxModel!.Margin.Left == 3
             && received[1].BoxModel!.Margin.Top == 6 && received[1].BoxModel!.Margin.Right == 0, "merged model margin extents survive transport");
         Check(received[0].LayoutNodes!.Single(e => e.Id == "nested").MarginBounds == arranged.LayoutMarginBounds["/screen:/grid/nested"], "nested margin metadata survives transport");
-        var tiny = StationeryUI.Styling.StationeryLayoutEngine.Arrange(settings, 42, 61);
+        var tiny = StyleTestData.Arrange(settings, 42, 61);
         Check(tiny.MarginBounds["/screen/child"] == new StationeryUI.Canvas.ScreenRectangle(11, 20, 1, 1)
             && tiny.Bounds["/screen/child"].Width == 0, "clamped margin retains original allocation instead of expanding empty bounds");
     }

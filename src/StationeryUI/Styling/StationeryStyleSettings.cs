@@ -232,7 +232,9 @@ internal static class StationeryControlBindingResolver
             (layouts[item.Layout].Type == "tabbed-box-layout"
                 ? item.Children.OrderBy(child => child.Row).ToArray()
                 : item.Children.ToArray()), item.First, item.Second, item.Inspector)
-        { DockChildren = item.DockChildren.AsReadOnly() }).ToArray();
+        { DockChildren = layouts[item.Layout].CellError is null ? item.DockChildren.AsReadOnly()
+            : item.DockChildren.OrderBy(child => root.Resolve(item.Model)!.Children.ToList().FindIndex(n => n.Path == child.ModelPath)).ToArray(),
+            LayoutError = layouts[item.Layout].CellError }).ToArray();
 
         StationeryLayoutNode? ResolveRootLayout(string? id, string route)
         {
@@ -275,6 +277,14 @@ internal static class StationeryControlBindingResolver
             assignedModels.Add(childKey, edge);
             if (layout.Type == "grid-layout" && ParseGridEdge(edge) is { } grid)
             {
+                if (grid.Row < 0 || grid.Column < 0 || grid.RowSpan < 1 || grid.ColumnSpan < 1 ||
+                    grid.RowSpan > layout.Rows.Count - grid.Row || grid.ColumnSpan > layout.Columns.Count - grid.Column)
+                    throw new JsonException($"controlTree route '{route}' exceeds the grid tracks at {layout.Path}.");
+                bool Overlaps(int row, int col, int rows, int cols) => grid.Row < row + rows && row < grid.Row + grid.RowSpan
+                    && grid.Column < col + cols && col < grid.Column + grid.ColumnSpan;
+                if (layout.Children.Any(c => Overlaps(c.Row, c.Column, c.RowSpan, c.ColumnSpan)) ||
+                    accumulator.Children.Any(c => Overlaps(c.Row, c.Column, c.RowSpan, c.ColumnSpan)))
+                    throw new JsonException($"controlTree route '{route}' overlaps an existing placement at {layout.Path}.");
                 accumulator.Children.Add(new(child.Path, grid.Row, grid.Column, grid.RowSpan, grid.ColumnSpan));
                 return;
             }
@@ -295,6 +305,11 @@ internal static class StationeryControlBindingResolver
                 var separator = edge.LastIndexOf('.');
                 if (separator > 0 && int.TryParse(edge[(separator + 1)..], NumberStyles.None, CultureInfo.InvariantCulture, out var oneBasedIndex))
                 { direction = edge[..separator]; cellIndex = oneBasedIndex - 1; }
+                if (layout.CellError is not null)
+                {
+                    accumulator.DockChildren.Add(new(child.Path, direction, 48) { CellIndex = cellIndex ?? -1 });
+                    return;
+                }
                 var matching = layout.Cells.Select((cell, index) => (cell, index))
                     .Where(item => item.cell.Dock == direction && (cellIndex is null || item.index == cellIndex)).ToArray();
                 if (matching.Length != 1) throw new JsonException($"controlTree route '{route}' dock edge '{edge}' resolves to {matching.Length} cells in {layout.Path}.");
@@ -304,6 +319,8 @@ internal static class StationeryControlBindingResolver
             }
             if (layout.Type == "split-pane" && (edge is "first" or "second"))
             {
+                if ((edge == "first" ? accumulator.First : accumulator.Second) is not null)
+                    throw new JsonException($"controlTree route '{route}' assigns more than one model to split pane '{edge}'.");
                 if (edge == "first") accumulator.First = child.Path; else accumulator.Second = child.Path;
                 return;
             }
@@ -324,9 +341,11 @@ internal static class StationeryControlBindingResolver
 
         static (int Row, int Column, int RowSpan, int ColumnSpan)? ParseGridEdge(string edge)
         {
-            var values = Regex.Matches(edge, "[0-9]+").Cast<Match>()
-                .Select(match => int.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
-            if (values.Length != 4 || !edge.Contains('y') || !edge.Contains('x') || !edge.Contains('w') || !edge.Contains('h')) return null;
+            var match = Regex.Match(edge, @"\A([0-9]+)y\.([0-9]+)x\.([0-9]+)w\.([0-9]+)h\z");
+            if (!match.Success) return null;
+            var values = new int[4];
+            for (var i = 0; i < values.Length; i++)
+                if (!int.TryParse(match.Groups[i + 1].Value, NumberStyles.None, CultureInfo.InvariantCulture, out values[i])) return null;
             // Route syntax is y/x/width/height, while the binding stores rowSpan/columnSpan.
             return (values[0] - 1, values[1] - 1, values[3], values[2]);
         }

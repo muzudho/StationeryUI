@@ -438,7 +438,8 @@ public sealed class StyleBlueprint
                 { ["id"] = "mainPage", ["type"] = "page", ["children"] = modelChildren })
             },
             ["layouts"] = new JsonArray(
-                new JsonObject { ["id"] = rootLayoutId, ["type"] = "box-layout" },
+                new JsonObject { ["id"] = rootLayoutId, ["type"] = "box-layout",
+                    ["padding"] = new JsonObject { ["top"] = "0px", ["right"] = "0px", ["bottom"] = "0px", ["left"] = "0px" } },
                 new JsonObject
                 {
                     ["id"] = DefaultLayoutId, ["type"] = "grid-layout", ["cells"] = cells,
