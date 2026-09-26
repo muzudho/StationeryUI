@@ -13,6 +13,7 @@ var tests = new (string Name, Action Run)[]
     ("inspector operation logs record clicks, state transitions and inactive input", DeveloperOperationLogTests.Run),
     ("style autosave debounce, exact savepoints, restore, retention and conflicts", StyleSaveSessionTests.Run),
     ("read-only style refresh detects content changes and retains the last valid design", ReadStyleSnapshotTests.Run),
+    ("read-only JSON tree maps model properties and preserves selection on reload", ReadJsonTreeTests.Run),
     ("style blueprint exports new validated designs without overwriting files", StyleBlueprintTests.Run),
     ("page layouts reserve inspector, preserve identities and switch on reload", PageLayoutTests.Run),
     ("developer style external overrides and embedded distribution defaults", DeveloperStyleTests.Run),

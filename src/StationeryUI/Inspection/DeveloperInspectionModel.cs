@@ -9,6 +9,7 @@ public sealed record DeveloperViewState(string? SelectedPath, string[] Collapsed
 {
     public DeveloperTreeMode TreeMode { get; init; }
     public DeveloperViewState? OtherTreeState { get; init; }
+    public bool DocumentTreeMode { get; init; }
 }
 public sealed record DeveloperInspectionMessage(StationeryInspectionEntry[] Entries, long ShowSequence, DeveloperViewState? RestoreState, string? CapturePath = null, long CaptureSequence = 0)
 {

@@ -10,9 +10,13 @@ internal sealed partial class EditorGame
     private bool readMode;
     private string? readFile;
     private StationeryDeveloperView? readView;
+    private ReadJsonTree? readJsonTree;
     private StationeryUiHost? readActions;
     private StationeryUiHost.Element? readEditButton, readCloseButton, readPreviewButton, readPreviewHeading, readLiveStatus;
     private bool readSmokeSelectionApplied;
+    private bool jsonRoundtripStarted;
+    private bool jsonRoundtripPending;
+    private bool previewBeforeJsonTree;
 
     private void OpenReadStyle(string? path, bool discardChanges = false)
     {
@@ -28,6 +32,9 @@ internal sealed partial class EditorGame
         var plan = document?.Blueprint;
         var selectionFromEdit = editingPage && editorTreeMode != EditorTreeMode.Json
             ? semanticTree.Capture() : null;
+        var jsonSelectionFromEdit = editingPage && editorTreeMode == EditorTreeMode.Json
+            && styleTree?.Tree?.TargetItem is { } selectedJson
+            && treePaths.TryGetValue(selectedJson.Id, out var jsonPath) ? jsonPath : null;
         readView ??= new(GraphicsDevice, input, family => new WindowsTextRasterizer(family), StationeryDeveloperStyle.Load());
         readView.EmbeddedInEditor = true;
         readView.Theme = theme with { Selected = theme.Surface };
@@ -37,6 +44,12 @@ internal sealed partial class EditorGame
             readView.Restore(selectionFromEdit with { SplitRatio = readView.SplitRatio });
         // Commit the mode change only after the file and preview have passed validation.
         SetReadPreviewDocument(document);
+        if (jsonSelectionFromEdit is not null && readJsonTree?.SelectPath(jsonSelectionFromEdit) == true)
+        {
+            readView.SetDocumentTreeMode();
+            showReadPreview = false;
+            readPreviewButton!.Label = "プレビューを見る";
+        }
         saveSession = null;
         saveError = null;
         invalidDraft = false;
@@ -94,6 +107,24 @@ internal sealed partial class EditorGame
             readView!.SelectCaptured(selection);
             readSmokeSelectionApplied = true;
         }
+        if (!string.IsNullOrEmpty(smokeOutput) && readJsonTree is not null
+            && Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_JSON_PATH") is { } jsonPath)
+        {
+            readJsonTree.SelectPath(jsonPath.Split('/', StringSplitOptions.RemoveEmptyEntries));
+            if (!readView!.DocumentTreeMode)
+            {
+                previewBeforeJsonTree = showReadPreview;
+                readView.SetDocumentTreeMode();
+                showReadPreview = false;
+                readPreviewButton!.Label = "プレビューを見る";
+            }
+        }
+        if (!jsonRoundtripStarted && !string.IsNullOrEmpty(smokeOutput) && readFile is not null
+            && Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_JSON_ROUNDTRIP") == "1")
+        {
+            jsonRoundtripStarted = true;
+            Guard(() => OpenStyle(readFile));
+        }
         readView!.Theme = theme with { Selected = theme.Surface };
         var width = GraphicsDevice.Viewport.Width;
         var buttonWidth = Math.Min(160, Math.Max(0, width / 6));
@@ -107,14 +138,53 @@ internal sealed partial class EditorGame
         actions.Focus.SetEnabled(readEditButton.Path, readFile is not null);
         actions.Focus.SetEnabled(readPreviewButton.Path, readPreviewBlueprint is not null);
         readView.OperationLog.HostIsActive = IsActive;
+        var wasDocumentTree = readView.DocumentTreeMode;
         readView.Update(time, IsActive, keyboard,
             mouse.Y < 48 && mouse.X >= width - buttonWidth * 3 ||
             showReadPreview && ContainsReadPreview(mouse) ? new MouseState() : mouse,
             width, GraphicsDevice.Viewport.Height);
+        if (!wasDocumentTree && readView.DocumentTreeMode)
+        {
+            previewBeforeJsonTree = showReadPreview;
+            showReadPreview = false;
+            readPreviewButton.Label = "プレビューを見る";
+        }
+        else if (wasDocumentTree && !readView.DocumentTreeMode)
+        {
+            showReadPreview = previewBeforeJsonTree && readPreviewBlueprint is not null;
+            readPreviewButton.Label = showReadPreview ? "詳細を見る" : "プレビューを見る";
+        }
         actions.Update(time, IsActive, keyboard, mouse);
         UpdateReadPreview();
         if (pendingPage is { } action) { pendingPage = null; action(); }
         base.Update(time);
+    }
+
+    private void FinishJsonRoundtripSmoke()
+    {
+        if (Environment.GetEnvironmentVariable("STATIONERYUI_EDITOR_TEST_JSON_ROUNDTRIP") != "1"
+            || string.IsNullOrEmpty(smokeOutput) || saveSession is null) return;
+        jsonRoundtripPending = true;
+    }
+
+    private void CompleteJsonRoundtripSmoke()
+    {
+        if (!jsonRoundtripPending) return;
+        jsonRoundtripPending = false;
+        var session = saveSession ?? throw new InvalidOperationException("JSON roundtrip lost its edit session.");
+        var output = smokeOutput ?? throw new InvalidOperationException("JSON roundtrip has no test output.");
+        var editJsonPath = styleTree?.Tree?.TargetItem is { } selected
+            && treePaths.TryGetValue(selected.Id, out var path) ? path : null;
+        var editJsonMode = editorTreeMode == EditorTreeMode.Json;
+        OpenReadStyle(session.FilePath);
+        File.WriteAllText(Path.Combine(output, "json-roundtrip-report.json"),
+            System.Text.Json.JsonSerializer.Serialize(new
+            {
+                EditJsonMode = editJsonMode, EditJsonPath = editJsonPath,
+                ReadJsonMode = readView!.DocumentTreeMode, ReadJsonPath = readJsonTree?.SelectedPath,
+                ReadHasSaveSession = saveSession is not null
+            }));
+        Exit();
     }
 
     private void DrawReadMode(GameTime time)
@@ -135,7 +205,8 @@ internal sealed partial class EditorGame
             File.WriteAllText(Path.Combine(smokeOutput, "read-report.json"),
                 System.Text.Json.JsonSerializer.Serialize(new { File = readFile, ReadOnly = readMode, HasSaveSession = saveSession is not null,
                     HasInspection = readView.Model.Tree.Roots.Count > 0, HasPreview = readPreview is not null,
-                    SelectedPath = readView.Model.SelectedPath }));
+                    SelectedPath = readView.Model.SelectedPath, JsonTreeMode = readView.DocumentTreeMode,
+                    JsonSelectedPath = readJsonTree?.CopyPath(readJsonTree.Tree.TargetItem) }));
             Exit();
         }
         base.Draw(time);

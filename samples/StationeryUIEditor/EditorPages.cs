@@ -19,6 +19,7 @@ internal sealed partial class EditorGame
     private StationeryUiHost.Element? modelTreeModeButton, layoutTreeModeButton, jsonTreeModeButton;
     private readonly DeveloperInspectionModel semanticTree = new();
     private DeveloperViewState? selectionFromReadMode;
+    private string[]? jsonSelectionFromReadMode;
     private EditorTreeMode editorTreeMode = EditorTreeMode.Layout;
     private string sourceFile = "";
     private string? treeJson;
@@ -90,7 +91,12 @@ internal sealed partial class EditorGame
     {
         editingPage = hasDraft = true; sidebarActive = false; applicationBarActive = false; rebuild = false;
         message = text; treeJson = null; lastTreeSelection = null;
-        if (selectionFromReadMode is { } readSelection && blueprint.IsImported)
+        if (jsonSelectionFromReadMode is not null && blueprint.IsImported)
+        {
+            editorTreeMode = EditorTreeMode.Json;
+            revealLayout = null;
+        }
+        else if (selectionFromReadMode is { } readSelection && blueprint.IsImported)
         {
             editorTreeMode = readSelection.TreeMode == DeveloperTreeMode.Model ? EditorTreeMode.Model : EditorTreeMode.Layout;
             revealLayout = null;
@@ -102,6 +108,7 @@ internal sealed partial class EditorGame
         ui.Viewport.Scale = scale; ui.Viewport.Offset = new(320 * scale, BodyTop);
         if (sidebar is not null) { sidebar.Viewport.Scale = scale; sidebar.Viewport.Offset = new(0, BodyTop); }
         if (PageSmoke) OpenPageDialog();
+        FinishJsonRoundtripSmoke();
     }
 
     private void BuildReadOnly()
@@ -260,12 +267,20 @@ internal sealed partial class EditorGame
         }
         var rootJson = JsonNode.Parse(json)!.AsObject(); var section = 0;
         foreach (var pair in rootJson) Visit(pair.Value, pair.Key, "section" + section++, null, 0);
-        if (revealLayout is not null)
+        TreeItem? Find(IEnumerable<TreeItem> items, string? identity)
+            => items.SelectMany(i => new[] { i }.Concat(Flatten(i.Children))).FirstOrDefault(i => i.Id == identity);
+        IEnumerable<TreeItem> Flatten(IEnumerable<TreeItem> items)
+            => items.SelectMany(i => new[] { i }.Concat(Flatten(i.Children)));
+        if (jsonSelectionFromReadMode is { } requestedPath)
+        {
+            var identity = treePaths.FirstOrDefault(pair => pair.Value.SequenceEqual(requestedPath)).Key;
+            restore = Find(next.Roots, identity);
+            jsonSelectionFromReadMode = null;
+        }
+        else if (revealLayout is not null)
         {
             var identity = treeLayouts.FirstOrDefault(p => p.Value == revealLayout).Key;
-            TreeItem? Find(IEnumerable<TreeItem> items) => items.SelectMany(i => new[] { i }.Concat(Flatten(i.Children))).FirstOrDefault(i => i.Id == identity);
-            IEnumerable<TreeItem> Flatten(IEnumerable<TreeItem> items) => items.SelectMany(i => new[] { i }.Concat(Flatten(i.Children)));
-            restore = Find(next.Roots); revealLayout = null;
+            restore = Find(next.Roots, identity); revealLayout = null;
         }
         if (restore is not null) next.SetTarget(restore);
         sidebar!.ReplaceTree(styleTree, next); treeJson = lastValidTreeJson = json;

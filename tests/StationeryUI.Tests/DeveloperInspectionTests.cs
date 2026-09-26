@@ -38,9 +38,10 @@ internal static class DeveloperInspectionTests
         Check(DeveloperCapture.HitTest(source, 4, 3)?.Path == "/demo", "right edge excluded");
         Check(DeveloperCapture.HitTest(source, -1, 3) is null, "outside has no hit");
         Check(DeveloperCapture.HitTest(source, 2, 3, "/demo/right") is null, "modal scope excludes background");
-        var packet = new DeveloperInspectionMessage(source, 1, model.Capture() with { CaptureEnabled = true }, "/demo/left/name", 2);
+        var packet = new DeveloperInspectionMessage(source, 1, model.Capture() with { CaptureEnabled = true, DocumentTreeMode = true }, "/demo/left/name", 2);
         var roundtrip = System.Text.Json.JsonSerializer.Deserialize<DeveloperInspectionMessage>(System.Text.Json.JsonSerializer.Serialize(packet))!;
-        Check(roundtrip.CaptureSequence == 2 && roundtrip.CapturePath == model.SelectedPath && roundtrip.RestoreState!.CaptureEnabled,
+        Check(roundtrip.CaptureSequence == 2 && roundtrip.CapturePath == model.SelectedPath && roundtrip.RestoreState!.CaptureEnabled
+            && roundtrip.RestoreState.DocumentTreeMode,
             "capture command and toggle survive pipe serialization");
         model.Refresh([]); Check(model.SelectedEntry is null && model.Details.Contains("選択"), "empty snapshot");
         CheckLayoutLabels();

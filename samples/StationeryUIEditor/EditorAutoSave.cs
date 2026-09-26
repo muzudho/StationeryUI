@@ -23,6 +23,7 @@ internal sealed partial class EditorGame
         if (!FlushAutoSave()) return;
         var opened = StyleSaveSession.Open(path);
         selectionFromReadMode = readMode ? readView?.Capture() : null;
+        jsonSelectionFromReadMode = readMode && readView?.DocumentTreeMode == true ? readJsonTree?.SelectedPath : null;
         pendingPage = () =>
         {
             readMode = false;

@@ -23,14 +23,18 @@ internal sealed partial class EditorGame
 
     private void SetReadPreviewDocument(ReadStyleSnapshot? document)
     {
+        if (!string.Equals(readPreviewDocument?.FilePath, document?.FilePath, StringComparison.OrdinalIgnoreCase))
+            readJsonTree = null;
         readPreviewDocument = document;
         readPreviewBlueprint = document?.Blueprint;
+        UpdateReadJsonTree();
         readPreviewError = null;
         readPreviewRefreshElapsed = 0;
         readPreviewKey = null;
         readPreviewSnapshot = null;
         readPreview?.Dispose(); readPreview = null;
         showReadPreview = document is not null;
+        if (readView?.DocumentTreeMode == true) showReadPreview = false;
         if (readPreviewButton is not null)
             readPreviewButton.Label = showReadPreview ? "詳細を見る" : "プレビューを見る";
     }
@@ -59,6 +63,7 @@ internal sealed partial class EditorGame
                 readPreviewButton!.Label = "詳細を見る";
             }
             readPreviewBlueprint = plan;
+            UpdateReadJsonTree();
             readPreviewError = null;
             readPreviewKey = null;
             if (launch.LivePipe is null) RefreshFileInspection(plan);
@@ -69,6 +74,14 @@ internal sealed partial class EditorGame
             readPreviewError = "プレビューの再読込に失敗：" + ex.Message;
             readPreviewHeading!.Label = readPreviewError;
         }
+    }
+
+    private void UpdateReadJsonTree()
+    {
+        readJsonTree = readPreviewDocument is null ? null : ReadJsonTree.Create(readPreviewDocument.Text, readJsonTree);
+        if (readJsonTree is { } json)
+            readView?.SetDocumentTree(json.Tree, json.Details, json.InspectionPath, json.CopyPath);
+        else readView?.SetDocumentTree(null);
     }
 
     private void UpdateReadPreview()

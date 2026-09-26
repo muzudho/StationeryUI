@@ -203,7 +203,7 @@ internal sealed partial class EditorGame : Game
             });
         }
         previousLoggedLeftButton = mouse.LeftButton;
-        try { UpdateFrame(gameTime); RespondLivePacket(gameTime); }
+        try { UpdateFrame(gameTime); RespondLivePacket(gameTime); CompleteJsonRoundtripSmoke(); }
         finally
         {
             var pageAfter = CurrentPageName;

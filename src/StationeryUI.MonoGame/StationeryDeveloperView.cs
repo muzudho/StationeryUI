@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using StationeryUI.Canvas;
+using StationeryUI.Controls;
 using StationeryUI.Inspection;
 using StationeryUI.Platform;
 using StationeryUI.Text;
@@ -16,7 +17,11 @@ public sealed class StationeryDeveloperView : IDisposable
     private readonly StationeryUiHost ui;
     private readonly ITextInputService input;
     public DeveloperOperationLog OperationLog { get; } = new();
-    private readonly StationeryUiHost.Element header, split, tree, details, copy, capture, toolHint, modelTreeButton, layoutTreeButton;
+    private readonly StationeryUiHost.Element header, split, tree, details, copy, capture, toolHint, modelTreeButton, layoutTreeButton, documentTreeButton;
+    private TreeView? documentTree;
+    private Func<TreeItem?, string>? documentDetails;
+    private Func<TreeItem?, string?>? documentInspectionPath, documentCopyPath;
+    public bool DocumentTreeMode { get; private set; }
     public ScreenRectangle InspectorPanelBounds { get; private set; }
     public ScreenRectangle ToolHintBounds => toolHint.Bounds;
     public string ToolHintText => toolHint.Label;
@@ -67,11 +72,13 @@ public sealed class StationeryDeveloperView : IDisposable
             () => SetTreeMode(DeveloperTreeMode.Model));
         layoutTreeButton = ui.AddButton(splitNode.AddChild("layoutTreeMode", "button"), new(), "レイアウトツリー",
             () => SetTreeMode(DeveloperTreeMode.Layout));
+        documentTreeButton = ui.AddButton(splitNode.AddChild("documentTreeMode", "button"), new(), "JSON ツリー", SetDocumentTreeMode);
         ui.BindSplitContent(split, tree, details);
         ui.Focus.Focus(tree.Path);
     }
     public void SetTreeMode(DeveloperTreeMode mode)
     {
+        DocumentTreeMode = false;
         Model.SetTreeMode(mode);
         tree.Tree = Model.Tree;
         tree.TreeHorizontalScroll = 0;
@@ -80,25 +87,65 @@ public sealed class StationeryDeveloperView : IDisposable
         details.Label = Model.Details;
         details.BoxModel = Model.SelectedEntry?.BoxModel;
     }
+    public void SetDocumentTree(TreeView? source, Func<TreeItem?, string>? describe = null,
+        Func<TreeItem?, string?>? inspectPath = null, Func<TreeItem?, string?>? copyPath = null)
+    {
+        documentTree = source;
+        documentDetails = describe;
+        documentInspectionPath = inspectPath;
+        documentCopyPath = copyPath;
+        if (source is null && DocumentTreeMode) SetTreeMode(Model.TreeMode);
+        else if (DocumentTreeMode && source is not null)
+        {
+            tree.Tree = source;
+            if (documentInspectionPath?.Invoke(source.TargetItem) is { } selected) Model.Select(selected);
+            UpdateDetails();
+        }
+    }
+    public void SetDocumentTreeMode()
+    {
+        if (documentTree is null) return;
+        DocumentTreeMode = true;
+        tree.Tree = documentTree;
+        tree.TreeHorizontalScroll = 0;
+        tree.TreeScroll = 0;
+        details.Scroll = 0;
+        if (documentInspectionPath?.Invoke(documentTree.TargetItem) is { } selected) Model.Select(selected);
+        UpdateDetails();
+    }
+    private void UpdateDetails()
+    {
+        details.Label = DocumentTreeMode ? documentDetails?.Invoke(documentTree?.TargetItem) ?? "JSON の項目を選択してください。"
+            : Model.Details;
+        details.BoxModel = DocumentTreeMode ? null : Model.SelectedEntry?.BoxModel;
+    }
     public void Refresh(IReadOnlyList<StationeryInspectionEntry> entries)
     {
         var previousTree = Model.Tree;
-        Model.Refresh(entries); tree.Tree = Model.Tree;
-        if (previousTree != Model.Tree) RevealSelection();
-        details.Label = Model.Details;
-        details.BoxModel = Model.SelectedEntry?.BoxModel;
+        Model.Refresh(entries);
+        if (!DocumentTreeMode) tree.Tree = Model.Tree;
+        if (DocumentTreeMode)
+        {
+            if (documentInspectionPath?.Invoke(documentTree?.TargetItem) is { } selected) Model.Select(selected);
+        }
+        else if (previousTree != Model.Tree) RevealSelection();
+        UpdateDetails();
     }
-    public DeveloperViewState Capture(bool visible = true) => Model.Capture(SplitRatio, visible) with { CaptureEnabled = CaptureEnabled };
+    public DeveloperViewState Capture(bool visible = true) => Model.Capture(SplitRatio, visible)
+        with { CaptureEnabled = CaptureEnabled, DocumentTreeMode = DocumentTreeMode };
     public void Restore(DeveloperViewState? state)
     {
         Model.Restore(state);
-        tree.Tree = Model.Tree;
+        DocumentTreeMode = state?.DocumentTreeMode == true && documentTree is not null;
+        tree.Tree = DocumentTreeMode ? documentTree : Model.Tree;
         CaptureEnabled = state?.CaptureEnabled ?? false;
-        RevealSelection();
+        if (!DocumentTreeMode) RevealSelection();
+        UpdateDetails();
         if (state is not null && double.IsFinite(state.SplitRatio)) split.Split!.SetRatio(state.SplitRatio);
     }
     public void SelectCaptured(string path)
     {
+        if (DocumentTreeMode) SetTreeMode(Model.TreeMode);
         if (!Model.Select(path)) return;
         RevealSelection();
         ui.Focus.Focus(tree.Path);
@@ -113,7 +160,8 @@ public sealed class StationeryDeveloperView : IDisposable
     }
     public void CopySelectedPath()
     {
-        if (Model.SelectedPath is not { } path) return;
+        var path = DocumentTreeMode ? documentCopyPath?.Invoke(documentTree?.TargetItem) : Model.SelectedPath;
+        if (path is null) return;
         try { input.WriteClipboard(path); LastCopiedPath = path; LastCopyError = null; copy.Label = "コピーしました"; }
         catch (Exception ex) when (ex is InvalidOperationException or System.Runtime.InteropServices.ExternalException)
         { LastCopyError = ex.Message; copy.Label = "コピー失敗：クリックで再試行"; }
@@ -128,25 +176,35 @@ public sealed class StationeryDeveloperView : IDisposable
         header.Bounds = new(header.Bounds.X + 56, header.Bounds.Y, Math.Max(0, header.Bounds.Width - 56), header.Bounds.Height);
         var splitArea = layout.ContentBounds[split.Path];
         var toolbarHeight = Math.Min(48, splitArea.Height);
-        var buttonWidth = Math.Min(260, splitArea.Width / 2);
+        var buttonWidth = Math.Min(260, splitArea.Width / (documentTree is null ? 2 : 3));
         modelTreeButton.Bounds = new(splitArea.X, splitArea.Y, buttonWidth, toolbarHeight);
         layoutTreeButton.Bounds = new(splitArea.X + buttonWidth, splitArea.Y, buttonWidth, toolbarHeight);
-        modelTreeButton.Label = (Model.TreeMode == DeveloperTreeMode.Model ? "● " : "") + "モデルツリー";
-        layoutTreeButton.Label = (Model.TreeMode == DeveloperTreeMode.Layout ? "● " : "") + "レイアウトツリー";
+        documentTreeButton.Bounds = documentTree is null ? new() : new(splitArea.X + buttonWidth * 2, splitArea.Y, buttonWidth, toolbarHeight);
+        modelTreeButton.Label = (!DocumentTreeMode && Model.TreeMode == DeveloperTreeMode.Model ? "● " : "") + "モデルツリー";
+        layoutTreeButton.Label = (!DocumentTreeMode && Model.TreeMode == DeveloperTreeMode.Layout ? "● " : "") + "レイアウトツリー";
+        documentTreeButton.Label = (DocumentTreeMode ? "● " : "") + "JSON ツリー";
         split.Bounds = new(splitArea.X, splitArea.Y + toolbarHeight, splitArea.Width, Math.Max(0, splitArea.Height - toolbarHeight));
         copy.Bounds = layout.ContentBounds[copy.Path];
         InspectorPanelBounds = layout.Bounds["/developerViewport/developerWindow/inspectorPanel"];
         toolHint.Bounds = layout.ContentBounds[toolHint.Path];
-        ui.Focus.SetEnabled(copy.Path, Model.SelectedPath is not null);
+        ui.Focus.SetEnabled(copy.Path, DocumentTreeMode ? documentCopyPath?.Invoke(documentTree?.TargetItem) is not null
+            : Model.SelectedPath is not null);
+        ui.Focus.SetEnabled(documentTreeButton.Path, documentTree is not null);
         var before = Model.SelectedPath;
+        var beforeDocument = documentTree?.TargetItem;
         ui.Update(time, active, keyboard, mouse);
         toolHint.Label = ui.HoveredToolHint ?? (CaptureEnabled
             ? "キャプチャー中：画面上の文房具をクリック。手のボタンで解除。"
+            : DocumentTreeMode ? "JSON の項目を選ぶとパスと値を表示します。対応するモデルはプレビューにも反映します。"
             : EmbeddedInEditor ? "手のボタンでキャプチャー。編集を始めるには右上のボタンを押します。"
                 : "手のボタンでキャプチャー。F12 / Esc で閉じる。");
-        if (before != Model.SelectedPath) { details.Scroll = 0; copy.Label = "パスをコピー"; }
-        details.Label = Model.Details;
-        details.BoxModel = Model.SelectedEntry?.BoxModel;
+        if (DocumentTreeMode && beforeDocument != documentTree?.TargetItem)
+        {
+            if (documentInspectionPath?.Invoke(documentTree?.TargetItem) is { } selected) Model.Select(selected);
+            details.Scroll = 0; copy.Label = "パスをコピー";
+        }
+        else if (!DocumentTreeMode && before != Model.SelectedPath) { details.Scroll = 0; copy.Label = "パスをコピー"; }
+        UpdateDetails();
         var hit = DeveloperCapture.HitTest(ui.Inspect(), mouse.X, mouse.Y);
         OperationLog.Record(mouse, keyboard, new(active, hit?.Path, ui.Focus.FocusedId,
             Model.SelectedPath, Model.Tree.TargetItem is { } target ? Model.PathFor(target) : null,
