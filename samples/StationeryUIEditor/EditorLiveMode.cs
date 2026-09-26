@@ -51,6 +51,7 @@ internal sealed partial class EditorGame
             SDL_RaiseWindow(Window.Handle);
             lastShowSequence = message.ShowSequence;
         }
+        readView.DocumentComparisonLabel = readJsonTree is null ? null : "実行中";
         if (message.StyleError != lastStyleError)
         {
             lastStyleError = message.StyleError;
@@ -79,6 +80,8 @@ internal sealed partial class EditorGame
             readView?.Restore(readView.Capture() with { CaptureEnabled = false });
             Window.Title = "文房具UIエディター — アプリとの接続が終了（最後の検査結果）";
             liveStyleStatus = "アプリとの接続が終了しました（最後の検査結果）";
+            if (readView is not null && readJsonTree is not null)
+                readView.DocumentComparisonLabel = "最後の検査結果";
         }
     }
 

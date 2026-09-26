@@ -10,6 +10,7 @@ internal sealed class ReadJsonTree
     private sealed record NodeInfo(string[] Path, string? ModelPath, string Description, string[] LayoutPaths);
     private readonly Dictionary<TreeItem, NodeInfo> nodes = [];
     private readonly Dictionary<string, TreeItem> byPath = new(StringComparer.Ordinal);
+    private readonly HashSet<string> inspectionPaths = new(StringComparer.Ordinal);
     public TreeView Tree { get; } = new();
     public string[]? SelectedPath => Tree.TargetItem is { } item ? nodes[item].Path : null;
 
@@ -74,6 +75,11 @@ internal sealed class ReadJsonTree
                         item, modelPath, path[0] == "modelTree" && path[^1] == "children", layoutPath);
         }
         foreach (var pair in root) Visit(pair.Value, pair.Key, [pair.Key], null, null, pair.Key == "modelTree", null);
+        foreach (var info in document.nodes.Values)
+        {
+            if (info.ModelPath is not null) document.inspectionPaths.Add(info.ModelPath);
+            foreach (var path in info.LayoutPaths) document.inspectionPaths.Add(path);
+        }
         if (selected is null || !document.SelectPath(selected)) document.Tree.Move(0);
         return document;
     }
@@ -98,6 +104,7 @@ internal sealed class ReadJsonTree
         ? info.ModelPath ?? info.LayoutPaths.FirstOrDefault() : null;
     public IReadOnlyList<string> LayoutInspectionPaths(TreeItem? item) => item is not null && nodes.TryGetValue(item, out var info)
         ? info.LayoutPaths : [];
+    public bool ContainsInspectionPath(string path) => inspectionPaths.Contains(path);
     public string? CopyPath(TreeItem? item) => item is not null && nodes.TryGetValue(item, out var info)
         ? Pointer(info.Path) : null;
 

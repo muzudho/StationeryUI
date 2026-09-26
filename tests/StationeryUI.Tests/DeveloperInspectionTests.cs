@@ -12,6 +12,7 @@ internal static class DeveloperInspectionTests
             new("right", "/demo/right", "/demo", "page", "右", false, null)
         ];
         var model = new DeveloperInspectionModel(); model.Refresh(source);
+        Check(model.Contains("/demo/left/name") && !model.Contains("/demo/missing"), "inspection reports whether a runtime path exists");
         Check(model.Select("/demo/right/name") && model.Details.Contains("右の名前") && model.Details.Contains("非表示"), "duplicate IDs resolved by path");
         var original = model.Tree;
         var updated = source.Select(e => e.Path == "/demo/right/name" ? e with { WindowBounds = new(10, 20, 300, 400) } : e).ToArray();

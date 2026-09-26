@@ -5,6 +5,13 @@
 
 エディターの実行ファイルが見つからない環境では、従来の独立した開発者ウィンドウを使う。こちらは F12／Esc／閉じるボタンで閉じ、デモ終了時に終了する。以下の検査操作は、統合エディターの読取画面と従来の開発者ウィンドウに共通する。
 
+## NuGet 利用アプリからの移行
+
+統合エディターの実行ファイルは NuGet パッケージに含まれない。アプリ側で配布先の `StationeryUIEditor.exe` を用意し、検査ウィンドウを初めて開く前に `StationeryDeveloperWindow.UseEditor(editorExecutablePath, styleFilePath)` を呼ぶ。F12 は `Show(entries)`、Ctrl＋F12 は `Show(entries, edit: true)` を使い、通常の更新では `Update(entries, styleFilePath, reloadError, appliedFingerprint)` を続ける。デモの [DemoEditor.cs](../../samples/StationeryUI.Demo/DemoEditor.cs) が具体例。
+この移行 API は現行リポジトリーのソースを説明している。NuGet の公開版を使う場合は、対象バージョンに `UseEditor` が含まれていることを確認する。
+
+エディターを配置しない既存アプリは `UseEditor` を呼ばなければ従来の F12 ウィンドウを使い続ける。v0.4.x 系ではこの互換経路と `StationeryDeveloperWindow` の公開 API を残す。ホスト終了後も統合エディターは残るため、ホスト側から未保存の下書きを強制終了しない。
+
 ウィンドウには文房具のツリーと詳細を表示する。
 起動時は［レイアウトツリー］を表示する。上部の［モデルツリー］［レイアウトツリー］ボタンで表示を切り替える。● が現在の表示を示す。
 
@@ -44,7 +51,7 @@
 
 詳細には `applePanel.bananaSubpanel.cherryComponent` のようなドット区切りの Id パスも表示する。キャプチャー中のクリックは部品の通常操作には使われない。手のアイコンをもう一度押すと解除する。
 
-NuGet パッケージを使う別のアプリでは、アプリ側でクリック判定と水色の枠の描画を接続する必要がある。アイコンを押しても部品を選べない、または枠が出ない場合は、[導入ガイドの［指でつまむ］機能](../dev/library-integration.md#f12-開発者ウィンドウと指でつまむ機能の組み込み)を確認する。
+NuGet パッケージを使う別のアプリでは、アプリ側でクリック判定と水色の枠の描画を接続する必要がある。アイコンを押しても部品を選べない、または枠が出ない場合は、[導入ガイドの［指でつまむ］機能](../ai-agents/get-started/library-integration.md#f12-開発者ウィンドウと指でつまむ機能の組み込み)を確認する。
 
 ## 操作ログ
 

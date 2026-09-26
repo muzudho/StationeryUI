@@ -109,6 +109,7 @@ public sealed class DeveloperInspectionModel
         if (!items.TryGetValue(ResolveMergedPath(path)!, out var item)) return false;
         Tree.Select(item); Tree.SetTarget(item); return true;
     }
+    public bool Contains(string path) => items.ContainsKey(ResolveMergedPath(path)!);
     public DeveloperViewState Capture(double splitRatio = .4, bool visible = true)
         => new(SelectedPath, items.Where(pair => pair.Value.Children.Count > 0 && !pair.Value.IsExpanded).Select(pair => pair.Key).ToArray(), splitRatio, visible) { TreeMode = TreeMode, OtherTreeState = otherTreeState };
     public void Restore(DeveloperViewState? state)

@@ -81,8 +81,11 @@ internal sealed partial class EditorGame
         readJsonTree = readPreviewDocument is null ? null : ReadJsonTree.Create(readPreviewDocument.Text, readJsonTree);
         if (readJsonTree is { } json)
             readView?.SetDocumentTree(json.Tree, json.Details, json.InspectionPath, json.CopyPath,
-                json.LayoutInspectionPaths);
+                json.LayoutInspectionPaths, json.ContainsInspectionPath);
         else readView?.SetDocumentTree(null);
+        if (readView is not null)
+            readView.DocumentComparisonLabel = readJsonTree is not null && lastShowSequence >= 0
+                ? liveDisconnectedReported ? "最後の検査結果" : "実行中" : null;
     }
 
     private void UpdateReadPreview()

@@ -47,6 +47,8 @@ internal static class ReadJsonTreeTests
         var reference = items.Single(item => document.CopyPath(item) == "/viewports/0/layout/ref");
         var expected = new[] { "/root/first:/shared", "/root/second:/shared" };
         Check(document.LayoutInspectionPaths(definition).SequenceEqual(expected), "one layout definition lists both owners");
+        Check(document.ContainsInspectionPath(expected[0]) && document.ContainsInspectionPath(expected[1])
+            && !document.ContainsInspectionPath("/root/third:/shared"), "document distinguishes mapped and runtime-only layouts");
         Check(document.LayoutInspectionPaths(reference).SequenceEqual(expected), "layout ref resolves to the same owners");
         Check(document.LayoutInspectionPaths(nested).SequenceEqual(new[] { "/root/first:/shared/inner", "/root/second:/shared/inner" }),
             "nested layout properties keep the nested definition path");

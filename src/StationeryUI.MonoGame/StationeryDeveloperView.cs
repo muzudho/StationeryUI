@@ -22,6 +22,9 @@ public sealed class StationeryDeveloperView : IDisposable
     private Func<TreeItem?, string>? documentDetails;
     private Func<TreeItem?, string?>? documentInspectionPath, documentCopyPath;
     private Func<TreeItem?, IReadOnlyList<string>>? documentInspectionPaths;
+    private Func<string, bool>? documentContainsInspectionPath;
+    /// <summary>Set only when document nodes are being compared with a host snapshot.</summary>
+    public string? DocumentComparisonLabel { get; set; }
     public bool DocumentTreeMode { get; private set; }
     public ScreenRectangle InspectorPanelBounds { get; private set; }
     public ScreenRectangle ToolHintBounds => toolHint.Bounds;
@@ -90,13 +93,15 @@ public sealed class StationeryDeveloperView : IDisposable
     }
     public void SetDocumentTree(TreeView? source, Func<TreeItem?, string>? describe = null,
         Func<TreeItem?, string?>? inspectPath = null, Func<TreeItem?, string?>? copyPath = null,
-        Func<TreeItem?, IReadOnlyList<string>>? inspectPaths = null)
+        Func<TreeItem?, IReadOnlyList<string>>? inspectPaths = null,
+        Func<string, bool>? containsInspectionPath = null)
     {
         documentTree = source;
         documentDetails = describe;
         documentInspectionPath = inspectPath;
         documentCopyPath = copyPath;
         documentInspectionPaths = inspectPaths;
+        documentContainsInspectionPath = containsInspectionPath;
         if (source is null && DocumentTreeMode) SetTreeMode(Model.TreeMode);
         else if (DocumentTreeMode && source is not null)
         {
@@ -118,8 +123,32 @@ public sealed class StationeryDeveloperView : IDisposable
     }
     private void UpdateDetails()
     {
-        details.Label = DocumentTreeMode ? documentDetails?.Invoke(documentTree?.TargetItem) ?? "JSON の項目を選択してください。"
-            : Model.Details;
+        if (DocumentTreeMode)
+        {
+            var selected = documentTree?.TargetItem;
+            var description = documentDetails?.Invoke(selected) ?? "JSON の項目を選択してください。";
+            if (DocumentComparisonLabel is not null)
+            {
+                var primary = documentInspectionPath?.Invoke(selected);
+                IEnumerable<string> paths = primary is null ? documentInspectionPaths?.Invoke(selected) ?? []
+                    : new[] { primary }.Concat(documentInspectionPaths?.Invoke(selected) ?? []);
+                var candidates = paths.Distinct(StringComparer.Ordinal).ToArray();
+                if (candidates.Length > 0)
+                {
+                    var found = candidates.Count(Model.Contains);
+                    description += $"\n\n{DocumentComparisonLabel}の対応: "
+                        + (found == 0 ? "未接続" : $"{found} / {candidates.Length} 件");
+                }
+            }
+            details.Label = description;
+        }
+        else
+        {
+            details.Label = Model.Details;
+            if (DocumentComparisonLabel is not null && Model.SelectedPath is { } path
+                && documentContainsInspectionPath is not null && !documentContainsInspectionPath(path))
+                details.Label += "\n\nファイル上の対応: なし（実行時のみ）";
+        }
         details.BoxModel = DocumentTreeMode ? null : Model.SelectedEntry?.BoxModel;
     }
     private void SelectDocumentInspection(TreeItem? item)
