@@ -19,4 +19,4 @@ MonoGame フレームワークで作られています。一部、Windows に依
 
 エディターとライブラリーは版を別々に管理しています。エディターの ZIP とライブラリーのパッケージは別の成果物です。
 
-[使われる場面](style-settings/use-case.md) ／ [ダウンロードと起動](getting-started.md) ／ [利用者向け目次](README.md)
+[使われる場面](use-cases/overview.md) ／ [ダウンロードと起動](getting-started.md) ／ [利用者向け目次](README.md)

@@ -11,7 +11,7 @@
 - `StationeryUI.Windows.0.2.0.nupkg`
 - `SHA256SUMS.txt`
 
-版番号は `Directory.Build.props` の 0.2.0、ソースはタグ `v0.2.0` を参照してください。NuGet.org からの取得とローカル配布については[ライブラリーの組み込み](../library-integration.md)を参照してください。
+版番号は `Directory.Build.props` の 0.2.0、ソースはタグ `v0.2.0` を参照してください。NuGet.org からの取得とローカル配布については[現行のライブラリー組み込みガイド](../../../ai-agents/get-started/library-integration.md)を参照してください。公開版との差異はこの版の配布記録を優先してください。
 
 ## 主な変更
 

@@ -11,7 +11,9 @@
 - NuGet 同梱資料の移動後の参照先を修正し、`dotnet pack StationeryUI.slnx -c Release --no-restore -o artifacts/nuget/v0.4.0` で3パッケージを作成した。各パッケージの ID、0.4.0 の版番号と内部依存、DLL、README、ライセンス、同梱資料の存在を確認した。
 - NuGet 公開ワークフローに .NET SDK 10 も指定し、`.slnx` の復元に使えるようにした。今回の確認はローカルで行い、NuGet.org への公開と GitHub Actions の実行は行っていない。
 
-2026-09-08。Windows、.NET SDK 10.0.400、MonoGame.Framework.DesktopGL 3.8.5.1。ライブラリーは.NET 8、Windows接続は.NET 8 Windowsを対象とする。
+## 2026-09-08 — 初期ライブラリー版の検証
+
+Windows、.NET SDK 10.0.400、MonoGame.Framework.DesktopGL 3.8.5.1。ライブラリーは.NET 8、Windows接続は.NET 8 Windowsを対象とする。
 
 | 項目 | 結果 |
 |---|---|
@@ -27,7 +29,7 @@
 | サークルの既存文房具UI検査 | 13/13成功 |
 | サークルのデスクトップ検査 | 44/44成功 |
 | Linuxでのコア検査 | [GitHub Actions](https://github.com/muzudho/StationeryUI/actions/runs/34235943090)で成功。Windowsジョブのビルド・テスト・packも成功 |
-| 公開パッケージ | GitHub Releaseから3ファイルを再ダウンロードし、両アプリの同梱物とSHA-256一致を確認。値は [package-checksums.txt](../user/package-checksums.txt) |
+| 公開パッケージ | GitHub Releaseから3ファイルを再ダウンロードし、両アプリの同梱物とSHA-256一致を確認。v0.1.0 の値は [package-checksums.txt](../user/version/0_1_0/package-checksums.txt) |
 | 実IMEの候補選択・変換確定 | 未実施。SDLイベントの自動検査は実IME操作の代用とはしない |
 | Windowsの各DPI・複数モニター | 未実施。サンプル内の論理拡大率とOSのDPI切替は区別する |
 | タッチ実機、WindowsDX、Linux/macOSのUI | 未検証・初期版の保証外 |

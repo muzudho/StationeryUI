@@ -1,9 +1,11 @@
 # ダウンロードして起動する
 
-1. [最新のリリース](https://github.com/muzudho/StationeryUI/releases/latest)を開きます。公開済み v0.4.0 の Assets は旧名 `StationeryUI.StyleDesigner-v0.4.0-win-x64.zip` です。`Source code` は通常の利用には不要です。
+以下は文房具UIエディター v0.5.0 の手順です。ほかの版を使う場合は[版別の資料](version/README.md)から、その版のリリースノートを参照してください。
+
+1. [文房具UIエディター v0.5.0 のリリース](https://github.com/muzudho/StationeryUI/releases/tag/ui-editor-v0.5.0)の Assets から Windows x64 用 ZIP を入手します。`Source code` はアプリの配布物ではありません。
 2. ZIP を新しいフォルダーへすべて展開します。
-3. v0.4.0 では展開先の `StationeryUI.StyleDesigner/StationeryUI.StyleDesigner.exe` を起動します。名前変更後のソースからビルドする場合は `StationeryUIEditor.exe` です。ランタイム同梱版なら .NET の追加インストールは不要です。EXE だけを取り出さず、DLL・licenses などを含むフォルダー全体を使います。
-4. ［スタイル設定ファイル選択］で、新規作成または既存ファイルの編集を選びます。
+3. 展開先の `StationeryUIEditor.exe` を起動します。ランタイム同梱版なら .NET の追加インストールは不要です。EXE だけを取り出さず、DLL・licenses などを含むフォルダー全体を使います。
+4. 開始画面で新規作成または既存ファイルの読み取りを選びます。既存ファイルを変更する場合は、読み取り画面から編集を開始します。
 5. ツリーの `layouts` から操作対象を選び、列幅・行高や余白を変更してプレビューで確認します。
 6. 新規プランは［エクスポート］から［書き出す］または［新規作成］で保存先を決めます。以後はオートセーブされます。
 

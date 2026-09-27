@@ -10,7 +10,7 @@
 | [StationeryUI.MonoGame](https://www.nuget.org/packages/StationeryUI.MonoGame/0.4.0) | 0.4.0 |
 | [StationeryUI.Windows](https://www.nuget.org/packages/StationeryUI.Windows/0.4.0) | 0.4.0 |
 
-公開前のローカル検証は[検証記録](../validation.md)を参照。レイアウトデザイナーの配布はこの NuGet 公開には含めない。
+公開前のローカル検証は[検証記録](../../validation.md)を参照。レイアウトデザイナーの配布はこの NuGet 公開には含めない。
 
 ## 公開後の取得確認
 

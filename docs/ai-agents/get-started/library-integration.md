@@ -222,7 +222,7 @@ ui.Viewport.Scale = 1.5;
 - [繧､繝ｳ繧ｹ繝壹け繧ｿ繝ｼ繝代ロ繝ｫ縺ｨ繝・・繝ｫ繝偵Φ繝域ｬЬ(../user/inspector-panel-guide.md)・夂判髱｢荳九・80px縺ｫ謫堺ｽ懆ｪｬ譏弱ｒ髮・ｴ・☆繧九√♀縺吶☆繧√・繧ｹ繧ｿ繧､繝ｫ繧ｬ繧､繝峨Λ繧､繝ｳ・亥ｿ・医〒縺ｯ縺ゅｊ縺ｾ縺帙ｓ・峨・
 - [荳狗ｷ壻ｻ倥″繝・く繧ｹ繝医・隕句・縺第婿](../user/underline-guide.md)
 - [繝ｪ繧ｹ繝・I險ｭ險医・逶ｮ螳云(list-ui-guidelines.md)
-- [驟榊ｸ・ヱ繝・こ繝ｼ繧ｸ縺ｮ繝√ぉ繝・け繧ｵ繝](../user/package-checksums.txt)
+- [驟榊ｸ・ヱ繝・こ繝ｼ繧ｸ縺ｮ繝√ぉ繝・け繧ｵ繝](../../user/version/0_1_0/package-checksums.txt)
 - [謚ｽ蜃ｺ蜈・・繝ｩ繧､繧ｻ繝ｳ繧ｹ](../user/CircleSpaceCoordinator-LICENSE.txt)
 - [髢狗匱閠・髄縺代ラ繧ｭ繝･繝｡繝ｳ繝・(README.md)・壹Λ繧､繝悶Λ繝ｪ繝ｼ閾ｪ菴薙・髢狗匱縺ｨ讀懆ｨｼ縲・
 縺阪・繧上ｉ縺ｹ縺ｮ遒・026縺ｨ繧ｵ繝ｼ繧ｯ繝ｫ繧ｹ繝壹・繧ｹ繧ｳ繝ｼ繝・ぅ繝阪・繧ｿ繝ｼ縺ｮ螳溯｣・°繧画歓蜃ｺ繝ｻ謨ｴ逅・＠縺ｦ縺・∪縺吶ょ・縺ｮ繝ｩ繧､繧ｻ繝ｳ繧ｹ陦ｨ遉ｺ縺ｨ萓晏ｭ倡黄縺ｫ縺､縺・※縺ｯ [THIRD-PARTY-NOTICES.md](../../THIRD-PARTY-NOTICES.md) 繧貞盾辣ｧ縺励※縺上□縺輔＞縲・

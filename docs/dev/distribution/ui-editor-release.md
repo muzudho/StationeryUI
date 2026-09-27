@@ -1,6 +1,6 @@
 # 文房具UIエディターの配布
 
-ソースのプロジェクトと実行ファイル名は `StationeryUIEditor` です。公開済み v0.4.0 は旧名 `StationeryUI.StyleDesigner` のまま保存し、名称変更後の成果物は新しい版として公開します。
+ソースのプロジェクトと実行ファイル名は `StationeryUIEditor` です。v0.4.0 は旧名 `StationeryUI.StyleDesigner`、v0.5.0 以降は新名で配布しています。過去の配布物は[版別の記録](../version/README.md)から確認してください。
 
 リポジトリーのルートから次を実行します。先にプロジェクトのバージョンを更新し、対象コミットを確定してください。
 

@@ -36,8 +36,8 @@ Submit 後は検証と検索への反映を待ちます。すぐ検索に出な�
 - [StationeryUI.MonoGame 0.2.0](https://www.nuget.org/packages/StationeryUI.MonoGame/0.2.0)
 - [StationeryUI.Windows 0.2.0](https://www.nuget.org/packages/StationeryUI.Windows/0.2.0)
 
-v0.2.0 は、NuGet.org のみをソースにした新規保存先への復元と、３パッケージを参照するプロジェクトのビルドに成功しました。[組み込みガイド](../library-integration.md)も公開済みの内容へ更新しました。今後の公開で一部だけ成功した場合は、成功した ID を伝え、失敗したものだけを再開します。
+v0.2.0 は、NuGet.org のみをソースにした新規保存先への復元と、３パッケージを参照するプロジェクトのビルドに成功しました。[現行の組み込みガイド](../../../ai-agents/get-started/library-integration.md)も参照できますが、版固有の内容はこの記録を優先してください。今後の公開で一部だけ成功した場合は、成功した ID を伝え、失敗したものだけを再開します。
 
 公開済みの同一 ID・同一バージョンは上書きできません。修正が必要なら次の版を作ります。掲載を非表示にする操作は版番号の再利用にはなりません。[公式の削除ポリシー](https://learn.microsoft.com/en-us/nuget/nuget-org/policies/deleting-packages)を参照してください。
 
-[NuGet の目次](README.md)
+[NuGet の目次](../../NuGet/README.md)
