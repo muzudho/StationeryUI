@@ -151,7 +151,7 @@ protected override void Update(GameTime gameTime)
     }
 
     var captureDown = mouse.LeftButton == ButtonState.Pressed;
-    if (developerWindow.CaptureEnabled && IsActive)
+    if (developerWindow.CaptureEnabled)
     {
         if (captureDown && !captureMouseDown)
         {
@@ -163,7 +163,7 @@ protected override void Update(GameTime gameTime)
         base.Update(gameTime);
         return;
     }
-    captureMouseDown = captureDown;
+    captureMouseDown = false;
 
     ui.Update(gameTime, IsActive, keyboard, mouse);
     // 繧ｲ繝ｼ繝蛛ｴ縺ｮ騾壼ｸｸ蜈･蜉帛・逅・ｂ繧ｭ繝｣繝励メ繝｣繝ｼ蛻・ｲ舌ｈ繧雁ｾ後↓鄂ｮ縺上・    base.Update(gameTime);

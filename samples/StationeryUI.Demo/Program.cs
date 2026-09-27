@@ -244,7 +244,7 @@ internal sealed partial class Demo : Game
             inspectionElapsed = 0;
         }
         var captureDown = mouse.LeftButton == ButtonState.Pressed;
-        if (developerWindow.CaptureEnabled && IsActive)
+        if (developerWindow.CaptureEnabled)
         {
             if (captureDown && !captureMouseDown)
             {
@@ -261,7 +261,7 @@ internal sealed partial class Demo : Game
             base.Update(gameTime);
             return;
         }
-        captureMouseDown = captureDown;
+        captureMouseDown = false;
         var smokeCase = Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_CASE");
         var smoke = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("STATIONERYUI_SMOKE_PNG"));
         updateFrames++;
