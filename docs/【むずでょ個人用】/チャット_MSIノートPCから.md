@@ -26,3 +26,15 @@ src フォルダーの下に
 * `StationeryUI.Windows` - `StationeryUI` と、`Windows 固有機能` に依存しているコード
 * `StationeryUI` - `C# net8.0` のコード
 ```
+
+
+＜ユーザー＞　→　［StationeryUI.Windows］　→　［StationeryUI.MonoGame］　→　［StationeryUI］  
+みたいな一方向のアクセスの流れ（依存性）になってるのかな（＾～＾）？  
+
+
+その流れ図を GitHub で見れるようにしてくれだぜ（＾～＾）  
+なんか GitHub の MarkDown で流れ図を表示できるプラグインがあったと思うんだが、何だったかな（＾～＾）  
+
+
+そうそう、 Mermaid だぜ（＾▽＾）  
+
